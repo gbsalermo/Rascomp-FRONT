@@ -1,218 +1,111 @@
 # RASCOMP Frontend
 
-Frontend do projeto RASCOMP, organizado em duas aplicações independentes dentro do mesmo repositório:
+Frontend do RASCOMP, dividido em duas aplicações Vue independentes no mesmo repositório:
 
-- **Gestão**: aplicação autenticada para participantes e organização operarem o sistema;
-- **Landing Page**: aplicação pública institucional e de acompanhamento da competição.
+- **`gestao/`** — sistema autenticado para `ORGANIZACAO` e `PARTICIPANTE`;
+- **`landing-page/`** — interface pública institucional e de acompanhamento da competição.
 
-## Estrutura do repositório
-
-```text
-Rascomp-FRONT/
-├── landing-page/
-│   └── README.md
-├── gestao/
-│   └── README.md
-├── docs/
-│   ├── CONTINUIDADE_FRONTEND.md
-│   └── SYSTEM_DESIGN_GESTAO.md
-├── .gitignore
-└── README.md
-```
-
----
-
-# Arquitetura geral
-
-O backend é a única fonte de verdade.
+## Arquitetura
 
 ```text
 PARTICIPANTE / ORGANIZACAO
            │
            ▼
-        Gestão
+     Frontend Gestão
            │
            ▼
         Backend
-       ┌───┴─────────────────────┐
-       │                         │
- dados autenticados      projeção pública
-                                 │
-                                 ▼
-                              Landing
+       ┌───┴──────────────────┐
+       │                      │
+API autenticada       /api/v1/public/**
+                              │
+                              ▼
+                           Landing
 ```
 
-A Gestão não envia dados diretamente para a Landing.
+O backend é a única fonte de verdade. A Gestão não envia dados diretamente para a Landing.
 
-Separação prevista pela API:
-
-```text
-/api/v1/participante/**  -> PARTICIPANTE + ownership
-/api/v1/**               -> ORGANIZACAO
-/api/v1/public/**        -> público, somente leitura e sanitizado
-```
-
-Isso permite que ações operacionais realizadas na Gestão sejam refletidas ao público pela mesma fonte de dados, sem sincronização manual entre os dois frontends.
-
----
-
-# 1. Frontend de Gestão
-
-Será desenvolvido primeiro.
-
-A aplicação possui dois contextos autenticados.
-
-## PARTICIPANTE
-
-Fluxo principal:
+## Stack atual
 
 ```text
-Equipe -> Competidores/Robôs -> Inscrição -> Status
-```
-
-## ORGANIZACAO
-
-Fluxo principal:
-
-```text
-Cadastros
--> Inscrições
--> Aprovação/Rejeição
--> execução da modalidade
--> resultados
-```
-
-As modalidades possuem operações diferentes:
-
-```text
-FOLLOW_LINE
-inscrição -> tentativas -> ranking
-
-SUMO
-inscrição -> inspeção -> bracket -> partida -> rounds
--> MatchResult automático -> progressão
-```
-
-O System Design completo está em:
-
-```text
-docs/SYSTEM_DESIGN_GESTAO.md
-```
-
-Stack planejada:
-
-```text
-React
-TypeScript
-Vite
-React Router
-TanStack Query
+Vue 3 + TypeScript + Vite
+Vue Router + Pinia
 Axios
-React Hook Form
-Zod
-CSS variables + CSS Modules
+Element Plus (Gestão)
 ```
 
----
+A implementação se inspira nos padrões de shell administrativo, sidebar, rotas por permissão e cliente HTTP centralizado de `Armour/vue-typescript-admin-template`, `PanJiaChen/vue-admin-template` e `iview/iview-admin`, mantendo código próprio.
 
-# 2. Landing Page
+## Gestão implementada
 
-A Landing não será apenas institucional.
+- login JWT e `/api/v1/auth/me`;
+- rotas protegidas por `PARTICIPANTE` / `ORGANIZACAO`;
+- dashboard;
+- competições;
+- análise de inscrições;
+- Follow Line: lançamento de tentativas + ranking oficial;
+- Sumô: inspeção + geração de chave + partidas + rounds + resultados;
+- portal do participante em leitura;
+- adapter/feature flag para Camunda Engine REST.
 
-Além de apresentar RAS/UFRB e RASCOMP, deverá funcionar como acompanhamento público da competição.
+## Landing implementada
 
-Escopo previsto:
+A Landing consome apenas `/api/v1/public/**` e já espelha:
 
-- apresentação institucional;
-- competição atual;
-- modalidades/categorias;
-- equipes e robôs;
-- competidores quando permitidos pelo DTO público;
+- competição em foco;
+- inscrições aprovadas/equipes/robôs;
 - ranking do Follow Line;
-- chaveamento do Sumô;
-- partidas;
-- vencedores/resultados;
-- progressão da chave;
-- campeão;
-- resultados históricos;
-- conteúdo multimídia quando houver suporte real do backend.
+- chaveamento, partidas e resultados do Sumô;
+- fotos principais dos robôs quando publicadas;
+- polling controlado durante competição `EM_ANDAMENTO`.
 
-Durante a competição, a Landing consumirá os contratos públicos e poderá atualizar widgets ao vivo por polling inicialmente. SSE/WebSocket só serão avaliados se houver necessidade real.
+## Camunda
 
----
+O frontend está preparado para Camunda sem transferir regras competitivas para BPMN ou para o navegador.
 
-# Reflexo público das operações
-
-Exemplos:
-
-```text
-Gestão registra tentativa Follow
-        ↓
-Backend valida/persiste
-        ↓
-Ranking é recalculado
-        ↓
-Landing lê ranking público atualizado
+```env
+VITE_CAMUNDA_ENABLED=false
+VITE_CAMUNDA_URL=http://localhost:8080/engine-rest
 ```
 
-```text
-Gestão registra round Sumô
-        ↓
-Backend consolida a partida
-        ↓
-MatchResult automático
-        ↓
-Backend progride a chave
-        ↓
-Landing lê bracket/resultado atualizado
+Enquanto o BPMN RASCOMP não estiver implantado, a análise de inscrição continua usando o fluxo REST atual. Depois, o adapter de processos pode assumir as tarefas humanas.
+
+## Backend usado como contrato
+
+Os fluxos de autenticação, participante e API pública foram implementados conforme a arquitetura existente na branch backend `arquitetura-usuarios-acesso`. Essa arquitetura ainda precisa estar presente/confirmada na `main` do backend para a integração final completa.
+
+## Executar
+
+Gestão:
+
+```bash
+cd gestao
+cp .env.example .env
+npm install
+npm run dev
 ```
 
-A Landing nunca deve calcular oficialmente vencedor, ranking ou progressão.
+Landing:
 
----
-
-# Lacunas conhecidas
-
-## Fotos do dia
-
-O backend atual possui foto de robô, mas não um módulo de galeria/fotos do evento. Essa funcionalidade dependerá de um contrato específico no backend.
-
-## Pagamentos
-
-O contrato congelado atualmente analisado não possui endpoints de pagamento. Não será criada tela falsa para isso.
-
----
-
-# Documentação
-
-Ordem de leitura:
-
-```text
-1. README.md
-2. docs/SYSTEM_DESIGN_GESTAO.md
-3. docs/CONTINUIDADE_FRONTEND.md
+```bash
+cd landing-page
+cp .env.example .env
+npm install
+npm run dev
 ```
 
-`CONTINUIDADE_FRONTEND.md` registra etapas concluídas, próximos passos, critérios de qualidade e a futura trilha da Landing.
-
----
-
-# Estado atual
-
-- [x] estrutura do repositório;
-- [x] separação Gestão/Landing;
-- [x] System Design da Gestão;
-- [ ] fundação técnica da Gestão;
-- [ ] autenticação;
-- [ ] fluxos de participante;
-- [ ] fluxos da organização;
-- [ ] operação Follow Line;
-- [ ] operação Sumô;
-- [ ] System Design público;
-- [ ] Landing Page.
-
-Próxima etapa oficial:
+Portas padrão:
 
 ```text
-GESTÃO 0 — Fundação técnica
+Gestão   http://localhost:5173
+Landing  http://localhost:5174
+Backend  http://localhost:8080
 ```
+
+## Documentação
+
+- `docs/IMPLEMENTACAO_VUE_MVP.md` — estado prático atual;
+- `docs/SYSTEM_DESIGN_GESTAO.md` — decisões arquiteturais anteriores e domínio;
+- `docs/CONTINUIDADE_FRONTEND.md` — histórico/continuidade.
+
+A decisão tecnológica mais recente (**Vue 3**) substitui referências anteriores a React existentes nos documentos históricos.
