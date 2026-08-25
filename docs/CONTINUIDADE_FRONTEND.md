@@ -1,510 +1,452 @@
 # Continuidade — RASCOMP Frontend
 
-## 1. Objetivo
+Última atualização: 2026-08-24
 
-Este arquivo é a referência de continuidade dos dois frontends do RASCOMP.
+Este documento é o checkpoint principal do frontend RASCOMP.
 
-Aplicações:
-
-- `gestao/`: aplicação autenticada para PARTICIPANTE e ORGANIZACAO;
-- `landing-page/`: aplicação pública institucional e de acompanhamento da competição.
-
-Documento arquitetural principal da Gestão:
-
-```text
-docs/SYSTEM_DESIGN_GESTAO.md
-```
+> Qualquer referência histórica a React/TanStack Query em versões anteriores deste arquivo está **substituída** pela implementação atual em Vue 3.
 
 ---
 
-# 2. Decisões congeladas neste momento
-
-- [x] Um único repositório com duas aplicações independentes.
-- [x] Backend é a única fonte de verdade.
-- [x] Gestão não envia estado diretamente para a Landing.
-- [x] Gestão altera o backend; Landing lê projeções públicas sanitizadas.
-- [x] Gestão será desenvolvida primeiro.
-- [x] System Design da Gestão criado antes da fundação técnica.
-- [x] Follow Line e Sumô terão experiências operacionais diferentes.
-- [x] Resultados críticos nunca serão calculados oficialmente no cliente.
-- [x] Identidade visual nasce na Gestão e depois orienta a Landing.
-
-Separação da API já prevista pelo backend:
+# 1. Identidade do projeto
 
 ```text
-/api/v1/participante/**  -> PARTICIPANTE + ownership
-/api/v1/**               -> ORGANIZACAO
-/api/v1/public/**        -> público, somente leitura e sanitizado
+RASCOMP = plataforma/software
+RRC     = evento/competição
+RAS UFRB = identidade institucional pública
 ```
 
----
-
-# 3. Relação entre Gestão e Landing
-
-A Landing não é apenas uma página institucional.
-
-Ela será também a camada pública de acompanhamento da competição.
-
-Fluxo correto:
-
-```text
-Gestão
-  ↓
-Backend
-  ├── dados administrativos/autenticados
-  └── dados públicos sanitizados
-             ↓
-          Landing
-```
-
-A Landing deverá futuramente apresentar, conforme suporte real da API pública:
-
-- competição atual e status;
-- categorias/modalidades;
-- equipes e robôs participantes;
-- competidores quando o DTO público permitir;
-- chaveamento do Sumô;
-- partidas e seus estados;
-- vencedores/resultados de partidas;
-- avanço da chave;
-- campeão;
-- ranking de Follow Line;
-- resultados históricos;
-- fotos públicas suportadas pelo backend.
-
-## Lacunas já identificadas
-
-### Fotos do dia
-
-O backend atual suporta foto de robô, mas não existe no contrato revisado um módulo de galeria/fotos do evento.
-
-Antes de criar uma funcionalidade real de "fotos do dia" será necessário suporte específico no backend.
-
-### Pagamentos
-
-Não existe contrato de pagamento no backend congelado analisado.
-
-Não criar tela de pagamento até existir endpoint/regra real.
-
----
-
-# 4. Estado atual do repositório
+O repositório possui duas aplicações independentes:
 
 ```text
 Rascomp-FRONT/
-├── landing-page/
-│   └── README.md
-├── gestao/
-│   └── README.md
-├── docs/
-│   ├── CONTINUIDADE_FRONTEND.md
-│   └── SYSTEM_DESIGN_GESTAO.md
-├── .gitignore
-└── README.md
+├── gestao/        -> sistema autenticado
+└── landing-page/  -> site público RAS UFRB + área RRC
 ```
 
-## Concluído
+A Gestão é desenvolvida primeiro. A Landing permanece pausada como fundação/POC até a Gestão estar consolidada e os contratos públicos serem novamente revisados.
 
-- [x] Repositório criado.
-- [x] Estrutura inicial separada.
-- [x] README raiz.
-- [x] README de cada frontend.
-- [x] Arquivo de continuidade.
-- [x] System Design da Gestão.
+Documento exclusivo da Landing:
 
-## Ainda não iniciado tecnicamente
-
-- [ ] aplicação React de Gestão;
-- [ ] aplicação React da Landing;
-- [ ] design system visual;
-- [ ] cliente HTTP;
-- [ ] autenticação no frontend;
-- [ ] telas de negócio.
+```text
+docs/CONTINUIDADE_LANDING_PAGE.md
+```
 
 ---
 
-# 5. Stack planejada para Gestão
+# 2. Arquitetura atual
 
-Conforme `SYSTEM_DESIGN_GESTAO.md`:
+## Gestão
+
+Stack oficial:
 
 ```text
-React
+Vue 3
 TypeScript
 Vite
-React Router
-TanStack Query
+Vue Router
+Pinia
 Axios
-React Hook Form
-Zod
-CSS variables + CSS Modules
+Element Plus
 ```
 
-Não adicionar gerenciamento global extra de estado sem necessidade concreta.
-
-Divisão:
+## Fluxo de dados
 
 ```text
-server state -> TanStack Query
-auth/session -> contexto pequeno
-form state   -> React Hook Form
-UI local     -> React state
-```
-
----
-
-# 6. Trilha GESTÃO
-
-## GESTÃO SD — System Design
-
-- [x] atores definidos;
-- [x] fronteira Gestão/Landing definida;
-- [x] arquitetura feature-based definida;
-- [x] estratégia de API definida;
-- [x] estratégia de server state definida;
-- [x] estratégia de autenticação definida;
-- [x] rotas conceituais definidas;
-- [x] fluxo Follow Line definido;
-- [x] fluxo Sumô definido;
-- [x] propagação pública definida;
-- [x] tratamento de concorrência definido.
-
-Documento:
-
-```text
-docs/SYSTEM_DESIGN_GESTAO.md
-```
-
----
-
-## GESTÃO 0 — Fundação técnica
-
-Objetivo: transformar `gestao/` em aplicação executável seguindo o System Design.
-
-- [ ] iniciar Vite + React + TypeScript;
-- [ ] configurar React Router;
-- [ ] configurar TanStack Query;
-- [ ] criar `httpClient` central;
-- [ ] configurar `VITE_API_URL`;
-- [ ] criar estrutura feature-based;
-- [ ] criar providers da aplicação;
-- [ ] criar layouts técnicos iniciais;
-- [ ] criar tokens CSS mínimos;
-- [ ] criar páginas 404/erro técnico;
-- [ ] validar execução local.
-
-### Critério de conclusão
-
-```text
-aplicação executando
-+ roteamento funcional
-+ QueryClient funcional
-+ cliente HTTP central
-+ estrutura pronta para Auth
-```
-
-Nenhuma tela de CRUD é necessária nesta etapa.
-
----
-
-## GESTÃO 1 — Autenticação + shell
-
-Backend já define JWT e os perfis `PARTICIPANTE` e `ORGANIZACAO`.
-
-- [ ] login;
-- [ ] cadastro de participante conforme contrato;
-- [ ] `/auth/me`;
-- [ ] armazenamento controlado da sessão;
-- [ ] envio de Bearer Token;
-- [ ] logout;
-- [ ] tratamento de 401;
-- [ ] tratamento de 403;
-- [ ] `AuthenticatedRoute`;
-- [ ] `RoleRoute`;
-- [ ] shell PARTICIPANTE;
-- [ ] shell ORGANIZACAO.
-
----
-
-## GESTÃO 2 — Fluxo do PARTICIPANTE
-
-Fluxo prioritário:
-
-```text
-Equipe
-  ↓
-Competidores + Robôs
-  ↓
-Inscrição
-  ↓
-Acompanhamento de status
-```
-
-- [ ] minhas equipes;
-- [ ] detalhes de equipe;
-- [ ] competidores da equipe;
-- [ ] robôs da equipe;
-- [ ] foto de robô conforme API;
-- [ ] criação de inscrição;
-- [ ] minhas inscrições;
-- [ ] status PENDENTE/APROVADA/REJEITADA/CANCELADA/DESCLASSIFICADA;
-- [ ] ownership validado pelo backend.
-
----
-
-## GESTÃO 3 — Cadastros da ORGANIZACAO
-
-- [ ] instituições;
-- [ ] equipes;
-- [ ] competidores;
-- [ ] robôs;
-- [ ] competições;
-- [ ] categorias;
-- [ ] ConfigFollow;
-- [ ] ConfigSumo.
-
-CRUDs devem refletir endpoints/DTOs reais.
-
----
-
-## GESTÃO 4 — Inscrições administrativas
-
-Primeiro fluxo operacional completo da organização.
-
-- [ ] listar inscrições;
-- [ ] filtros úteis;
-- [ ] detalhes;
-- [ ] aprovar;
-- [ ] rejeitar;
-- [ ] demais mudanças permitidas pelo contrato;
-- [ ] feedback claro;
-- [ ] impedir dupla submissão local;
-- [ ] refetch após alteração.
-
----
-
-## GESTÃO 5 — Centro Operacional FOLLOW_LINE
-
-Follow não possui chaveamento.
-
-```text
-inscrição aprovada
--> tentativa
--> backend valida
--> ranking recalculado
--> refetch
-```
-
-- [ ] contexto competição/categoria;
-- [ ] inscrições aprovadas;
-- [ ] tomada/tentativa;
-- [ ] tempo;
-- [ ] checkpoints;
-- [ ] penalidade;
-- [ ] concluída/válida conforme contrato;
-- [ ] histórico de tentativas;
-- [ ] ranking atual;
-- [ ] atualização após mutação;
-- [ ] indicação de impacto público.
-
-Não calcular ranking oficial no cliente.
-
----
-
-## GESTÃO 6 — Centro Operacional SUMO
-
-```text
-inscrição aprovada
--> inspeção
--> aptidão
--> bracket
--> match
--> round
--> MatchResult automático
--> progressão
-```
-
-- [ ] inspeções;
-- [ ] aptidão;
-- [ ] geração de chave;
-- [ ] visualização do bracket;
-- [ ] partidas;
-- [ ] operação de rounds;
-- [ ] resultado da partida somente leitura;
-- [ ] progressão atualizada após refetch;
-- [ ] campeão;
-- [ ] indicação de impacto público.
-
-O frontend nunca deve fabricar `MatchResult`.
-
----
-
-## GESTÃO 7 — Revisão da projeção pública
-
-Objetivo: antes de desenvolver a Landing dinâmica, verificar exatamente o que a Gestão produz para `/api/v1/public/**`.
-
-- [ ] competição pública;
-- [ ] categorias;
-- [ ] equipes/robôs;
-- [ ] ranking Follow;
-- [ ] bracket Sumô;
-- [ ] partidas;
-- [ ] resultados;
-- [ ] campeão;
-- [ ] dados sanitizados;
-- [ ] identificar endpoint faltante para experiência ao vivo.
-
-Se houver lacunas, corrigir no backend antes de criar lógica de inferência frágil na Landing.
-
----
-
-## GESTÃO 8 — Consolidação
-
-- [ ] responsividade;
-- [ ] acessibilidade básica;
-- [ ] loading/skeleton;
-- [ ] estados vazios;
-- [ ] erros uniformes;
-- [ ] 401/403/404;
-- [ ] conflitos 409;
-- [ ] feedback de sucesso;
-- [ ] revisão de chamadas duplicadas;
-- [ ] revisão de formulários;
-- [ ] UX para múltiplos operadores;
-- [ ] revisão do Centro Operacional.
-
----
-
-# 7. Trilha LANDING
-
-A Landing será iniciada depois de os primeiros fluxos reais da Gestão definirem o domínio visual e operacional.
-
-## LANDING 0 — System Design público
-
-Antes de código:
-
-- [ ] mapear todos os DTOs `/api/v1/public/**`;
-- [ ] definir páginas institucionais;
-- [ ] definir página da competição atual;
-- [ ] definir acompanhamento ao vivo;
-- [ ] definir Follow Line público;
-- [ ] definir Sumô público;
-- [ ] definir equipes/robôs/competidores públicos;
-- [ ] definir histórico/resultados;
-- [ ] decidir atualização por polling/SSE/WebSocket conforme necessidade real;
-- [ ] definir política de imagens/galeria quando backend suportar.
-
-## LANDING 1 — Fundação técnica
-
-- [ ] React + TypeScript/Vite conforme decisão do System Design público;
-- [ ] estrutura;
-- [ ] cliente público da API;
-- [ ] identidade visual herdada da Gestão;
-- [ ] layout responsivo.
-
-## LANDING 2 — Institucional
-
-- [ ] Hero;
-- [ ] RAS/UFRB;
-- [ ] sobre o RASCOMP;
-- [ ] modalidades;
-- [ ] cronograma;
-- [ ] organização;
-- [ ] contato;
-- [ ] CTA de inscrição.
-
-## LANDING 3 — Competição pública
-
-- [ ] competição atual;
-- [ ] categorias;
-- [ ] participantes públicos;
-- [ ] equipes/robôs;
-- [ ] estados da competição.
-
-## LANDING 4 — Acompanhamento ao vivo
-
-### Follow Line
-
-- [ ] ranking;
-- [ ] melhores tempos;
-- [ ] atualização periódica.
-
-### Sumô
-
-- [ ] bracket;
-- [ ] partida(s) em andamento quando inequívoco pelo backend;
-- [ ] resultados de rodada/partida conforme contrato público;
-- [ ] vencedores;
-- [ ] progressão;
-- [ ] campeão.
-
-## LANDING 5 — Conteúdo multimídia e histórico
-
-- [ ] resultados históricos;
-- [ ] pódios;
-- [ ] galeria/fotos do evento somente após suporte real no backend;
-- [ ] SEO;
-- [ ] performance;
-- [ ] acessibilidade;
-- [ ] 404.
-
----
-
-# 8. Padrões obrigatórios compartilhados
-
-## API
-
-```text
-page/component
+Gestão Vue
+    ↓ REST + JWT
+Spring Boot
     ↓
-feature hook
+Banco
     ↓
-feature api/service
+/api/v1/public/**
     ↓
-http client
-    ↓
-backend
+Landing Vue
 ```
 
-Nunca espalhar chamadas HTTP diretamente pelas telas.
+O backend é a única fonte de verdade.
 
-## Mutações críticas
+O navegador **não** calcula oficialmente:
 
-Não usar atualização otimista para:
-
-- aprovação/rejeição;
-- tentativa Follow;
-- inspeção Sumô;
-- geração de bracket;
-- round Sumô;
-- progressão/resultado.
-
-Fluxo:
-
-```text
-mutation
--> resposta backend
--> invalidate/refetch
--> render do estado confirmado
-```
-
-## Estados de interface
-
-Toda tela ligada à API deve considerar:
-
-1. loading;
-2. sucesso com dados;
-3. sucesso vazio;
-4. erro;
-5. ação em andamento.
-
-Telas ao vivo também devem tratar estado desatualizado e conflito.
+- ranking;
+- vencedor de partida;
+- progressão da chave;
+- campeão;
+- aprovação de inspeção;
+- regras competitivas.
 
 ---
 
-# 9. Próxima etapa oficial
+# 3. Camunda
+
+Camunda foi retirado do caminho oficial do projeto.
+
+A decisão atual é manter os fluxos competitivos e administrativos necessários no domínio Spring Boot.
+
+Motivo:
+
+- geração de chave já existe no backend;
+- BYE já é tratado no backend;
+- rounds já geram resultado de Sumô automaticamente;
+- vencedor já progride automaticamente;
+- ranking Follow Line já é calculado no backend;
+- análise de inscrição pode permanecer como regra transacional simples.
+
+Camunda só deve ser reconsiderado no futuro se surgir um processo realmente duradouro, multiator e com esperas/timers que justifique BPMN executável.
+
+---
+
+# 4. Perfis
 
 ```text
-GESTÃO 0 — Fundação técnica
+ORGANIZACAO
+PARTICIPANTE
 ```
 
-O System Design foi concluído e deve ser seguido antes da implementação dos módulos de negócio.
+## ORGANIZACAO
+
+Opera:
+
+- competições;
+- categorias;
+- inscrições;
+- Follow Line;
+- Sumô;
+- inspeções;
+- chaveamentos;
+- partidas;
+- rounds;
+- resultados;
+- cadastros administrativos.
+
+## PARTICIPANTE
+
+Usa apenas recursos próprios conforme ownership do backend:
+
+- equipes;
+- competidores;
+- robôs;
+- inscrições.
+
+O portal participante ainda precisa evoluir de leitura/MVP para experiência CRUD completa.
+
+---
+
+# 5. Autenticação
+
+Implementado:
+
+```text
+POST /api/v1/auth/login
+GET  /api/v1/auth/me
+Authorization: Bearer <JWT>
+```
+
+Frontend:
+
+- Pinia para sessão;
+- token persistido localmente;
+- interceptor Axios;
+- limpeza em 401;
+- rotas por role;
+- logout.
+
+Validação local da integração Gestão ↔ Backend realizada com sucesso em 2026-08-24:
+
+```text
+backend local    ✅
+frontend local   ✅
+login ORGANIZACAO ✅
+```
+
+---
+
+# 6. Paleta e direção visual da Gestão
+
+Base aprovada:
+
+```text
+Roxo principal       #4F1967
+Rubro principal      #9F0F3B
+Rubro destaque       #C31549
+Sidebar escura
+Superfícies claras
+```
+
+Referência visual oficial: protótipo aprovado na conversa do projeto com:
+
+- sidebar administrativa escura;
+- topbar clara;
+- dashboard operacional;
+- cards de métricas;
+- tabelas limpas;
+- bracket visual;
+- tela de partida/rounds;
+- identidade tecnológica sem excesso de neon/cyberpunk.
+
+---
+
+# 7. Estado técnico da Gestão
+
+Rotas atuais:
+
+```text
+/login
+/
+/competicoes
+/inscricoes
+/follow-line
+/sumo
+/minha-equipe
+```
+
+Navegação ORGANIZACAO organizada conceitualmente em:
+
+```text
+GERAL
+└── Visão geral
+
+COMPETIÇÃO
+├── Competições
+└── Inscrições
+
+OPERAÇÃO
+├── Seguidor de Linha
+└── Sumô
+```
+
+Rotas adicionais para Equipes/Competidores/Robôs/Modalidades só devem ser criadas quando as respectivas telas possuírem responsabilidade real.
+
+---
+
+# 8. GESTÃO UI — convergência para o protótipo aprovado
+
+## UI 1 — Shell + Dashboard
+
+Status: **IMPLEMENTADO / AGUARDANDO VALIDAÇÃO LOCAL VISUAL**
+
+Alterações:
+
+- [x] sidebar refinada;
+- [x] agrupamento Geral / Competição / Operação;
+- [x] topbar contextual por rota;
+- [x] identificação do perfil;
+- [x] competição em foco;
+- [x] métricas reais;
+- [x] contagem de inscrições da edição;
+- [x] contagem de equipes;
+- [x] contagem de robôs;
+- [x] contagem de competidores;
+- [x] pendências da edição;
+- [x] últimas inscrições;
+- [x] atalhos rápidos de operação;
+- [x] responsividade inicial.
+
+Não foram criados números falsos para reproduzir o mockup.
+
+## UI 2 — Inscrições
+
+Próxima etapa após validação visual do Dashboard.
+
+Objetivo:
+
+- convergir tabela para o protótipo;
+- filtros melhores;
+- detalhe da inscrição;
+- aprovação/rejeição clara;
+- feedback de operação;
+- leitura de equipe/robô/categoria/competidores;
+- manter auditoria do backend.
+
+## UI 3 — Follow Line
+
+Planejado:
+
+- competição/categoria em foco;
+- inscritos;
+- lançamento de tentativa;
+- tomadas/tentativas;
+- penalidade/checkpoints;
+- ranking oficial;
+- histórico operacional;
+- refetch após mutação.
+
+## UI 4 — Sumô / Inspeção
+
+Planejado:
+
+- inscrições aprovadas;
+- inspeção;
+- aptidão;
+- bloqueios claros antes do bracket.
+
+## UI 5 — Sumô / Bracket visual
+
+Referência oficial: bracket em árvore do protótipo aprovado.
+
+O Vue deverá:
+
+```text
+GET partidas por bracket
+      ↓
+agrupar por rodada
+      ↓
+ordenar por ordem
+      ↓
+cruzar com resultados
+      ↓
+desenhar colunas/conectores
+```
+
+Suportar:
+
+- quartas/oitavas/etc.;
+- semifinal;
+- final;
+- BYE;
+- aguardando participante;
+- partida agendada/em andamento/finalizada;
+- destaque do vencedor;
+- campeão;
+- modo responsivo;
+- futura visualização em tela cheia/projetor.
+
+O frontend nunca decide quem avança.
+
+## UI 6 — Sumô / Partida e Rounds
+
+Planejado:
+
+- participantes A/B;
+- placar consolidado;
+- lista de rounds;
+- vencedor de cada round;
+- registro do próximo round;
+- resultado automático do backend;
+- atualização do bracket após resultado.
+
+## UI 7 — Cadastros e Participante
+
+Depois dos fluxos centrais:
+
+- equipes;
+- competidores;
+- robôs;
+- modalidades/categorias;
+- portal participante CRUD completo.
+
+## UI 8 — Consolidação
+
+- estados loading/erro/vazio;
+- responsividade;
+- acessibilidade básica;
+- 404;
+- revisão de erros HTTP;
+- typecheck;
+- build;
+- integração final.
+
+---
+
+# 9. Extensibilidade de modalidades
+
+Não hardcodar a experiência visual assumindo que o sistema terá para sempre apenas duas opções.
+
+Backend atual:
+
+```text
+SUMO
+FOLLOW_LINE
+```
+
+Backlog pós-Swagger já registrado no backend:
+
+```text
+SUMO
+├── RC
+└── AUTÔNOMO
+
+FOLLOW_LINE
+├── padrão
+└── cores (futuro)
+
+COMBATE (futuro)
+RESGATE (futuro)
+```
+
+Documento backend:
+
+```text
+rascomp/docs/POS_SWAGGER_MODALIDADES_E_CATEGORIAS.md
+```
+
+O frontend deve consumir a classificação/configuração que o backend consolidar nessa etapa, evitando espalhar condicionais rígidas desnecessárias.
+
+---
+
+# 10. Landing
+
+Estado: **PAUSADA / FUNDAÇÃO TÉCNICA**.
+
+Retomada:
+
+```text
+Gestão consolidada
+      ↓
+backend pós-Swagger e extensibilidade revisado
+      ↓
+contratos /api/v1/public/** revisados
+      ↓
+LANDING 0 — auditoria
+```
+
+A Landing final será o site institucional da RAS UFRB com área forte do evento RRC.
+
+---
+
+# 11. Execução local
+
+Gestão:
+
+```bash
+cd gestao
+cp .env.example .env
+npm install
+npm run dev
+```
+
+URLs padrão:
+
+```text
+Gestão   http://localhost:5173
+Landing  http://localhost:5174
+Backend  http://localhost:8080
+```
+
+Antes de considerar uma etapa tecnicamente concluída:
+
+```bash
+npm run typecheck
+npm run build
+```
+
+---
+
+# 12. Próxima ação oficial
+
+```text
+VALIDAR LOCALMENTE UI 1
+Shell + Dashboard
+        ↓
+UI 2 — Inscrições
+        ↓
+UI 3 — Follow Line
+        ↓
+UI 4/5/6 — Sumô completo
+        ↓
+UI 7 — Cadastros/Participante
+        ↓
+UI 8 — Consolidação
+        ↓
+Landing
+```
