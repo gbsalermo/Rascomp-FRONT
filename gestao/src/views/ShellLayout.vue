@@ -7,7 +7,6 @@ import {
   Tickets,
   Timer,
   Collection,
-  Connection,
   User,
   Fold,
   Expand
@@ -24,8 +23,7 @@ const organizationItems = [
   { label: 'Competições', to: '/competicoes', icon: Trophy },
   { label: 'Inscrições', to: '/inscricoes', icon: Tickets },
   { label: 'Seguidor de Linha', to: '/follow-line', icon: Timer },
-  { label: 'Sumô', to: '/sumo', icon: Collection },
-  { label: 'Processos', to: '/processos', icon: Connection }
+  { label: 'Sumô', to: '/sumo', icon: Collection }
 ]
 const participantItems = [
   { label: 'Visão geral', to: '/', icon: DataBoard },
