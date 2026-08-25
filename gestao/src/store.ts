@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { authApi } from './api'
-import type { UserAccount } from './types'
+import { adminApi, authApi } from './api'
+import type { Competition, UserAccount } from './types'
 
 const TOKEN_KEY = 'rascomp.token'
 const USER_KEY = 'rascomp.user'
+const COMPETITION_KEY = 'rascomp.competitionId'
 
 type PersistenceMode = 'local' | 'session'
 
@@ -111,5 +112,58 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     hydrate,
     logout
+  }
+})
+
+export const useCompetitionStore = defineStore('competition-context', () => {
+  const competitions = ref<Competition[]>([])
+  const loading = ref(false)
+  const selectedId = ref<number | null>(
+    (() => {
+      const stored = Number(localStorage.getItem(COMPETITION_KEY))
+      return Number.isFinite(stored) && stored > 0 ? stored : null
+    })()
+  )
+
+  const selectedCompetition = computed(() =>
+    competitions.value.find((item) => item.id === selectedId.value)
+  )
+
+  function priorityCompetition(items: Competition[]) {
+    return (
+      items.find((item) => item.status === 'EM_ANDAMENTO') ||
+      items.find((item) => item.status === 'INSCRICOES_ABERTAS') ||
+      items.find((item) => item.status === 'INSCRICOES_ENCERRADAS') ||
+      items.find((item) => item.status === 'PLANEJADA') ||
+      items[0]
+    )
+  }
+
+  function select(id?: number | null) {
+    selectedId.value = id || null
+    if (selectedId.value) localStorage.setItem(COMPETITION_KEY, String(selectedId.value))
+    else localStorage.removeItem(COMPETITION_KEY)
+  }
+
+  async function load(force = false) {
+    if (competitions.value.length && !force) return competitions.value
+    loading.value = true
+    try {
+      competitions.value = await adminApi.competitions()
+      const selectedStillExists = competitions.value.some((item) => item.id === selectedId.value)
+      if (!selectedStillExists) select(priorityCompetition(competitions.value)?.id)
+      return competitions.value
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    competitions,
+    loading,
+    selectedId,
+    selectedCompetition,
+    select,
+    load
   }
 })
