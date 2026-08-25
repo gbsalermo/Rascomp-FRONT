@@ -339,9 +339,50 @@ watch(() => competition.selectedId, loadAlerts)
         </div>
       </header>
 
-      <section class="page-content">
-        <router-view />
+      <section class="page-content page-transition-host">
+        <router-view v-slot="{ Component, route: viewRoute }">
+          <transition name="page-slide" mode="out-in">
+            <component :is="Component" :key="viewRoute.path" />
+          </transition>
+        </router-view>
       </section>
     </main>
   </div>
 </template>
+
+<style>
+.page-transition-host {
+  overflow-x: clip;
+}
+
+.page-slide-enter-active,
+.page-slide-leave-active {
+  transition:
+    transform 220ms cubic-bezier(.22, .61, .36, 1),
+    opacity 180ms ease;
+  will-change: transform, opacity;
+}
+
+.page-slide-enter-from {
+  opacity: 0;
+  transform: translate3d(28px, 0, 0);
+}
+
+.page-slide-leave-to {
+  opacity: 0;
+  transform: translate3d(-18px, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-slide-enter-active,
+  .page-slide-leave-active {
+    transition: none;
+  }
+
+  .page-slide-enter-from,
+  .page-slide-leave-to {
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
