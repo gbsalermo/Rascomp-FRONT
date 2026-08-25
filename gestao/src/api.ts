@@ -54,6 +54,8 @@ http.interceptors.response.use(
 export const authApi = {
   login: (email: string, senha: string) =>
     http.post<AuthResponse>('/api/v1/auth/login', { email, senha }).then((r) => r.data),
+  register: (payload: { nome: string; email: string; senha: string; telefone?: string }) =>
+    http.post<AuthResponse>('/api/v1/auth/register', payload).then((r) => r.data),
   me: () => http.get<UserAccount>('/api/v1/auth/me').then((r) => r.data)
 }
 
