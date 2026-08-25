@@ -129,6 +129,10 @@ export const adminApi = {
 }
 
 export const participantApi = {
+  institutions: () =>
+    http
+      .get<Array<{ id: number; nome: string; sigla?: string }>>('/api/v1/public/instituicoes')
+      .then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/participante/equipes').then((r) => r.data),
   createTeam: (payload: { nome: string; institutionId: number }) =>
     http.post<Team>('/api/v1/participante/equipes', payload).then((r) => r.data),
