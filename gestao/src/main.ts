@@ -11,6 +11,7 @@ import './styles/registrations-ui.css'
 import './styles/login-viewport-fix.css'
 import './styles/admin-consolidation.css'
 import './styles/admin-refinement.css'
+import './styles/competition-hub.css'
 import App from './App.vue'
 import router from './router'
 
