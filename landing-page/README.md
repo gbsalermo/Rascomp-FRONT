@@ -6,7 +6,7 @@ Aplicação pública em **Vue 3 + TypeScript + Vite**.
 
 - **RAS UFRB**: identidade institucional principal do site;
 - **RRC**: evento/competição de robótica apresentado e acompanhado pelo público;
-- **RASCOMP**: nome do programa/plataforma de software que sustenta Gestão + Backend + processos + experiência pública.
+- **RASCOMP**: nome da plataforma de software que sustenta Gestão + Backend + experiência pública.
 
 A Landing não deve apresentar o RRC como "RASCOMP".
 
@@ -21,14 +21,14 @@ O código existente deve ser tratado como POC técnico de Vue + integração com
 O desenvolvimento real será retomado somente depois de:
 
 ```text
-Gestão concluída
-    ↓
-Camunda integrado
+Gestão consolidada
     ↓
 revisão dos contratos públicos
     ↓
 Landing
 ```
+
+Camunda não faz mais parte da arquitetura planejada do RASCOMP.
 
 ---
 
@@ -79,7 +79,7 @@ Usar como referência de experiência de site de evento — hero forte, navegaç
 ```text
 Gestão
   ↓
-Backend / Camunda quando aplicável
+Backend Spring Boot
   ↓
 /api/v1/public/**
   ↓
@@ -97,18 +97,6 @@ Toda a continuidade específica desta aplicação está em:
 ```text
 docs/CONTINUIDADE_LANDING_PAGE.md
 ```
-
-Esse arquivo contém:
-
-- arquitetura de informação;
-- públicos e fluxos;
-- identidade visual;
-- estrutura técnica alvo;
-- separação estático/dinâmico;
-- pré-evento / ao vivo / pós-evento;
-- integração pública;
-- SEO/acessibilidade/performance;
-- etapas oficiais `LANDING P0` até `LANDING 9`.
 
 ---
 
