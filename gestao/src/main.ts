@@ -5,6 +5,7 @@ import 'element-plus/dist/index.css'
 import './styles/main.css'
 import './styles/management-ui.css'
 import './styles/login-ui.css'
+import './styles/auth-onboarding.css'
 import App from './App.vue'
 import router from './router'
 
