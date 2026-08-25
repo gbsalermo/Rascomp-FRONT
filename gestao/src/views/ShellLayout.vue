@@ -1,40 +1,81 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
+  Collection,
   DataBoard,
-  Trophy,
+  Expand,
+  Fold,
   Tickets,
   Timer,
-  Collection,
-  User,
-  Fold,
-  Expand
+  Trophy,
+  User
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '../store'
 
 const auth = useAuthStore()
+const route = useRoute()
 const router = useRouter()
 const collapsed = ref(false)
 const mobileOpen = ref(false)
 
-const organizationItems = [
-  { label: 'Visão geral', to: '/', icon: DataBoard },
-  { label: 'Competições', to: '/competicoes', icon: Trophy },
-  { label: 'Inscrições', to: '/inscricoes', icon: Tickets },
-  { label: 'Seguidor de Linha', to: '/follow-line', icon: Timer },
-  { label: 'Sumô', to: '/sumo', icon: Collection }
+const organizationSections = [
+  {
+    label: 'Geral',
+    items: [{ label: 'Visão geral', to: '/', icon: DataBoard }]
+  },
+  {
+    label: 'Competição',
+    items: [
+      { label: 'Competições', to: '/competicoes', icon: Trophy },
+      { label: 'Inscrições', to: '/inscricoes', icon: Tickets }
+    ]
+  },
+  {
+    label: 'Operação',
+    items: [
+      { label: 'Seguidor de Linha', to: '/follow-line', icon: Timer },
+      { label: 'Sumô', to: '/sumo', icon: Collection }
+    ]
+  }
 ]
-const participantItems = [
-  { label: 'Visão geral', to: '/', icon: DataBoard },
-  { label: 'Minha equipe', to: '/minha-equipe', icon: User }
+
+const participantSections = [
+  {
+    label: 'Geral',
+    items: [{ label: 'Visão geral', to: '/', icon: DataBoard }]
+  },
+  {
+    label: 'Participante',
+    items: [{ label: 'Minha equipe', to: '/minha-equipe', icon: User }]
+  }
 ]
-const items = computed(() => (auth.isOrganization ? organizationItems : participantItems))
+
+const sections = computed(() => (auth.isOrganization ? organizationSections : participantSections))
+
+const pageTitle = computed(() => {
+  const titles: Record<string, string> = {
+    '/': 'Visão geral',
+    '/competicoes': 'Competições',
+    '/inscricoes': 'Inscrições',
+    '/follow-line': 'Seguidor de Linha',
+    '/sumo': 'Sumô',
+    '/minha-equipe': 'Minha equipe'
+  }
+  return titles[route.path] || 'Gestão da competição'
+})
+
+const roleLabel = computed(() => (auth.isOrganization ? 'Organização' : 'Participante'))
+
+function isActive(to: string) {
+  return to === '/' ? route.path === '/' : route.path.startsWith(to)
+}
 
 function go(to: string) {
   router.push(to)
   mobileOpen.value = false
 }
+
 function logout() {
   auth.logout()
   router.push('/login')
@@ -46,28 +87,37 @@ function logout() {
     <aside class="sidebar" :class="{ 'mobile-open': mobileOpen }">
       <button class="brand" @click="go('/')">
         <img src="/rascomp-logo.webp" alt="RASCOMP" />
-        <div v-if="!collapsed">
+        <div v-if="!collapsed" class="brand-copy">
           <strong>RASCOMP</strong>
-          <small>Competition Ops</small>
+          <small>Gestão RRC</small>
         </div>
       </button>
 
-      <nav class="nav-list">
-        <button
-          v-for="item in items"
-          :key="item.to"
-          class="nav-item"
-          :class="{ active: $route.path === item.to }"
-          @click="go(item.to)"
-        >
-          <el-icon><component :is="item.icon" /></el-icon>
-          <span v-if="!collapsed">{{ item.label }}</span>
-        </button>
+      <div class="sidebar-divider" />
+
+      <nav class="nav-list" aria-label="Navegação principal">
+        <section v-for="section in sections" :key="section.label" class="nav-section">
+          <span v-if="!collapsed" class="nav-caption">{{ section.label }}</span>
+          <button
+            v-for="item in section.items"
+            :key="item.to"
+            class="nav-item"
+            :class="{ active: isActive(item.to) }"
+            :title="collapsed ? item.label : undefined"
+            @click="go(item.to)"
+          >
+            <el-icon><component :is="item.icon" /></el-icon>
+            <span v-if="!collapsed">{{ item.label }}</span>
+          </button>
+        </section>
       </nav>
 
       <div class="sidebar-foot">
-        <span v-if="!collapsed" class="role-pill">{{ auth.user?.role }}</span>
-        <button class="nav-item" @click="collapsed = !collapsed">
+        <div v-if="!collapsed" class="sidebar-profile">
+          <span class="role-pill">{{ roleLabel }}</span>
+          <small>IEEE RAS · UFRB</small>
+        </div>
+        <button class="nav-item nav-collapse" @click="collapsed = !collapsed">
           <el-icon><component :is="collapsed ? Expand : Fold" /></el-icon>
           <span v-if="!collapsed">Recolher menu</span>
         </button>
@@ -78,18 +128,24 @@ function logout() {
 
     <main class="main-area">
       <header class="topbar">
-        <button class="mobile-menu" @click="mobileOpen = true">☰</button>
-        <div>
-          <span class="eyebrow">IEEE RAS · UFRB</span>
-          <strong>Gestão da competição</strong>
+        <div class="topbar-context">
+          <button class="mobile-menu" aria-label="Abrir menu" @click="mobileOpen = true">☰</button>
+          <div>
+            <span class="eyebrow">IEEE RAS · UFRB</span>
+            <strong>{{ pageTitle }}</strong>
+          </div>
         </div>
+
         <div class="topbar-user">
+          <span class="topbar-role">{{ roleLabel }}</span>
           <div class="user-copy">
             <strong>{{ auth.user?.nome }}</strong>
             <small>{{ auth.user?.email }}</small>
           </div>
           <el-dropdown>
-            <button class="avatar">{{ auth.user?.nome?.slice(0, 1).toUpperCase() }}</button>
+            <button class="avatar" :aria-label="`Menu de ${auth.user?.nome || 'usuário'}`">
+              {{ auth.user?.nome?.slice(0, 1).toUpperCase() }}
+            </button>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="logout">Sair</el-dropdown-item>
