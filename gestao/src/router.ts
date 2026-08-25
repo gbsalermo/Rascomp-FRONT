@@ -8,7 +8,6 @@ import RegistrationsView from './views/RegistrationsView.vue'
 import FollowView from './views/FollowView.vue'
 import SumoView from './views/SumoView.vue'
 import ParticipantView from './views/ParticipantView.vue'
-import ProcessesView from './views/ProcessesView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -38,12 +37,6 @@ const router = createRouter({
           meta: { role: 'ORGANIZACAO' }
         },
         { path: 'sumo', name: 'sumo', component: SumoView, meta: { role: 'ORGANIZACAO' } },
-        {
-          path: 'processos',
-          name: 'processes',
-          component: ProcessesView,
-          meta: { role: 'ORGANIZACAO' }
-        },
         {
           path: 'minha-equipe',
           name: 'participant',
