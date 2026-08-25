@@ -130,18 +130,3 @@ export const participantApi = {
       .get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`)
       .then((r) => r.data)
 }
-
-export const camundaApi = {
-  enabled: String(import.meta.env.VITE_CAMUNDA_ENABLED) === 'true',
-  async processDefinitions() {
-    if (!this.enabled) return []
-    const baseURL = import.meta.env.VITE_CAMUNDA_URL || `${API_URL}/engine-rest`
-    const response = await axios.get(`${String(baseURL).replace(/\/$/, '')}/process-definition`, {
-      params: { latestVersion: true },
-      headers: localStorage.getItem(TOKEN_KEY)
-        ? { Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}` }
-        : undefined
-    })
-    return response.data
-  }
-}
