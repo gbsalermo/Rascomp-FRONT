@@ -72,6 +72,7 @@ O navegador **não** calcula oficialmente:
 - vencedor de partida;
 - progressão da chave;
 - campeão;
+- eliminação/classificação oficial;
 - aprovação de inspeção;
 - regras competitivas.
 
@@ -96,12 +97,21 @@ Camunda só deve ser reconsiderado no futuro se surgir um processo realmente dur
 
 ---
 
-# 4. Perfis e onboarding
+# 4. Perfis e experiências
 
 ```text
 ORGANIZACAO
 PARTICIPANTE
 ```
+
+A aplicação autenticada possui **duas experiências completas dentro do mesmo `gestao/`**.
+
+```text
+ORGANIZACAO  -> operar e administrar a competição
+PARTICIPANTE -> acompanhar a própria participação no evento
+```
+
+Não criar outro frontend separado apenas para competidores.
 
 ## ORGANIZACAO
 
@@ -141,10 +151,25 @@ Inscrição de um robô
 └── 0..N suportes
 ```
 
-A busca visual de equipes já está preparada no frontend usando `/api/v1/public/equipes`.
-A solicitação/aprovação real de entrada depende da evolução pós-Swagger do backend.
+Durante o evento, o participante precisa de um **dashboard competitivo próprio**, capaz de responder:
 
-Documentação:
+- qual é minha próxima partida/tentativa;
+- horário, quando existir;
+- adversário no Sumô;
+- situação atual na chave;
+- se avançou, foi eliminado ou é campeão, quando o backend fornecer esse estado;
+- colocação oficial no Follow Line;
+- melhor resultado oficial;
+- inscrições e robôs vinculados;
+- equipe e membros.
+
+Documento específico:
+
+```text
+docs/EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
+```
+
+Onboarding:
 
 ```text
 docs/ONBOARDING_PARTICIPANTE.md
@@ -218,9 +243,13 @@ Referência visual oficial: protótipo aprovado na conversa do projeto com:
 - tela de partida/rounds;
 - identidade tecnológica sem excesso de neon/cyberpunk.
 
+A experiência PARTICIPANTE usa a mesma identidade visual, porém com informação orientada ao competidor e não à operação administrativa.
+
 ---
 
-# 7. Rotas atuais
+# 7. Rotas atuais e rotas-alvo
+
+## Rotas atuais
 
 ```text
 /login
@@ -234,7 +263,7 @@ Referência visual oficial: protótipo aprovado na conversa do projeto com:
 /minha-equipe
 ```
 
-Navegação ORGANIZACAO:
+## Navegação ORGANIZACAO
 
 ```text
 GERAL
@@ -249,13 +278,31 @@ OPERAÇÃO
 └── Sumô
 ```
 
-Rotas adicionais para Equipes/Competidores/Robôs/Modalidades só devem ser criadas quando as respectivas telas possuírem responsabilidade real.
+## Navegação PARTICIPANTE alvo
+
+```text
+GERAL
+├── Meu painel
+└── Minha equipe
+
+MEUS RECURSOS
+├── Meus robôs
+└── Minhas inscrições
+
+COMPETIÇÃO
+├── Próximas partidas
+├── Minha chave        // Sumô
+├── Minha colocação    // Follow Line
+└── Histórico
+```
+
+A navegação pode ser adaptativa conforme as modalidades em que o participante estiver inscrito.
 
 ---
 
 # 8. GESTÃO UI — convergência para o protótipo aprovado
 
-## UI 1 — Shell + Dashboard
+## UI 1 — Shell + Dashboard ORGANIZACAO
 
 Status: **IMPLEMENTADO / AGUARDANDO VALIDAÇÃO LOCAL VISUAL**
 
@@ -278,7 +325,7 @@ Alterações:
 
 Não foram criados números falsos para reproduzir o mockup.
 
-## UI 2 — Inscrições
+## UI 2 — Inscrições ORGANIZACAO
 
 Status: **IMPLEMENTADO / AGUARDANDO VALIDAÇÃO LOCAL**
 
@@ -297,11 +344,9 @@ Entregue:
 - [x] atualização após mutação;
 - [x] responsividade inicial.
 
-Não foi criado “motivo de rejeição” artificial porque o backend não possui campo separado para isso atualmente.
+## UI 3 — Follow Line ORGANIZACAO
 
-## UI 3 — Follow Line
-
-**PRÓXIMA ETAPA** depois da validação local das telas já alteradas.
+**PRÓXIMA ETAPA ADMINISTRATIVA** depois da validação local das telas já alteradas.
 
 Planejado:
 
@@ -314,7 +359,7 @@ Planejado:
 - histórico operacional;
 - refetch após mutação.
 
-## UI 4 — Sumô / Inspeção
+## UI 4 — Sumô / Inspeção ORGANIZACAO
 
 Planejado:
 
@@ -323,40 +368,13 @@ Planejado:
 - aptidão;
 - bloqueios claros antes do bracket.
 
-## UI 5 — Sumô / Bracket visual
+## UI 5 — Sumô / Bracket visual ORGANIZACAO
 
 Referência oficial: bracket em árvore do protótipo aprovado.
 
-O Vue deverá:
-
-```text
-GET partidas por bracket
-      ↓
-agrupar por rodada
-      ↓
-ordenar por ordem
-      ↓
-cruzar com resultados
-      ↓
-desenhar colunas/conectores
-```
-
-Suportar:
-
-- quartas/oitavas/etc.;
-- semifinal;
-- final;
-- BYE;
-- aguardando participante;
-- partida agendada/em andamento/finalizada;
-- destaque do vencedor;
-- campeão;
-- modo responsivo;
-- futura visualização em tela cheia/projetor.
-
 O frontend nunca decide quem avança.
 
-## UI 6 — Sumô / Partida e Rounds
+## UI 6 — Sumô / Partida e Rounds ORGANIZACAO
 
 Planejado:
 
@@ -368,31 +386,110 @@ Planejado:
 - resultado automático do backend;
 - atualização do bracket após resultado.
 
-## UI 7 — Cadastros e Participante
+---
 
-Depois dos fluxos centrais:
+# 9. Trilha PARTICIPANTE — experiência competitiva
 
-- equipes;
-- membros/solicitações após suporte do backend;
-- robôs;
-- modalidades/categorias;
-- portal participante CRUD completo;
-- wizard de inscrição com responsável + suportes após evolução pós-Swagger.
+Essa trilha é obrigatória e deve ser validada separadamente da ORGANIZACAO.
 
-## UI 8 — Consolidação
+## PARTICIPANTE 1 — Dashboard competitivo
 
-- estados loading/erro/vazio;
-- responsividade;
-- acessibilidade básica;
-- 404;
-- revisão de erros HTTP;
-- typecheck;
-- build;
-- integração final.
+Planejado:
+
+- próxima partida/atividade em destaque;
+- horário quando houver `dataHora`;
+- adversário no Sumô;
+- robô/categoria/modalidade;
+- inscrições ativas;
+- situação dos robôs;
+- atalhos para chave, ranking e histórico.
+
+## PARTICIPANTE 2 — Equipe e adesão
+
+- criar equipe;
+- buscar equipe;
+- solicitar entrada;
+- líder aprova/rejeita;
+- membros da equipe;
+- ownership.
+
+Solicitação/aprovação depende do backend pós-Swagger.
+
+## PARTICIPANTE 3 — Meus robôs
+
+- listar robôs;
+- detalhes;
+- fotos;
+- inscrições associadas;
+- histórico competitivo.
+
+## PARTICIPANTE 4 — Minhas inscrições
+
+- competição;
+- categoria;
+- robô;
+- status;
+- responsável;
+- suportes;
+- observação;
+- resultado quando aplicável.
+
+## PARTICIPANTE 5 — Meu Sumô
+
+- chave da categoria;
+- partidas próprias;
+- próxima partida;
+- adversário;
+- rodada;
+- horário;
+- rounds/resultados;
+- situação oficial quando projetada pelo backend.
+
+## PARTICIPANTE 6 — Meu Follow Line
+
+- posição oficial;
+- melhor resultado;
+- tempo bruto/final;
+- penalidade;
+- tomada/tentativa;
+- ranking completo da categoria.
+
+## PARTICIPANTE 7 — Histórico
+
+- participações finalizadas;
+- resultados;
+- posições;
+- partidas;
+- robôs utilizados.
 
 ---
 
-# 9. Extensibilidade de modalidades
+# 10. Contratos atuais úteis para o PARTICIPANTE
+
+Já existem dados suficientes para uma primeira versão útil combinando:
+
+```text
+/api/v1/participante/equipes
+/api/v1/participante/equipes/{teamId}/robos
+/api/v1/participante/equipes/{teamId}/inscricoes
+
+/api/v1/public/chaveamentos
+/api/v1/public/partidas
+/api/v1/public/resultados
+/api/v1/public/ranking/seguidor-linha
+```
+
+`MatchDTO` já contém `registrationAId`, `registrationBId`, `rodada`, `ordem`, `dataHora` e `status`.
+
+O ranking Follow Line já contém `registrationId` e `posicao` calculada pelo backend.
+
+Pode-se cruzar IDs próprios com projeções públicas para exibição inicial.
+
+No pós-Swagger, avaliar projeções autenticadas específicas para reduzir junções no frontend e entregar semântica pronta como próxima partida e situação competitiva.
+
+---
+
+# 11. Extensibilidade de modalidades
 
 Não hardcodar a experiência visual assumindo que o sistema terá para sempre apenas duas opções.
 
@@ -426,14 +523,16 @@ rascomp/docs/POS_SWAGGER_MODALIDADES_E_CATEGORIAS.md
 
 ---
 
-# 10. Landing
+# 12. Landing
 
 Estado: **PAUSADA / FUNDAÇÃO TÉCNICA**.
 
 Retomada:
 
 ```text
-Gestão consolidada
+Gestão ORGANIZACAO consolidada
+      ↓
+Gestão PARTICIPANTE consolidada
       ↓
 backend pós-Swagger e extensibilidade revisado
       ↓
@@ -444,7 +543,7 @@ LANDING 0 — auditoria
 
 ---
 
-# 11. Execução local
+# 13. Execução local
 
 Gestão:
 
@@ -472,21 +571,23 @@ npm run build
 
 ---
 
-# 12. Próxima ação oficial
+# 14. Próxima ação oficial
 
 ```text
 VALIDAR LOCALMENTE
 Login + Cadastro + Primeiro acesso
-Shell + Dashboard
-Inscrições
+Shell + Dashboard ORGANIZACAO
+Inscrições ORGANIZACAO
         ↓
-UI 3 — Follow Line
+UI 3 — Follow Line ORGANIZACAO
         ↓
-UI 4/5/6 — Sumô completo
+UI 4/5/6 — Sumô ORGANIZACAO
         ↓
-UI 7 — Cadastros/Participante
+TRILHA PARTICIPANTE — dashboard competitivo e acompanhamento
         ↓
-UI 8 — Consolidação
+Pós-Swagger — adesão/equipe/papéis/projeções participante
+        ↓
+Consolidação
         ↓
 Landing
 ```
