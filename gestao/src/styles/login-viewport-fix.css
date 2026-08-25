@@ -1,6 +1,6 @@
 /* Isolamento final das telas de autenticação.
-   Este arquivo é importado por último para impedir que regras históricas do
-   layout administrativo interfiram em login/cadastro/recuperação. */
+   Importado por último para impedir que regras históricas do layout
+   administrativo interfiram em login/cadastro/recuperação. */
 
 html,
 body,
@@ -49,29 +49,91 @@ body #app .login-page .login-brand-panel {
   align-items: center !important;
   justify-content: center !important;
   padding: clamp(34px, 4vw, 58px) !important;
-  background:
-    radial-gradient(circle at 48% 18%, rgba(113, 31, 134, .32), transparent 36%),
-    linear-gradient(155deg, #321148 0%, #56145f 48%, #98113f 100%) !important;
+  color: #fff !important;
+  background: linear-gradient(90deg, #670f62 0%, #96012f 100%) !important;
 }
 
-body #app .login-brand-lockup-wrap {
+body #app .login-brand-composition {
   position: relative;
   z-index: 2;
-  width: min(390px, 92%);
-  padding: clamp(14px, 2.2vw, 22px);
-  border: 1px solid rgba(255, 255, 255, .20);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, .98);
-  box-shadow:
-    0 24px 55px rgba(25, 8, 33, .22),
-    inset 0 0 0 1px rgba(79, 25, 103, .035);
+  display: grid;
+  width: min(400px, 100%);
+  justify-items: center;
+  color: #fff;
 }
 
-body #app .login-brand-lockup {
-  display: block;
+body #app .login-brand-topline {
+  display: flex;
   width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 2.2vw, 30px);
+}
+
+body #app .login-rascomp-mark {
+  display: grid;
+  min-width: 130px;
+  justify-items: center;
+  color: #fff;
+}
+
+body #app .login-rascomp-mark .login-robot-icon {
+  width: 88px;
+  height: 88px;
+  margin: 0 0 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body #app .login-rascomp-mark strong {
+  font-size: clamp(1.7rem, 2.8vw, 2.25rem);
+  font-weight: 850;
+  letter-spacing: -.04em;
+}
+
+body #app .login-brand-separator {
+  width: 1px;
+  height: 128px;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, .30);
+}
+
+body #app .login-ieee-official {
+  display: block;
+  width: min(176px, 44%);
   height: auto;
-  border-radius: 14px;
+  flex: 0 1 176px;
+  object-fit: contain;
+}
+
+body #app .login-university-name {
+  width: 100%;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, .28);
+  color: rgba(255, 255, 255, .96);
+  font-size: clamp(.72rem, 1vw, .84rem);
+  font-weight: 850;
+  letter-spacing: .08em;
+  line-height: 1.45;
+  text-align: center;
+}
+
+body #app .login-brand-context {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  margin-top: 22px;
+  color: rgba(255, 255, 255, .90);
+  font-size: .82rem;
+}
+
+body #app .login-brand-context strong {
+  color: #fff;
+  font-size: .84rem;
 }
 
 body #app .login-mobile-brand {
@@ -79,14 +141,32 @@ body #app .login-mobile-brand {
   padding: 0 !important;
 }
 
-body #app .login-mobile-brand img {
-  width: min(260px, 82vw) !important;
-  height: auto !important;
-  padding: 10px !important;
-  border: 1px solid #e7e0ea;
+body #app .login-mobile-rascomp-mark {
+  display: flex;
+  min-height: 82px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 18px;
   border-radius: 14px;
-  background: #fff !important;
-  box-shadow: 0 10px 28px rgba(38, 19, 45, .08);
+  color: #fff;
+  background: linear-gradient(90deg, #670f62 0%, #96012f 100%);
+}
+
+body #app .login-mobile-rascomp-mark svg {
+  width: 50px;
+  height: 50px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body #app .login-mobile-rascomp-mark strong {
+  font-size: 1.5rem;
+  letter-spacing: -.04em;
 }
 
 @media (max-width: 900px) {
