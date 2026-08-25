@@ -32,43 +32,26 @@ async function submit() {
     <div class="login-shell">
       <section class="login-brand-panel" aria-label="Identidade RASCOMP">
         <div class="login-brand-content">
-          <svg class="login-robot-icon" viewBox="0 0 96 96" aria-hidden="true">
-            <path d="M48 15v10" />
-            <circle cx="48" cy="11" r="4" />
-            <rect x="22" y="28" width="52" height="45" rx="14" />
-            <path d="M22 43H12v17h10M74 43h10v17H74" />
-            <circle cx="38" cy="49" r="4" />
-            <circle cx="58" cy="49" r="4" />
-            <path d="M37 61c3 4 7 6 11 6s8-2 11-6" />
-          </svg>
-
-          <strong class="login-brand-name">RasComp</strong>
+          <img
+            src="/rascomp-login-logo.svg"
+            alt="RasComp"
+            class="login-brand-logo"
+          />
           <span class="login-brand-subtitle">Sistema de Gestão</span>
           <span class="login-brand-event">RRC - Competição de Robótica</span>
         </div>
 
-        <div class="login-ieee-block" aria-label="IEEE Robotics & Automation Society">
-          <span class="login-ieee-monogram">RAS</span>
-          <div>
-            <strong>IEEE</strong>
-            <span>Robotics<br />& Automation<br />Society</span>
-          </div>
-        </div>
+        <img
+          src="/ieee-ras-login.svg"
+          alt="IEEE Robotics & Automation Society"
+          class="login-ieee-logo"
+        />
       </section>
 
       <section class="login-form-panel">
         <form class="login-card" @submit.prevent="submit">
           <div class="login-mobile-brand">
-            <svg viewBox="0 0 96 96" aria-hidden="true">
-              <path d="M48 15v10" />
-              <circle cx="48" cy="11" r="4" />
-              <rect x="22" y="28" width="52" height="45" rx="14" />
-              <path d="M22 43H12v17h10M74 43h10v17H74" />
-              <circle cx="38" cy="49" r="4" />
-              <circle cx="58" cy="49" r="4" />
-              <path d="M37 61c3 4 7 6 11 6s8-2 11-6" />
-            </svg>
-            <strong>RasComp</strong>
+            <img src="/rascomp-login-logo.svg" alt="RasComp" />
           </div>
 
           <header class="login-form-heading">
