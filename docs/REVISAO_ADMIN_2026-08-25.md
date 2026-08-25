@@ -8,8 +8,8 @@ Feedback obtido após teste local do frontend de gestão.
 
 ```text
 1. Dashboard + Sidebar
-2. Autenticação / persistência
-3. Tela Competição
+2. Autenticação / persistência ✅
+3. Tela Competição ← PRÓXIMA
 4. Histórico de chaves
 5. Follow Line
 6. Dados temporários de teste
@@ -18,8 +18,8 @@ Feedback obtido após teste local do frontend de gestão.
 
 ## Backlog de revisão
 
-- [ ] 1. Corrigir “Lembrar de mim”.
-- [ ] 2. Garantir que conta recém-criada permaneça autenticada no dispositivo.
+- [x] 1. Corrigir “Lembrar de mim”.
+- [x] 2. Garantir que conta recém-criada permaneça autenticada no dispositivo.
 - [ ] 3. Recuperação de senha depende de implementação no backend.
 - [x] 4. Adicionar identidade/logo RasComp no topo do sidebar.
 - [x] 5. Mover recolher/expandir menu para o topo usando seta esquerda/direita.
@@ -34,6 +34,21 @@ Feedback obtido após teste local do frontend de gestão.
 - [ ] 14. Remover quadro “Regra estrutural” da tela de Follow Line.
 - [ ] 15. Exibir histórico real de tentativas/tempos do Follow Line após registro.
 - [ ] 16. Continuar evolução visual/informacional do ADMIN até atingir o nível do esboço aprovado.
+
+## Autenticação — validada localmente
+
+Validação concluída em 2026-08-25:
+
+- login sem “Lembrar de mim” persiste durante a sessão e usa `sessionStorage`;
+- login com “Lembrar de mim” persiste ao reabrir o navegador e usa `localStorage`;
+- cadastro mantém login automático e persistência conforme a opção escolhida;
+- hidratação por `/api/v1/auth/me` funciona após recarregar/reabrir;
+- logout remove sessão dos dois storages e protege novamente as rotas autenticadas;
+- backend usa JWT padrão de 8 h e JWT lembrado de 30 dias.
+
+Status da etapa: **CONCLUÍDA**.
+
+Recuperação de senha continua fora desta conclusão porque o backend ainda não possui o fluxo correspondente.
 
 ## Dashboard + Sidebar — alteração iniciada
 
