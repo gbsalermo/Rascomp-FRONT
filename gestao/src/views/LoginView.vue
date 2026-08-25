@@ -25,10 +25,6 @@ async function submit() {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível entrar. Verifique as credenciais.')
   }
 }
-
-function forgotPassword() {
-  ElMessage.info('A recuperação de senha ainda não está disponível nesta versão.')
-}
 </script>
 
 <template>
@@ -108,9 +104,9 @@ function forgotPassword() {
 
           <div class="login-options">
             <el-checkbox v-model="remember">Lembrar de mim</el-checkbox>
-            <button type="button" class="login-forgot-link" @click="forgotPassword">
+            <router-link to="/recuperar-senha" class="login-forgot-link">
               Esqueci minha senha
-            </button>
+            </router-link>
           </div>
 
           <el-button
@@ -121,6 +117,16 @@ function forgotPassword() {
           >
             Entrar
           </el-button>
+
+          <div class="auth-divider"><span>primeiro acesso</span></div>
+
+          <router-link to="/cadastro" class="auth-create-account-button">
+            Criar conta de participante
+          </router-link>
+
+          <p class="auth-first-access-copy">
+            O cadastro cria somente sua conta. Equipe, membros, robô e inscrição são configurados depois no portal do participante.
+          </p>
 
           <p class="login-copyright">
             © {{ currentYear }} RAS UFRB - Todos os direitos reservados
