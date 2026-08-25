@@ -94,6 +94,8 @@ export interface Bracket {
   nome: string
   status?: string
   ativo?: boolean
+  atual?: boolean
+  dataCadastro?: string
 }
 
 export interface Match {
