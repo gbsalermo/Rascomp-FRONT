@@ -17,6 +17,7 @@ import type {
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '')
 const TOKEN_KEY = 'rascomp.token'
 const USER_KEY = 'rascomp.user'
+export const AUTH_UNAUTHORIZED_EVENT = 'rascomp:unauthorized'
 
 function storedToken() {
   return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)
@@ -44,18 +45,29 @@ http.interceptors.request.use((config) => {
 http.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const requestUrl = String(error.config?.url || '')
+    const credentialRequest = requestUrl.includes('/api/v1/auth/login') || requestUrl.includes('/api/v1/auth/register')
+
+    if (error.response?.status === 401 && !credentialRequest) {
       clearStoredSession()
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event(AUTH_UNAUTHORIZED_EVENT))
     }
     return Promise.reject(error)
   }
 )
 
 export const authApi = {
-  login: (email: string, senha: string) =>
-    http.post<AuthResponse>('/api/v1/auth/login', { email, senha }).then((r) => r.data),
-  register: (payload: { nome: string; email: string; senha: string; telefone?: string }) =>
-    http.post<AuthResponse>('/api/v1/auth/register', payload).then((r) => r.data),
+  login: (email: string, senha: string, lembrarDeMim = false) =>
+    http
+      .post<AuthResponse>('/api/v1/auth/login', { email, senha, lembrarDeMim })
+      .then((r) => r.data),
+  register: (
+    payload: { nome: string; email: string; senha: string; telefone?: string },
+    lembrarDeMim = false
+  ) =>
+    http
+      .post<AuthResponse>('/api/v1/auth/register', { ...payload, lembrarDeMim })
+      .then((r) => r.data),
   me: () => http.get<UserAccount>('/api/v1/auth/me').then((r) => r.data)
 }
 
