@@ -29,7 +29,7 @@ async function submit() {
 
 <template>
   <div class="login-page">
-    <div class="login-shell">
+    <div class="login-shell login-shell-main">
       <section class="login-brand-panel" aria-label="Identidade RASCOMP">
         <div class="login-brand-content">
           <img
