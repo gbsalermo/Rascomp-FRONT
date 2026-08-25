@@ -16,6 +16,18 @@ import type {
 
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '')
 const TOKEN_KEY = 'rascomp.token'
+const USER_KEY = 'rascomp.user'
+
+function storedToken() {
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)
+}
+
+function clearStoredSession() {
+  for (const storage of [localStorage, sessionStorage]) {
+    storage.removeItem(TOKEN_KEY)
+    storage.removeItem(USER_KEY)
+  }
+}
 
 export const http = axios.create({
   baseURL: API_URL,
@@ -24,7 +36,7 @@ export const http = axios.create({
 })
 
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY)
+  const token = storedToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -33,8 +45,7 @@ http.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem(TOKEN_KEY)
-      localStorage.removeItem('rascomp.user')
+      clearStoredSession()
     }
     return Promise.reject(error)
   }
