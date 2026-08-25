@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { adminApi, authApi } from './api'
+import { adminApi, AUTH_UNAUTHORIZED_EVENT, authApi } from './api'
 import type { Competition, UserAccount } from './types'
 
 const TOKEN_KEY = 'rascomp.token'
@@ -41,6 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
     })()
   )
   const loading = ref(false)
+  const hydrated = ref(false)
 
   const isAuthenticated = computed(() => Boolean(token.value))
   const isOrganization = computed(() => user.value?.role === 'ORGANIZACAO')
@@ -54,17 +55,24 @@ export const useAuthStore = defineStore('auth', () => {
     if (user.value) storage.setItem(USER_KEY, JSON.stringify(user.value))
   }
 
+  function clearSessionState() {
+    token.value = ''
+    user.value = null
+    clearStoredSession()
+  }
+
   function applyAuth(response: { token: string; usuario: UserAccount }, remember: boolean) {
     persistenceMode.value = remember ? 'local' : 'session'
     token.value = response.token
     user.value = response.usuario
+    hydrated.value = true
     persist()
   }
 
   async function login(email: string, senha: string, remember = false) {
     loading.value = true
     try {
-      const response = await authApi.login(email, senha)
+      const response = await authApi.login(email, senha, remember)
       applyAuth(response, remember)
     } finally {
       loading.value = false
@@ -77,34 +85,51 @@ export const useAuthStore = defineStore('auth', () => {
   ) {
     loading.value = true
     try {
-      const response = await authApi.register(payload)
+      const response = await authApi.register(payload, remember)
       applyAuth(response, remember)
     } finally {
       loading.value = false
     }
   }
 
-  async function hydrate() {
-    if (!token.value) return
+  async function hydrate(force = false) {
+    if (hydrated.value && !force) return user.value
+
+    if (!token.value) {
+      user.value = null
+      hydrated.value = true
+      return null
+    }
+
     try {
       user.value = await authApi.me()
       persist()
+      return user.value
     } catch {
-      logout()
+      clearSessionState()
       throw new Error('Sessão expirada')
+    } finally {
+      hydrated.value = true
     }
   }
 
   function logout() {
-    token.value = ''
-    user.value = null
-    clearStoredSession()
+    clearSessionState()
+    hydrated.value = true
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, () => {
+      clearSessionState()
+      hydrated.value = true
+    })
   }
 
   return {
     token,
     user,
     loading,
+    hydrated,
     isAuthenticated,
     isOrganization,
     isParticipant,
