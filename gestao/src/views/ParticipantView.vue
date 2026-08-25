@@ -1,20 +1,42 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { participantApi } from '../api'
+import { http, participantApi } from '../api'
 import type { Competitor, Registration, Robot, Team } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
+interface PublicTeamOption {
+  id: number
+  nome: string
+  institutionId: number
+  institutionNome: string
+  institutionSigla?: string
+}
+
 const loading = ref(false)
 const creatingTeam = ref(false)
+const loadingAvailableTeams = ref(false)
 const teamDialog = ref(false)
+const joinDialog = ref(false)
 const teams = ref<Team[]>([])
 const teamId = ref<number>()
 const competitors = ref<Competitor[]>([])
 const robots = ref<Robot[]>([])
 const registrations = ref<Registration[]>([])
 const institutions = ref<Array<{ id: number; nome: string; sigla?: string }>>([])
+const availableTeams = ref<PublicTeamOption[]>([])
+const teamSearch = ref('')
+const selectedJoinTeamId = ref<number>()
 const teamForm = reactive({ nome: '', institutionId: undefined as number | undefined })
+
+const filteredAvailableTeams = computed(() => {
+  const query = teamSearch.value.trim().toLocaleLowerCase('pt-BR')
+  if (!query) return availableTeams.value
+  return availableTeams.value.filter((team) => {
+    const haystack = `${team.nome} ${team.institutionNome} ${team.institutionSigla || ''}`.toLocaleLowerCase('pt-BR')
+    return haystack.includes(query)
+  })
+})
 
 async function loadTeams() {
   loading.value = true
@@ -68,6 +90,37 @@ async function createTeam() {
   }
 }
 
+async function openJoinDialog() {
+  joinDialog.value = true
+  teamSearch.value = ''
+  selectedJoinTeamId.value = undefined
+
+  if (availableTeams.value.length) return
+
+  loadingAvailableTeams.value = true
+  try {
+    availableTeams.value = await http
+      .get<PublicTeamOption[]>('/api/v1/public/equipes')
+      .then((response) => response.data)
+  } catch {
+    ElMessage.error('Não foi possível carregar as equipes disponíveis.')
+  } finally {
+    loadingAvailableTeams.value = false
+  }
+}
+
+function requestJoin() {
+  const selectedTeam = availableTeams.value.find((team) => team.id === selectedJoinTeamId.value)
+  if (!selectedTeam) {
+    ElMessage.warning('Selecione uma equipe para solicitar entrada.')
+    return
+  }
+
+  ElMessage.info(
+    `A solicitação para ${selectedTeam.nome} ficará funcional após a etapa pós-Swagger do backend.`
+  )
+}
+
 watch(teamId, loadTeam)
 onMounted(loadTeams)
 </script>
@@ -78,35 +131,55 @@ onMounted(loadTeams)
       <div>
         <span class="eyebrow">Portal do participante</span>
         <h1>Minha equipe</h1>
-        <p class="muted">Crie sua equipe e acompanhe as inscrições vinculadas ao seu usuário.</p>
+        <p class="muted">Crie sua equipe ou solicite entrada em uma equipe existente.</p>
       </div>
       <div class="heading-actions">
         <el-select v-if="teams.length > 1" v-model="teamId" style="width:260px">
           <el-option v-for="team in teams" :key="team.id" :label="team.nome" :value="team.id" />
         </el-select>
-        <el-button v-if="!teams.length" type="primary" class="brand-button" @click="teamDialog = true">
-          Criar equipe
-        </el-button>
+        <template v-if="!teams.length">
+          <el-button @click="openJoinDialog">Já tenho equipe</el-button>
+          <el-button type="primary" class="brand-button" @click="teamDialog = true">
+            Criar equipe
+          </el-button>
+        </template>
       </div>
     </div>
 
     <article v-if="!teams.length && !loading" class="participant-first-access-card">
       <span class="eyebrow">Primeiro acesso</span>
-      <h2>Comece criando sua equipe</h2>
+      <h2>Como você participa?</h2>
       <p>
-        Sua conta já existe de forma independente. Ao criar uma equipe, você passa a ser o líder/responsável por ela.
+        Sua conta é independente. Você pode criar uma nova equipe e se tornar líder, ou procurar uma equipe existente e solicitar entrada.
       </p>
+
+      <div class="participant-onboarding-choices">
+        <section class="participant-choice-card featured">
+          <span class="participant-choice-kicker">Ainda não tenho equipe</span>
+          <h3>Criar uma equipe</h3>
+          <p>Cadastre nome e instituição. Você será o líder/responsável pela equipe.</p>
+          <el-button type="primary" class="brand-button" @click="teamDialog = true">
+            Criar minha equipe
+          </el-button>
+        </section>
+
+        <section class="participant-choice-card">
+          <span class="participant-choice-kicker">Já faço parte de uma</span>
+          <h3>Encontrar minha equipe</h3>
+          <p>Pesquise pelo nome, escolha a equipe e solicite sua adesão ao líder.</p>
+          <el-button @click="openJoinDialog">Já tenho equipe</el-button>
+        </section>
+      </div>
+
       <div class="participant-first-access-flow">
         <span><strong>1</strong> Conta criada</span>
-        <span><strong>2</strong> Criar equipe</span>
-        <span><strong>3</strong> Adicionar membros</span>
+        <span><strong>2</strong> Criar ou localizar equipe</span>
+        <span><strong>3</strong> Líder aprova membros</span>
         <span><strong>4</strong> Fazer inscrição</span>
       </div>
-      <el-button type="primary" class="brand-button" @click="teamDialog = true">
-        Criar minha equipe
-      </el-button>
+
       <small>
-        O vínculo de outros usuários à equipe será habilitado após a evolução pós-Swagger do backend.
+        A busca de equipes já usa os dados públicos do sistema. A solicitação e a aprovação pelo líder serão habilitadas na evolução pós-Swagger do backend.
       </small>
     </article>
 
@@ -139,9 +212,9 @@ onMounted(loadTeams)
       </div>
 
       <div class="callout">
-        <strong>Fluxo que será evoluído</strong>
+        <strong>Fluxo competitivo planejado</strong>
         <p>
-          A conta continuará independente. O líder poderá anexar outros usuários à equipe e, na inscrição, escolher o robô e quais membros efetivamente competirão com ele.
+          Na inscrição de cada robô, a equipe escolherá um competidor responsável e poderá adicionar competidores de suporte. Esses papéis pertencem à inscrição do robô, não ao usuário permanentemente.
         </p>
       </div>
     </template>
@@ -168,6 +241,52 @@ onMounted(loadTeams)
         <el-button @click="teamDialog = false">Cancelar</el-button>
         <el-button type="primary" class="brand-button" :loading="creatingTeam" @click="createTeam">
           Criar equipe
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="joinDialog" title="Encontrar minha equipe" width="min(620px, 94vw)">
+      <div class="join-team-dialog" v-loading="loadingAvailableTeams">
+        <p class="muted">
+          Procure pelo nome da equipe ou instituição. Depois de solicitar, o líder deverá aprovar sua entrada.
+        </p>
+
+        <el-input
+          v-model="teamSearch"
+          clearable
+          placeholder="Digite o nome da equipe..."
+        />
+
+        <div class="join-team-results">
+          <button
+            v-for="team in filteredAvailableTeams"
+            :key="team.id"
+            type="button"
+            class="join-team-option"
+            :class="{ selected: selectedJoinTeamId === team.id }"
+            @click="selectedJoinTeamId = team.id"
+          >
+            <span>
+              <strong>{{ team.nome }}</strong>
+              <small>
+                {{ team.institutionSigla ? `${team.institutionSigla} — ` : '' }}{{ team.institutionNome }}
+              </small>
+            </span>
+            <b>{{ selectedJoinTeamId === team.id ? 'Selecionada' : 'Escolher' }}</b>
+          </button>
+
+          <el-empty
+            v-if="!loadingAvailableTeams && !filteredAvailableTeams.length"
+            description="Nenhuma equipe encontrada"
+            :image-size="72"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <el-button @click="joinDialog = false">Cancelar</el-button>
+        <el-button type="primary" class="brand-button" @click="requestJoin">
+          Solicitar entrada
         </el-button>
       </template>
     </el-dialog>
