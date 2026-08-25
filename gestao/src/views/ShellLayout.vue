@@ -303,19 +303,20 @@ watch(() => competition.selectedId, loadAlerts)
                 </div>
                 <el-dropdown-item v-if="alertLoading" disabled>Atualizando alertas...</el-dropdown-item>
                 <el-dropdown-item v-else-if="alerts.length === 0" disabled>Nenhuma pendência imediata.</el-dropdown-item>
-                <el-dropdown-item
-                  v-for="item in alerts"
-                  v-else
-                  :key="item.id"
-                  class="admin-alert-item"
-                  @click="go(item.to)"
-                >
-                  <span class="alert-indicator" :class="`alert-${item.kind}`" />
-                  <div>
-                    <strong>{{ item.title }}</strong>
-                    <small>{{ item.detail }}</small>
-                  </div>
-                </el-dropdown-item>
+                <template v-else>
+                  <el-dropdown-item
+                    v-for="item in alerts"
+                    :key="item.id"
+                    class="admin-alert-item"
+                    @click="go(item.to)"
+                  >
+                    <span class="alert-indicator" :class="`alert-${item.kind}`" />
+                    <div>
+                      <strong>{{ item.title }}</strong>
+                      <small>{{ item.detail }}</small>
+                    </div>
+                  </el-dropdown-item>
+                </template>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
