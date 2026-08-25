@@ -12,13 +12,13 @@
 
 É a identidade institucional pública que o site deve representar.
 
-A Landing não será somente uma página da competição. Ela deve funcionar como o **site da IEEE Robotics & Automation Society — RAS UFRB**, capaz de continuar útil durante todo o ano.
+A Landing não será somente uma página da competição. Ela deve funcionar como o **site da IEEE Robotics & Automation Society — RAS UFRB**, útil durante todo o ano.
 
 ## RRC
 
 **RRC é o evento/competição.**
 
-A área competitiva pública do site deve usar RRC como nome do evento e concentrar informações como:
+A área pública do evento deve concentrar:
 
 - edição atual;
 - inscrições;
@@ -36,25 +36,23 @@ A área competitiva pública do site deve usar RRC como nome do evento e concent
 
 ## RASCOMP
 
-**RASCOMP é o nome do programa/plataforma de software**, não o nome público do evento.
+**RASCOMP é o nome da plataforma de software**, não o nome público do evento.
 
-Ele engloba a solução digital que sustenta:
+Arquitetura atual:
 
 ```text
-Gestão + Backend + Camunda + experiência pública
+Gestão + Backend Spring Boot + experiência pública
 ```
 
-Na comunicação com o visitante, a marca principal deve ser RAS UFRB e, na área do evento, RRC.
+Camunda foi retirado do planejamento.
 
 ---
 
 # 2. Estado atual e decisão de pausa
 
-Existe atualmente uma fundação Vue 3 + TypeScript + Vite em `landing-page/` e um POC capaz de consultar dados públicos do backend.
+Existe uma fundação Vue 3 + TypeScript + Vite em `landing-page/` e um POC capaz de consultar dados públicos do backend.
 
-Esse código **não define o design final**.
-
-Ele deve ser tratado como:
+Esse código **não define o design final**. Ele deve ser tratado como:
 
 ```text
 fundação técnica + prova de integração
@@ -69,15 +67,14 @@ O desenvolvimento real da Landing só começa depois de:
 - [ ] sistema de Gestão consolidado;
 - [ ] fluxos principais de organização validados;
 - [ ] fluxos principais de participante validados;
-- [ ] Camunda integrado aos processos definidos para o sistema;
-- [ ] contratos públicos do backend revisados após essas mudanças;
+- [ ] chaveamento/partidas/resultados do Sumô validados ponta a ponta;
+- [ ] Follow Line validado ponta a ponta;
+- [ ] contratos públicos do backend revisados;
 - [ ] dados que precisam aparecer publicamente identificados.
-
-Até esse ponto, não avançar em páginas finais, identidade visual definitiva ou componentes ao vivo.
 
 ---
 
-# 3. Referência visual e estrutural principal
+# 3. Referência visual e estrutural
 
 Referência escolhida:
 
@@ -85,115 +82,49 @@ Referência escolhida:
 https://github.com/DouglasTeyh/erbase-2026-main
 ```
 
-A referência será usada para estudar **arquitetura de informação, ritmo visual e experiência de site de evento**, não para copiar código, textos ou assets.
+Usar como referência de **arquitetura de informação, ritmo visual e experiência de site de evento**, não para copiar código, textos ou assets.
 
-Pontos de referência aproveitáveis conceitualmente:
+Pontos de referência:
 
-- navegação pública simples e direta;
+- navegação pública simples;
 - navbar e footer reutilizáveis;
 - hero de grande impacto;
-- possibilidade de vídeo/imagem de fundo;
+- vídeo/imagem de fundo quando fizer sentido;
 - contador para o evento;
-- blocos editoriais grandes e claros;
+- blocos editoriais claros;
 - CTAs de inscrição;
-- páginas específicas para assuntos que merecem profundidade;
+- páginas específicas para assuntos importantes;
 - programação em seção própria;
-- seção de organização, apoio e parceiros;
-- rodapé institucional forte;
-- animações leves de entrada/scroll;
-- boa separação entre conteúdo institucional e conteúdo de evento.
-
-## O que não copiar
-
-- código HTML/CSS/JS do ERBASE;
-- identidade visual da ERBASE;
-- textos;
-- logos;
-- imagens;
-- estrutura rígida de páginas sem avaliar a necessidade da RAS/RRC.
-
-A aplicação continuará sendo implementada em Vue 3 + TypeScript.
+- organização, apoio e parceiros;
+- animações leves de entrada/scroll.
 
 ---
 
 # 4. Objetivo do site público
 
-O site deve atender simultaneamente cinco públicos.
+Atender cinco públicos principais:
 
-## 4.1 Visitante institucional
+1. visitante institucional da RAS UFRB;
+2. interessado em competir no RRC;
+3. competidor inscrito;
+4. público acompanhando ao vivo;
+5. visitante pós-evento.
 
-Quer entender:
-
-- o que é a RAS;
-- o que a RAS UFRB faz;
-- projetos;
-- atividades;
-- diretoria;
-- eventos;
-- formas de contato/participação.
-
-## 4.2 Interessado em competir no RRC
-
-Fluxo esperado:
-
-```text
-Home / Evento
-    ↓
-RRC
-    ↓
-Sobre + Modalidades
-    ↓
-Regulamento + Cronograma
-    ↓
-Inscrição
-    ↓
-Área do Participante / Gestão
-```
-
-## 4.3 Competidor inscrito
-
-Quer localizar rapidamente:
-
-- cronograma;
-- regulamento;
-- informações da edição;
-- sua modalidade;
-- acompanhamento do evento;
-- resultados.
-
-A edição de dados da equipe continua no sistema de Gestão, não na Landing.
-
-## 4.4 Público acompanhando ao vivo
-
-Fluxo prioritário durante o evento:
+Fluxo competitivo público:
 
 ```text
 Home
  ↓
-RRC AO VIVO
+RRC
  ↓
 modalidade
  ├── Follow Line -> ranking / tempos
  └── Sumô        -> chave / partidas / resultados
 ```
 
-## 4.5 Visitante pós-evento
-
-Quer consultar:
-
-- campeões;
-- pódios;
-- resultados;
-- equipes participantes;
-- robôs;
-- fotos quando houver suporte;
-- edições anteriores.
-
 ---
 
 # 5. Arquitetura de informação planejada
-
-A estrutura final será refinada antes da implementação, mas a direção inicial é:
 
 ```text
 SITE RAS UFRB
@@ -205,7 +136,6 @@ SITE RAS UFRB
 │   ├── Projetos
 │   ├── RRC em destaque
 │   ├── Eventos/atividades
-│   ├── Notícias/novidades (se houver fonte real)
 │   ├── Diretoria
 │   ├── Parceiros/apoio
 │   └── Contato
@@ -217,7 +147,7 @@ SITE RAS UFRB
 ├── /contato
 │
 └── /rrc
-    ├── visão geral da edição atual
+    ├── edição atual
     ├── sobre
     ├── modalidades
     ├── regulamento
@@ -229,19 +159,13 @@ SITE RAS UFRB
     │   ├── follow-line
     │   └── sumo
     ├── resultados
-    ├── galeria (quando backend suportar)
+    ├── galeria (quando houver suporte real)
     └── edições anteriores
 ```
-
-Essa estrutura evita transformar todo o site da RAS em um site temporário de uma edição do RRC.
 
 ---
 
 # 6. Navegação inicial proposta
-
-O menu deve permanecer curto.
-
-Primeira proposta:
 
 ```text
 Início
@@ -252,31 +176,23 @@ RRC
 Diretoria
 ```
 
-CTAs separados do menu comum:
+CTAs contextuais:
 
 ```text
 [ Área do participante ]
-[ Inscreva-se ]   // quando inscrições estiverem abertas
-[ Ao vivo ]       // durante a competição
+[ Inscreva-se ]
+[ Ao vivo ]
 ```
-
-Não adicionar itens no menu somente porque existe uma seção no backend.
 
 ---
 
 # 7. Estrutura técnica alvo
 
-A fundação atual é Vue 3 + TypeScript + Vite.
-
-A organização interna deverá evoluir para algo próximo de:
+A aplicação continuará em Vue 3 + TypeScript + Vite.
 
 ```text
 landing-page/
 ├── public/
-│   ├── images/
-│   ├── videos/
-│   └── documents/
-│
 ├── src/
 │   ├── assets/
 │   ├── components/
@@ -285,71 +201,59 @@ landing-page/
 │   │   ├── cards/
 │   │   ├── feedback/
 │   │   └── live/
-│   │
 │   ├── layouts/
 │   ├── pages/
 │   │   ├── institutional/
 │   │   └── rrc/
-│   │
 │   ├── features/
 │   │   ├── competitions/
 │   │   ├── teams/
 │   │   ├── robots/
 │   │   ├── follow-line/
 │   │   └── sumo/
-│   │
-│   ├── services/
-│   │   └── public-api/
+│   ├── services/public-api/
 │   ├── router/
 │   ├── styles/
 │   ├── types/
-│   ├── utils/
 │   ├── App.vue
 │   └── main.ts
-│
-├── .env.example
-├── index.html
-├── package.json
-└── vite.config.ts
+└── package.json
 ```
-
-Não é necessário criar todos os diretórios antes de existirem responsabilidades reais.
 
 ---
 
-# 8. Separação de conteúdo: estático x dinâmico
+# 8. Conteúdo estático x dinâmico
 
-## Conteúdo editorial/institucional
+## Editorial/institucional
 
-Inicialmente pode permanecer versionado no frontend quando fizer sentido:
+Pode permanecer versionado no frontend inicialmente:
 
 - apresentação da RAS UFRB;
 - história;
-- descrição de projetos;
+- projetos;
 - apresentação do RRC;
-- regulamentos/documentos oficiais;
-- informações de contato;
-- diretoria, enquanto não houver necessidade de CMS;
-- parceiros/apoiadores;
+- regulamentos/documentos;
+- contato;
+- diretoria;
+- parceiros;
 - textos de modalidades.
 
-## Conteúdo operacional/dinâmico
+## Dinâmico
 
 Deve vir do backend público:
 
 - competição/edição atual;
 - status;
-- categorias relacionadas à competição;
-- inscrições públicas permitidas;
+- categorias;
 - equipes;
 - robôs;
-- competidores quando o DTO público permitir;
+- competidores quando permitido;
 - ranking Follow Line;
 - chaveamentos Sumô;
 - partidas;
 - resultados;
 - vencedores;
-- campeão quando derivável diretamente do estado oficial.
+- campeão.
 
 A Landing nunca será fonte oficial de regra competitiva.
 
@@ -357,16 +261,10 @@ A Landing nunca será fonte oficial de regra competitiva.
 
 # 9. Fluxo de dados
 
-Fluxo obrigatório:
-
 ```text
 Gestão
   ↓
-Backend
-  ↓
-regras/processos
-  ├── domínio Java
-  └── Camunda quando aplicável
+Backend Spring Boot
   ↓
 /api/v1/public/**
   ↓
@@ -380,50 +278,26 @@ A Landing:
 - não decide vencedor;
 - não calcula ranking oficial;
 - não altera inscrição;
-- não consulta endpoints administrativos para montar página pública.
-
-Ela apenas apresenta projeções públicas autorizadas.
+- não consulta endpoints administrativos para fabricar estado público.
 
 ---
 
 # 10. Modos da página do RRC
 
-A experiência da página do evento deve mudar conforme a fase da edição.
-
-Os estados exatos serão mapeados aos enums/contratos reais do backend na retomada.
-
-## 10.1 Pré-evento
-
-Prioridades:
+## Pré-evento
 
 - identidade da edição;
 - data/local;
-- contador regressivo;
+- countdown;
 - modalidades;
 - regulamento;
 - cronograma;
 - inscrição;
-- informações para participantes;
-- parceiros/organização.
+- organização/apoio.
 
-Hero conceitual:
+## Evento em andamento
 
-```text
-RRC — edição atual
-Competição de Robótica da RAS UFRB
-
-[data] • [local]
-
-Faltam XX dias
-
-[ Inscreva sua equipe ]
-```
-
-## 10.2 Evento em andamento
-
-A prioridade deixa de ser vender/apresentar o evento e passa a ser **acompanhar**.
-
-Hero/conteúdo de destaque conceitual:
+Prioridade: **acompanhar**.
 
 ```text
 ● RRC AO VIVO
@@ -433,54 +307,45 @@ ranking atualizado
 
 Sumô
 chave e partidas
-
-[ Acompanhar competição ]
 ```
 
-## 10.3 Pós-evento
+## Pós-evento
 
-Prioridades:
-
-- campeão/campeões;
-- resultados oficiais;
+- campeões;
+- resultados;
 - pódios;
 - equipes;
 - robôs;
 - registros da edição;
-- próxima edição quando existir.
-
-A página da edição concluída deve continuar acessível como histórico.
+- histórico.
 
 ---
 
-# 11. Experiência pública por modalidade
+# 11. Experiência por modalidade
 
 ## Follow Line
 
-Página/área pública deve priorizar leitura rápida:
+Priorizar:
 
 - posição;
 - equipe;
 - robô;
-- melhor resultado público disponível;
-- ranking atualizado;
-- status/contexto da modalidade.
-
-Não reproduzir toda a complexidade operacional da tela de Gestão.
+- melhor resultado público;
+- ranking atualizado.
 
 ## Sumô
 
-Página/área pública deve priorizar:
+Priorizar:
 
-- chave visual;
+- bracket visual;
 - rodada;
 - confronto;
-- status da partida;
-- vencedor quando confirmado;
+- status;
+- vencedor confirmado;
 - progressão;
 - campeão.
 
-O bracket precisa ser legível principalmente em mobile e em telas projetadas durante o evento.
+O bracket público pode seguir a mesma linguagem visual aprovada na Gestão, mas adaptado para leitura pública/mobile/telão.
 
 ---
 
@@ -492,473 +357,254 @@ MVP inicial:
 polling controlado
 ```
 
-A frequência será definida com base em:
+Regras:
 
-- custo para o backend;
-- volume de público;
-- velocidade necessária por modalidade;
-- estabilidade da infraestrutura no evento.
-
-SSE ou WebSocket só entram se houver benefício comprovado.
-
-Regras obrigatórias:
-
-- não fazer polling em páginas que não precisam;
-- pausar/reduzir polling quando a aba estiver inativa quando possível;
-- apresentar horário/estado da última atualização quando útil;
-- tratar falha temporária sem apagar o último estado confirmado;
+- polling apenas onde necessário;
+- reduzir/pausar em aba inativa quando possível;
+- indicar última atualização quando útil;
+- manter o último estado confirmado em falha temporária;
 - nunca fabricar resultado para aparentar tempo real.
+
+SSE/WebSocket só entram se houver benefício real.
 
 ---
 
 # 13. Identidade visual
 
-A identidade precisa pertencer à RAS/RRC, não parecer um admin público.
-
-## Base cromática
-
-Cores vindas da identidade enviada para o projeto:
+Base:
 
 ```text
-Roxo profundo: base institucional
-Rubro/vermelho: destaque e energia
-Neutros claros/escuros: leitura e contraste
+Roxo profundo
+Rubro/vermelho
+Neutros claros/escuros
 ```
 
-Valores atuais usados na Gestão podem servir como ponto de partida, mas **a paleta da Landing ainda não está congelada**.
-
-## Direção visual
-
-Inspirada em sites de eventos públicos:
+Direção:
 
 - hero grande;
-- fotografia/vídeo de robótica e atividades reais;
-- bastante espaço em branco;
+- fotografia/vídeo real de robótica;
+- espaço em branco;
 - títulos fortes;
 - seções bem delimitadas;
-- cards somente quando ajudam a leitura;
-- uso mais contido de gradientes;
 - transições suaves;
-- movimento leve;
-- destaque de datas/status;
 - aparência institucional e tecnológica;
 - mobile first.
 
-## Evitar
+Evitar:
 
 - aparência de dashboard;
 - excesso de cards pequenos;
 - tabelas administrativas na Home;
-- neon/cyberpunk exagerado;
-- animações que prejudiquem leitura;
-- poluição de logos no topo;
-- misturar nome RASCOMP com o nome do evento RRC.
+- cyberpunk exagerado;
+- poluição visual;
+- confundir RASCOMP com RRC.
 
 ---
 
-# 14. Design System público — itens a definir
+# 14. Design System público — a definir
 
-Quando a Landing for retomada, congelar antes das páginas finais:
-
-- [ ] cores oficiais;
+- [ ] paleta final;
 - [ ] tipografia;
 - [ ] escala de títulos;
-- [ ] espaçamento;
-- [ ] container/grid;
+- [ ] grid/containers;
 - [ ] breakpoints;
-- [ ] botões/CTAs;
-- [ ] links;
-- [ ] badges de status;
+- [ ] CTAs;
+- [ ] badges;
 - [ ] cards;
-- [ ] tabelas/ranking público;
+- [ ] ranking público;
 - [ ] bracket público;
 - [ ] navbar;
 - [ ] footer;
 - [ ] hero;
-- [ ] estados loading/erro/vazio;
-- [ ] animações/transições;
+- [ ] loading/erro/vazio;
+- [ ] animações;
 - [ ] tratamento de imagens.
-
-Gestão e Landing podem compartilhar a essência da marca, mas não precisam compartilhar os mesmos componentes visuais.
 
 ---
 
-# 15. Tópicos institucionais a levantar antes da implementação
+# 15. Conteúdo institucional a levantar
 
-Não preencher com conteúdo inventado.
-
-Precisamos reunir/validar:
-
-- [ ] texto oficial sobre a RAS UFRB;
-- [ ] história do capítulo;
+- [ ] texto oficial da RAS UFRB;
+- [ ] história;
 - [ ] missão/objetivos;
 - [ ] diretoria atual;
-- [ ] projetos atuais;
-- [ ] projetos históricos relevantes;
+- [ ] projetos atuais/históricos;
 - [ ] eventos/oficinas;
 - [ ] redes sociais;
-- [ ] e-mail/contato;
-- [ ] logos oficiais permitidas;
+- [ ] contato;
+- [ ] logos oficiais;
 - [ ] parceiros/apoio;
-- [ ] fotos autorizadas para uso;
+- [ ] fotos autorizadas;
 - [ ] informações oficiais do RRC;
-- [ ] data e local da edição;
+- [ ] data/local;
 - [ ] regulamento;
 - [ ] modalidades;
 - [ ] cronograma;
-- [ ] premiação, se aplicável;
+- [ ] premiação;
 - [ ] edições anteriores.
 
 ---
 
 # 16. Fotos e mídia
 
-O backend atualmente oferece suporte público a fotos de robôs.
+Foto de robô não equivale a galeria do evento.
 
-Isso não equivale a uma galeria do evento.
+Para fotos do dia, momentos da rodada e álbuns será necessário definir:
 
-Para recursos como:
-
-```text
-fotos do dia
-momentos da rodada
-galeria da edição
-álbuns
-```
-
-será necessário definir antes:
-
-- modelo no backend ou fonte externa oficial;
+- fonte/armazenamento;
 - upload;
-- autoria/crédito;
+- crédito;
 - legenda;
-- ordem;
 - visibilidade;
-- otimização;
-- política de armazenamento.
-
-Não implementar uma galeria operacional falsa com arquivos estáticos se a intenção for administração contínua.
+- otimização.
 
 ---
 
-# 17. SEO, compartilhamento e presença pública
+# 17. SEO, acessibilidade e performance
 
-Como esse será o site oficial da RAS/RRC, esta camada é obrigatória antes do lançamento.
+Antes do lançamento:
 
-- [ ] títulos e descriptions por página;
+- [ ] títulos/descriptions;
 - [ ] Open Graph;
 - [ ] favicon/manifest;
+- [ ] sitemap/robots;
 - [ ] URLs estáveis;
-- [ ] sitemap;
-- [ ] robots.txt;
 - [ ] headings semânticos;
-- [ ] texto alternativo de imagens;
-- [ ] cards de compartilhamento do RRC;
-- [ ] informações estruturadas do evento quando aplicável;
-- [ ] links permanentes para resultados/edições.
-
----
-
-# 18. Acessibilidade e performance
-
-Critérios mínimos:
-
-- [ ] navegação por teclado;
-- [ ] contraste adequado;
-- [ ] foco visível;
 - [ ] alt text;
-- [ ] landmarks semânticos;
+- [ ] navegação por teclado;
+- [ ] contraste;
+- [ ] foco visível;
 - [ ] `prefers-reduced-motion`;
-- [ ] animações não bloqueantes;
-- [ ] imagens responsivas;
-- [ ] lazy loading onde fizer sentido;
-- [ ] vídeos sem áudio automático;
-- [ ] fallback para hero em vídeo;
-- [ ] bundle controlado;
-- [ ] evitar dependências grandes apenas por efeito visual.
+- [ ] imagens responsivas/lazy loading;
+- [ ] fallback de vídeo;
+- [ ] bundle controlado.
 
 ---
 
-# 19. Etapas oficiais da Landing
+# 18. Etapas oficiais
 
-## LANDING P0 — Preparação / congelamento atual
+## LANDING P0 — pausa/preparação
 
 Status: **EM ESPERA**.
 
 - [x] Vue 3 + TypeScript + Vite existentes;
-- [x] POC de consumo da API pública existente;
+- [x] POC de API pública existente;
 - [x] referência ERBASE escolhida;
-- [x] separação RAS / RRC / RASCOMP definida;
-- [x] arquivo de continuidade dedicado criado;
-- [x] direção inicial de arquitetura de informação definida;
+- [x] RAS / RRC / RASCOMP definidos;
+- [x] continuidade dedicada criada;
+- [x] Camunda retirado da arquitetura;
 - [ ] Gestão finalizada;
-- [ ] Camunda integrado;
-- [ ] contratos públicos revisados pós-Camunda.
+- [ ] contratos públicos revisados.
 
-### Saída
-
-Não há desenvolvimento visual final nesta etapa.
-
----
-
-## LANDING 0 — Auditoria pós-Gestão + Camunda
-
-Primeira etapa quando a Landing for retomada.
+## LANDING 0 — auditoria pós-Gestão
 
 - [ ] revisar backend final;
 - [ ] revisar `/api/v1/public/**`;
-- [ ] mapear DTOs finais;
-- [ ] mapear status da competição;
-- [ ] mapear dados RRC disponíveis;
-- [ ] identificar lacunas para modo ao vivo;
-- [ ] identificar lacunas de histórico;
-- [ ] identificar lacunas de mídia;
-- [ ] decidir o que precisa ser alterado no backend antes do frontend.
+- [ ] mapear DTOs/status finais;
+- [ ] identificar lacunas de ao vivo/histórico/mídia.
 
-### Critério de conclusão
+## LANDING 1 — arquitetura de informação + conteúdo
 
-Nenhuma tela pública depender de endpoint imaginário.
+- [ ] sitemap;
+- [ ] navegação;
+- [ ] páginas RAS/RRC;
+- [ ] CTAs;
+- [ ] textos/assets oficiais;
+- [ ] estático x dinâmico.
 
----
+## LANDING 2 — identidade + Design System
 
-## LANDING 1 — Arquitetura de informação + conteúdo
-
-- [ ] fechar sitemap;
-- [ ] fechar navegação;
-- [ ] separar RAS institucional de RRC;
-- [ ] definir páginas da edição atual;
-- [ ] definir edições anteriores;
-- [ ] definir CTAs;
-- [ ] levantar textos e assets oficiais;
-- [ ] definir conteúdo estático/dinâmico.
-
-### Critério de conclusão
-
-Wireflow textual fechado antes do visual.
-
----
-
-## LANDING 2 — Identidade + Design System
-
-- [ ] paleta final roxo/rubro;
+- [ ] paleta;
 - [ ] tipografia;
 - [ ] grid;
-- [ ] navbar;
-- [ ] footer;
+- [ ] navbar/footer;
 - [ ] hero;
-- [ ] botões;
 - [ ] cards;
-- [ ] status;
 - [ ] ranking;
 - [ ] bracket;
 - [ ] loaders;
-- [ ] animações;
-- [ ] mobile.
+- [ ] animações/mobile.
 
-### Critério de conclusão
-
-Uma página-laboratório deve demonstrar todos os componentes principais antes da construção em massa.
-
----
-
-## LANDING 3 — Fundação estrutural Vue
-
-Objetivo: substituir/refatorar o POC para a arquitetura final.
+## LANDING 3 — fundação estrutural Vue
 
 - [ ] Vue Router;
 - [ ] layouts;
-- [ ] páginas institucionais;
-- [ ] páginas RRC;
-- [ ] componentes compartilhados;
-- [ ] service público centralizado;
-- [ ] tipagens;
-- [ ] tratamento de erro;
-- [ ] 404;
-- [ ] configuração de ambiente.
+- [ ] páginas;
+- [ ] componentes;
+- [ ] API pública centralizada;
+- [ ] tipos;
+- [ ] erros/404/configuração.
 
-Não carregar bibliotecas de administração da Gestão sem necessidade.
-
----
-
-## LANDING 4 — Site institucional RAS UFRB
+## LANDING 4 — institucional RAS UFRB
 
 - [ ] Home;
 - [ ] Sobre;
 - [ ] Projetos;
 - [ ] Eventos;
 - [ ] Diretoria;
-- [ ] Contato/redes;
-- [ ] parceiros/apoio quando aplicável.
-
-### Critério de conclusão
-
-O site deve continuar fazendo sentido mesmo sem existir uma competição em andamento.
-
----
+- [ ] Contato;
+- [ ] parceiros/apoio.
 
 ## LANDING 5 — RRC pré-evento
 
-- [ ] página da edição;
+- [ ] edição;
 - [ ] hero;
 - [ ] data/local;
 - [ ] countdown;
 - [ ] modalidades;
 - [ ] regulamento;
 - [ ] cronograma;
-- [ ] informações para participantes;
 - [ ] CTA de inscrição;
-- [ ] link para Área do Participante;
 - [ ] organização/apoio.
 
----
+## LANDING 6 — integração pública dinâmica
 
-## LANDING 6 — Integração pública dinâmica
-
-- [ ] competição atual;
-- [ ] status;
+- [ ] competição/status;
 - [ ] categorias;
-- [ ] equipes;
-- [ ] robôs;
+- [ ] equipes/robôs;
 - [ ] competidores quando permitido;
-- [ ] inscrições públicas quando adequado;
-- [ ] estados loading/vazio/erro;
-- [ ] cache/refetch controlado.
-
----
+- [ ] loading/vazio/erro;
+- [ ] cache/refetch.
 
 ## LANDING 7 — RRC ao vivo
 
 ### Follow Line
-
 - [ ] ranking;
-- [ ] melhores resultados públicos;
-- [ ] atualização automática;
-- [ ] responsividade para celular/telão.
+- [ ] melhores resultados;
+- [ ] atualização automática.
 
 ### Sumô
-
-- [ ] chave;
+- [ ] bracket;
 - [ ] partidas;
 - [ ] rodada;
-- [ ] vencedor confirmado;
+- [ ] vencedor;
 - [ ] progressão;
 - [ ] campeão;
 - [ ] atualização automática.
 
-### Geral
-
-- [ ] estado "AO VIVO" evidente;
-- [ ] última atualização quando útil;
-- [ ] tolerância a falha de rede;
-- [ ] polling otimizado.
-
----
-
-## LANDING 8 — Pós-evento + histórico
+## LANDING 8 — pós-evento + histórico
 
 - [ ] resultados permanentes;
 - [ ] campeões/pódios;
-- [ ] edição encerrada;
-- [ ] equipes/robôs da edição;
+- [ ] equipes/robôs;
 - [ ] edições anteriores;
 - [ ] URLs permanentes;
-- [ ] galeria quando houver suporte real.
+- [ ] galeria quando suportada.
 
----
-
-## LANDING 9 — Consolidação e publicação
+## LANDING 9 — consolidação/publicação
 
 - [ ] SEO;
 - [ ] acessibilidade;
 - [ ] performance;
-- [ ] imagens;
 - [ ] mobile;
-- [ ] browsers principais;
-- [ ] fallback de vídeo/animação;
-- [ ] 404;
-- [ ] analytics somente se aprovado/necessário;
-- [ ] revisão de privacidade;
-- [ ] revisão de links;
-- [ ] build de produção;
+- [ ] browsers;
+- [ ] build;
 - [ ] deploy.
 
 ---
 
-# 20. Mudanças obrigatórias em relação ao POC atual
+# 19. Próximo gatilho
 
-Quando o trabalho for retomado:
+Não avançar a Landing agora.
 
-1. não tratar a aplicação pública como "RASCOMP Landing";
-2. usar **RAS UFRB** como identidade institucional;
-3. usar **RRC** para o evento;
-4. manter RASCOMP como nome interno/da plataforma quando necessário;
-5. substituir o layout atual de demonstração por arquitetura de site público;
-6. introduzir Vue Router e páginas reais;
-7. separar conteúdo institucional de widgets competitivos;
-8. não concentrar toda a aplicação em `App.vue`;
-9. criar componentes de navegação/footer inspirados conceitualmente na referência ERBASE;
-10. criar estados pré-evento, ao-vivo e pós-evento;
-11. preservar a API pública como única fonte para dados competitivos da Landing.
-
----
-
-# 21. Padrões obrigatórios
-
-## API
-
-```text
-page/component
-    ↓
-feature/service
-    ↓
-public api client
-    ↓
-/api/v1/public/**
-```
-
-Não espalhar Axios/fetch diretamente por componentes.
-
-## Estados de interface
-
-Toda seção dinâmica precisa prever:
-
-1. loading;
-2. sucesso com dados;
-3. sucesso sem dados;
-4. erro;
-5. atualização/revalidação.
-
-## Regra competitiva
-
-Se a Landing precisar "deduzir" quem ganhou, qual é o próximo confronto ou qual é o ranking porque o backend não fornece isso de forma confiável, **parar e corrigir o contrato do backend**.
-
----
-
-# 22. O que não fazer antes da retomada
-
-Enquanto Gestão + Camunda não forem concluídos:
-
-- não criar página final da RAS;
-- não escolher imagens definitivas;
-- não congelar tipografia;
-- não desenhar bracket final;
-- não criar galeria do evento;
-- não inventar conteúdo institucional;
-- não ampliar endpoints apenas para atender um mock visual;
-- não copiar o ERBASE literalmente;
-- não transformar o POC atual em produção por incrementos improvisados.
-
----
-
-# 23. Próxima ação da Landing
-
-```text
-AGUARDAR
-Gestão concluída
-    ↓
-Camunda integrado
-    ↓
-LANDING 0 — Auditoria pós-Gestão + Camunda
-```
-
-Até lá, este documento funciona como checkpoint oficial da Landing Page / Site Público RAS UFRB.
+Retomar somente após a Gestão estar funcional e validada com os fluxos reais do RRC, especialmente chaveamento, rounds, resultados e projeções públicas.
