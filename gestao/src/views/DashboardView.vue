@@ -60,8 +60,9 @@ onMounted(load)
           <span>Inscrições pendentes</span><strong>{{ pending.length }}</strong>
         </article>
         <article class="metric-card">
-          <span>Camunda</span><strong class="metric-text">preparado</strong>
-          <small>feature flag desligada</small>
+          <span>Competição em foco</span>
+          <strong class="metric-text">{{ activeCompetition?.status || 'sem competição' }}</strong>
+          <small>{{ activeCompetition?.nome || 'Cadastre ou selecione uma competição.' }}</small>
         </article>
       </div>
 
