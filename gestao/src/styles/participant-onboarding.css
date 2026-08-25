@@ -15,17 +15,62 @@
   margin-bottom: 0;
 }
 
-.participant-first-access-card p {
-  max-width: 720px;
+.participant-first-access-card > p {
+  max-width: 760px;
   margin-bottom: 4px;
   color: var(--muted);
   line-height: 1.55;
 }
 
 .participant-first-access-card small {
-  max-width: 720px;
+  max-width: 760px;
   color: #8a848e;
   line-height: 1.45;
+}
+
+.participant-onboarding-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+  margin: 8px 0 4px;
+}
+
+.participant-choice-card {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 8px;
+  min-height: 190px;
+  padding: 20px;
+  border: 1px solid #e9e4ec;
+  border-radius: 13px;
+  background: #fbfafc;
+}
+
+.participant-choice-card.featured {
+  border-color: #dccbe4;
+  background: linear-gradient(145deg, #fbf8fd 0%, #fff 100%);
+}
+
+.participant-choice-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.participant-choice-card p {
+  margin: 0 0 5px;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+.participant-choice-kicker {
+  color: var(--ras-red);
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
 .participant-first-access-flow {
@@ -62,9 +107,75 @@
   font-size: .72rem;
 }
 
+.join-team-dialog {
+  display: grid;
+  gap: 14px;
+}
+
+.join-team-dialog > p {
+  margin-bottom: 0;
+}
+
+.join-team-results {
+  display: grid;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 2px;
+}
+
+.join-team-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  min-height: 66px;
+  padding: 12px 14px;
+  border: 1px solid #e7e2ea;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.join-team-option:hover {
+  border-color: #d6c5df;
+  background: #fbf8fd;
+}
+
+.join-team-option.selected {
+  border-color: var(--ras-purple);
+  background: #f8f2fb;
+  box-shadow: 0 0 0 2px rgba(79, 25, 103, .06);
+}
+
+.join-team-option span,
+.join-team-option strong,
+.join-team-option small {
+  display: block;
+}
+
+.join-team-option small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: .73rem;
+}
+
+.join-team-option b {
+  color: var(--ras-purple);
+  font-size: .72rem;
+}
+
 @media (max-width: 850px) {
   .participant-first-access-flow {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .participant-onboarding-choices {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -75,5 +186,10 @@
 
   .participant-first-access-flow {
     grid-template-columns: 1fr;
+  }
+
+  .join-team-option {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
