@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
+  ArrowLeft,
+  ArrowRight,
   Collection,
   DataBoard,
-  Expand,
-  Fold,
   Tickets,
   Timer,
   Trophy,
   User
 } from '@element-plus/icons-vue'
-import { useAuthStore } from '../store'
+import { useAuthStore, useCompetitionStore } from '../store'
 
 const auth = useAuthStore()
+const competition = useCompetitionStore()
 const route = useRoute()
 const router = useRouter()
 const collapsed = ref(false)
@@ -27,14 +28,14 @@ const organizationSections = [
   {
     label: 'Competição',
     items: [
-      { label: 'Competições', to: '/competicoes', icon: Trophy },
+      { label: 'Competição', to: '/competicoes', icon: Trophy },
       { label: 'Inscrições', to: '/inscricoes', icon: Tickets }
     ]
   },
   {
-    label: 'Operação',
+    label: 'Categorias',
     items: [
-      { label: 'Seguidor de Linha', to: '/follow-line', icon: Timer },
+      { label: 'Follow Line', to: '/follow-line', icon: Timer },
       { label: 'Sumô', to: '/sumo', icon: Collection }
     ]
   }
@@ -56,9 +57,9 @@ const sections = computed(() => (auth.isOrganization ? organizationSections : pa
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
     '/': 'Visão geral',
-    '/competicoes': 'Competições',
+    '/competicoes': 'Competição',
     '/inscricoes': 'Inscrições',
-    '/follow-line': 'Seguidor de Linha',
+    '/follow-line': 'Follow Line',
     '/sumo': 'Sumô',
     '/minha-equipe': 'Minha equipe'
   }
@@ -80,16 +81,39 @@ function logout() {
   auth.logout()
   router.push('/login')
 }
+
+onMounted(() => {
+  if (auth.isOrganization) competition.load()
+})
 </script>
 
 <template>
-  <div class="app-shell" :class="{ collapsed }">
+  <div class="app-shell admin-shell-v2" :class="{ collapsed }">
     <aside class="sidebar" :class="{ 'mobile-open': mobileOpen }">
-      <button class="brand" @click="go('/')">
-        <img src="/rascomp-logo.webp" alt="RASCOMP" />
+      <button
+        class="sidebar-collapse-edge"
+        :aria-label="collapsed ? 'Expandir menu' : 'Recolher menu'"
+        :title="collapsed ? 'Expandir menu' : 'Recolher menu'"
+        @click="collapsed = !collapsed"
+      >
+        <el-icon><component :is="collapsed ? ArrowRight : ArrowLeft" /></el-icon>
+      </button>
+
+      <button class="brand sidebar-brand-v2" @click="go('/')">
+        <span class="sidebar-rascomp-logo" aria-hidden="true">
+          <svg viewBox="0 0 96 96">
+            <path d="M48 15v10" />
+            <circle cx="48" cy="11" r="4" />
+            <rect x="22" y="28" width="52" height="45" rx="14" />
+            <path d="M22 43H12v17h10M74 43h10v17H74" />
+            <circle cx="38" cy="49" r="4" />
+            <circle cx="58" cy="49" r="4" />
+            <path d="M37 61c3 4 7 6 11 6s8-2 11-6" />
+          </svg>
+        </span>
         <div v-if="!collapsed" class="brand-copy">
-          <strong>RASCOMP</strong>
-          <small>Gestão RRC</small>
+          <strong>RasComp</strong>
+          <small>Gestão do RRC</small>
         </div>
       </button>
 
@@ -117,23 +141,38 @@ function logout() {
           <span class="role-pill">{{ roleLabel }}</span>
           <small>IEEE RAS · UFRB</small>
         </div>
-        <button class="nav-item nav-collapse" @click="collapsed = !collapsed">
-          <el-icon><component :is="collapsed ? Expand : Fold" /></el-icon>
-          <span v-if="!collapsed">Recolher menu</span>
-        </button>
       </div>
     </aside>
 
     <div v-if="mobileOpen" class="mobile-backdrop" @click="mobileOpen = false" />
 
     <main class="main-area">
-      <header class="topbar">
+      <header class="topbar admin-topbar-v2">
         <div class="topbar-context">
           <button class="mobile-menu" aria-label="Abrir menu" @click="mobileOpen = true">☰</button>
           <div>
             <span class="eyebrow">IEEE RAS · UFRB</span>
             <strong>{{ pageTitle }}</strong>
           </div>
+        </div>
+
+        <div v-if="auth.isOrganization" class="topbar-competition-switch">
+          <span>Competição em foco</span>
+          <el-select
+            :model-value="competition.selectedId"
+            :loading="competition.loading"
+            placeholder="Selecionar competição"
+            size="small"
+            style="width: 220px"
+            @change="competition.select"
+          >
+            <el-option
+              v-for="item in competition.competitions"
+              :key="item.id"
+              :label="item.nome"
+              :value="item.id"
+            />
+          </el-select>
         </div>
 
         <div class="topbar-user">
