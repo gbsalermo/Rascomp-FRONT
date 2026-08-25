@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
 import { useCompetitionStore } from '../store'
+import type { Bracket } from '../types'
 
 interface ResultRow {
   id: number
   matchId: number
   categoryNome?: string
+  bracketNome?: string
   winnerRobotNome?: string
   pontosA?: number
   pontosB?: number
@@ -15,21 +18,56 @@ interface ResultRow {
   robotBNome?: string
 }
 
+const route = useRoute()
 const competition = useCompetitionStore()
 const loading = ref(false)
 const rows = ref<ResultRow[]>([])
+const scopedBracket = ref<Bracket>()
+
+const sumoLink = computed(() =>
+  scopedBracket.value
+    ? {
+        path: '/sumo',
+        query: {
+          competitionId: String(scopedBracket.value.competitionId),
+          categoryId: String(scopedBracket.value.categoryId),
+          bracketId: String(scopedBracket.value.id)
+        }
+      }
+    : '/sumo'
+)
+
+function queryNumber(value: unknown) {
+  const raw = Array.isArray(value) ? value[0] : value
+  const parsed = Number(raw)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
 
 async function load() {
   loading.value = true
   try {
     await competition.load()
+
+    const requestedCompetition = queryNumber(route.query.competitionId)
+    if (requestedCompetition && competition.competitions.some((item) => item.id === requestedCompetition)) {
+      if (competition.selectedId !== requestedCompetition) competition.select(requestedCompetition)
+    }
+
     if (!competition.selectedId) {
       rows.value = []
+      scopedBracket.value = undefined
       return
     }
+
     const brackets = await adminApi.brackets(competition.selectedId)
+    const requestedBracket = queryNumber(route.query.bracketId)
+    scopedBracket.value = requestedBracket ? brackets.find((item) => item.id === requestedBracket) : undefined
+    const sourceBrackets = scopedBracket.value
+      ? [scopedBracket.value]
+      : brackets.filter((item) => item.atual !== false && item.ativo !== false)
+
     const groups = await Promise.all(
-      brackets.map(async (bracket) => {
+      sourceBrackets.map(async (bracket) => {
         const [matches, results] = await Promise.all([
           adminApi.matches(bracket.id),
           adminApi.results(bracket.id)
@@ -40,6 +78,7 @@ async function load() {
             id: result.id,
             matchId: result.matchId,
             categoryNome: bracket.categoryNome,
+            bracketNome: bracket.nome,
             winnerRobotNome: result.winnerRobotNome,
             pontosA: result.pontosA,
             pontosB: result.pontosB,
@@ -58,24 +97,33 @@ async function load() {
 }
 
 watch(() => competition.selectedId, load)
+watch(() => route.fullPath, load)
 onMounted(load)
 </script>
 
 <template>
   <div class="page-stack" v-loading="loading">
     <div class="page-heading">
-      <div><span class="eyebrow">Competição ao vivo</span><h1>Resultados</h1><p class="muted">Resultados consolidados da competição em foco.</p></div>
-      <div class="heading-actions"><router-link to="/sumo" class="link-button">Operar Sumô</router-link><el-button @click="load">Atualizar</el-button></div>
+      <div>
+        <span class="eyebrow">{{ scopedBracket?.atual === false ? 'Consulta histórica' : 'Competição ao vivo' }}</span>
+        <h1>Resultados</h1>
+        <p class="muted">{{ scopedBracket ? `Resultados de ${scopedBracket.nome}.` : 'Resultados consolidados apenas das chaves vigentes da competição em foco.' }}</p>
+      </div>
+      <div class="heading-actions"><router-link :to="sumoLink" class="link-button">Abrir no Sumô</router-link><el-button @click="load">Atualizar</el-button></div>
     </div>
 
-    <article class="feature-card compact admin-focus-strip">
-      <div><span class="eyebrow">Competição em foco</span><h2>{{ competition.selectedCompetition?.nome || 'Nenhuma competição selecionada' }}</h2></div>
+    <article class="feature-card compact admin-focus-strip" :class="{ 'historical-bracket-banner': scopedBracket?.atual === false }">
+      <div>
+        <span class="eyebrow">{{ scopedBracket ? (scopedBracket.atual === false ? 'Chave histórica · somente leitura' : 'Chave vigente') : 'Competição em foco' }}</span>
+        <h2>{{ scopedBracket?.nome || competition.selectedCompetition?.nome || 'Nenhuma competição selecionada' }}</h2>
+      </div>
       <strong>{{ rows.length }} resultado(s)</strong>
     </article>
 
     <article class="table-card">
       <el-table :data="rows" empty-text="Nenhum resultado consolidado">
         <el-table-column prop="categoryNome" label="Categoria" min-width="170" />
+        <el-table-column v-if="!scopedBracket" prop="bracketNome" label="Chave" min-width="210" />
         <el-table-column label="Confronto" min-width="260">
           <template #default="{ row }">{{ row.robotANome || '—' }} <span class="versus">×</span> {{ row.robotBNome || '—' }}</template>
         </el-table-column>
