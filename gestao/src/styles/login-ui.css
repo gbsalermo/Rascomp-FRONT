@@ -1,23 +1,35 @@
 .login-page {
+  width: 100%;
+  min-width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
+  grid-template-columns: 1fr;
   place-items: center;
+  place-content: center;
   padding: 24px;
+  overflow: auto;
   background:
     radial-gradient(circle at 12% 0%, rgba(79, 25, 103, .05), transparent 32%),
     linear-gradient(180deg, #fbfafc 0%, #f4f2f6 100%);
 }
 
 .login-shell {
-  width: min(1120px, 100%);
+  width: min(1180px, calc(100vw - 48px));
   min-height: 620px;
+  margin: auto;
   display: grid;
-  grid-template-columns: minmax(330px, 38%) minmax(0, 62%);
+  grid-template-columns: minmax(350px, 40%) minmax(0, 60%);
   overflow: hidden;
   border: 1px solid #e4e0e7;
   border-radius: 18px;
   background: #fff;
   box-shadow: 0 24px 70px rgba(39, 24, 46, .12);
+}
+
+.login-shell-main {
+  height: min(690px, calc(100dvh - 48px));
+  min-height: 600px;
 }
 
 .login-brand-panel {
@@ -28,12 +40,17 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 54px 44px 46px;
+  padding: 48px 42px 44px;
   color: #fff;
   text-align: center;
   background:
     radial-gradient(circle at 50% 16%, rgba(117, 44, 147, .38), transparent 35%),
     linear-gradient(180deg, #351350 0%, #551469 50%, #99103e 100%);
+}
+
+.login-shell-main .login-brand-panel {
+  height: 100%;
+  min-height: 0;
 }
 
 .login-brand-panel::before,
@@ -68,6 +85,23 @@
   justify-items: center;
 }
 
+.login-brand-logo {
+  display: block;
+  width: clamp(190px, 18vw, 238px);
+  max-width: 86%;
+  height: auto;
+}
+
+.login-ieee-logo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: clamp(165px, 14vw, 205px);
+  max-width: 76%;
+  height: auto;
+  margin-top: 52px;
+}
+
 .login-robot-icon {
   width: 86px;
   height: 86px;
@@ -88,7 +122,7 @@
 .login-brand-subtitle,
 .login-brand-event {
   display: block;
-  color: rgba(255, 255, 255, .92);
+  color: rgba(255, 255, 255, .94);
 }
 
 .login-brand-subtitle {
@@ -99,7 +133,7 @@
 .login-brand-event {
   margin-top: 8px;
   font-size: .88rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .login-ieee-block {
@@ -146,12 +180,12 @@
   display: grid;
   min-width: 0;
   place-items: center;
-  padding: 54px 42px;
+  padding: 46px 56px;
   background: #fff;
 }
 
 .login-card {
-  width: min(438px, 100%);
+  width: min(470px, 100%);
   display: grid;
   gap: 0;
 }
@@ -273,7 +307,7 @@
 }
 
 .login-copyright {
-  margin: 42px 0 0;
+  margin: 38px 0 0;
   color: #7b7680;
   font-size: .69rem;
   text-align: center;
@@ -288,8 +322,10 @@
     padding: 18px;
   }
 
-  .login-shell {
-    width: min(540px, 100%);
+  .login-shell,
+  .login-shell-main {
+    width: min(560px, calc(100vw - 36px));
+    height: auto;
     min-height: 0;
     grid-template-columns: 1fr;
   }
@@ -299,32 +335,26 @@
   }
 
   .login-form-panel {
-    min-height: calc(100vh - 36px);
-    padding: 44px 30px;
+    min-height: calc(100dvh - 36px);
+    padding: 42px 30px;
   }
 
   .login-mobile-brand {
     display: flex;
+    width: 100%;
     align-items: center;
     justify-content: center;
-    gap: 10px;
     margin-bottom: 28px;
-    color: var(--ras-purple);
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4f1967 0%, #7b124a 100%);
   }
 
-  .login-mobile-brand svg {
-    width: 50px;
-    height: 50px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .login-mobile-brand strong {
-    font-size: 1.45rem;
-    letter-spacing: -.03em;
+  .login-mobile-brand img {
+    display: block;
+    width: 128px;
+    height: auto;
+    background: transparent;
   }
 }
 
@@ -334,15 +364,17 @@
     background: #fff;
   }
 
-  .login-shell {
-    min-height: 100vh;
+  .login-shell,
+  .login-shell-main {
+    width: 100%;
+    min-height: 100dvh;
     border: 0;
     border-radius: 0;
     box-shadow: none;
   }
 
   .login-form-panel {
-    min-height: 100vh;
+    min-height: 100dvh;
     padding: 32px 22px;
   }
 
