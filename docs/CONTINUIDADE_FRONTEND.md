@@ -24,7 +24,7 @@ Rascomp-FRONT/
 └── landing-page/  -> site público RAS UFRB + área RRC
 ```
 
-A Gestão é desenvolvida primeiro. A Landing permanece pausada como fundação/POC até a Gestão estar consolidada e os contratos públicos serem novamente revisados.
+A Gestão é desenvolvida primeiro. A Landing permanece pausada como fundação/POC até as experiências autenticadas de ORGANIZACAO e PARTICIPANTE estarem consolidadas e os contratos públicos serem novamente revisados.
 
 Documento exclusivo da Landing:
 
@@ -97,7 +97,78 @@ Camunda só deve ser reconsiderado no futuro se surgir um processo realmente dur
 
 ---
 
-# 4. Perfis e experiências
+# 4. Ordem macro oficial de desenvolvimento
+
+Esta ordem fica **congelada** para evitar mistura entre interfaces e mudança de foco durante o desenvolvimento:
+
+```text
+1. ADMIN / ORGANIZACAO
+        ↓
+2. USUARIO / PARTICIPANTE
+        ↓
+3. LANDING PAGE
+```
+
+## Fase 1 — ADMIN / ORGANIZACAO
+
+Primeiro concluir toda a experiência administrativa e operacional:
+
+- dashboard;
+- competições;
+- inscrições;
+- Follow Line;
+- Sumô;
+- inspeções;
+- chaveamentos;
+- partidas;
+- rounds;
+- resultados;
+- estados de erro/loading/vazio;
+- responsividade e consolidação técnica.
+
+A interface administrativa produz e mantém o estado oficial que as demais experiências irão consumir.
+
+## Fase 2 — USUARIO / PARTICIPANTE
+
+Somente após a interface administrativa estar consolidada, evoluir a experiência completa do competidor:
+
+- dashboard competitivo;
+- equipe;
+- solicitação de adesão;
+- robôs;
+- inscrições;
+- próximas partidas;
+- horários;
+- adversários;
+- chave do Sumô;
+- situação na competição;
+- colocação no Follow Line;
+- melhor resultado;
+- histórico.
+
+As mudanças de backend já planejadas para pós-Swagger — `TeamMember`, solicitação de adesão, RESPONSAVEL/SUPORTE e projeções autenticadas do participante — entram **como suporte desta fase**, antes de considerar a experiência PARTICIPANTE concluída.
+
+Não tratá-las como uma quarta interface ou produto separado.
+
+## Fase 3 — LANDING PAGE
+
+A Landing só é retomada depois de ADMIN e PARTICIPANTE estarem consolidados.
+
+```text
+ADMIN concluído
+      ↓
+PARTICIPANTE concluído
+      ↓
+revisão final /api/v1/public/**
+      ↓
+LANDING 0 — auditoria
+      ↓
+Landing final
+```
+
+---
+
+# 5. Perfis e experiências
 
 ```text
 ORGANIZACAO
@@ -178,7 +249,7 @@ backend: rascomp/docs/POS_SWAGGER_USUARIOS_EQUIPES_INSCRICAO.md
 
 ---
 
-# 5. Autenticação
+# 6. Autenticação
 
 Implementado:
 
@@ -219,7 +290,7 @@ login ORGANIZACAO  ✅
 
 ---
 
-# 6. Paleta e direção visual da Gestão
+# 7. Paleta e direção visual da Gestão
 
 Base aprovada:
 
@@ -247,7 +318,7 @@ A experiência PARTICIPANTE usa a mesma identidade visual, porém com informaç�
 
 ---
 
-# 7. Rotas atuais e rotas-alvo
+# 8. Rotas atuais e rotas-alvo
 
 ## Rotas atuais
 
@@ -300,7 +371,7 @@ A navegação pode ser adaptativa conforme as modalidades em que o participante 
 
 ---
 
-# 8. GESTÃO UI — convergência para o protótipo aprovado
+# 9. GESTÃO UI — trilha ADMIN / ORGANIZACAO
 
 ## UI 1 — Shell + Dashboard ORGANIZACAO
 
@@ -386,11 +457,24 @@ Planejado:
 - resultado automático do backend;
 - atualização do bracket após resultado.
 
+## UI ADMIN — Consolidação
+
+Antes de mudar o foco para PARTICIPANTE:
+
+- estados loading/erro/vazio;
+- responsividade;
+- acessibilidade básica;
+- 404;
+- revisão de erros HTTP;
+- typecheck;
+- build;
+- validação local do fluxo administrativo.
+
 ---
 
-# 9. Trilha PARTICIPANTE — experiência competitiva
+# 10. Trilha USUARIO / PARTICIPANTE — experiência competitiva
 
-Essa trilha é obrigatória e deve ser validada separadamente da ORGANIZACAO.
+Essa trilha começa **somente após a consolidação da interface ADMIN / ORGANIZACAO**.
 
 ## PARTICIPANTE 1 — Dashboard competitivo
 
@@ -464,7 +548,7 @@ Solicitação/aprovação depende do backend pós-Swagger.
 
 ---
 
-# 10. Contratos atuais úteis para o PARTICIPANTE
+# 11. Contratos atuais úteis para o PARTICIPANTE
 
 Já existem dados suficientes para uma primeira versão útil combinando:
 
@@ -489,7 +573,7 @@ No pós-Swagger, avaliar projeções autenticadas específicas para reduzir jun�
 
 ---
 
-# 11. Extensibilidade de modalidades
+# 12. Extensibilidade de modalidades
 
 Não hardcodar a experiência visual assumindo que o sistema terá para sempre apenas duas opções.
 
@@ -523,27 +607,25 @@ rascomp/docs/POS_SWAGGER_MODALIDADES_E_CATEGORIAS.md
 
 ---
 
-# 12. Landing
+# 13. Landing
 
 Estado: **PAUSADA / FUNDAÇÃO TÉCNICA**.
 
-Retomada:
+Retomada somente após:
 
 ```text
-Gestão ORGANIZACAO consolidada
+ADMIN / ORGANIZACAO consolidado
       ↓
-Gestão PARTICIPANTE consolidada
+USUARIO / PARTICIPANTE consolidado
       ↓
-backend pós-Swagger e extensibilidade revisado
-      ↓
-contratos /api/v1/public/** revisados
+revisão final dos contratos /api/v1/public/**
       ↓
 LANDING 0 — auditoria
 ```
 
 ---
 
-# 13. Execução local
+# 14. Execução local
 
 Gestão:
 
@@ -571,23 +653,31 @@ npm run build
 
 ---
 
-# 14. Próxima ação oficial
+# 15. Próxima ação oficial
 
 ```text
-VALIDAR LOCALMENTE
-Login + Cadastro + Primeiro acesso
-Shell + Dashboard ORGANIZACAO
-Inscrições ORGANIZACAO
+AGORA
+ADMIN / ORGANIZACAO
+├── validar Login
+├── validar Dashboard
+├── validar Inscrições
+├── UI 3 — Follow Line
+├── UI 4 — Sumô / Inspeção
+├── UI 5 — Bracket visual
+├── UI 6 — Partida / Rounds
+└── consolidação ADMIN
         ↓
-UI 3 — Follow Line ORGANIZACAO
+DEPOIS
+USUARIO / PARTICIPANTE
+├── dashboard competitivo
+├── equipe / adesão
+├── robôs
+├── inscrições
+├── próximas partidas
+├── minha chave
+├── meu ranking
+└── histórico
         ↓
-UI 4/5/6 — Sumô ORGANIZACAO
-        ↓
-TRILHA PARTICIPANTE — dashboard competitivo e acompanhamento
-        ↓
-Pós-Swagger — adesão/equipe/papéis/projeções participante
-        ↓
-Consolidação
-        ↓
-Landing
+POR ÚLTIMO
+LANDING PAGE
 ```
