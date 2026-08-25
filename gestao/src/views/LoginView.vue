@@ -30,23 +30,57 @@ async function submit() {
 <template>
   <div class="login-page">
     <div class="login-shell login-shell-main">
-      <section class="login-brand-panel" aria-label="Identidade RasComp">
-        <div class="login-brand-lockup-wrap">
-          <img
-            src="/rascomp-brand-full.webp"
-            alt="RasComp — IEEE Robotics & Automation Society, UFRB Student Branch"
-            class="login-brand-lockup"
-          />
+      <section class="login-brand-panel" aria-label="Identidade RasComp e IEEE RAS UFRB">
+        <div class="login-brand-composition">
+          <div class="login-brand-topline">
+            <div class="login-rascomp-mark" aria-label="RasComp">
+              <svg class="login-robot-icon" viewBox="0 0 96 96" aria-hidden="true">
+                <path d="M48 15v10" />
+                <circle cx="48" cy="11" r="4" />
+                <rect x="22" y="28" width="52" height="45" rx="14" />
+                <path d="M22 43H12v17h10M74 43h10v17H74" />
+                <circle cx="38" cy="49" r="4" />
+                <circle cx="58" cy="49" r="4" />
+                <path d="M37 61c3 4 7 6 11 6s8-2 11-6" />
+              </svg>
+              <strong>RasComp</strong>
+            </div>
+
+            <span class="login-brand-separator" aria-hidden="true" />
+
+            <img
+              src="/ieee-ras-official.png"
+              alt="IEEE Robotics & Automation Society"
+              class="login-ieee-official"
+            />
+          </div>
+
+          <div class="login-university-name">
+            UNIVERSIDADE FEDERAL DO RECÔNCAVO DA BAHIA
+          </div>
+
+          <div class="login-brand-context">
+            <span>Sistema de Gestão</span>
+            <strong>RRC - Competição de Robótica</strong>
+          </div>
         </div>
       </section>
 
       <section class="login-form-panel">
         <form class="login-card" @submit.prevent="submit">
           <div class="login-mobile-brand">
-            <img
-              src="/rascomp-brand-full.webp"
-              alt="RasComp — IEEE Robotics & Automation Society, UFRB Student Branch"
-            />
+            <div class="login-mobile-rascomp-mark">
+              <svg viewBox="0 0 96 96" aria-hidden="true">
+                <path d="M48 15v10" />
+                <circle cx="48" cy="11" r="4" />
+                <rect x="22" y="28" width="52" height="45" rx="14" />
+                <path d="M22 43H12v17h10M74 43h10v17H74" />
+                <circle cx="38" cy="49" r="4" />
+                <circle cx="58" cy="49" r="4" />
+                <path d="M37 61c3 4 7 6 11 6s8-2 11-6" />
+              </svg>
+              <strong>RasComp</strong>
+            </div>
           </div>
 
           <header class="login-form-heading">
