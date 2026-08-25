@@ -53,14 +53,31 @@ export const useAuthStore = defineStore('auth', () => {
     if (user.value) storage.setItem(USER_KEY, JSON.stringify(user.value))
   }
 
+  function applyAuth(response: { token: string; usuario: UserAccount }, remember: boolean) {
+    persistenceMode.value = remember ? 'local' : 'session'
+    token.value = response.token
+    user.value = response.usuario
+    persist()
+  }
+
   async function login(email: string, senha: string, remember = false) {
     loading.value = true
     try {
       const response = await authApi.login(email, senha)
-      persistenceMode.value = remember ? 'local' : 'session'
-      token.value = response.token
-      user.value = response.usuario
-      persist()
+      applyAuth(response, remember)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function register(
+    payload: { nome: string; email: string; senha: string; telefone?: string },
+    remember = true
+  ) {
+    loading.value = true
+    try {
+      const response = await authApi.register(payload)
+      applyAuth(response, remember)
     } finally {
       loading.value = false
     }
@@ -91,6 +108,7 @@ export const useAuthStore = defineStore('auth', () => {
     isOrganization,
     isParticipant,
     login,
+    register,
     hydrate,
     logout
   }
