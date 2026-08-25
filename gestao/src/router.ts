@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from './store'
 import LoginView from './views/LoginView.vue'
+import RegisterView from './views/RegisterView.vue'
+import PasswordRecoveryView from './views/PasswordRecoveryView.vue'
 import ShellLayout from './views/ShellLayout.vue'
 import DashboardView from './views/DashboardView.vue'
 import CompetitionsView from './views/CompetitionsView.vue'
@@ -13,6 +15,13 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
+    { path: '/cadastro', name: 'register', component: RegisterView, meta: { public: true } },
+    {
+      path: '/recuperar-senha',
+      name: 'password-recovery',
+      component: PasswordRecoveryView,
+      meta: { public: true }
+    },
     {
       path: '/',
       component: ShellLayout,
@@ -52,7 +61,9 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
   if (to.meta.public) {
-    if (auth.isAuthenticated && to.name === 'login') return { name: 'dashboard' }
+    if (auth.isAuthenticated && ['login', 'register'].includes(String(to.name))) {
+      return { name: 'dashboard' }
+    }
     return true
   }
   if (!auth.isAuthenticated) return { name: 'login', query: { redirect: to.fullPath } }
