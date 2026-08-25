@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Collection, Tickets, Trophy, User } from '@element-plus/icons-vue'
 import { adminApi, participantApi } from '../api'
-import { useAuthStore } from '../store'
+import { useAuthStore, useCompetitionStore } from '../store'
 import type {
-  Competition,
+  Category,
   Competitor,
   Registration,
   Robot,
@@ -13,26 +14,27 @@ import type {
 import StatusBadge from '../components/StatusBadge.vue'
 
 const auth = useAuthStore()
+const competition = useCompetitionStore()
 const loading = ref(true)
 const error = ref('')
-const competitions = ref<Competition[]>([])
+const categories = ref<Category[]>([])
 const registrations = ref<Registration[]>([])
 const teams = ref<Team[]>([])
 const robots = ref<Robot[]>([])
 const competitors = ref<Competitor[]>([])
 
-const activeCompetition = computed(
-  () =>
-    competitions.value.find((item) => item.status === 'EM_ANDAMENTO') ||
-    competitions.value.find((item) => item.status === 'INSCRICOES_ABERTAS') ||
-    competitions.value.find((item) => item.status === 'INSCRICOES_ENCERRADAS') ||
-    competitions.value[0]
-)
+const activeCompetition = computed(() => competition.selectedCompetition)
 
 const focusRegistrations = computed(() => {
   const competitionId = activeCompetition.value?.id
-  if (!competitionId) return registrations.value
+  if (!competitionId) return []
   return registrations.value.filter((item) => item.competitionId === competitionId)
+})
+
+const focusCategories = computed(() => {
+  const competitionId = activeCompetition.value?.id
+  if (!competitionId) return []
+  return categories.value.filter((item) => item.competitionId === competitionId)
 })
 
 const pendingRegistrations = computed(() =>
@@ -42,6 +44,19 @@ const pendingRegistrations = computed(() =>
 const approvedRegistrations = computed(() =>
   focusRegistrations.value.filter((item) => item.status === 'APROVADA')
 )
+
+const registeredTeams = computed(
+  () => new Set(focusRegistrations.value.map((item) => item.teamId)).size
+)
+
+const registeredRobots = computed(
+  () => new Set(focusRegistrations.value.map((item) => item.robotId)).size
+)
+
+const registeredCompetitors = computed(() => {
+  const ids = focusRegistrations.value.flatMap((item) => item.competitorIds || [])
+  return new Set(ids).size
+})
 
 const recentRegistrations = computed(() =>
   [...focusRegistrations.value]
@@ -54,13 +69,17 @@ const recentRegistrations = computed(() =>
     .slice(0, 6)
 )
 
+const activeCompetitionsCount = computed(() =>
+  competition.competitions.filter((item) => item.status === 'EM_ANDAMENTO').length
+)
+
 function formatDate(value?: string) {
   if (!value) return '—'
-  const date = new Date(value)
+  const date = new Date(`${value}T12:00:00`)
   if (Number.isNaN(date.getTime())) return value
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
-    month: '2-digit',
+    month: 'short',
     year: 'numeric'
   }).format(date)
 }
@@ -77,22 +96,27 @@ function formatDateTime(value?: string) {
   }).format(date)
 }
 
+function categoryCount(categoryId: number) {
+  return focusRegistrations.value.filter((item) => item.categoryId === categoryId).length
+}
+
 async function load() {
   loading.value = true
   error.value = ''
 
   try {
     if (auth.isOrganization) {
-      const [allCompetitions, allRegistrations, allTeams, allRobots, allCompetitors] =
+      const [, allCategories, allRegistrations, allTeams, allRobots, allCompetitors] =
         await Promise.all([
-          adminApi.competitions(),
+          competition.load(true),
+          adminApi.categories(),
           adminApi.registrations(),
           adminApi.teams(),
           adminApi.robots(),
           adminApi.competitors()
         ])
 
-      competitions.value = allCompetitions
+      categories.value = allCategories
       registrations.value = allRegistrations
       teams.value = allTeams
       robots.value = allRobots
@@ -112,15 +136,15 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="page-stack dashboard-page" v-loading="loading">
+  <div class="page-stack dashboard-page dashboard-v2" v-loading="loading">
     <div class="page-heading dashboard-heading">
       <div>
-        <span class="eyebrow">Central operacional</span>
+        <span class="eyebrow">Painel de gestão</span>
         <h1>Olá, {{ auth.user?.nome?.split(' ')[0] }}.</h1>
         <p class="muted">
           {{
             auth.isOrganization
-              ? 'Acompanhe a edição em foco e acesse rapidamente as operações do RRC.'
+              ? 'Acompanhe a competição em foco, pendências e atalhos da organização.'
               : 'Gerencie sua equipe e acompanhe suas inscrições.'
           }}
         </p>
@@ -136,140 +160,121 @@ onMounted(load)
     </div>
 
     <template v-if="auth.isOrganization">
-      <article v-if="activeCompetition" class="competition-focus-card">
-        <div class="competition-focus-copy">
-          <span class="eyebrow light">Competição em foco</span>
-          <div class="competition-focus-title">
+      <section class="dashboard-metric-grid dashboard-metric-grid-v2">
+        <article class="dashboard-stat-card rubro">
+          <span class="dashboard-stat-icon"><el-icon><Trophy /></el-icon></span>
+          <div><small>Competições em andamento</small><strong>{{ activeCompetitionsCount }}</strong><span>{{ competition.competitions.length }} cadastrada(s)</span></div>
+        </article>
+        <article class="dashboard-stat-card rubro-soft">
+          <span class="dashboard-stat-icon"><el-icon><Tickets /></el-icon></span>
+          <div><small>Inscrições aprovadas</small><strong>{{ approvedRegistrations.length }}</strong><span>{{ focusRegistrations.length }} na edição</span></div>
+        </article>
+        <article class="dashboard-stat-card">
+          <span class="dashboard-stat-icon"><el-icon><Collection /></el-icon></span>
+          <div><small>Robôs inscritos</small><strong>{{ registeredRobots }}</strong><span>{{ registeredTeams }} equipe(s)</span></div>
+        </article>
+        <article class="dashboard-stat-card warning-card">
+          <span class="dashboard-stat-icon"><el-icon><User /></el-icon></span>
+          <div><small>Aguardando análise</small><strong>{{ pendingRegistrations.length }}</strong><span>{{ registeredCompetitors }} competidor(es)</span></div>
+        </article>
+      </section>
+
+      <section v-if="activeCompetition" class="dashboard-overview-grid">
+        <article class="competition-overview-card">
+          <div class="competition-overview-accent" />
+          <header class="competition-overview-header">
             <div>
+              <span class="eyebrow">Competição em foco</span>
               <h2>{{ activeCompetition.nome }}</h2>
-              <p>{{ activeCompetition.descricao || 'Sem descrição cadastrada.' }}</p>
+              <p>{{ activeCompetition.descricao || 'Sem descrição cadastrada para esta competição.' }}</p>
             </div>
             <StatusBadge :value="activeCompetition.status || 'PLANEJADA'" />
-          </div>
+          </header>
 
-          <div class="competition-focus-meta">
-            <span>
-              <small>Competição</small>
-              <strong>{{ formatDate(activeCompetition.dataInicio) }} → {{ formatDate(activeCompetition.dataFim) }}</strong>
-            </span>
-            <span>
-              <small>Inscrições</small>
-              <strong>{{ formatDate(activeCompetition.inicioInscricoes) }} → {{ formatDate(activeCompetition.fimInscricoes) }}</strong>
-            </span>
-            <span>
-              <small>Aprovadas</small>
-              <strong>{{ approvedRegistrations.length }} de {{ focusRegistrations.length }}</strong>
-            </span>
-          </div>
-        </div>
-
-        <div class="competition-focus-actions">
-          <router-link to="/competicoes" class="focus-secondary-action">Ver competição</router-link>
-          <router-link to="/inscricoes" class="focus-primary-action">Ver inscrições</router-link>
-        </div>
-      </article>
-
-      <article v-else class="empty-state-card">
-        <span class="eyebrow">Competição em foco</span>
-        <h2>Nenhuma competição cadastrada</h2>
-        <p class="muted">Cadastre a primeira edição para começar a operação do RRC.</p>
-        <router-link to="/competicoes" class="link-button">Abrir competições</router-link>
-      </article>
-
-      <div class="metric-grid dashboard-metric-grid">
-        <article class="metric-card accent-purple">
-          <span>Inscrições da edição</span>
-          <strong>{{ focusRegistrations.length }}</strong>
-          <small>{{ approvedRegistrations.length }} aprovadas</small>
-        </article>
-        <article class="metric-card">
-          <span>Equipes cadastradas</span>
-          <strong>{{ teams.length }}</strong>
-          <small>base administrativa</small>
-        </article>
-        <article class="metric-card">
-          <span>Robôs cadastrados</span>
-          <strong>{{ robots.length }}</strong>
-          <small>{{ competitors.length }} competidores</small>
-        </article>
-        <article class="metric-card accent-red">
-          <span>Aguardando análise</span>
-          <strong>{{ pendingRegistrations.length }}</strong>
-          <small>na competição em foco</small>
-        </article>
-      </div>
-
-      <div class="dashboard-main-grid">
-        <article class="table-card dashboard-table-card">
-          <div class="card-heading">
+          <div class="competition-date-grid">
             <div>
-              <span class="eyebrow">Movimentação recente</span>
+              <small>Período do evento</small>
+              <strong>{{ formatDate(activeCompetition.dataInicio) }} — {{ formatDate(activeCompetition.dataFim) }}</strong>
+            </div>
+            <div>
+              <small>Período de inscrições</small>
+              <strong>{{ formatDate(activeCompetition.inicioInscricoes) }} — {{ formatDate(activeCompetition.fimInscricoes) }}</strong>
+            </div>
+          </div>
+
+          <div class="competition-categories-block">
+            <div class="section-mini-heading">
+              <div><span class="eyebrow">Categorias</span><strong>{{ focusCategories.length }} configurada(s)</strong></div>
+              <router-link to="/competicoes" class="text-link">Detalhar competição →</router-link>
+            </div>
+            <div v-if="focusCategories.length" class="category-summary-list">
+              <article v-for="item in focusCategories" :key="item.id" class="category-summary-item">
+                <span>{{ item.nome }}</span>
+                <small>{{ item.modalidade === 'FOLLOW_LINE' ? 'Follow Line' : 'Sumô' }}</small>
+                <strong>{{ categoryCount(item.id) }} inscrição(ões)</strong>
+              </article>
+            </div>
+            <p v-else class="muted dashboard-empty-copy">Nenhuma categoria configurada para esta competição.</p>
+          </div>
+        </article>
+
+        <article class="dashboard-activity-card">
+          <div class="card-heading dashboard-card-heading-v2">
+            <div>
+              <span class="eyebrow">Atividade recente</span>
               <h2>Últimas inscrições</h2>
             </div>
             <router-link to="/inscricoes" class="text-link">Ver todas</router-link>
           </div>
 
-          <el-table :data="recentRegistrations" empty-text="Nenhuma inscrição registrada">
-            <el-table-column prop="teamNome" label="Equipe" min-width="150" />
-            <el-table-column prop="robotNome" label="Robô" min-width="140" />
-            <el-table-column prop="categoryNome" label="Categoria" min-width="150" />
-            <el-table-column label="Status" width="140">
-              <template #default="{ row }">
-                <StatusBadge :value="row.status" />
-              </template>
-            </el-table-column>
-            <el-table-column label="Atualização" width="145">
-              <template #default="{ row }">
-                <span class="muted small">{{ formatDateTime(row.reviewedAt || row.dataCadastro) }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
+          <div v-if="recentRegistrations.length" class="activity-list-v2">
+            <article v-for="item in recentRegistrations" :key="item.id" class="activity-item-v2">
+              <span class="activity-dot" :class="`activity-${item.status.toLowerCase()}`" />
+              <div>
+                <strong>{{ item.robotNome }} · {{ item.teamNome }}</strong>
+                <small>{{ item.categoryNome }} · {{ formatDateTime(item.reviewedAt || item.dataCadastro) }}</small>
+              </div>
+              <StatusBadge :value="item.status" />
+            </article>
+          </div>
+          <div v-else class="dashboard-empty-state-small">
+            <strong>Nenhuma movimentação nesta competição.</strong>
+            <span>As novas inscrições aparecerão aqui.</span>
+          </div>
         </article>
+      </section>
 
-        <aside class="dashboard-side-stack">
-          <article class="dashboard-action-card">
-            <div>
-              <span class="eyebrow">Acesso rápido</span>
-              <h2>Operação</h2>
-            </div>
+      <article v-else class="empty-state-card">
+        <span class="eyebrow">Competição em foco</span>
+        <h2>Nenhuma competição cadastrada</h2>
+        <p class="muted">Cadastre a primeira edição para começar a operação do RRC.</p>
+        <router-link to="/competicoes" class="link-button">Abrir competição</router-link>
+      </article>
 
-            <div class="quick-action-list">
-              <router-link to="/inscricoes" class="quick-action">
-                <div><strong>Analisar inscrições</strong><small>Aprovar ou rejeitar pendências</small></div>
-                <span>→</span>
-              </router-link>
-              <router-link to="/follow-line" class="quick-action">
-                <div><strong>Seguidor de Linha</strong><small>Registrar tentativa e consultar ranking</small></div>
-                <span>→</span>
-              </router-link>
-              <router-link to="/sumo" class="quick-action">
-                <div><strong>Operar Sumô</strong><small>Inspeção, chave, partidas e rounds</small></div>
-                <span>→</span>
-              </router-link>
-              <router-link to="/competicoes" class="quick-action">
-                <div><strong>Competições</strong><small>Configurar e consultar edições</small></div>
-                <span>→</span>
-              </router-link>
-            </div>
-          </article>
-
-          <article class="dashboard-summary-card">
-            <span class="eyebrow">Base do sistema</span>
-            <h2>Cadastros</h2>
-            <dl class="dashboard-summary-list">
-              <div><dt>Competições</dt><dd>{{ competitions.length }}</dd></div>
-              <div><dt>Equipes</dt><dd>{{ teams.length }}</dd></div>
-              <div><dt>Competidores</dt><dd>{{ competitors.length }}</dd></div>
-              <div><dt>Robôs</dt><dd>{{ robots.length }}</dd></div>
-            </dl>
-          </article>
-        </aside>
-      </div>
+      <section class="dashboard-quick-section">
+        <div class="section-mini-heading dashboard-quick-heading">
+          <div><span class="eyebrow">Acesso rápido</span><strong>Atalhos da organização</strong></div>
+        </div>
+        <div class="dashboard-quick-grid">
+          <router-link to="/inscricoes" class="dashboard-quick-card">
+            <span>01</span><div><strong>Analisar inscrições</strong><small>Aprovar ou rejeitar pendências</small></div><b>→</b>
+          </router-link>
+          <router-link to="/follow-line" class="dashboard-quick-card">
+            <span>02</span><div><strong>Follow Line</strong><small>Tentativas, tempos e ranking</small></div><b>→</b>
+          </router-link>
+          <router-link to="/sumo" class="dashboard-quick-card">
+            <span>03</span><div><strong>Sumô</strong><small>Inspeção, chave e partidas</small></div><b>→</b>
+          </router-link>
+          <router-link to="/competicoes" class="dashboard-quick-card">
+            <span>04</span><div><strong>Competição</strong><small>Datas, categorias e configuração</small></div><b>→</b>
+          </router-link>
+        </div>
+      </section>
     </template>
 
     <template v-else>
       <div class="metric-grid">
-        <article class="metric-card accent-purple">
+        <article class="metric-card accent-red">
           <span>Minhas equipes</span><strong>{{ teams.length }}</strong>
         </article>
         <article class="metric-card">
