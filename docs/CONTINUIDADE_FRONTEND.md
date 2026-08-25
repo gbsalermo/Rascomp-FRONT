@@ -96,7 +96,7 @@ Camunda só deve ser reconsiderado no futuro se surgir um processo realmente dur
 
 ---
 
-# 4. Perfis
+# 4. Perfis e onboarding
 
 ```text
 ORGANIZACAO
@@ -121,14 +121,35 @@ Opera:
 
 ## PARTICIPANTE
 
-Usa apenas recursos próprios conforme ownership do backend:
+Fluxo de primeiro acesso definido:
 
-- equipes;
-- competidores;
-- robôs;
-- inscrições.
+```text
+Criar conta
+    ↓
+UserAccount PARTICIPANTE
+    ↓
+Minha equipe
+    ↓
+Já tem equipe?
+├── NÃO → criar equipe → vira líder
+└── SIM → buscar equipe → solicitar entrada → líder aprova/rejeita
+    ↓
+Equipe pronta
+    ↓
+Inscrição de um robô
+├── 1 responsável
+└── 0..N suportes
+```
 
-O portal participante ainda precisa evoluir de leitura/MVP para experiência CRUD completa.
+A busca visual de equipes já está preparada no frontend usando `/api/v1/public/equipes`.
+A solicitação/aprovação real de entrada depende da evolução pós-Swagger do backend.
+
+Documentação:
+
+```text
+docs/ONBOARDING_PARTICIPANTE.md
+backend: rascomp/docs/POS_SWAGGER_USUARIOS_EQUIPES_INSCRICAO.md
+```
 
 ---
 
@@ -137,26 +158,38 @@ O portal participante ainda precisa evoluir de leitura/MVP para experiência CRU
 Implementado:
 
 ```text
+POST /api/v1/auth/register
 POST /api/v1/auth/login
 GET  /api/v1/auth/me
 Authorization: Bearer <JWT>
 ```
 
+Rotas públicas da Gestão:
+
+```text
+/login
+/cadastro
+/recuperar-senha
+```
+
 Frontend:
 
 - Pinia para sessão;
-- token persistido localmente;
+- `localStorage` quando “Lembrar de mim” está marcado;
+- `sessionStorage` caso contrário;
 - interceptor Axios;
 - limpeza em 401;
 - rotas por role;
-- logout.
+- logout;
+- cadastro de participante com login automático;
+- tela de recuperação preparada, backend ainda pendente.
 
 Validação local da integração Gestão ↔ Backend realizada com sucesso em 2026-08-24:
 
 ```text
-backend local    ✅
-frontend local   ✅
-login ORGANIZACAO ✅
+backend local      ✅
+frontend local     ✅
+login ORGANIZACAO  ✅
 ```
 
 ---
@@ -175,6 +208,7 @@ Superfícies claras
 
 Referência visual oficial: protótipo aprovado na conversa do projeto com:
 
+- login split-panel;
 - sidebar administrativa escura;
 - topbar clara;
 - dashboard operacional;
@@ -186,12 +220,12 @@ Referência visual oficial: protótipo aprovado na conversa do projeto com:
 
 ---
 
-# 7. Estado técnico da Gestão
-
-Rotas atuais:
+# 7. Rotas atuais
 
 ```text
 /login
+/cadastro
+/recuperar-senha
 /
 /competicoes
 /inscricoes
@@ -200,7 +234,7 @@ Rotas atuais:
 /minha-equipe
 ```
 
-Navegação ORGANIZACAO organizada conceitualmente em:
+Navegação ORGANIZACAO:
 
 ```text
 GERAL
@@ -246,19 +280,28 @@ Não foram criados números falsos para reproduzir o mockup.
 
 ## UI 2 — Inscrições
 
-Próxima etapa após validação visual do Dashboard.
+Status: **IMPLEMENTADO / AGUARDANDO VALIDAÇÃO LOCAL**
 
-Objetivo:
+Entregue:
 
-- convergir tabela para o protótipo;
-- filtros melhores;
-- detalhe da inscrição;
-- aprovação/rejeição clara;
-- feedback de operação;
-- leitura de equipe/robô/categoria/competidores;
-- manter auditoria do backend.
+- [x] competição em foco;
+- [x] métricas total/pendentes/aprovadas/rejeitadas;
+- [x] filtros por competição e status;
+- [x] busca por equipe, robô, categoria, solicitante ou competidor;
+- [x] tabela operacional refinada;
+- [x] detalhe da inscrição em drawer;
+- [x] visualização dos competidores;
+- [x] observação original preservada;
+- [x] aprovação/rejeição com confirmação;
+- [x] leitura de `reviewedByUser` / `reviewedAt`;
+- [x] atualização após mutação;
+- [x] responsividade inicial.
+
+Não foi criado “motivo de rejeição” artificial porque o backend não possui campo separado para isso atualmente.
 
 ## UI 3 — Follow Line
+
+**PRÓXIMA ETAPA** depois da validação local das telas já alteradas.
 
 Planejado:
 
@@ -330,10 +373,11 @@ Planejado:
 Depois dos fluxos centrais:
 
 - equipes;
-- competidores;
+- membros/solicitações após suporte do backend;
 - robôs;
 - modalidades/categorias;
-- portal participante CRUD completo.
+- portal participante CRUD completo;
+- wizard de inscrição com responsável + suportes após evolução pós-Swagger.
 
 ## UI 8 — Consolidação
 
@@ -359,7 +403,7 @@ SUMO
 FOLLOW_LINE
 ```
 
-Backlog pós-Swagger já registrado no backend:
+Backlog pós-Swagger:
 
 ```text
 SUMO
@@ -380,8 +424,6 @@ Documento backend:
 rascomp/docs/POS_SWAGGER_MODALIDADES_E_CATEGORIAS.md
 ```
 
-O frontend deve consumir a classificação/configuração que o backend consolidar nessa etapa, evitando espalhar condicionais rígidas desnecessárias.
-
 ---
 
 # 10. Landing
@@ -399,8 +441,6 @@ contratos /api/v1/public/** revisados
       ↓
 LANDING 0 — auditoria
 ```
-
-A Landing final será o site institucional da RAS UFRB com área forte do evento RRC.
 
 ---
 
@@ -435,10 +475,10 @@ npm run build
 # 12. Próxima ação oficial
 
 ```text
-VALIDAR LOCALMENTE UI 1
+VALIDAR LOCALMENTE
+Login + Cadastro + Primeiro acesso
 Shell + Dashboard
-        ↓
-UI 2 — Inscrições
+Inscrições
         ↓
 UI 3 — Follow Line
         ↓
