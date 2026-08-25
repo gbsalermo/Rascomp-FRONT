@@ -1,17 +1,28 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
   ArrowRight,
+  Bell,
   Collection,
   DataBoard,
+  Setting,
   Tickets,
   Timer,
   Trophy,
   User
 } from '@element-plus/icons-vue'
+import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
+
+interface AdminAlert {
+  id: string
+  title: string
+  detail: string
+  to: string
+  kind: 'attention' | 'match' | 'info'
+}
 
 const auth = useAuthStore()
 const competition = useCompetitionStore()
@@ -19,17 +30,22 @@ const route = useRoute()
 const router = useRouter()
 const collapsed = ref(false)
 const mobileOpen = ref(false)
+const alertLoading = ref(false)
+const alerts = ref<AdminAlert[]>([])
 
 const organizationSections = [
   {
     label: 'Geral',
-    items: [{ label: 'Visão geral', to: '/', icon: DataBoard }]
+    items: [{ label: 'Dashboard', to: '/', icon: DataBoard }]
   },
   {
     label: 'Competição',
     items: [
       { label: 'Competição', to: '/competicoes', icon: Trophy },
-      { label: 'Inscrições', to: '/inscricoes', icon: Tickets }
+      { label: 'Inscrições', to: '/inscricoes', icon: Tickets },
+      { label: 'Equipes', to: '/equipes', icon: User },
+      { label: 'Robôs', to: '/robos', icon: Collection },
+      { label: 'Modalidades', to: '/modalidades', icon: Trophy }
     ]
   },
   {
@@ -38,6 +54,18 @@ const organizationSections = [
       { label: 'Follow Line', to: '/follow-line', icon: Timer },
       { label: 'Sumô', to: '/sumo', icon: Collection }
     ]
+  },
+  {
+    label: 'Competição ao vivo',
+    items: [
+      { label: 'Chaves', to: '/chaves', icon: Trophy },
+      { label: 'Partidas', to: '/partidas', icon: Timer },
+      { label: 'Resultados', to: '/resultados', icon: DataBoard }
+    ]
+  },
+  {
+    label: 'Sistema',
+    items: [{ label: 'Configurações', to: '/configuracoes', icon: Setting }]
   }
 ]
 
@@ -59,14 +87,22 @@ const pageTitle = computed(() => {
     '/': 'Visão geral',
     '/competicoes': 'Competição',
     '/inscricoes': 'Inscrições',
+    '/equipes': 'Equipes',
+    '/robos': 'Robôs',
+    '/modalidades': 'Modalidades',
     '/follow-line': 'Follow Line',
     '/sumo': 'Sumô',
+    '/chaves': 'Chaves',
+    '/partidas': 'Partidas',
+    '/resultados': 'Resultados',
+    '/configuracoes': 'Configurações',
     '/minha-equipe': 'Minha equipe'
   }
   return titles[route.path] || 'Gestão da competição'
 })
 
 const roleLabel = computed(() => (auth.isOrganization ? 'Organização' : 'Participante'))
+const alertCount = computed(() => alerts.value.length)
 
 function isActive(to: string) {
   return to === '/' ? route.path === '/' : route.path.startsWith(to)
@@ -82,9 +118,84 @@ function logout() {
   router.push('/login')
 }
 
-onMounted(() => {
-  if (auth.isOrganization) competition.load()
+function minutesUntil(value: string) {
+  return Math.round((new Date(value).getTime() - Date.now()) / 60000)
+}
+
+async function loadAlerts() {
+  if (!auth.isOrganization || !competition.selectedId) {
+    alerts.value = []
+    return
+  }
+
+  alertLoading.value = true
+  try {
+    const competitionId = competition.selectedId
+    const [registrations, brackets] = await Promise.all([
+      adminApi.registrations({ competitionId }),
+      adminApi.brackets(competitionId).catch(() => [])
+    ])
+
+    const nextAlerts: AdminAlert[] = []
+    const pending = registrations.filter((item) => item.status === 'PENDENTE')
+
+    if (pending.length) {
+      nextAlerts.push({
+        id: 'pending-registrations',
+        title: `${pending.length} inscrição(ões) pendente(s)`,
+        detail: 'Há inscrições aguardando análise da organização.',
+        to: '/inscricoes',
+        kind: 'attention'
+      })
+    }
+
+    const matchGroups = await Promise.all(
+      brackets.map((bracket) => adminApi.matches(bracket.id).catch(() => []))
+    )
+    const matches = matchGroups.flat()
+    const upcoming = matches
+      .filter((match) => match.dataHora && ['AGENDADA', 'EM_ANDAMENTO'].includes(match.status || ''))
+      .map((match) => ({ match, minutes: minutesUntil(match.dataHora!) }))
+      .filter(({ minutes }) => minutes >= -10 && minutes <= 90)
+      .sort((a, b) => a.minutes - b.minutes)
+      .slice(0, 4)
+
+    for (const { match, minutes } of upcoming) {
+      nextAlerts.push({
+        id: `match-${match.id}`,
+        title: minutes <= 0 ? 'Partida em andamento' : `Partida em ${minutes} min`,
+        detail: `${match.robotANome || 'A definir'} × ${match.robotBNome || 'A definir'}`,
+        to: '/partidas',
+        kind: 'match'
+      })
+    }
+
+    if (registrations.filter((item) => item.status === 'APROVADA').length >= 2 && brackets.length === 0) {
+      nextAlerts.push({
+        id: 'bracket-pending',
+        title: 'Chave ainda não gerada',
+        detail: 'Existem inscrições aprovadas e nenhum chaveamento nesta competição.',
+        to: '/chaves',
+        kind: 'info'
+      })
+    }
+
+    alerts.value = nextAlerts
+  } catch {
+    alerts.value = []
+  } finally {
+    alertLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  if (auth.isOrganization) {
+    await competition.load()
+    await loadAlerts()
+  }
 })
+
+watch(() => competition.selectedId, loadAlerts)
 </script>
 
 <template>
@@ -113,7 +224,7 @@ onMounted(() => {
         </span>
         <div v-if="!collapsed" class="brand-copy">
           <strong>RasComp</strong>
-          <small>Gestão do RRC</small>
+          <small>Painel de Gestão</small>
         </div>
       </button>
 
@@ -157,13 +268,15 @@ onMounted(() => {
         </div>
 
         <div v-if="auth.isOrganization" class="topbar-competition-switch">
-          <span>Competição em foco</span>
+          <div class="competition-switch-copy">
+            <span>Competição em foco</span>
+            <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Selecione a edição' }}</small>
+          </div>
           <el-select
             :model-value="competition.selectedId"
             :loading="competition.loading"
             placeholder="Selecionar competição"
-            size="small"
-            style="width: 220px"
+            style="width: 245px"
             @change="competition.select"
           >
             <el-option
@@ -176,6 +289,37 @@ onMounted(() => {
         </div>
 
         <div class="topbar-user">
+          <el-dropdown v-if="auth.isOrganization" trigger="click" placement="bottom-end">
+            <button class="notification-bell" aria-label="Abrir alertas" title="Alertas da competição">
+              <el-badge :value="alertCount" :hidden="alertCount === 0" :max="9">
+                <el-icon><Bell /></el-icon>
+              </el-badge>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu class="admin-alert-menu">
+                <div class="admin-alert-header">
+                  <strong>Alertas</strong>
+                  <span>{{ competition.selectedCompetition?.nome || 'Competição' }}</span>
+                </div>
+                <el-dropdown-item v-if="alertLoading" disabled>Atualizando alertas...</el-dropdown-item>
+                <el-dropdown-item v-else-if="alerts.length === 0" disabled>Nenhuma pendência imediata.</el-dropdown-item>
+                <el-dropdown-item
+                  v-for="item in alerts"
+                  v-else
+                  :key="item.id"
+                  class="admin-alert-item"
+                  @click="go(item.to)"
+                >
+                  <span class="alert-indicator" :class="`alert-${item.kind}`" />
+                  <div>
+                    <strong>{{ item.title }}</strong>
+                    <small>{{ item.detail }}</small>
+                  </div>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+
           <span class="topbar-role">{{ roleLabel }}</span>
           <div class="user-copy">
             <strong>{{ auth.user?.nome }}</strong>
