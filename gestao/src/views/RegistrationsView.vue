@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { adminApi, camundaApi } from '../api'
+import { adminApi } from '../api'
 import type { Competition, Registration, RegistrationStatus } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -33,10 +33,6 @@ async function load() {
   }
 }
 async function review(row: Registration, next: RegistrationStatus) {
-  if (camundaApi.enabled) {
-    ElMessage.info('Com Camunda ativo, a decisão será feita pela tarefa do processo.')
-    return
-  }
   const label = next === 'APROVADA' ? 'aprovar' : 'rejeitar'
   try {
     await ElMessageBox.confirm(`Deseja ${label} a inscrição de ${row.teamNome}?`, 'Confirmar análise', {
@@ -56,8 +52,11 @@ onMounted(loadBase)
 <template>
   <div class="page-stack">
     <div class="page-heading">
-      <div><span class="eyebrow">Entrada da competição</span><h1>Inscrições</h1><p class="muted">Aprovação manual enquanto o BPMN do Camunda não estiver ativo.</p></div>
-      <span class="integration-chip" :class="{ live: camundaApi.enabled }">{{ camundaApi.enabled ? 'Camunda ativo' : 'Camunda aguardando' }}</span>
+      <div>
+        <span class="eyebrow">Entrada da competição</span>
+        <h1>Inscrições</h1>
+        <p class="muted">Analise as inscrições usando o estado oficial do backend.</p>
+      </div>
     </div>
 
     <article class="filter-bar">
