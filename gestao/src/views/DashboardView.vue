@@ -69,10 +69,6 @@ const recentRegistrations = computed(() =>
     .slice(0, 6)
 )
 
-const activeCompetitionsCount = computed(() =>
-  competition.competitions.filter((item) => item.status === 'EM_ANDAMENTO').length
-)
-
 function formatDate(value?: string) {
   if (!value) return '—'
   const date = new Date(`${value}T12:00:00`)
@@ -163,19 +159,35 @@ onMounted(load)
       <section class="dashboard-metric-grid dashboard-metric-grid-v2">
         <article class="dashboard-stat-card rubro">
           <span class="dashboard-stat-icon"><el-icon><Trophy /></el-icon></span>
-          <div><small>Competições em andamento</small><strong>{{ activeCompetitionsCount }}</strong><span>{{ competition.competitions.length }} cadastrada(s)</span></div>
+          <div>
+            <small>Inscrições da edição</small>
+            <strong>{{ focusRegistrations.length }}</strong>
+            <span>{{ focusCategories.length }} categoria(s) configurada(s)</span>
+          </div>
         </article>
         <article class="dashboard-stat-card rubro-soft">
           <span class="dashboard-stat-icon"><el-icon><Tickets /></el-icon></span>
-          <div><small>Inscrições aprovadas</small><strong>{{ approvedRegistrations.length }}</strong><span>{{ focusRegistrations.length }} na edição</span></div>
+          <div>
+            <small>Inscrições aprovadas</small>
+            <strong>{{ approvedRegistrations.length }}</strong>
+            <span>{{ registeredCompetitors }} competidor(es)</span>
+          </div>
         </article>
         <article class="dashboard-stat-card">
           <span class="dashboard-stat-icon"><el-icon><Collection /></el-icon></span>
-          <div><small>Robôs inscritos</small><strong>{{ registeredRobots }}</strong><span>{{ registeredTeams }} equipe(s)</span></div>
+          <div>
+            <small>Robôs inscritos</small>
+            <strong>{{ registeredRobots }}</strong>
+            <span>{{ registeredTeams }} equipe(s)</span>
+          </div>
         </article>
         <article class="dashboard-stat-card warning-card">
           <span class="dashboard-stat-icon"><el-icon><User /></el-icon></span>
-          <div><small>Aguardando análise</small><strong>{{ pendingRegistrations.length }}</strong><span>{{ registeredCompetitors }} competidor(es)</span></div>
+          <div>
+            <small>Aguardando análise</small>
+            <strong>{{ pendingRegistrations.length }}</strong>
+            <span>pendência(s) da competição em foco</span>
+          </div>
         </article>
       </section>
 
