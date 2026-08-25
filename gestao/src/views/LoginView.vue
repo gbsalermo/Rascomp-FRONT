@@ -37,7 +37,7 @@ async function submit() {
           operação em tempo real.
         </p>
         <div class="login-chips">
-          <span>FOLLOW LINE</span><span>SUMÔ</span><span>CAMUNDA READY</span>
+          <span>FOLLOW LINE</span><span>SUMÔ</span><span>RRC OPS</span>
         </div>
       </div>
     </section>
