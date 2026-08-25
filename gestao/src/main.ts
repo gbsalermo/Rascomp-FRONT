@@ -12,6 +12,7 @@ import './styles/login-viewport-fix.css'
 import './styles/admin-consolidation.css'
 import './styles/admin-refinement.css'
 import './styles/competition-hub.css'
+import './styles/bracket-history.css'
 import App from './App.vue'
 import router from './router'
 
