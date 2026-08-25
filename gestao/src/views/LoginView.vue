@@ -30,28 +30,23 @@ async function submit() {
 <template>
   <div class="login-page">
     <div class="login-shell login-shell-main">
-      <section class="login-brand-panel" aria-label="Identidade RASCOMP">
-        <div class="login-brand-content">
+      <section class="login-brand-panel" aria-label="Identidade RasComp">
+        <div class="login-brand-lockup-wrap">
           <img
-            src="/rascomp-logo.webp"
-            alt="RasComp"
-            class="login-brand-logo"
+            src="/rascomp-brand-full.webp"
+            alt="RasComp — IEEE Robotics & Automation Society, UFRB Student Branch"
+            class="login-brand-lockup"
           />
-          <span class="login-brand-subtitle">Sistema de Gestão</span>
-          <span class="login-brand-event">RRC - Competição de Robótica</span>
         </div>
-
-        <img
-          src="/ieee-ras-login.svg"
-          alt="IEEE Robotics & Automation Society"
-          class="login-ieee-logo"
-        />
       </section>
 
       <section class="login-form-panel">
         <form class="login-card" @submit.prevent="submit">
           <div class="login-mobile-brand">
-            <img src="/rascomp-logo.webp" alt="RasComp" />
+            <img
+              src="/rascomp-brand-full.webp"
+              alt="RasComp — IEEE Robotics & Automation Society, UFRB Student Branch"
+            />
           </div>
 
           <header class="login-form-heading">
