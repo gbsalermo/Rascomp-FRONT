@@ -1,0 +1,80 @@
+/* Isolamento final das telas de autenticação.
+   Este arquivo é importado por último para impedir que regras históricas do
+   layout administrativo interfiram em login/cadastro/recuperação. */
+
+html,
+body,
+#app {
+  width: 100%;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+body #app .login-page {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  min-width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  grid-template-columns: none !important;
+  place-items: initial !important;
+  place-content: initial !important;
+  padding: clamp(18px, 3vw, 40px) !important;
+  overflow: auto !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(79, 25, 103, .05), transparent 32%),
+    linear-gradient(180deg, #fbfafc 0%, #f4f2f6 100%) !important;
+}
+
+body #app .login-page > .login-shell {
+  flex: 0 1 1180px !important;
+  width: min(1180px, calc(100vw - clamp(36px, 6vw, 80px))) !important;
+  max-width: 1180px !important;
+  margin: auto !important;
+}
+
+body #app .login-page > .login-shell.login-shell-main {
+  height: min(690px, calc(100dvh - clamp(36px, 6vw, 80px))) !important;
+  min-height: min(600px, calc(100dvh - clamp(36px, 6vw, 80px))) !important;
+}
+
+@media (max-width: 900px) {
+  body #app .login-page {
+    position: absolute !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    padding: 18px !important;
+  }
+
+  body #app .login-page > .login-shell,
+  body #app .login-page > .login-shell.login-shell-main {
+    width: min(560px, calc(100vw - 36px)) !important;
+    max-width: 560px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body #app .login-page {
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body #app .login-page > .login-shell,
+  body #app .login-page > .login-shell.login-shell-main {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100dvh !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
