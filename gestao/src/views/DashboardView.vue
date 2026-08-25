@@ -253,20 +253,23 @@ onMounted(load)
 
       <section class="dashboard-quick-section">
         <div class="section-mini-heading dashboard-quick-heading">
-          <div><span class="eyebrow">Acesso rápido</span><strong>Atalhos da organização</strong></div>
+          <div><span class="eyebrow">Acesso rápido</span><strong>Operações mais usadas</strong></div>
         </div>
-        <div class="dashboard-quick-grid">
-          <router-link to="/inscricoes" class="dashboard-quick-card">
-            <span>01</span><div><strong>Analisar inscrições</strong><small>Aprovar ou rejeitar pendências</small></div><b>→</b>
+        <div class="dashboard-quick-grid dashboard-quick-grid-five">
+          <router-link to="/inscricoes" class="dashboard-quick-card quick-red">
+            <span>+</span><div><strong>Nova inscrição</strong><small>Abrir gestão de inscrições</small></div><b>→</b>
           </router-link>
           <router-link to="/follow-line" class="dashboard-quick-card">
-            <span>02</span><div><strong>Follow Line</strong><small>Tentativas, tempos e ranking</small></div><b>→</b>
+            <span>⏱</span><div><strong>Registrar tentativa</strong><small>Follow Line</small></div><b>→</b>
           </router-link>
-          <router-link to="/sumo" class="dashboard-quick-card">
-            <span>03</span><div><strong>Sumô</strong><small>Inspeção, chave e partidas</small></div><b>→</b>
+          <router-link to="/chaves" class="dashboard-quick-card quick-red">
+            <span>{ }</span><div><strong>Gerar chave</strong><small>Sumô</small></div><b>→</b>
           </router-link>
-          <router-link to="/competicoes" class="dashboard-quick-card">
-            <span>04</span><div><strong>Competição</strong><small>Datas, categorias e configuração</small></div><b>→</b>
+          <router-link to="/partidas" class="dashboard-quick-card">
+            <span>▶</span><div><strong>Gerenciar partidas</strong><small>Sumô</small></div><b>→</b>
+          </router-link>
+          <router-link to="/resultados" class="dashboard-quick-card quick-red">
+            <span>▥</span><div><strong>Ver resultados</strong><small>Ranking e vencedores</small></div><b>→</b>
           </router-link>
         </div>
       </section>
