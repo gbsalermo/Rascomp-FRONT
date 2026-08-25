@@ -33,7 +33,7 @@ async function submit() {
       <section class="login-brand-panel" aria-label="Identidade RASCOMP">
         <div class="login-brand-content">
           <img
-            src="/rascomp-login-logo.svg"
+            src="/rascomp-logo.webp"
             alt="RasComp"
             class="login-brand-logo"
           />
@@ -51,7 +51,7 @@ async function submit() {
       <section class="login-form-panel">
         <form class="login-card" @submit.prevent="submit">
           <div class="login-mobile-brand">
-            <img src="/rascomp-login-logo.svg" alt="RasComp" />
+            <img src="/rascomp-logo.webp" alt="RasComp" />
           </div>
 
           <header class="login-form-heading">
