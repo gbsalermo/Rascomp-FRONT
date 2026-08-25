@@ -3,7 +3,13 @@
 Frontend do RASCOMP, dividido em duas aplicações Vue independentes no mesmo repositório:
 
 - **`gestao/`** — sistema autenticado para `ORGANIZACAO` e `PARTICIPANTE`;
-- **`landing-page/`** — interface pública institucional e de acompanhamento da competição.
+- **`landing-page/`** — site público da RAS UFRB e acompanhamento do evento RRC.
+
+## Nomenclatura
+
+- **RAS UFRB** — identidade institucional pública;
+- **RRC** — evento/competição de robótica;
+- **RASCOMP** — plataforma de software que sustenta Gestão + Backend + experiência pública.
 
 ## Arquitetura
 
@@ -14,13 +20,13 @@ PARTICIPANTE / ORGANIZACAO
      Frontend Gestão
            │
            ▼
-        Backend
+     Spring Boot API
        ┌───┴──────────────────┐
        │                      │
 API autenticada       /api/v1/public/**
                               │
                               ▼
-                           Landing
+                         Site público
 ```
 
 O backend é a única fonte de verdade. A Gestão não envia dados diretamente para a Landing.
@@ -36,7 +42,9 @@ Element Plus (Gestão)
 
 A implementação se inspira nos padrões de shell administrativo, sidebar, rotas por permissão e cliente HTTP centralizado de `Armour/vue-typescript-admin-template`, `PanJiaChen/vue-admin-template` e `iview/iview-admin`, mantendo código próprio.
 
-## Gestão implementada
+## Gestão
+
+Já existe base funcional para:
 
 - login JWT e `/api/v1/auth/me`;
 - rotas protegidas por `PARTICIPANTE` / `ORGANIZACAO`;
@@ -45,30 +53,45 @@ A implementação se inspira nos padrões de shell administrativo, sidebar, rota
 - análise de inscrições;
 - Follow Line: lançamento de tentativas + ranking oficial;
 - Sumô: inspeção + geração de chave + partidas + rounds + resultados;
-- portal do participante em leitura;
-- adapter/feature flag para Camunda Engine REST.
+- portal do participante em leitura.
 
-## Landing implementada
+### Decisão arquitetural: sem Camunda
 
-A Landing consome apenas `/api/v1/public/**` e já espelha:
+Camunda foi retirado do escopo do RASCOMP.
 
-- competição em foco;
-- inscrições aprovadas/equipes/robôs;
-- ranking do Follow Line;
-- chaveamento, partidas e resultados do Sumô;
-- fotos principais dos robôs quando publicadas;
-- polling controlado durante competição `EM_ANDAMENTO`.
+Os fluxos competitivos permanecem no domínio Spring Boot. Em especial, o Sumô já possui serviços para:
 
-## Camunda
-
-O frontend está preparado para Camunda sem transferir regras competitivas para BPMN ou para o navegador.
-
-```env
-VITE_CAMUNDA_ENABLED=false
-VITE_CAMUNDA_URL=http://localhost:8080/engine-rest
+```text
+inscrições aprovadas + inspeção apta
+        ↓
+geração de chave
+        ↓
+BYEs automáticos
+        ↓
+partidas
+        ↓
+rounds
+        ↓
+MatchResult automático
+        ↓
+progressão do vencedor
+        ↓
+finalização da chave
 ```
 
-Enquanto o BPMN RASCOMP não estiver implantado, a análise de inscrição continua usando o fluxo REST atual. Depois, o adapter de processos pode assumir as tarefas humanas.
+Não será adicionado workflow engine sem uma necessidade futura concreta de processo duradouro/multiator.
+
+## Chaveamento visual
+
+O frontend deverá convergir para o protótipo visual aprovado: bracket em árvore por rodadas, com cards de confronto, conectores, vencedor destacado e abertura da partida/rounds ao clicar.
+
+A interface **não calcula a progressão**. Ela renderiza o estado retornado pelo backend usando `rodada`, `ordem`, participantes, status e resultados.
+
+## Landing
+
+A Landing está pausada como POC técnico. O desenvolvimento final começa após a consolidação da Gestão e revisão dos contratos públicos do backend.
+
+O site final será institucional da RAS UFRB, com uma área forte do RRC para pré-evento, acompanhamento ao vivo e histórico.
 
 ## Backend usado como contrato
 
@@ -85,7 +108,7 @@ npm install
 npm run dev
 ```
 
-Landing:
+Landing POC:
 
 ```bash
 cd landing-page
@@ -104,8 +127,9 @@ Backend  http://localhost:8080
 
 ## Documentação
 
-- `docs/IMPLEMENTACAO_VUE_MVP.md` — estado prático atual;
-- `docs/SYSTEM_DESIGN_GESTAO.md` — decisões arquiteturais anteriores e domínio;
-- `docs/CONTINUIDADE_FRONTEND.md` — histórico/continuidade.
+- `docs/IMPLEMENTACAO_VUE_MVP.md` — estado prático atual e decisões recentes;
+- `docs/SYSTEM_DESIGN_GESTAO.md` — domínio e arquitetura da Gestão;
+- `docs/CONTINUIDADE_LANDING_PAGE.md` — continuidade exclusiva do site público;
+- `docs/CONTINUIDADE_FRONTEND.md` — histórico do planejamento inicial.
 
-A decisão tecnológica mais recente (**Vue 3**) substitui referências anteriores a React existentes nos documentos históricos.
+A decisão tecnológica mais recente é **Vue 3**. Referências históricas a React não representam a implementação atual.
