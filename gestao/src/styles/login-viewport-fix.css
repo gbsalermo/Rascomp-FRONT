@@ -57,7 +57,7 @@ body #app .login-brand-composition {
   position: relative;
   z-index: 2;
   display: grid;
-  width: min(400px, 100%);
+  width: min(450px, 100%);
   justify-items: center;
   color: #fff;
 }
@@ -72,15 +72,16 @@ body #app .login-brand-topline {
 
 body #app .login-rascomp-mark {
   display: grid;
-  min-width: 130px;
+  min-width: 155px;
   justify-items: center;
   color: #fff;
 }
 
 body #app .login-rascomp-mark .login-robot-icon {
-  width: 88px;
-  height: 88px;
-  margin: 0 0 10px;
+  width: 105px;
+  height: 105px;
+  margin: 0 0 2px;
+  margin-bottom: -25px;
   fill: none;
   stroke: currentColor;
   stroke-width: 4;
@@ -89,7 +90,7 @@ body #app .login-rascomp-mark .login-robot-icon {
 }
 
 body #app .login-rascomp-mark strong {
-  font-size: clamp(1.7rem, 2.8vw, 2.25rem);
+  font-size: clamp(2rem, 3vw, 2.55rem);
   font-weight: 850;
   letter-spacing: -.04em;
 }
@@ -103,9 +104,9 @@ body #app .login-brand-separator {
 
 body #app .login-ieee-official {
   display: block;
-  width: min(176px, 44%);
+  width: min(500px, 60%);
   height: auto;
-  flex: 0 1 176px;
+  flex: 0 1 205px;
   object-fit: contain;
 }
 
