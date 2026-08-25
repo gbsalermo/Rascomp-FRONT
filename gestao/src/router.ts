@@ -59,22 +59,28 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
+
+  if (!auth.hydrated) {
+    try {
+      await auth.hydrate()
+    } catch {
+      // hydrate limpa a sessão inválida; a decisão de rota é feita abaixo.
+    }
+  }
+
   if (to.meta.public) {
-    if (auth.isAuthenticated && ['login', 'register'].includes(String(to.name))) {
+    if (auth.isAuthenticated && auth.user && ['login', 'register'].includes(String(to.name))) {
       return { name: 'dashboard' }
     }
     return true
   }
-  if (!auth.isAuthenticated) return { name: 'login', query: { redirect: to.fullPath } }
-  if (!auth.user) {
-    try {
-      await auth.hydrate()
-    } catch {
-      return { name: 'login' }
-    }
+
+  if (!auth.isAuthenticated || !auth.user) {
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
+
   const requiredRole = to.meta.role as string | undefined
-  if (requiredRole && auth.user?.role !== requiredRole) return { name: 'dashboard' }
+  if (requiredRole && auth.user.role !== requiredRole) return { name: 'dashboard' }
   return true
 })
 
