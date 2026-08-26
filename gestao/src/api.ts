@@ -4,10 +4,12 @@ import type {
   Bracket,
   Category,
   Competition,
+  ConfigSumo,
   Match,
   MatchResult,
   RankingItem,
   Registration,
+  RoundSumo,
   Team,
   Robot,
   Competitor,
@@ -118,6 +120,8 @@ export const adminApi = {
     http.post('/api/v1/tentativas-seguidor-linha', payload).then((r) => r.data),
   inspectSumo: (payload: Record<string, unknown>) =>
     http.post('/api/v1/inspecoes-sumo', payload).then((r) => r.data),
+  sumoConfig: (categoryId: number) =>
+    http.get<ConfigSumo>(`/api/v1/categorias/${categoryId}/config-sumo`).then((r) => r.data),
   brackets: (competitionId: number) =>
     http
       .get<Bracket[]>('/api/v1/chaveamentos/por-competicao', { params: { competitionId } })
@@ -135,9 +139,13 @@ export const adminApi = {
       .get<MatchResult[]>('/api/v1/resultados-partida/por-chaveamento', { params: { bracketId } })
       .then((r) => r.data),
   rounds: (matchId: number) =>
-    http.get('/api/v1/rounds-sumo/por-partida', { params: { matchId } }).then((r) => r.data),
+    http.get<RoundSumo[]>('/api/v1/rounds-sumo/por-partida', { params: { matchId } }).then((r) => r.data),
   createRound: (payload: Record<string, unknown>) =>
-    http.post('/api/v1/rounds-sumo', payload).then((r) => r.data)
+    http.post<RoundSumo>('/api/v1/rounds-sumo', payload).then((r) => r.data),
+  registerSumoBattle: (payload: {
+    matchId: number
+    rounds: Array<{ winnerRegistrationId?: number; status: string; observacao?: string }>
+  }) => http.post<RoundSumo[]>('/api/v1/rounds-sumo/batalha', payload).then((r) => r.data)
 }
 
 export const participantApi = {
