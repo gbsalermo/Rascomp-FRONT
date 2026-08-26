@@ -6,4 +6,5 @@ import './highlights-hero.css'
 import './about.css'
 import './team-robots-awards.css'
 import './gallery.css'
+import './events.css'
 createApp(App).mount('#app')
