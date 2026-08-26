@@ -8,4 +8,5 @@ import './team-robots-awards.css'
 import './gallery.css'
 import './events.css'
 import './active-competition.css'
+import './footer.css'
 createApp(App).mount('#app')
