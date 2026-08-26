@@ -222,34 +222,75 @@ watch(() => competition.selectedId, loadAlerts)
     <div v-if="mobileOpen" class="mobile-backdrop" @click="mobileOpen = false" />
 
     <main class="main-area">
-      <header class="topbar">
-        <button class="mobile-menu-button" aria-label="Abrir menu" @click="mobileOpen = true">☰</button>
-        <div class="topbar-copy"><span>{{ pageTitle }}</span><small>{{ auth.user?.nome }}</small></div>
+      <header class="topbar admin-topbar-v2">
+        <div class="topbar-context">
+          <button class="mobile-menu" aria-label="Abrir menu" @click="mobileOpen = true">☰</button>
+          <div>
+            <span class="eyebrow">IEEE RAS · UFRB</span>
+            <strong>{{ pageTitle }}</strong>
+          </div>
+        </div>
 
-        <div v-if="auth.isOrganization" class="topbar-competition">
-          <span>Competição em foco</span>
-          <el-select v-model="competition.selectedId" placeholder="Selecionar competição" size="small" style="width:260px" @change="(value:number) => competition.select(value)">
+        <div v-if="auth.isOrganization" class="topbar-competition-switch">
+          <div class="competition-switch-copy">
+            <span>Competição em foco</span>
+            <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Selecione a edição' }}</small>
+          </div>
+          <el-select
+            :model-value="competition.selectedId"
+            :loading="competition.loading"
+            placeholder="Selecionar competição"
+            style="width: 245px"
+            @change="competition.select"
+          >
             <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
           </el-select>
         </div>
 
-        <div class="topbar-actions">
-          <el-popover v-if="auth.isOrganization" placement="bottom-end" :width="360" trigger="click" @show="loadAlerts">
-            <template #reference>
-              <button class="topbar-icon-button" aria-label="Alertas"><el-icon><Bell /></el-icon><span v-if="alertCount" class="notification-badge">{{ alertCount }}</span></button>
+        <div class="topbar-user">
+          <el-dropdown v-if="auth.isOrganization" trigger="click" placement="bottom-end" @visible-change="(visible: boolean) => visible && loadAlerts()">
+            <button class="notification-bell" aria-label="Abrir alertas" title="Alertas da competição">
+              <el-badge :value="alertCount" :hidden="alertCount === 0" :max="9">
+                <el-icon><Bell /></el-icon>
+              </el-badge>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu class="admin-alert-menu">
+                <div class="admin-alert-header">
+                  <strong>Alertas</strong>
+                  <span>{{ competition.selectedCompetition?.nome || 'Competição' }}</span>
+                </div>
+                <el-dropdown-item v-if="alertLoading" disabled>Atualizando alertas...</el-dropdown-item>
+                <el-dropdown-item v-else-if="alerts.length === 0" disabled>Nenhuma pendência imediata.</el-dropdown-item>
+                <template v-else>
+                  <el-dropdown-item v-for="item in alerts" :key="item.id" class="admin-alert-item" @click="go(item.to)">
+                    <span class="alert-indicator" :class="`alert-${item.kind}`" />
+                    <div><strong>{{ item.title }}</strong><small>{{ item.detail }}</small></div>
+                  </el-dropdown-item>
+                </template>
+              </el-dropdown-menu>
             </template>
-            <div class="notification-panel" v-loading="alertLoading">
-              <div class="notification-heading"><strong>Alertas operacionais</strong><small>{{ alertCount ? `${alertCount} item(ns)` : 'Tudo em dia' }}</small></div>
-              <button v-for="alert in alerts" :key="alert.id" class="notification-item" :class="`kind-${alert.kind}`" @click="go(alert.to)"><strong>{{ alert.title }}</strong><span>{{ alert.detail }}</span></button>
-              <div v-if="!alerts.length && !alertLoading" class="notification-empty">Nenhum alerta para a competição em foco.</div>
-            </div>
-          </el-popover>
-          <div class="topbar-user"><span>{{ auth.user?.nome }}</span><small>{{ roleLabel }}</small></div>
-          <el-button text @click="logout">Sair</el-button>
+          </el-dropdown>
+
+          <span class="topbar-role">{{ roleLabel }}</span>
+          <div class="user-copy">
+            <strong>{{ auth.user?.nome }}</strong>
+            <small>{{ auth.user?.email }}</small>
+          </div>
+          <el-dropdown>
+            <button class="avatar" :aria-label="`Menu de ${auth.user?.nome || 'usuário'}`">
+              {{ auth.user?.nome?.slice(0, 1).toUpperCase() }}
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="logout">Sair</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </header>
 
-      <section class="content-area">
+      <section class="page-content">
         <router-view v-slot="{ Component }">
           <transition name="admin-page-slide" mode="out-in"><component :is="Component" /></transition>
         </router-view>
