@@ -60,7 +60,13 @@ const organizationSections = [
       { label: 'Resultados', to: '/resultados', icon: DataBoard }
     ]
   },
-  { label: 'Sistema', items: [{ label: 'Configurações', to: '/configuracoes', icon: Setting }] }
+  {
+    label: 'Sistema',
+    items: [
+      { label: 'Usuários', to: '/usuarios', icon: User },
+      { label: 'Configurações', to: '/configuracoes', icon: Setting }
+    ]
+  }
 ]
 
 const participantSections = [
@@ -84,6 +90,7 @@ const pageTitle = computed(() => {
     '/chaves': 'Chaves',
     '/partidas': 'Partidas',
     '/resultados': 'Resultados',
+    '/usuarios': 'Usuários',
     '/configuracoes': 'Configurações',
     '/minha-equipe': 'Meu painel'
   }
