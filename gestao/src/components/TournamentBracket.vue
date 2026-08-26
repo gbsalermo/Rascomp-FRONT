@@ -31,7 +31,7 @@ function roundName(round: number) {
 
 function matchGridStyle(match: Match) {
   const row = (2 * match.ordem - 1) * Math.pow(2, match.rodada - 1)
-  const branch = 110 * Math.pow(2, match.rodada - 1)
+  const branch = 164 * Math.pow(2, match.rodada - 1)
   return {
     gridColumn: String(match.rodada),
     gridRow: String(row),
@@ -86,7 +86,7 @@ function canRegister(match: Match) {
         class="bracket-grid"
         :style="{
           gridTemplateColumns: `repeat(${maxRound}, minmax(230px, 1fr))`,
-          gridTemplateRows: `repeat(${gridRows}, 92px)`
+          gridTemplateRows: `repeat(${gridRows}, 146px)`
         }"
       >
         <article
