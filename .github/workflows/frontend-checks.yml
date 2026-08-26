@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - 'gestao/**'
+      - 'landing-page/**'
       - '.github/workflows/frontend-checks.yml'
   pull_request:
     paths:
       - 'gestao/**'
+      - 'landing-page/**'
       - '.github/workflows/frontend-checks.yml'
 
 jobs:
@@ -28,6 +30,25 @@ jobs:
           cache-dependency-path: gestao/package-lock.json
       - name: Install dependencies
         run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+
+  landing:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: landing-page
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
       - name: Typecheck
         run: npm run typecheck
       - name: Build
