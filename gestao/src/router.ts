@@ -15,6 +15,7 @@ import SumoMatchView from './views/SumoMatchView.vue'
 import BracketHistoryView from './views/BracketHistoryView.vue'
 import MatchesView from './views/MatchesView.vue'
 import ResultsView from './views/ResultsView.vue'
+import UsersView from './views/UsersView.vue'
 import SettingsView from './views/SettingsView.vue'
 import ParticipantView from './views/ParticipantView.vue'
 
@@ -43,6 +44,7 @@ const router = createRouter({
         { path: 'chaves', name: 'brackets-history', component: BracketHistoryView, meta: organizationMeta },
         { path: 'partidas', name: 'matches-admin', component: MatchesView, meta: organizationMeta },
         { path: 'resultados', name: 'results-admin', component: ResultsView, meta: organizationMeta },
+        { path: 'usuarios', name: 'users-admin', component: UsersView, meta: organizationMeta },
         { path: 'configuracoes', name: 'settings-admin', component: SettingsView, meta: organizationMeta },
         { path: 'minha-equipe', name: 'participant', component: ParticipantView, meta: { role: 'PARTICIPANTE' } }
       ]
