@@ -45,6 +45,26 @@ function formatDateTime(value?: string) {
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(date)
 }
 
+function canOpenArena(row: MatchRow) {
+  return Boolean(row.id)
+    && Boolean(row.registrationAId)
+    && Boolean(row.registrationBId)
+    && row.status !== 'BYE'
+    && row.status !== 'AGUARDANDO_PARTICIPANTES'
+}
+
+function arenaRoute(row: MatchRow) {
+  return {
+    name: 'sumo-match',
+    params: { matchId: String(row.id) },
+    query: {
+      ...(row.competitionId ? { competitionId: String(row.competitionId) } : {}),
+      ...(row.categoryId ? { categoryId: String(row.categoryId) } : {}),
+      ...(row.bracketId ? { bracketId: String(row.bracketId) } : {})
+    }
+  }
+}
+
 async function load() {
   loading.value = true
   try {
@@ -128,6 +148,14 @@ onMounted(load)
         <el-table-column prop="rodada" label="Rodada" width="90" />
         <el-table-column label="Horário" width="170"><template #default="{ row }">{{ formatDateTime(row.dataHora) }}</template></el-table-column>
         <el-table-column label="Status" width="170"><template #default="{ row }"><StatusBadge :value="row.status" /></template></el-table-column>
+        <el-table-column label="Ação" width="130" align="right">
+          <template #default="{ row }">
+            <router-link v-if="canOpenArena(row)" :to="arenaRoute(row)" class="text-link">
+              {{ row.status === 'FINALIZADA' || row.status === 'CANCELADA' || row.historical ? 'Ver partida' : 'Abrir partida' }}
+            </router-link>
+            <span v-else class="muted">Aguardando</span>
+          </template>
+        </el-table-column>
       </el-table>
     </article>
   </div>
