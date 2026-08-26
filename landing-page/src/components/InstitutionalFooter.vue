@@ -6,7 +6,7 @@
           <a href="#top" class="footer-identity" aria-label="IEEE RAS UFRB — voltar ao início">
             <img
               class="footer-identity-logo"
-              src="https://raw.githubusercontent.com/gbsalermo/Rascomp-FRONT/main/gestao/public/ieee-ras-official.png"
+              src="/ieee-ras-official.png"
               alt="IEEE Robotics & Automation Society"
             />
             <span class="footer-identity-copy">
