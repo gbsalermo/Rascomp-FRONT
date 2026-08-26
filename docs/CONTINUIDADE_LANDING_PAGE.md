@@ -33,7 +33,7 @@ Direção:
 - bastante respiro;
 - fotografia real quando houver acervo oficial;
 - transições suaves;
-- evitar cyberpunk, aparência de dashboard e excesso de cards pequenos.
+- evitar cyberpunk, aparência de dashboard e excesso de informação simultânea.
 
 Imagens, logos, datas e números podem permanecer como placeholders até o material oficial ser fornecido.
 
@@ -83,7 +83,7 @@ HEADER
 │
 ├── EVENTOS DA RAS
 │
-├── [CONDICIONAL] COMPETIÇÃO ATUAL + CRONOGRAMA + ACOMPANHAR
+├── [CONDICIONAL] COMPETIÇÃO ATUAL + ACOMPANHAMENTO
 │
 └── FOOTER INSTITUCIONAL
 ```
@@ -92,8 +92,8 @@ Decisões congeladas:
 
 1. Equipe/Diretoria/Robôs/Premiações fica antes da Galeria;
 2. `Edições anteriores` foi removido do esqueleto da Home;
-3. Competição atual + Cronograma + Acompanhar formam uma única janela competitiva condicional;
-4. a janela competitiva só aparece quando houver competição pública da RAS em `EM_ANDAMENTO` gerenciada pelo RasComp;
+3. competição atual e acompanhamento ficam numa única janela;
+4. a janela competitiva só aparece para competição pública da RAS em `EM_ANDAMENTO` gerenciada pelo RasComp;
 5. competição não faz parte da janela de Equipe/Robôs/Premiações.
 
 Narrativa:
@@ -157,7 +157,7 @@ landing-page/src/components/HighlightsHero.vue
 landing-page/src/highlights-hero.css
 ```
 
-Estrutura:
+Estrutura aprovada:
 
 ```text
 ┌─────────────────────────────────────────────┬──────────────────────┐
@@ -201,7 +201,7 @@ Estrutura:
 [ membros ] [ robôs ] [ prêmios ] [ eventos ] [ escolas visitadas ]
 ```
 
-Implementado próximo da demo com mídia principal, miniaturas, tabs largas, blocos explicativos com ícones e faixa inferior de indicadores.
+Implementado próximo da demo com mídia principal, miniaturas, tabs largas, blocos explicativos e faixa inferior de indicadores.
 
 Fotos e números ainda são placeholders.
 
@@ -265,7 +265,7 @@ Ao clicar em um álbum, abre prévia flutuante. Fotos, datas e quantidades ainda
 
 ---
 
-# 10. JANELA 6 — EVENTOS DA RAS ✅
+# 10. JANELA 6 — EVENTOS DA RAS ✅ DEMO APROVADA + IMPLEMENTAÇÃO ALINHADA
 
 Arquivos:
 
@@ -274,33 +274,53 @@ landing-page/src/components/InstitutionalEvents.vue
 landing-page/src/events.css
 ```
 
-A demo aprovada substituiu o conceito inicial de barras expansíveis.
+A versão aprovada é a demo com cards de eventos, agenda e histórico — **não** a ideia inicial de barras expansíveis.
 
-Estrutura final:
+Estrutura oficial:
 
 ```text
 EVENTOS DA RAS
+texto institucional
 
-[ Todos ] [ Organizados pela RAS ] [ Participações ] [ Oficinas ] [ Palestras ] [ Competições ]
+[ Todos os eventos ] [ Organizados pela RAS ] [ Participações ] [ Oficinas ] [ Palestras ] [ Competições ]
 
 ┌──────────────────────────────────────────────────────────┬──────────────────────┐
 │ PRÓXIMOS EVENTOS                                         │ PRÓXIMOS NA AGENDA   │
-│ cards de eventos                                         │ data + evento + tipo │
+│ [ RRC ] [ Oficina ] [ Palestra ] [ RAS nas Escolas ]    │ data + evento + tipo │
+│                                                          │ ...                  │
+│             [ Ver todos os eventos ]                     │ Ver agenda completa  │
 ├──────────────────────────────────────────────────────────┼──────────────────────┤
 │ DESTAQUES DE EVENTOS ANTERIORES                          │ FIQUE POR DENTRO     │
-│ cards históricos                                         │ e-mail + redes       │
+│ [ evento ] [ evento ] [ evento ] [ evento ]              │ e-mail + redes       │
 └──────────────────────────────────────────────────────────┴──────────────────────┘
 
 [ eventos ] [ pessoas impactadas ] [ escolas ] [ anos ] [ estados ]
 ```
 
-`id="calendario"` fica na agenda lateral para atender ao link Calendário do Header.
+Já implementado:
 
-Imagens, datas, locais e indicadores ainda são placeholders editoriais.
+- filtros;
+- quatro próximos eventos em destaque;
+- agenda lateral;
+- cards de eventos anteriores;
+- painel `Fique por dentro`;
+- newsletter demonstrativa;
+- links visuais para redes;
+- faixa de indicadores;
+- `id="calendario"` na agenda;
+- responsividade.
+
+Diferenças temporárias aceitas em relação à demo:
+
+- imagens ainda são placeholders/gradientes;
+- datas e locais são exemplos editoriais;
+- indicadores são placeholders até confirmação oficial.
+
+**Revisão de fidelidade: APROVADA.**
 
 ---
 
-# 11. JANELA 7 — COMPETIÇÃO ATUAL + CRONOGRAMA + ACOMPANHAR ✅ IMPLEMENTAÇÃO INICIAL
+# 11. JANELA 7 — COMPETIÇÃO ATUAL + ACOMPANHAMENTO ✅ DEMO SIMPLIFICADA APROVADA + IMPLEMENTAÇÃO ALINHADA
 
 Arquivos:
 
@@ -332,100 +352,96 @@ Eventos da RAS
 Footer
 ```
 
-Nenhum espaço vazio, placeholder competitivo ou painel inativo deve ocupar a Home.
+Não deve existir espaço vazio ou painel competitivo inativo.
 
-`INSCRICOES_ABERTAS`, `PLANEJADA`, `FINALIZADA` e demais estados não exibem esta janela. Esses estados ainda podem alimentar Hero/Header quando fizer sentido, mas não o acompanhamento ao vivo.
+`INSCRICOES_ABERTAS`, `PLANEJADA`, `FINALIZADA`, `CANCELADA` e demais estados não exibem esta janela.
 
-Se existirem duas competições simultaneamente em `EM_ANDAMENTO`, a janela oferece seletor para alternar entre elas.
+Se existirem duas competições simultaneamente em `EM_ANDAMENTO`, aparece um seletor compacto para alternar entre elas.
 
-## Estrutura implementada
+## Demo simplificada aprovada
 
-```text
-┌───────────────────────────────────────────────────────────────┐
-│ COMPETIÇÃO EM ANDAMENTO                                      │
-│ RRC 20XX                                      [ acompanhar ] │
-│ descrição + período                                           │
-└───────────────────────────────────────────────────────────────┘
-
-[ inscrições ] [ equipes ] [ robôs ] [ categorias ] [ partidas ]
-
-CRONOGRAMA
-Inscrições → Homologação → Chaves → Inspeção → Disputas → Finais
-
-ACOMPANHAR
-[ Ao vivo ] [ Partidas ] [ Chave ] [ Ranking ] [ Resultados ]
-```
-
-## Visão geral
-
-Indicadores são derivados dos dados públicos da competição selecionada:
-
-- inscrições aprovadas;
-- equipes únicas;
-- robôs únicos;
-- categorias/modalidades;
-- partidas da chave selecionada.
-
-Não usar contagens globais de outras competições.
-
-## Cronograma
-
-O backend atual fornece datas oficiais para:
-
-- início/fim das inscrições;
-- início/fim da competição.
-
-Por isso o frontend **não inventa datas** para homologação, chave, inspeção ou finais.
-
-A timeline mostra essas etapas, mas só exibe datas específicas quando existem no cadastro oficial. Estados derivados dos dados públicos podem indicar, por exemplo, que a chave já foi publicada.
-
-## Acompanhar
-
-Tabs internas:
+A primeira demo da Janela 7 foi rejeitada por estar cheia demais. A versão oficial é a segunda demo, mais leve:
 
 ```text
-Ao vivo
-Partidas
-Chave
-Ranking
-Resultados
+COMPETIÇÃO ATUAL
+RRC 20XX                             [ Em andamento ]
+resumo curto
+
+┌────────────────────────────┬───────────────────────┬───────────────────────┐
+│ PANORAMA GERAL             │ FOLLOW LINE           │ SUMÔ                  │
+│ equipes                    │ top 3 ranking         │ próximos confrontos   │
+│ robôs                      │ robô + tempo          │ A × B                  │
+│ modalidades                │                       │                        │
+│ inscrições                 │ Ver ranking completo  │ Ver chave completa     │
+│                            │                       │                        │
+│ Inscrições → Inspeção      │                       │                        │
+│ → Chaves → Partidas →      │                       │                        │
+│ Finais                     │                       │                        │
+│ [ Acompanhar competição ]  │                       │                        │
+└────────────────────────────┴───────────────────────┴───────────────────────┘
+
+PRÓXIMOS DESTAQUES
+[ próxima partida ] [ último resultado ] [ líder/ranking Follow Line ]
 ```
 
-### Ao vivo
+## Panorama geral
 
-Mostra:
+Exibe somente dados da competição selecionada:
 
-- partida em andamento, se houver;
-- caso contrário, próxima partida agendada;
-- horário;
-- status;
-- chave atual;
-- líder Follow Line;
-- quantidade de resultados publicados.
+- equipes únicas com inscrição aprovada;
+- robôs únicos com inscrição aprovada;
+- quantidade de modalidades presentes;
+- total de inscrições da competição.
 
-### Partidas
-
-Lista as partidas oficiais retornadas pela API pública, com rodada, ordem, confronto, horário e status.
-
-### Chave
-
-Organiza as partidas por rodada para apresentar o chaveamento sem recalcular progressão.
-
-O frontend apenas representa os dados publicados pelo backend.
-
-### Ranking
-
-Usa o ranking Follow Line oficial e o campo correto:
+### Progresso simplificado
 
 ```text
-tempoFinalSegundos
+Inscrições → Inspeção → Chaves → Partidas → Finais
 ```
 
-Permite trocar a categoria Follow Line quando houver mais de uma.
+Os estados visuais são derivados dos dados públicos disponíveis.
 
-### Resultados
+O frontend não inventa resultados nem progressão oficial.
 
-Exibe os resultados oficiais da chave selecionada, vencedor e placar quando disponível.
+## Follow Line
+
+Card próprio, separado do Sumô.
+
+Mostra inicialmente:
+
+- top 3 do ranking oficial;
+- posição;
+- robô;
+- equipe;
+- `tempoFinalSegundos`.
+
+Quando houver mais de uma categoria Follow Line, aparece seletor compacto.
+
+`Ver ranking completo` expande até oito posições sem transformar a Home em uma página esportiva pesada.
+
+## Sumô
+
+Card próprio.
+
+Mostra inicialmente até dois próximos confrontos oficiais:
+
+```text
+ROBÔ A × ROBÔ B      Em breve / Agora
+```
+
+Quando houver mais de uma chave, aparece seletor compacto.
+
+`Ver chave completa` expande uma representação enxuta das rodadas.
+
+O frontend apenas representa a chave publicada pelo backend e nunca calcula avanço.
+
+## Próximos destaques
+
+Faixa inferior enxuta com:
+
+- próxima partida de Sumô;
+- último resultado oficial publicado;
+- líder/ranking atual do Follow Line.
 
 ## Fonte de verdade
 
@@ -440,23 +456,21 @@ A Landing nunca:
 - decide resultado;
 - recalcula ranking oficial;
 - altera inscrição;
-- registra round/partida.
+- registra round ou partida.
 
-## Refatoração realizada no App.vue
+## Refatoração do App.vue
 
-Os blocos competitivos antigos foram removidos:
+Os antigos blocos competitivos separados foram removidos:
 
 ```text
 live-strip
-visão geral competitiva separada
-ranking Follow Line separado
-Sumô separado
-robôs/equipes competitivos separados
+visão geral competitiva isolada
+ranking Follow Line isolado
+Sumô isolado
+robôs/equipes competitivos isolados
 ```
 
-Tudo foi consolidado na `ActiveCompetition.vue`.
-
-O `App.vue` também deixou de depender de `assetUrl` para esses blocos antigos e o fluxo de troca de competição/categoria/chave ficou explícito.
+Todo o acompanhamento está concentrado em `ActiveCompetition.vue`.
 
 ## Atualização automática
 
@@ -468,9 +482,7 @@ VITE_REFRESH_MS
 
 Fallback atual: 20 segundos.
 
-## Estado da etapa
-
-Implementação estrutural concluída. A demo desta janela deve ser avaliada e passa a ser o alvo visual para o refinamento, como nas janelas anteriores.
+**Revisão de fidelidade: a versão simplificada aprovada é agora a implementação oficial.**
 
 ---
 
@@ -583,20 +595,21 @@ JANELA 3 — Sobre IEEE/RAS                   ✅ implementada + demo + fidelida
 JANELA 4 — Equipe/Diretoria/Robôs/Prêmios  ✅ demo 1 aprovada + implementação alinhada
 JANELA 5 — Galeria                          ✅ implementada + demo + fidelidade revisada
 JANELA 6 — Eventos                          ✅ demo aprovada + implementação alinhada
-JANELA 7 — Competição/Cronograma/Acompanhar ✅ implementação inicial; demo agora
-JANELA 8 — Footer                           ⬜
+JANELA 7 — Competição/Acompanhamento        ✅ demo simplificada aprovada + implementação alinhada
+JANELA 8 — Footer                           ⏭ próxima
 ```
 
 ---
 
 # 17. Próximo passo
 
-1. avaliar a demo da Janela 7;
-2. ajustar a implementação para máxima fidelidade;
-3. depois seguir para:
-
 ```text
 JANELA 8 — FOOTER INSTITUCIONAL
 ```
 
-Antes de considerar a Landing consolidada, rodar `npm run typecheck` e `npm run build` no ambiente local.
+Antes de considerar a Landing consolidada, rodar no ambiente local:
+
+```bash
+npm run typecheck
+npm run build
+```
