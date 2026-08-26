@@ -216,7 +216,7 @@ function canRegister(match: Match) {
   left: -28px;
   top: 50%;
   width: 28px;
-  border-top: 2px solid #d8bdc8;
+  border-top: 3px solid #c39aaa;
 }
 
 .bracket-match:not(.is-final)::after {
@@ -225,14 +225,14 @@ function canRegister(match: Match) {
   right: -28px;
   top: 50%;
   width: 28px;
-  border-top: 2px solid #d8bdc8;
+  border-top: 3px solid #c39aaa;
 }
 
 .branch-line {
   position: absolute;
   right: -29px;
-  width: 2px;
-  background: #d8bdc8;
+  width: 3px;
+  background: #c39aaa;
 }
 
 .is-upper .branch-line {
