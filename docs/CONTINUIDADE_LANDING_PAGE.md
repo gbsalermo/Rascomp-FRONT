@@ -61,11 +61,11 @@ O usuário pode revisar visualmente depois no PC; enquanto estiver longe, demos 
 ```text
 HEADER                                      ✅ implementado
 │
-├── HERO / PAINEL DE DESTAQUES              ✅ implementação inicial
+├── HERO / PAINEL DE DESTAQUES              ✅ implementado
 │
-├── SOBRE IEEE + RAS                        ⏭ próxima janela
+├── SOBRE IEEE + RAS                        ✅ implementado
 │
-├── GALERIA                                 planejado
+├── GALERIA                                 ⏭ próxima janela
 │
 ├── EQUIPE / DIRETORIA / ROBÔS / PRÊMIOS   planejado
 │
@@ -152,7 +152,7 @@ O layout atual usa marca textual temporária. Substituir pelo asset oficial IEEE
 
 ---
 
-# 6. JANELA 2 — HERO / PAINEL DE DESTAQUES ✅ IMPLEMENTAÇÃO INICIAL
+# 6. JANELA 2 — HERO / PAINEL DE DESTAQUES ✅
 
 Componente:
 
@@ -252,9 +252,16 @@ O Hero possui uma linha discreta de novidades/agenda, deixando o conteúdo edito
 
 ---
 
-# 7. JANELA 3 — SOBRE IEEE + RAS ⏭ PRÓXIMA
+# 7. JANELA 3 — SOBRE IEEE + RAS ✅
 
-Conceito aprovado:
+Componente:
+
+```text
+landing-page/src/components/InstitutionalAbout.vue
+landing-page/src/about.css
+```
+
+Estrutura implementada:
 
 ```text
 [ slider quadrado de fotos ]      [ IEEE ] [ RAS UFRB ]
@@ -263,7 +270,7 @@ Conceito aprovado:
 
 ## Mídia à esquerda
 
-Slider quadrado pode mostrar:
+Slider quadrado preparado para mostrar:
 
 - equipe;
 - premiações;
@@ -272,9 +279,20 @@ Slider quadrado pode mostrar:
 - oficinas;
 - ações em escolas.
 
+Enquanto o acervo oficial não é adicionado, o componente usa placeholders institucionais claros, sem inventar fotografias definitivas.
+
+Comportamento:
+
+- avanço automático aproximadamente a cada 6,5 segundos;
+- setas anterior/próximo;
+- dots de seleção direta;
+- legenda inferior;
+- responsivo;
+- em tablet o bloco visual passa para cima do conteúdo.
+
 ## Conteúdo à direita
 
-Dois títulos/abas:
+Duas tabs:
 
 ```text
 IEEE
@@ -283,15 +301,52 @@ RAS UFRB
 
 Ao clicar, troca apenas o conteúdo textual, sem navegar para outra página.
 
-Objetivo:
+### IEEE
 
-- explicar primeiro o ecossistema IEEE;
-- explicar o que é o capítulo RAS UFRB;
-- deixar claro papel, propósito, formação, tecnologia e extensão.
+Texto introdutório sobre a rede IEEE e seu papel de integração técnica, acadêmica e profissional.
+
+Pontos destacados:
+
+- comunidade técnica internacional;
+- formação e desenvolvimento profissional;
+- integração entre pesquisa, indústria e universidade.
+
+### RAS UFRB
+
+Texto introdutório sobre o capítulo estudantil da IEEE Robotics & Automation Society na UFRB.
+
+Pontos destacados:
+
+- projetos práticos de robótica e automação;
+- competições, oficinas e ações de extensão;
+- aprendizado colaborativo e desenvolvimento de equipe.
+
+## CTAs
+
+```text
+[ Conheça nossas ações ]
+[ Ver equipe ]
+```
+
+Esses links apontam para seções institucionais futuras da própria Home.
+
+## Visual
+
+- fundo branco;
+- slider claro com gradientes suaves roxo/rubro;
+- tabs com roxo institucional;
+- rubro pontual em ícones/checks;
+- títulos escuros;
+- bastante respiro;
+- sem estética de dashboard.
+
+## Conteúdo definitivo
+
+Os textos atuais são institucionais introdutórios. Antes da publicação, revisar com material oficial do capítulo/IEEE se houver texto institucional aprovado para uso público.
 
 ---
 
-# 8. JANELA 4 — GALERIA
+# 8. JANELA 4 — GALERIA ⏭ PRÓXIMA
 
 A galeria entra cedo, após o Sobre ou imediatamente depois da apresentação institucional.
 
@@ -565,9 +620,9 @@ Antes de publicação definir:
 
 ```text
 JANELA 1 — Header                  ✅ implementada + demo
-JANELA 2 — Hero/Destaques         ✅ implementação inicial + demo pendente nesta etapa
-JANELA 3 — Sobre IEEE/RAS          ⏭ próxima
-JANELA 4 — Galeria                 ⬜
+JANELA 2 — Hero/Destaques         ✅ implementada + demo
+JANELA 3 — Sobre IEEE/RAS          ✅ implementada + demo
+JANELA 4 — Galeria                 ⏭ próxima
 JANELA 5 — Equipe/Robôs/Prêmios    ⬜
 JANELA 6 — Eventos                 ⬜
 JANELA 7 — Competição atual        ⬜
@@ -582,8 +637,8 @@ A implementação das janelas institucionais pode avançar visualmente mesmo ant
 
 # 19. Próximo passo
 
-Após aprovar a demo da Janela 2:
+Após aprovar a demo da Janela 3:
 
 ```text
-JANELA 3 — SOBRE IEEE + RAS UFRB
+JANELA 4 — GALERIA
 ```
