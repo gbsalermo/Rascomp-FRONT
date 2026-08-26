@@ -12,6 +12,7 @@ import type {
   MatchResult,
   Registration,
   RoundSumo,
+  RoundSumoOutcomeReason,
   RoundSumoStatus
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
@@ -20,6 +21,9 @@ import TournamentBracket from '../components/TournamentBracket.vue'
 interface BattleSlot {
   numeroRound: number
   choice?: 'A' | 'B' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
+  motivoResultado: RoundSumoOutcomeReason
+  penalidadesA: number
+  penalidadesB: number
 }
 
 const route = useRoute()
@@ -59,7 +63,9 @@ const filteredBrackets = computed(() =>
 const approved = computed(() => registrations.value.filter((r) => r.status === 'APROVADA' && r.categoryId === categoryId.value))
 const selectedMatch = computed(() => matches.value.find((m) => m.id === battle.matchId))
 const projectedBattleScore = computed(() => scoreUntil(Number.POSITIVE_INFINITY, true))
-const pendingBattleRounds = computed(() => battleSlots.value.filter((slot) => slot.choice))
+const pendingBattleRounds = computed(() =>
+  battleSlots.value.filter((slot) => slot.choice && !existingRound(slot.numeroRound))
+)
 const battleWinner = computed<'A' | 'B' | undefined>(() => {
   const target = battleConfig.value?.roundsParaVencer || 0
   if (!target) return undefined
@@ -189,7 +195,12 @@ async function openBattle(match: Match) {
     battleConfig.value = config
 
     const totalSlots = config.numeroRounds + (config.permiteRoundDesempate ? 1 : 0)
-    battleSlots.value = Array.from({ length: totalSlots }, (_, index) => ({ numeroRound: index + 1 }))
+    battleSlots.value = Array.from({ length: totalSlots }, (_, index) => ({
+      numeroRound: index + 1,
+      motivoResultado: 'DISPUTA',
+      penalidadesA: 0,
+      penalidadesB: 0
+    }))
   } catch (error: any) {
     battleDialog.value = false
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os rounds da batalha.')
@@ -206,13 +217,20 @@ function roundChoicePayload(slot: BattleSlot) {
   const match = selectedMatch.value
   if (!slot.choice || !match) return undefined
 
+  const common = {
+    motivoResultado: slot.choice === 'A' || slot.choice === 'B' ? slot.motivoResultado : 'DISPUTA' as RoundSumoOutcomeReason,
+    penalidadesA: slot.penalidadesA,
+    penalidadesB: slot.penalidadesB,
+    observacao: battle.observacao || undefined
+  }
+
   if (slot.choice === 'A') {
-    return { winnerRegistrationId: match.registrationAId, status: 'FINALIZADO' as RoundSumoStatus, observacao: battle.observacao || undefined }
+    return { ...common, winnerRegistrationId: match.registrationAId, status: 'FINALIZADO' as RoundSumoStatus }
   }
   if (slot.choice === 'B') {
-    return { winnerRegistrationId: match.registrationBId, status: 'FINALIZADO' as RoundSumoStatus, observacao: battle.observacao || undefined }
+    return { ...common, winnerRegistrationId: match.registrationBId, status: 'FINALIZADO' as RoundSumoStatus }
   }
-  return { status: slot.choice as RoundSumoStatus, observacao: battle.observacao || undefined }
+  return { ...common, status: slot.choice as RoundSumoStatus }
 }
 
 function scoreUntil(numeroRound: number, includePending: boolean) {
@@ -266,26 +284,47 @@ function roundEnabled(numeroRound: number) {
   return numeroRound <= battleConfig.value.numeroRounds
 }
 
+function clearRoundsAfter(numeroRound: number) {
+  const target = battleConfig.value?.roundsParaVencer || 0
+  for (const later of battleSlots.value.filter((item) => item.numeroRound > numeroRound)) {
+    const before = scoreUntil(later.numeroRound, true)
+    if (before.A >= target || before.B >= target) {
+      later.choice = undefined
+      later.motivoResultado = 'DISPUTA'
+      later.penalidadesA = 0
+      later.penalidadesB = 0
+    }
+  }
+}
+
 function chooseRound(slot: BattleSlot, choice: BattleSlot['choice']) {
   if (!roundEnabled(slot.numeroRound)) return
   slot.choice = choice
-
-  const target = battleConfig.value?.roundsParaVencer || 0
-  for (const later of battleSlots.value.filter((item) => item.numeroRound > slot.numeroRound)) {
-    const before = scoreUntil(later.numeroRound, true)
-    if (before.A >= target || before.B >= target) later.choice = undefined
-  }
+  slot.motivoResultado = 'DISPUTA'
+  clearRoundsAfter(slot.numeroRound)
 }
 
 function handleRoundChoice(slot: BattleSlot, value: unknown) {
   chooseRound(slot, value as BattleSlot['choice'])
 }
 
+function applyWo(slot: BattleSlot, loser: 'A' | 'B') {
+  if (!roundEnabled(slot.numeroRound)) return
+  slot.choice = loser === 'A' ? 'B' : 'A'
+  slot.motivoResultado = 'SUICIDIO_WO'
+  clearRoundsAfter(slot.numeroRound)
+}
+
 function applyFinish(side: 'A' | 'B') {
   if (!battleConfig.value || !selectedMatch.value) return
 
   for (const slot of battleSlots.value) {
-    if (!existingRound(slot.numeroRound)) slot.choice = undefined
+    if (!existingRound(slot.numeroRound)) {
+      slot.choice = undefined
+      slot.motivoResultado = 'DISPUTA'
+      slot.penalidadesA = 0
+      slot.penalidadesB = 0
+    }
   }
 
   const target = battleConfig.value.roundsParaVencer
@@ -296,18 +335,26 @@ function applyFinish(side: 'A' | 'B') {
     if (existingRound(slot.numeroRound)) continue
     if (!roundEnabled(slot.numeroRound)) continue
     slot.choice = side
+    slot.motivoResultado = 'DISPUTA'
     score++
   }
 }
 
 function roundWinnerLabel(round: RoundSumo) {
   if (round.status !== 'FINALIZADO') return round.status.replaceAll('_', ' ')
-  return round.winnerRobotNome ? `${round.winnerRobotNome} venceu` : 'Finalizado'
+  const suffix = round.motivoResultado === 'SUICIDIO_WO' ? ' · Suicídio/WO do adversário' : ''
+  return round.winnerRobotNome ? `${round.winnerRobotNome} venceu${suffix}` : `Finalizado${suffix}`
 }
 
 function existingRoundLabel(numeroRound: number) {
   const round = existingRound(numeroRound)
   return round ? roundWinnerLabel(round) : ''
+}
+
+function existingPenaltyLabel(round: RoundSumo) {
+  const a = round.penalidadesA || 0
+  const b = round.penalidadesB || 0
+  return `Penalidades A: ${a} · B: ${b}`
 }
 
 async function saveBattle() {
@@ -420,7 +467,7 @@ onMounted(initialize)
       </el-table>
     </article>
 
-    <el-dialog v-model="battleDialog" title="Registrar resultado da batalha" width="min(760px, 94vw)" destroy-on-close>
+    <el-dialog v-model="battleDialog" title="Registrar resultado da batalha" width="min(860px, 96vw)" destroy-on-close>
       <div v-loading="battleLoading" class="battle-dialog-body">
         <template v-if="selectedMatch && battleConfig">
           <div class="battle-scoreboard">
@@ -460,23 +507,51 @@ onMounted(initialize)
               </div>
 
               <div v-if="existingRound(slot.numeroRound)" class="round-existing">
-                <StatusBadge :value="existingRound(slot.numeroRound)?.status" />
-                <strong>{{ existingRoundLabel(slot.numeroRound) }}</strong>
+                <div class="round-existing-main">
+                  <StatusBadge :value="existingRound(slot.numeroRound)?.status" />
+                  <strong>{{ existingRoundLabel(slot.numeroRound) }}</strong>
+                </div>
+                <small>{{ existingPenaltyLabel(existingRound(slot.numeroRound)!) }}</small>
               </div>
 
-              <el-radio-group
-                v-else
-                :model-value="slot.choice"
-                :disabled="!roundEnabled(slot.numeroRound)"
-                class="round-choice-group"
-                @update:model-value="handleRoundChoice(slot, $event)"
-              >
-                <el-radio-button value="A">{{ selectedMatch.robotANome }}</el-radio-button>
-                <el-radio-button value="B">{{ selectedMatch.robotBNome }}</el-radio-button>
-                <el-radio-button value="EMPATADO">Empate</el-radio-button>
-                <el-radio-button value="ANULADO">Anulado</el-radio-button>
-                <el-radio-button value="CANCELADO">Cancelado</el-radio-button>
-              </el-radio-group>
+              <div v-else class="round-entry">
+                <el-radio-group
+                  :model-value="slot.choice"
+                  :disabled="!roundEnabled(slot.numeroRound)"
+                  class="round-choice-group"
+                  @update:model-value="handleRoundChoice(slot, $event)"
+                >
+                  <el-radio-button value="A">{{ selectedMatch.robotANome }}</el-radio-button>
+                  <el-radio-button value="B">{{ selectedMatch.robotBNome }}</el-radio-button>
+                  <el-radio-button value="EMPATADO">Empate</el-radio-button>
+                  <el-radio-button value="ANULADO">Anulado</el-radio-button>
+                  <el-radio-button value="CANCELADO">Cancelado</el-radio-button>
+                </el-radio-group>
+
+                <div class="round-operations">
+                  <div class="round-penalties">
+                    <span>Penalidades no round</span>
+                    <label>
+                      {{ selectedMatch.robotANome }}
+                      <el-input-number v-model="slot.penalidadesA" :min="0" :max="2" :disabled="!roundEnabled(slot.numeroRound)" size="small" />
+                    </label>
+                    <label>
+                      {{ selectedMatch.robotBNome }}
+                      <el-input-number v-model="slot.penalidadesB" :min="0" :max="2" :disabled="!roundEnabled(slot.numeroRound)" size="small" />
+                    </label>
+                  </div>
+
+                  <div class="round-wo-actions">
+                    <span>Perda automática do round</span>
+                    <el-button size="small" :disabled="!roundEnabled(slot.numeroRound)" @click="applyWo(slot, 'A')">
+                      Suicídio/WO · {{ selectedMatch.robotANome }}
+                    </el-button>
+                    <el-button size="small" :disabled="!roundEnabled(slot.numeroRound)" @click="applyWo(slot, 'B')">
+                      Suicídio/WO · {{ selectedMatch.robotBNome }}
+                    </el-button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -484,6 +559,8 @@ onMounted(initialize)
             <strong>{{ battleWinner === 'A' ? selectedMatch.robotANome : selectedMatch.robotBNome }} fecha a batalha</strong>
             <span>Placar projetado: {{ projectedBattleScore.A }} × {{ projectedBattleScore.B }}</span>
           </div>
+
+          <p class="battle-rule-note">Penalidades são registradas para auditoria com limite provisório de 2 por robô/round. Elas ainda não alteram automaticamente o vencedor até a regra oficial ser confirmada.</p>
 
           <label class="battle-note">Observação para os novos rounds
             <el-input v-model="battle.observacao" type="textarea" :rows="2" placeholder="Opcional" />
@@ -629,10 +706,10 @@ onMounted(initialize)
 .battle-round-row {
   display: grid;
   grid-template-columns: 92px minmax(0, 1fr);
-  align-items: center;
+  align-items: start;
   gap: 12px;
   min-height: 58px;
-  padding: 10px 12px;
+  padding: 12px;
   border: 1px solid #eadfe4;
   border-radius: 12px;
   background: #fff;
@@ -645,6 +722,7 @@ onMounted(initialize)
 .round-index {
   display: flex;
   flex-direction: column;
+  padding-top: 3px;
 }
 
 .round-index span {
@@ -658,6 +736,11 @@ onMounted(initialize)
 }
 
 .round-existing {
+  display: grid;
+  gap: 5px;
+}
+
+.round-existing-main {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -667,9 +750,64 @@ onMounted(initialize)
   font-size: 12px;
 }
 
+.round-existing small {
+  color: #85757d;
+  font-size: 10px;
+}
+
+.round-entry {
+  display: grid;
+  gap: 10px;
+}
+
 .round-choice-group {
   display: flex;
   flex-wrap: wrap;
+}
+
+.round-operations {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.round-penalties,
+.round-wo-actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #faf7f8;
+}
+
+.round-penalties > span,
+.round-wo-actions > span {
+  width: 100%;
+  color: #8f1238;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.round-penalties label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  color: #65565e;
+  font-size: 10px;
+}
+
+.round-penalties :deep(.el-input-number) {
+  width: 84px;
+}
+
+.round-wo-actions .el-button + .el-button {
+  margin-left: 0;
 }
 
 .battle-projection {
@@ -687,6 +825,16 @@ onMounted(initialize)
 
 .battle-projection span {
   font-size: 11px;
+}
+
+.battle-rule-note {
+  margin: 12px 0 0;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: #f8f5f7;
+  color: #74656d;
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .battle-note {
@@ -708,7 +856,8 @@ onMounted(initialize)
     grid-row: 2;
   }
 
-  .battle-round-row {
+  .battle-round-row,
+  .round-operations {
     grid-template-columns: 1fr;
   }
 }
