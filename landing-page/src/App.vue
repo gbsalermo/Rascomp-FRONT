@@ -14,8 +14,6 @@ const loading = ref(true)
 const error = ref('')
 const competitions = ref<any[]>([])
 const categories = ref<any[]>([])
-const teams = ref<any[]>([])
-const robots = ref<any[]>([])
 const registrations = ref<any[]>([])
 const ranking = ref<any[]>([])
 const brackets = ref<any[]>([])
@@ -43,17 +41,13 @@ async function bootstrap() {
   error.value = ''
 
   try {
-    const [competitionList, categoryList, teamList, robotList] = await Promise.all([
+    const [competitionList, categoryList] = await Promise.all([
       api.competitions(),
-      api.categories(),
-      api.teams(),
-      api.robots()
+      api.categories()
     ])
 
     competitions.value = competitionList
     categories.value = categoryList
-    teams.value = teamList
-    robots.value = robotList
 
     const focus =
       competitionList.find((item: any) => item.status === 'EM_ANDAMENTO') ||
