@@ -1,11 +1,11 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
 > Documento principal de continuidade da aplicação pública em `landing-page/`.
-> Atualizar ao concluir ou revisar cada janela da Home.
+> Atualizar este arquivo ao concluir ou revisar cada janela da Home.
 
 ---
 
-# 1. Identidade
+# 1. Identidade do projeto
 
 ```text
 RAS UFRB = identidade institucional pública
@@ -13,35 +13,35 @@ RRC      = evento/competição de robótica
 RASCOMP  = plataforma/software de gestão
 ```
 
-A Home é o site institucional da **RAS UFRB**. O RRC ganha destaque quando houver contexto competitivo, mas não domina a identidade do site durante todo o ano.
+A Home é o site institucional da **RAS UFRB**. O RRC ganha destaque quando houver contexto competitivo, mas não domina o site durante todo o ano.
 
 Camunda está fora do projeto.
 
 ---
 
-# 2. Direção visual
+# 2. Direção visual aprovada
 
 Referência de arquitetura/ritmo: ERBASE, sem copiar código, textos ou assets.
 
-Direção aprovada:
+Direção:
 
 - fundo branco dominante;
-- aparência institucional, leve e tecnológica;
+- visual institucional, leve e tecnológico;
 - roxo como estrutura institucional;
 - rubro para CTAs, competição e destaques;
 - cinzas claros para separar áreas;
-- bastante espaço em branco;
-- fotografia real quando o acervo oficial estiver disponível;
+- bastante respiro;
+- fotografia real quando houver acervo oficial;
 - transições suaves;
 - evitar cyberpunk, aparência de dashboard e excesso de cards pequenos.
 
-Placeholders de imagem, logo, nomes e números são permitidos durante a construção.
+Imagens, logos e números podem permanecer como placeholders até o material oficial ser fornecido.
 
 ---
 
 # 3. Método de desenvolvimento — CONGELADO
 
-A Home é construída janela por janela.
+A Home é construída **janela por janela**.
 
 Cada janela precisa de:
 
@@ -64,12 +64,7 @@ Ajustes finos posteriores no navegador
 
 A demo aprovada é o alvo visual, não apenas inspiração.
 
-Só podem divergir temporariamente:
-
-- fotografias oficiais;
-- logos/assets oficiais;
-- números/nomeações ainda não confirmados;
-- conteúdo dinâmico cujo contrato do backend ainda não esteja consolidado.
+Podem divergir temporariamente apenas fotografias oficiais, logos/assets, números institucionais não confirmados e conteúdo dinâmico cujo contrato do backend ainda esteja sendo consolidado.
 
 ---
 
@@ -95,10 +90,10 @@ HEADER
 
 Decisões congeladas:
 
-1. Equipe/Diretoria/Robôs/Premiações vem antes da Galeria;
-2. **Edições anteriores foi removido do esqueleto da Home**;
-3. Competição atual + Cronograma + Acompanhar formam **uma única janela competitiva condicional**;
-4. essa janela só aparece quando houver competição pública da RAS gerenciada pelo RasComp;
+1. Equipe/Diretoria/Robôs/Premiações fica antes da Galeria;
+2. `Edições anteriores` foi removido do esqueleto da Home;
+3. Competição atual + Cronograma + Acompanhar formam uma única janela competitiva condicional;
+4. a janela competitiva só aparece quando houver competição pública da RAS gerenciada pelo RasComp;
 5. competição não faz parte da janela de Equipe/Robôs/Premiações.
 
 Narrativa:
@@ -132,7 +127,7 @@ Estrutura:
 [ IEEE RAS UFRB ]   Início   Sobre   Competição⌄   Calendário   Eventos   Contato   [ Inscrições ]
 ```
 
-Dropdown `Competição`:
+Dropdown Competição:
 
 ```text
 Competição atual
@@ -156,7 +151,8 @@ Fidelidade revisada:
 - roxo em hover/estrutura;
 - CTA Inscrições rubro;
 - fundo branco;
-- mobile com hambúrguer + identidade + CTA.
+- mobile com hambúrguer + identidade + CTA;
+- menu aberto completo.
 
 Logo oficial IEEE RAS/UFRB ainda será substituído pelo asset definitivo.
 
@@ -171,15 +167,15 @@ landing-page/src/components/HighlightsHero.vue
 landing-page/src/highlights-hero.css
 ```
 
-Estrutura aprovada:
+Estrutura:
 
 ```text
 ┌─────────────────────────────────────────────┬──────────────────────┐
-│       SLIDE VISUAL PRINCIPAL                │ ÚLTIMAS NOVIDADES    │
-│       foto + overlay                        │ item 1               │
-│       categoria / título / resumo           │ item 2               │
-│       [ CTA ] [ CTA ]                       │ item 3               │
-│       ‹             dots              ›     │                      │
+│ SLIDE VISUAL PRINCIPAL                      │ ÚLTIMAS NOVIDADES    │
+│ foto + overlay                              │ item 1               │
+│ categoria / título / resumo                 │ item 2               │
+│ [ CTA ] [ CTA ]                             │ item 3               │
+│ ‹                dots                 ›     │                      │
 └─────────────────────────────────────────────┴──────────────────────┘
 
 [ preview 1 ] [ preview 2 ] [ preview 3 ] [ preview 4 ]
@@ -196,14 +192,13 @@ Conteúdo preparado:
 Comportamento:
 
 - autoplay ~7s;
-- pausa em interação/hover;
-- setas;
-- dots;
+- pausa em hover/interação;
+- setas e dots;
 - previews clicáveis;
 - painel lateral de novidades;
 - responsivo.
 
-RRC só entra como slide quando houver contexto competitivo real.
+RRC só aparece como slide quando houver contexto competitivo real.
 
 ---
 
@@ -216,7 +211,7 @@ landing-page/src/components/InstitutionalAbout.vue
 landing-page/src/about.css
 ```
 
-Estrutura aprovada:
+Estrutura:
 
 ```text
 [ galeria/collage visual ]         [ O QUE É O IEEE ] [ O QUE É A RAS UFRB ]
@@ -225,13 +220,7 @@ Estrutura aprovada:
 [ membros ] [ robôs ] [ prêmios ] [ eventos ] [ escolas visitadas ]
 ```
 
-Implementado com:
-
-- mídia principal;
-- miniaturas;
-- tabs largas;
-- blocos explicativos com ícones;
-- faixa inferior de cinco indicadores.
+Implementado próximo da demo com mídia principal, miniaturas, tabs largas, blocos explicativos com ícones e faixa inferior de indicadores.
 
 Fotos e números ainda são placeholders.
 
@@ -246,9 +235,9 @@ landing-page/src/components/TeamRobotsAwards.vue
 landing-page/src/team-robots-awards.css
 ```
 
-A **Demo 1** foi escolhida como alvo visual definitivo.
+O usuário escolheu a **opção 1 da demo** como alvo visual.
 
-Estrutura:
+Estrutura aprovada:
 
 ```text
 ┌──────────────────┬──────────────────────┬────────────────────────┐
@@ -263,17 +252,37 @@ Estrutura:
 [ membros ] [ robôs ] [ competições ] [ prêmios ] [ escolas visitadas ]
 ```
 
-Decisões:
+Equipe:
 
-- Equipe = lista, com busca/filtro;
-- Diretoria = mosaico de fotos;
-- Equipe e Diretoria aparecem simultaneamente;
-- Robôs = cards com mídia e expansão;
-- Premiações = faixa de cards;
-- indicadores inferiores permanecem;
-- nenhum conteúdo de competição atual entra nesta janela.
+- lista;
+- busca;
+- filtro de área;
+- miniatura, nome e área;
+- destaque no hover/foco;
+- CTA Ver toda a equipe.
 
-Fotos, nomes e números ainda podem ser placeholders.
+Diretoria:
+
+- simultânea à equipe;
+- mosaico de fotos;
+- cargo, nome e área;
+- CTA Ver toda a diretoria.
+
+Robôs:
+
+- cards com mídia;
+- nome, modalidade, status e resumo;
+- expansão/detalhe preparado.
+
+Premiações:
+
+- faixa inferior de cards;
+- ouro, prata, bronze e destaque;
+- evento e ano.
+
+Indicadores atuais são placeholders até confirmação oficial.
+
+**Nenhum card, cronograma ou acompanhamento de competição aparece nesta janela.**
 
 ---
 
@@ -285,6 +294,8 @@ Arquivos:
 landing-page/src/components/InstitutionalGallery.vue
 landing-page/src/gallery.css
 ```
+
+Posição: após Equipe/Robôs/Premiações.
 
 Estrutura aprovada:
 
@@ -303,7 +314,7 @@ Galeria
  Ver álbum Ver álbum Ver álbum
 ```
 
-Cada álbum usa foto principal, três miniaturas, categoria, título, quantidade, data, descrição e `Ver álbum`.
+Cada álbum tem foto principal, três miniaturas, categoria, título, quantidade de fotos, data, descrição e ação `Ver álbum`.
 
 Ao clicar, abre prévia flutuante com mídia, próximo, contador, dots e fechar.
 
@@ -311,7 +322,7 @@ Fotos, quantidades e datas atuais são placeholders.
 
 ---
 
-# 10. JANELA 6 — EVENTOS DA RAS ✅ IMPLEMENTAÇÃO INICIAL
+# 10. JANELA 6 — EVENTOS DA RAS ✅ IMPLEMENTADA / DEMO DESTA ETAPA
 
 Arquivos:
 
@@ -328,75 +339,60 @@ Posição no `App.vue`:
 <InstitutionalEvents />
 ```
 
-## Conceito
-
-Eventos aparecem como **barras/cards horizontais expansíveis**, evitando uma nova parede de cards e mantendo ritmo institucional.
+Objetivo: mostrar a atuação ampla da RAS, sem reduzir o capítulo ao RRC.
 
 Eventos iniciais:
 
 ```text
-01 RRC
-02 Robodori
-03 RAS nas Escolas
-04 Oficinas
+01 — RRC
+02 — Robodori
+03 — RAS nas Escolas
+04 — Oficinas
 ```
 
-## Estado fechado
-
-Cada barra mostra:
-
-- número/índice;
-- categoria;
-- nome do evento;
-- resumo curto;
-- `+` para expandir.
-
-## Estado aberto
-
-Ao expandir:
+Estrutura:
 
 ```text
-[ mídia/foto do evento ]   [ objetivo ] [ público ] [ periodicidade ]
+ATUAÇÃO E COMUNIDADE
+Eventos e ações da RAS UFRB                         [ Ver calendário ]
 
-                           texto/histórico
-                           [ CTA → ]
+01  RRC             Competição de robótica                          +
+02  Robodori        Robótica e integração                           +
+03  RAS nas Escolas Extensão                                        +
+04  Oficinas        Formação e capacitação                          +
 ```
 
-Detalhes disponíveis:
+Ao abrir uma barra:
 
-- descrição;
-- objetivo;
-- público;
-- periodicidade;
-- mídia/placeholder;
-- espaço para edições/realizações;
-- CTA contextual.
+```text
+[ mídia/foto do evento ]   descrição
+                           objetivo
+                           público
+                           periodicidade
+                           histórico/realizações
+                           [ CTA ]
+```
 
-## Conteúdo
+Comportamento:
 
-- RRC: tratado como competição promovida pela RAS, sem substituir a futura janela competitiva ao vivo;
-- RAS nas Escolas: extensão e aproximação com estudantes/comunidade;
-- Oficinas: formação e capacitação em áreas técnicas;
-- Robodori: estrutura pronta, mas descrição institucional definitiva deve ser confirmada com material oficial antes da publicação.
-
-O componente não inventa datas ou histórico oficial.
-
-## Comportamento
-
-- um evento pode começar expandido;
-- clique alterna abrir/fechar;
+- barras horizontais expansíveis;
+- uma inicia aberta para demonstrar a experiência;
+- clicar novamente recolhe;
 - transição suave;
-- desktop com resumo na própria barra;
-- tablet/mobile reorganizam o conteúdo;
-- link `Ver calendário` conecta a futura área de calendário institucional.
+- roxo/rubro variam discretamente conforme o evento;
+- responsivo;
+- em mobile o detalhe passa para uma coluna.
 
-## Imagens
+Conteúdo atual:
 
-Por enquanto usa placeholders. Fotos reais serão adicionadas posteriormente sem mudar a estrutura.
+- RRC: descrição competitiva institucional, sem transformar a Home em site do evento;
+- Robodori: texto provisório até confirmação do material oficial;
+- RAS nas Escolas: extensão e aproximação com estudantes;
+- Oficinas: formação prática em robótica, eletrônica, programação e automação.
 
-## Demo
+Imagens e alguns detalhes editoriais ainda são placeholders e devem ser substituídos pelo acervo/material oficial.
 
-A demo desta etapa deve ser comparada com a implementação. Após aprovação, ela passa a ser o alvo visual definitivo da Janela 6.
+A demo gerada nesta etapa passa a ser o alvo visual para o refinamento da Janela 6.
 
 ---
 
@@ -475,22 +471,21 @@ Fundo roxo profundo com detalhes rubros discretos.
 
 # 13. Conteúdo estático x dinâmico
 
-## Estático/editorial inicialmente
+Estático/editorial inicialmente:
 
-- apresentação da RAS UFRB;
+- apresentação RAS UFRB;
 - IEEE;
 - história;
 - equipe;
 - diretoria;
 - robôs históricos;
 - premiações;
-- galeria;
 - eventos;
 - projetos;
 - parceiros;
 - textos institucionais.
 
-## Dinâmico via backend público
+Dinâmico via backend público:
 
 - competição atual;
 - status;
@@ -513,15 +508,9 @@ A Landing nunca gera chave, decide vencedor, calcula ranking oficial, altera ins
 
 # 14. Imagens e mídia — pendente
 
-Antes da publicação definir:
+Durante construção, placeholders são permitidos.
 
-- acervo oficial;
-- autorização;
-- armazenamento;
-- créditos;
-- legendas;
-- otimização;
-- lazy loading.
+Antes da publicação definir acervo oficial, autorização, armazenamento, créditos, legendas, otimização e lazy loading.
 
 ---
 
@@ -553,7 +542,7 @@ JANELA 2 — Hero/Destaques                  ✅ implementada + demo + fidelidad
 JANELA 3 — Sobre IEEE/RAS                   ✅ implementada + demo + fidelidade revisada
 JANELA 4 — Equipe/Diretoria/Robôs/Prêmios  ✅ demo 1 aprovada + implementação alinhada
 JANELA 5 — Galeria                          ✅ implementada + demo + fidelidade revisada
-JANELA 6 — Eventos                          ✅ implementação inicial + demo agora
+JANELA 6 — Eventos                          ✅ implementada; demo agora
 JANELA 7 — Competição/Cronograma/Acompanhar ⏭ próxima; janela única condicional
 JANELA 8 — Footer                           ⬜
 ```
@@ -562,9 +551,9 @@ JANELA 8 — Footer                           ⬜
 
 # 17. Próximo passo
 
-1. avaliar a demo da Janela 6;
-2. alinhar diferenças entre demo e implementação;
-3. depois seguir para:
+1. comparar a demo da Janela 6 com a implementação;
+2. ajustar fidelidade se necessário;
+3. seguir para:
 
 ```text
 JANELA 7 — COMPETIÇÃO ATUAL + CRONOGRAMA + ACOMPANHAR
