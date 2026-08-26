@@ -40,13 +40,14 @@ const registeredTakeCount = computed(() =>
 )
 
 const completeTakeCount = computed(() => {
-  if (!config.value) return 0
+  const cfg = config.value
+  if (!cfg) return 0
   const counts = new Map<string, number>()
   for (const item of history.value) {
     const key = `${item.registrationId}:${item.tomada}`
     counts.set(key, (counts.get(key) || 0) + 1)
   }
-  return [...counts.values()].filter((count) => count >= config.value!.tentativasPorTomada).length
+  return [...counts.values()].filter((count) => count >= cfg.tentativasPorTomada).length
 })
 
 function queryNumber(value: unknown) {
@@ -109,11 +110,22 @@ async function initialize() {
       ? requestedCompetition
       : competition.selectedId || competition.competitions[0]?.id
 
-    categoryId.value = categories.value.some((item) => item.id === requestedCategory)
-      ? requestedCategory
-      : categories.value[0]?.id
+    if (competitionId.value && competition.selectedId !== competitionId.value) {
+      competition.select(competitionId.value)
+    }
 
-    if (competitionId.value && competition.selectedId !== competitionId.value) competition.select(competitionId.value)
+    if (categories.value.some((item) => item.id === requestedCategory)) {
+      categoryId.value = requestedCategory
+    } else if (competitionId.value) {
+      const initialRegistrations = await adminApi.registrations({ competitionId: competitionId.value })
+      const categoryInUse = initialRegistrations.find((registration) =>
+        categories.value.some((category) => category.id === registration.categoryId)
+      )?.categoryId
+      categoryId.value = categoryInUse || categories.value[0]?.id
+    } else {
+      categoryId.value = categories.value[0]?.id
+    }
+
     await loadContext()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar a operação do Follow Line.')
@@ -186,6 +198,18 @@ function openSelectedTake() {
 watch(competitionId, async (value) => {
   if (!ready.value) return
   if (value && competition.selectedId !== value) competition.select(value)
+
+  if (value) {
+    const regs = await adminApi.registrations({ competitionId: value })
+    const currentCategoryUsed = regs.some((item) => item.categoryId === categoryId.value)
+    if (!currentCategoryUsed) {
+      const nextCategory = regs.find((registration) =>
+        categories.value.some((category) => category.id === registration.categoryId)
+      )?.categoryId
+      if (nextCategory) categoryId.value = nextCategory
+    }
+  }
+
   await loadContext()
 })
 
@@ -355,9 +379,7 @@ onMounted(initialize)
 </template>
 
 <style scoped>
-.follow-workspace {
-  gap: 18px;
-}
+.follow-workspace { gap: 18px; }
 
 .follow-metrics {
   display: grid;
@@ -377,25 +399,10 @@ onMounted(initialize)
 }
 
 .follow-metric-card span,
-.follow-metric-card small {
-  color: #83747c;
-  font-size: 11px;
-}
-
-.follow-metric-card strong {
-  color: #2b2026;
-  font-size: 24px;
-  line-height: 1.05;
-}
-
-.follow-metric-card.highlight {
-  border-color: #e2bac8;
-  background: linear-gradient(135deg, #fff 0%, #fff6f9 100%);
-}
-
-.follow-metric-card.highlight strong {
-  color: #9f0f3b;
-}
+.follow-metric-card small { color: #83747c; font-size: 11px; }
+.follow-metric-card strong { color: #2b2026; font-size: 24px; line-height: 1.05; }
+.follow-metric-card.highlight { border-color: #e2bac8; background: linear-gradient(135deg, #fff 0%, #fff6f9 100%); }
+.follow-metric-card.highlight strong { color: #9f0f3b; }
 
 .follow-config-strip {
   display: grid;
@@ -408,75 +415,24 @@ onMounted(initialize)
   background: #fff;
 }
 
-.follow-config-strip > div:first-child {
-  display: grid;
-  gap: 3px;
-}
-
-.follow-config-values {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.follow-config-values span {
-  padding: 7px 10px;
-  border-radius: 999px;
-  background: #f6f1f4;
-  color: #6f5d66;
-  font-size: 11px;
-}
-
+.follow-config-strip > div:first-child { display: grid; gap: 3px; }
+.follow-config-values { display: flex; flex-wrap: wrap; gap: 8px; }
+.follow-config-values span { padding: 7px 10px; border-radius: 999px; background: #f6f1f4; color: #6f5d66; font-size: 11px; }
 .follow-config-values b,
 .ranking-position,
-.ranking-final-time {
-  color: #9f0f3b;
-}
-
-.follow-config-strip > small {
-  grid-column: 1 / -1;
-  color: #8b7b83;
-  font-size: 10px;
-}
+.ranking-final-time { color: #9f0f3b; }
+.follow-config-strip > small { grid-column: 1 / -1; color: #8b7b83; font-size: 10px; }
 
 .follow-ranking-card,
-.follow-history-card {
-  overflow: hidden;
-}
+.follow-history-card { overflow: hidden; }
+.follow-history-heading { gap: 18px; align-items: flex-end; }
+.follow-history-search { width: 250px; }
+.follow-history-content { padding: 0 14px 14px; }
 
-.follow-history-heading {
-  gap: 18px;
-  align-items: flex-end;
-}
-
-.follow-history-search {
-  width: 250px;
-}
-
-.follow-history-content {
-  padding: 0 14px 14px;
-}
-
-.follow-registration-dialog {
-  display: grid;
-  gap: 18px;
-}
-
-.follow-registration-dialog h3 {
-  margin: 3px 0 5px;
-}
-
-.follow-registration-dialog p {
-  margin: 0;
-}
-
-.follow-registration-dialog label {
-  display: grid;
-  gap: 7px;
-  color: #342830;
-  font-size: 12px;
-  font-weight: 800;
-}
+.follow-registration-dialog { display: grid; gap: 18px; }
+.follow-registration-dialog h3 { margin: 3px 0 5px; }
+.follow-registration-dialog p { margin: 0; }
+.follow-registration-dialog label { display: grid; gap: 7px; color: #342830; font-size: 12px; font-weight: 800; }
 
 .follow-registration-preview {
   display: grid;
@@ -500,62 +456,24 @@ onMounted(initialize)
   font-weight: 900;
 }
 
-.follow-registration-preview > div:nth-child(2) {
-  display: grid;
-  gap: 2px;
-}
-
+.follow-registration-preview > div:nth-child(2) { display: grid; gap: 2px; }
 .follow-registration-preview span,
-.follow-registration-preview small {
-  color: #86777f;
-  font-size: 10px;
-}
-
-.follow-registration-preview b {
-  color: #9f0f3b;
-  font-size: 24px;
-}
-
-.follow-registration-preview > small:last-child {
-  grid-column: 3;
-  margin-top: -10px;
-}
+.follow-registration-preview small { color: #86777f; font-size: 10px; }
+.follow-registration-preview b { color: #9f0f3b; font-size: 24px; }
+.follow-registration-preview > small:last-child { grid-column: 3; margin-top: -10px; }
 
 @media (max-width: 1080px) {
-  .follow-metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .follow-config-strip {
-    grid-template-columns: 1fr;
-  }
-
-  .follow-config-strip > small {
-    grid-column: auto;
-  }
+  .follow-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .follow-config-strip { grid-template-columns: 1fr; }
+  .follow-config-strip > small { grid-column: auto; }
 }
 
 @media (max-width: 760px) {
-  .follow-metrics {
-    grid-template-columns: 1fr;
-  }
-
-  .follow-history-heading {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .follow-history-search {
-    width: 100%;
-  }
-
-  .follow-registration-preview {
-    grid-template-columns: auto 1fr;
-  }
-
+  .follow-metrics { grid-template-columns: 1fr; }
+  .follow-history-heading { align-items: stretch; flex-direction: column; }
+  .follow-history-search { width: 100%; }
+  .follow-registration-preview { grid-template-columns: auto 1fr; }
   .follow-registration-preview b,
-  .follow-registration-preview > small:last-child {
-    grid-column: 2;
-  }
+  .follow-registration-preview > small:last-child { grid-column: 2; }
 }
 </style>
