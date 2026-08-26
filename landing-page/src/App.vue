@@ -8,6 +8,7 @@ import TeamRobotsAwards from './components/TeamRobotsAwards.vue'
 import InstitutionalGallery from './components/InstitutionalGallery.vue'
 import InstitutionalEvents from './components/InstitutionalEvents.vue'
 import ActiveCompetition from './components/ActiveCompetition.vue'
+import InstitutionalFooter from './components/InstitutionalFooter.vue'
 
 const loading = ref(true)
 const error = ref('')
@@ -188,10 +189,6 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <footer class="site-footer">
-      <img src="/rascomp-logo.webp" alt="RASCOMP" />
-      <p>IEEE Robotics & Automation Society · Universidade Federal do Recôncavo da Bahia</p>
-      <span>Dados competitivos oficiais servidos pela API pública do RASCOMP.</span>
-    </footer>
+    <InstitutionalFooter />
   </div>
 </template>
