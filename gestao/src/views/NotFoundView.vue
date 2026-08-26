@@ -7,6 +7,14 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const homeLabel = computed(() => auth.isAuthenticated ? 'Voltar ao início' : 'Ir para o login')
+const notFoundRobotUrl = '/rascomp-404-robot.gif'
+
+function handleRobotError(event: Event) {
+  const image = event.currentTarget as HTMLImageElement
+  if (image.dataset.fallbackApplied === 'true') return
+  image.dataset.fallbackApplied = 'true'
+  image.src = '/rascomp-logo.webp'
+}
 
 function goHome() {
   if (!auth.isAuthenticated || !auth.user) {
@@ -23,8 +31,9 @@ function goHome() {
     <section class="not-found-content" aria-labelledby="not-found-title">
       <img
         class="not-found-robot"
-        src="/rascomp-404-robot.gif"
+        :src="notFoundRobotUrl"
         alt="Robô do RASCOMP acenando"
+        @error="handleRobotError"
       />
 
       <p class="error-code">404</p>
