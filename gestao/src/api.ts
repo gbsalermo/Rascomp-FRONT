@@ -11,6 +11,7 @@ import type {
   MatchResult,
   RankingItem,
   Registration,
+  RobotImage,
   RoundSumo,
   RoundSumoOutcomeReason,
   RoundSumoStatus,
@@ -21,6 +22,7 @@ import type {
 } from './types'
 
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '')
+export const assetUrl = (path?: string) => path ? `${API_URL}${path.startsWith('/') ? path : `/${path}`}` : ''
 const TOKEN_KEY = 'rascomp.token'
 const USER_KEY = 'rascomp.user'
 export const AUTH_UNAUTHORIZED_EVENT = 'rascomp:unauthorized'
@@ -77,6 +79,19 @@ export const authApi = {
   me: () => http.get<UserAccount>('/api/v1/auth/me').then((r) => r.data)
 }
 
+export const publicApi = {
+  robotPhotos: (robotId: number) =>
+    http.get<RobotImage[]>(`/api/v1/public/robos/${robotId}/fotos`).then((r) => r.data),
+  rankingFollow: (competitionId: number, categoryId: number) =>
+    http.get<RankingItem[]>('/api/v1/public/ranking/seguidor-linha', { params: { competitionId, categoryId } }).then((r) => r.data),
+  brackets: (competitionId: number) =>
+    http.get<Bracket[]>('/api/v1/public/chaveamentos', { params: { competitionId } }).then((r) => r.data),
+  matches: (bracketId: number) =>
+    http.get<Match[]>('/api/v1/public/partidas', { params: { bracketId } }).then((r) => r.data),
+  results: (bracketId: number) =>
+    http.get<MatchResult[]>('/api/v1/public/resultados', { params: { bracketId } }).then((r) => r.data)
+}
+
 export const adminApi = {
   competitions: (status?: string) =>
     http
@@ -113,6 +128,7 @@ export const adminApi = {
     http.put<Registration>(`/api/v1/inscricoes/${id}`, payload).then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/equipes').then((r) => r.data),
   robots: () => http.get<Robot[]>('/api/v1/robos').then((r) => r.data),
+  robotPhotos: (robotId: number) => http.get<RobotImage[]>(`/api/v1/robos/${robotId}/fotos`).then((r) => r.data),
   competitors: () => http.get<Competitor[]>('/api/v1/competidores').then((r) => r.data),
   rankingFollow: (competitionId: number, categoryId: number) =>
     http
@@ -182,6 +198,19 @@ export const participantApi = {
       .then((r) => r.data),
   robots: (teamId: number) =>
     http.get<Robot[]>(`/api/v1/participante/equipes/${teamId}/robos`).then((r) => r.data),
+  robotPhotos: (robotId: number) =>
+    http.get<RobotImage[]>(`/api/v1/participante/robos/${robotId}/fotos`).then((r) => r.data),
+  uploadRobotPhoto: (robotId: number, file: File) => {
+    const form = new FormData()
+    form.append('arquivo', file)
+    return http.post<RobotImage>(`/api/v1/participante/robos/${robotId}/fotos`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then((r) => r.data)
+  },
+  setPrincipalRobotPhoto: (robotId: number, imageId: number) =>
+    http.patch<RobotImage>(`/api/v1/participante/robos/${robotId}/fotos/${imageId}/principal`).then((r) => r.data),
+  deleteRobotPhoto: (robotId: number, imageId: number) =>
+    http.delete(`/api/v1/participante/robos/${robotId}/fotos/${imageId}`),
   registrations: (teamId: number) =>
     http
       .get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`)
