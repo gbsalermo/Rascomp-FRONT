@@ -12,6 +12,8 @@ import type {
   RankingItem,
   Registration,
   RoundSumo,
+  RoundSumoOutcomeReason,
+  RoundSumoStatus,
   Team,
   Robot,
   Competitor,
@@ -154,7 +156,14 @@ export const adminApi = {
     http.post<RoundSumo>('/api/v1/rounds-sumo', payload).then((r) => r.data),
   registerSumoBattle: (payload: {
     matchId: number
-    rounds: Array<{ winnerRegistrationId?: number; status: string; observacao?: string }>
+    rounds: Array<{
+      winnerRegistrationId?: number
+      status: RoundSumoStatus
+      motivoResultado?: RoundSumoOutcomeReason
+      penalidadesA?: number
+      penalidadesB?: number
+      observacao?: string
+    }>
   }) => http.post<RoundSumo[]>('/api/v1/rounds-sumo/batalha', payload).then((r) => r.data)
 }
 
