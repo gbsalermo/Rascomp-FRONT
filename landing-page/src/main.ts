@@ -7,4 +7,5 @@ import './about.css'
 import './team-robots-awards.css'
 import './gallery.css'
 import './events.css'
+import './active-competition.css'
 createApp(App).mount('#app')
