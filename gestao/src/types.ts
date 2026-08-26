@@ -211,6 +211,17 @@ export interface Robot {
   [key: string]: unknown
 }
 
+export interface RobotImage {
+  id: number
+  robotId: number
+  originalFilename: string
+  contentType: string
+  principal: boolean
+  ordem: number
+  url: string
+  dataCadastro?: string
+}
+
 export interface Competitor {
   id: number
   nome: string
