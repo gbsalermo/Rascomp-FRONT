@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import type { Match, MatchResult } from '../types'
 import StatusBadge from './StatusBadge.vue'
 
@@ -9,9 +10,7 @@ const props = defineProps<{
   readOnly?: boolean
 }>()
 
-const emit = defineEmits<{
-  register: [match: Match]
-}>()
+const router = useRouter()
 
 const rounds = computed(() =>
   [...new Set(props.matches.map((item) => item.rodada))].sort((a, b) => a - b)
@@ -62,6 +61,19 @@ function canRegister(match: Match) {
     && match.status !== 'CANCELADA'
     && match.status !== 'BYE'
     && match.status !== 'AGUARDANDO_PARTICIPANTES'
+}
+
+function openArena(match: Match) {
+  if (!canRegister(match)) return
+  router.push({
+    name: 'sumo-match',
+    params: { matchId: match.id },
+    query: {
+      competitionId: match.competitionId,
+      categoryId: match.categoryId,
+      bracketId: match.bracketId
+    }
+  })
 }
 </script>
 
@@ -137,9 +149,9 @@ function canRegister(match: Match) {
               v-else-if="canRegister(match)"
               type="button"
               class="battle-action"
-              @click="emit('register', match)"
+              @click="openArena(match)"
             >
-              Registrar batalha
+              Abrir partida
             </button>
             <span v-else-if="readOnly" class="read-only-note">Somente leitura</span>
           </footer>
