@@ -23,7 +23,7 @@ Camunda está fora do projeto.
 
 Referência de arquitetura/ritmo: ERBASE, sem copiar código, textos ou assets.
 
-Direção final:
+Direção:
 
 - fundo branco dominante;
 - aparência institucional, leve e tecnológica;
@@ -33,9 +33,9 @@ Direção final:
 - bastante espaço em branco;
 - fotografia real quando o acervo oficial estiver disponível;
 - transições suaves;
-- evitar visual cyberpunk, dashboard ou excesso de cards pequenos.
+- evitar cyberpunk, aparência de dashboard e excesso de cards pequenos.
 
-Imagens temporárias/placeholder são permitidas durante a construção. Assets oficiais serão substituídos depois.
+Imagens, logos e números podem permanecer como placeholders até o material oficial ser fornecido.
 
 ---
 
@@ -43,30 +43,19 @@ Imagens temporárias/placeholder são permitidas durante a construção. Assets 
 
 A Home será construída janela por janela.
 
-Cada janela só avança depois de três entregas:
+Cada janela precisa de:
 
 ```text
 1. implementação em landing-page/
-2. atualização deste arquivo de continuidade
-3. demo visual para avaliação
+2. atualização deste arquivo
+3. demo visual
+4. revisão de fidelidade: demo aprovada = alvo da implementação
 ```
 
-## Regra de fidelidade visual
+Podem divergir temporariamente apenas:
 
-A demo aprovada não é apenas inspiração: ela é o alvo visual da implementação.
-
-```text
-Demo aprovada
-      ↓
-Implementação o mais fiel possível
-      ↓
-Ajustes finos posteriores no navegador
-```
-
-Só podem divergir temporariamente:
-
-- fotografias oficiais ainda não fornecidas;
-- logos/assets oficiais ainda não adicionados;
+- fotografias oficiais;
+- logos/assets oficiais;
 - números institucionais ainda não confirmados;
 - conteúdo dinâmico cujo contrato do backend ainda não esteja consolidado.
 
@@ -74,29 +63,45 @@ Estrutura, proporções, hierarquia, comportamento, tabs, sliders, cards e distr
 
 ---
 
-# 4. Arquitetura atual da Home
+# 4. Ordem oficial da Home — ATUALIZADA
+
+A seção `Equipe / Diretoria / Robôs / Premiações` foi movida para antes da Galeria por decisão conceitual.
+
+Fluxo oficial:
 
 ```text
-HEADER                                      ✅ implementado + fidelidade revisada
+HEADER
 │
-├── HERO / PAINEL DE DESTAQUES              ✅ implementado + fidelidade revisada
+├── HERO / PAINEL DE DESTAQUES
 │
-├── SOBRE IEEE + RAS                        ✅ implementado + fidelidade revisada
+├── SOBRE IEEE + RAS
 │
-├── GALERIA                                 ✅ implementada + fidelidade revisada
+├── EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
 │
-├── EQUIPE / DIRETORIA / ROBÔS / PRÊMIOS   ⏭ próxima janela
+├── GALERIA
 │
-├── EVENTOS DA RAS                          planejado
+├── EVENTOS DA RAS
 │
-├── [CONDICIONAL] COMPETIÇÃO ATUAL          planejado
+├── [CONDICIONAL] COMPETIÇÃO ATUAL
 │       ├── CRONOGRAMA DA COMPETIÇÃO
 │       └── ACOMPANHAR / AO VIVO
 │
-├── EDIÇÕES ANTERIORES                      planejado
+├── EDIÇÕES ANTERIORES
 │
-└── FOOTER INSTITUCIONAL                    planejado
+└── FOOTER INSTITUCIONAL
 ```
+
+Justificativa conceitual:
+
+```text
+quem somos
+   ↓
+quem faz parte / o que construímos / o que conquistamos
+   ↓
+registros visuais dessa trajetória
+```
+
+Isso cria uma narrativa institucional mais natural antes de entrar em eventos e competição.
 
 ---
 
@@ -109,7 +114,7 @@ landing-page/src/components/InstitutionalHeader.vue
 landing-page/src/header.css
 ```
 
-Estrutura desktop:
+Estrutura:
 
 ```text
 [ IEEE RAS UFRB ]   Início   Sobre   Competição⌄   Calendário   Eventos   Contato   [ Inscrições ]
@@ -125,23 +130,23 @@ Chaveamento
 Edições anteriores
 ```
 
-Com competição em andamento, faixa rubra acima do Header:
+Com competição em andamento:
 
 ```text
 RRC em andamento · <edição>                Acompanhar competição →
 ```
 
-Refinamentos de fidelidade já aplicados:
+Fidelidade revisada contra a demo:
 
 - faixa ativa rubra;
-- item ativo com linha inferior rubra simples;
-- roxo usado para hover/estrutura institucional;
+- linha inferior rubra no item ativo;
+- roxo em hover/estrutura;
 - CTA `Inscrições` rubro;
-- fundo branco e sombra/borda discretas;
-- mobile próximo da demo com hambúrguer + identidade + CTA;
-- menu aberto mantém navegação completa.
+- fundo branco;
+- mobile com hambúrguer + identidade + CTA;
+- menu aberto completo.
 
-Logo oficial IEEE RAS/UFRB ainda será substituído quando o asset definitivo for fornecido.
+Logo oficial IEEE RAS/UFRB será substituído depois.
 
 ---
 
@@ -154,7 +159,7 @@ landing-page/src/components/HighlightsHero.vue
 landing-page/src/highlights-hero.css
 ```
 
-Estrutura visual final:
+Estrutura final baseada na demo:
 
 ```text
 ┌─────────────────────────────────────────────┬──────────────────────┐
@@ -168,9 +173,9 @@ Estrutura visual final:
 [ preview 1 ] [ preview 2 ] [ preview 3 ] [ preview 4 ]
 ```
 
-Slides preparados:
+Conteúdo preparado:
 
-- apresentação institucional da RAS UFRB;
+- apresentação RAS UFRB;
 - competição atual quando aplicável;
 - RAS nas Escolas;
 - oficinas/formação;
@@ -180,14 +185,13 @@ Comportamento:
 
 - autoplay ~7s;
 - pausa em interação/hover;
-- setas laterais;
+- setas;
 - dots;
-- CTA principal rubro;
-- quatro cards-preview no desktop;
-- painel lateral de últimas novidades;
+- previews clicáveis;
+- painel lateral de novidades;
 - responsivo.
 
-O RRC só entra como slide quando houver contexto competitivo real.
+RRC só aparece com contexto competitivo real.
 
 ---
 
@@ -200,7 +204,7 @@ landing-page/src/components/InstitutionalAbout.vue
 landing-page/src/about.css
 ```
 
-Estrutura visual-alvo:
+Estrutura:
 
 ```text
 [ galeria/collage visual ]         [ O QUE É O IEEE ] [ O QUE É A RAS UFRB ]
@@ -209,140 +213,56 @@ Estrutura visual-alvo:
 [ membros ] [ robôs ] [ prêmios ] [ eventos ] [ escolas visitadas ]
 ```
 
-Já aproximado da demo com:
+Implementado próximo da demo com:
 
-- mídia principal à esquerda;
-- miniaturas inferiores;
-- tabs largas no painel direito;
+- mídia principal;
+- miniaturas;
+- tabs largas;
 - blocos explicativos com ícones;
 - faixa inferior de cinco indicadores.
 
-Fotos e números atuais são placeholders.
+Fotos e números ainda são placeholders.
 
 ---
 
-# 8. JANELA 4 — GALERIA ✅
+# 8. JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ⏭ PRÓXIMA
 
-Arquivos:
-
-```text
-landing-page/src/components/InstitutionalGallery.vue
-landing-page/src/gallery.css
-```
-
-A primeira implementação ainda carregava CSS da ideia antiga em mosaico. Após comparação com a demo aprovada, foi corrigida para o conceito definitivo de álbuns por evento/categoria.
-
-## Estrutura visual aprovada e implementada
-
-```text
-MEMÓRIAS E REGISTROS
-Galeria
-texto institucional curto
-
-[ Todos ] [ RRC ] [ Oficinas ] [ RAS nas Escolas ] [ Premiações ] [ Eventos ]
-
-┌─────────────────────┐ ┌─────────────────────┐ ┌─────────────────────┐
-│ foto principal       │ │ foto principal       │ │ foto principal       │
-│                     │ │                     │ │                     │
-├──────┬──────┬───────┤ ├──────┬──────┬───────┤ ├──────┬──────┬───────┤
-│mini  │mini  │mini   │ │mini  │mini  │mini   │ │mini  │mini  │mini   │
-└──────┴──────┴───────┘ └──────┴──────┴───────┘ └──────┴──────┴───────┘
- categoria                categoria                categoria
- título                   título                   título
- qtd. fotos · data        qtd. fotos · data        qtd. fotos · data
- descrição                descrição                descrição
- Ver álbum →              Ver álbum →              Ver álbum →
-```
-
-## Filtros
-
-```text
-Todos
-RRC
-Oficinas
-RAS nas Escolas
-Premiações
-Eventos
-```
-
-## Álbuns temporários preparados
-
-- RRC 2026;
-- Oficina de Robótica;
-- RAS nas Escolas;
-- Conquistas e Premiações;
-- Eventos Institucionais.
-
-Os dados atuais de quantidade/data são placeholders editoriais e devem ser substituídos por dados reais depois.
-
-## Prévia do álbum
-
-Ao clicar em um álbum, abre uma prévia flutuante no canto inferior direito, próxima da demo aprovada:
-
-- título `Prévia do álbum`;
-- mídia grande;
-- botão de próxima foto;
-- contador `1 / N`;
-- dots;
-- botão fechar.
-
-Quando o acervo real for conectado, essa estrutura pode evoluir para navegação completa sem redesenhar a Home.
-
-## Imagens
-
-Atualmente são placeholders visuais. A troca por fotos reais não deve exigir mudança estrutural.
-
-Antes da publicação ainda definir:
-
-- armazenamento/origem do acervo;
-- autorização;
-- créditos;
-- legendas;
-- associação das fotos a cada álbum/evento;
-- otimização/lazy loading.
-
-## Responsividade
-
-- desktop: 3 colunas de álbuns;
-- tablet: 2 colunas;
-- mobile: 1 coluna;
-- filtros roláveis em telas pequenas;
-- prévia flutuante adaptada à largura do dispositivo.
-
-A demo aprovada desta janela é o alvo visual.
-
----
-
-# 9. JANELA 5 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ⏭ PRÓXIMA
+**Esta é agora a próxima janela da Home e deve entrar antes da Galeria no `App.vue`.**
 
 Conceito aprovado:
 
 ```text
-[ Equipe ] [ Diretoria ]       ROBÔS
-lista visual de integrantes    lista expansível
+[ Equipe ] [ Diretoria ]        ROBÔS
+lista visual de integrantes     lista expansível
 
-                               PREMIAÇÕES
-                               lista expansível
+                                PREMIAÇÕES
+                                lista expansível
 ```
 
-Equipe/Diretoria:
+## Equipe / Diretoria
 
-- tabs;
-- card compacto por integrante;
-- hover/expansão aumenta foto;
-- nome + área/modalidade;
-- diretoria inclui função.
+- alternância por tabs;
+- cards visuais de integrantes;
+- hover/expansão aumenta a foto;
+- mostrar nome + área/modalidade;
+- diretoria mostra função/cargo;
+- evitar tabela ou visual de cadastro.
 
-Robôs ao expandir:
+## Robôs
+
+Lista expansível. Ao abrir:
 
 - foto;
+- nome;
 - modalidade;
 - ano;
 - descrição;
 - competições;
 - resultados relevantes.
 
-Premiações ao expandir:
+## Premiações
+
+Lista expansível. Ao abrir:
 
 - colocação;
 - evento;
@@ -351,6 +271,68 @@ Premiações ao expandir:
 - robô;
 - modalidade;
 - descrição.
+
+A demo desta janela deverá ser criada e depois implementada com alta fidelidade antes de avançar.
+
+---
+
+# 9. JANELA 5 — GALERIA ✅ IMPLEMENTADA
+
+Arquivos:
+
+```text
+landing-page/src/components/InstitutionalGallery.vue
+landing-page/src/gallery.css
+```
+
+A Galeria já está implementada, porém sua posição oficial agora é **depois de Equipe / Diretoria / Robôs / Premiações**.
+
+No momento, como a nova Janela 4 ainda não existe em código, ela pode aparecer logo após `Sobre` no `App.vue`. Ao implementar a Janela 4, a ordem deve ficar obrigatoriamente:
+
+```text
+<InstitutionalAbout />
+<TeamRobotsAwards />
+<InstitutionalGallery />
+```
+
+## Estrutura aprovada da Galeria
+
+```text
+MEMÓRIAS E REGISTROS
+Galeria
+
+[ Todos ] [ RRC ] [ Oficinas ] [ RAS nas Escolas ] [ Premiações ] [ Eventos ]
+
+[ álbum ] [ álbum ] [ álbum ]
+ foto      foto      foto
+ minis     minis     minis
+ título    título    título
+ fotos     fotos     fotos
+ data      data      data
+ Ver álbum Ver álbum Ver álbum
+```
+
+Cada álbum usa:
+
+- foto principal;
+- três miniaturas;
+- categoria;
+- título;
+- quantidade de fotos;
+- data;
+- descrição;
+- ação `Ver álbum`.
+
+Ao clicar, abrir prévia flutuante com:
+
+- título;
+- mídia grande;
+- próximo;
+- contador;
+- dots;
+- fechar.
+
+Fotos, quantidades e datas atuais são placeholders.
 
 ---
 
@@ -383,8 +365,6 @@ Ao expandir:
 
 Só aparece quando existir competição pública da RAS gerenciada pelo RasComp.
 
-Quando existir:
-
 ```text
 COMPETIÇÃO ATUAL
 RRC 20XX
@@ -400,7 +380,7 @@ resultados
 [ Acompanhar competição ]
 ```
 
-Landing = leitura pública. Backend/RasComp permanecem fonte de verdade.
+A Landing é somente leitura pública. Backend/RasComp permanecem fonte de verdade.
 
 ---
 
@@ -422,13 +402,20 @@ Inscrições → Homologação → Chaves → Inspeção → Eliminatórias → 
 
 # 13. JANELA 9 — EDIÇÕES ANTERIORES
 
-Histórico por edição/ano com resumo, campeões, modalidades, fotos, resultados e chaveamento quando houver dados.
+Histórico por edição/ano:
+
+- resumo;
+- campeões;
+- modalidades;
+- fotos;
+- resultados;
+- chaveamento quando houver dados.
 
 ---
 
 # 14. JANELA 10 — FOOTER INSTITUCIONAL
 
-Seguir a lógica institucional observada na ERBASE, sem copiar código/visual.
+Seguir a lógica institucional da ERBASE, sem copiar código/visual.
 
 ```text
 RAS UFRB
@@ -466,21 +453,21 @@ Fundo roxo profundo com detalhes rubros discretos.
 
 # 15. Conteúdo estático x dinâmico
 
-Estático/editorial inicialmente:
+## Estático/editorial inicialmente
 
-- apresentação RAS UFRB;
+- apresentação da RAS UFRB;
 - IEEE;
 - história;
-- eventos;
-- projetos;
-- diretoria;
 - equipe;
+- diretoria;
 - robôs históricos;
 - premiações;
+- eventos;
+- projetos;
 - parceiros;
 - textos institucionais.
 
-Dinâmico via backend público:
+## Dinâmico via backend público
 
 - competição atual;
 - status;
@@ -503,9 +490,17 @@ A Landing nunca gera chave, decide vencedor, calcula ranking oficial, altera ins
 
 # 16. Imagens e mídia — pendente
 
-Durante construção, placeholder ou nenhuma imagem é permitido.
+Durante construção, placeholders são permitidos.
 
-Antes de publicação definir acervo oficial, autorização, fonte/armazenamento, créditos, legendas, otimização e lazy loading.
+Antes da publicação definir:
+
+- acervo oficial;
+- autorização;
+- armazenamento;
+- créditos;
+- legendas;
+- otimização;
+- lazy loading.
 
 ---
 
@@ -524,7 +519,7 @@ Antes de publicação definir acervo oficial, autorização, fonte/armazenamento
 - [ ] favicon/manifest;
 - [ ] sitemap/robots;
 - [ ] performance;
-- [ ] tratamento de erro/loading/vazio;
+- [ ] loading/erro/vazio;
 - [ ] 404 pública.
 
 ---
@@ -532,24 +527,24 @@ Antes de publicação definir acervo oficial, autorização, fonte/armazenamento
 # 18. Estado atual
 
 ```text
-JANELA 1 — Header                  ✅ implementada + demo + fidelidade revisada
-JANELA 2 — Hero/Destaques         ✅ implementada + demo + fidelidade revisada
-JANELA 3 — Sobre IEEE/RAS          ✅ implementada + demo + fidelidade revisada
-JANELA 4 — Galeria                 ✅ implementada + demo + fidelidade revisada
-JANELA 5 — Equipe/Robôs/Prêmios    ⏭ próxima
-JANELA 6 — Eventos                 ⬜
-JANELA 7 — Competição atual        ⬜
-JANELA 8 — Cronograma/Acompanhar   ⬜
-JANELA 9 — Edições anteriores      ⬜
-JANELA 10 — Footer                 ⬜
+JANELA 1 — Header                          ✅ implementada + demo + fidelidade revisada
+JANELA 2 — Hero/Destaques                 ✅ implementada + demo + fidelidade revisada
+JANELA 3 — Sobre IEEE/RAS                  ✅ implementada + demo + fidelidade revisada
+JANELA 4 — Equipe/Diretoria/Robôs/Prêmios ⏭ próxima
+JANELA 5 — Galeria                         ✅ implementada + demo + fidelidade revisada
+JANELA 6 — Eventos                         ⬜
+JANELA 7 — Competição atual                ⬜
+JANELA 8 — Cronograma/Acompanhar           ⬜
+JANELA 9 — Edições anteriores              ⬜
+JANELA 10 — Footer                         ⬜
 ```
-
-A implementação das janelas institucionais pode avançar visualmente antes da consolidação total do ADMIN, desde que contratos competitivos não sejam considerados definitivos antes da validação do backend/gestão.
 
 ---
 
 # 19. Próximo passo
 
 ```text
-JANELA 5 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
+JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
 ```
+
+Ao implementar, inserir o componente **entre `InstitutionalAbout` e `InstitutionalGallery`** no `App.vue`.
