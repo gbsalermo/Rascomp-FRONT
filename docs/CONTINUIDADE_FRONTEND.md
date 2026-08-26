@@ -1,683 +1,346 @@
 # Continuidade — RASCOMP Frontend
 
-Última atualização: 2026-08-24
+Última atualização: **26/08/2026**
 
-Este documento é o checkpoint principal do frontend RASCOMP.
-
-> Qualquer referência histórica a React/TanStack Query em versões anteriores deste arquivo está **substituída** pela implementação atual em Vue 3.
-
----
-
-# 1. Identidade do projeto
+## 1. Identidade
 
 ```text
-RASCOMP = plataforma/software
-RRC     = evento/competição
-RAS UFRB = identidade institucional pública
+RASCOMP  = plataforma/software
+RRC      = evento/competição
+RAS UFRB = organização/identidade institucional
 ```
 
-O repositório possui duas aplicações independentes:
+Repositório:
 
 ```text
 Rascomp-FRONT/
-├── gestao/        -> sistema autenticado
-└── landing-page/  -> site público RAS UFRB + área RRC
+├── gestao/        → aplicação autenticada
+└── landing-page/  → experiência pública futura
 ```
 
-A Gestão é desenvolvida primeiro. A Landing permanece pausada como fundação/POC até as experiências autenticadas de ORGANIZACAO e PARTICIPANTE estarem consolidadas e os contratos públicos serem novamente revisados.
-
-Documento exclusivo da Landing:
+## 2. Roadmap macro — congelado
 
 ```text
-docs/CONTINUIDADE_LANDING_PAGE.md
+1. ADMIN / ORGANIZAÇÃO
+2. PARTICIPANTE
+3. LANDING PAGE RAS UFRB + RRC
 ```
 
----
+O ADMIN está no fechamento funcional/visual. O PARTICIPANTE ganhou uma primeira versão demonstrável para a apresentação da equipe. A Landing continua pausada.
 
-# 2. Arquitetura atual
-
-## Gestão
-
-Stack oficial:
+## 3. Estado do ADMIN
 
 ```text
-Vue 3
-TypeScript
-Vite
-Vue Router
-Pinia
-Axios
-Element Plus
+Dashboard + Sidebar                    ✅
+Autenticação                           ✅ validada localmente
+Central da competição                  ✅
+Inscrições                             ✅
+Catálogos                              ✅
+Histórico de chaves                    ✅ validado localmente
+Árvore visual de Sumô                  ✅
+Tela de arena Sumô                     ✅ implementação
+Penalidades + Suicídio/WO               ✅ implementação
+Follow Line                             ✅ implementação
+Histórico por tomadas                  ✅
+Tela operacional de tomada             ✅
+Fotos em Follow/Sumô                    ✅
+Progresso visual da competição          ✅
+Consolidação final/responsividade       ⏳
 ```
 
-## Fluxo de dados
+### Rotas ADMIN
 
 ```text
-Gestão Vue
-    ↓ REST + JWT
-Spring Boot
-    ↓
-Banco
-    ↓
-/api/v1/public/**
-    ↓
-Landing Vue
+/
+/competicoes
+/inscricoes
+/equipes
+/robos
+/modalidades
+/follow-line
+/follow-line/tomada/:registrationId
+/sumo
+/sumo/partida/:matchId
+/chaves
+/partidas
+/resultados
+/configuracoes
 ```
 
-O backend é a única fonte de verdade.
+## 4. Follow Line
 
-O navegador **não** calcula oficialmente:
-
-- ranking;
-- vencedor de partida;
-- progressão da chave;
-- campeão;
-- eliminação/classificação oficial;
-- aprovação de inspeção;
-- regras competitivas.
-
----
-
-# 3. Camunda
-
-Camunda foi retirado do caminho oficial do projeto.
-
-A decisão atual é manter os fluxos competitivos e administrativos necessários no domínio Spring Boot.
-
-Motivo:
-
-- geração de chave já existe no backend;
-- BYE já é tratado no backend;
-- rounds já geram resultado de Sumô automaticamente;
-- vencedor já progride automaticamente;
-- ranking Follow Line já é calculado no backend;
-- análise de inscrição pode permanecer como regra transacional simples.
-
-Camunda só deve ser reconsiderado no futuro se surgir um processo realmente duradouro, multiator e com esperas/timers que justifique BPMN executável.
-
----
-
-# 4. Ordem macro oficial de desenvolvimento
-
-Esta ordem fica **congelada** para evitar mistura entre interfaces e mudança de foco durante o desenvolvimento:
+### Domínio visual
 
 ```text
-1. ADMIN / ORGANIZACAO
+Robô
+├─ Tomada 1
+│  ├─ Tentativa 1
+│  ├─ Tentativa 2
+│  └─ Tentativa 3
+├─ Tomada 2
+└─ ...
+```
+
+A tela geral apresenta **Histórico de tomadas**. Cada tomada expande suas tentativas.
+
+Ranking oficial:
+
+```text
+melhor tentativa válida/concluída da tomada
         ↓
-2. USUARIO / PARTICIPANTE
+resultado da tomada
         ↓
-3. LANDING PAGE
+melhor tomada do robô
+        ↓
+ranking
 ```
 
-## Fase 1 — ADMIN / ORGANIZACAO
+A ação principal é:
 
-Primeiro concluir toda a experiência administrativa e operacional:
+```text
+Registrar tomada
+→ selecionar inscrição
+→ abrir operação do robô
+→ registrar próxima tentativa
+```
 
-- dashboard;
-- competições;
-- inscrições;
-- Follow Line;
-- Sumô;
-- inspeções;
-- chaveamentos;
-- partidas;
-- rounds;
-- resultados;
-- estados de erro/loading/vazio;
-- responsividade e consolidação técnica.
+A tela operacional possui:
 
-A interface administrativa produz e mantém o estado oficial que as demais experiências irão consumir.
-
-## Fase 2 — USUARIO / PARTICIPANTE
-
-Somente após a interface administrativa estar consolidada, evoluir a experiência completa do competidor:
-
-- dashboard competitivo;
+- foto do robô;
 - equipe;
-- solicitação de adesão;
+- tomada atual;
+- tomadas abertas;
+- tentativas restantes;
+- melhor tempo;
+- histórico da tomada;
+- tempo;
+- penalidade;
+- checkpoints;
+- concluída/válida;
+- observação.
+
+## 5. Sumô
+
+### Chave
+
+`TournamentBracket.vue` representa o chaveamento visual com fases, conectores e placar.
+
+### Operação
+
+```text
+/sumo/partida/:matchId
+```
+
+A tela de arena contém:
+
+- foto dos dois robôs;
+- nome/equipe;
+- placar;
+- histórico de rounds;
+- vitória A/B;
+- penalidades A/B;
+- Suicídio/WO;
+- empate;
+- anulação;
+- cancelamento;
+- observação.
+
+Partida finalizada ou histórica abre a mesma interface em leitura.
+
+### Categorias
+
+Não criar motores diferentes para RC/Autônomo.
+
+```text
+Mini Sumô RC
+Mini Sumô Autônomo
+Sumô 3 kg RC
+Sumô 3 kg Autônomo
+```
+
+são categorias independentes e o backend garante isolamento por `categoryId`.
+
+## 6. Fotos dos robôs
+
+Componente comum:
+
+```text
+gestao/src/components/RobotPhoto.vue
+```
+
+Comportamento:
+
+```text
+robotId
+→ GET galeria pública
+→ foto principal
+→ fallback para iniciais
+```
+
+Uso atual:
+
+```text
+Portal Participante     ✅
+Operação Follow         ✅
+Arena Sumô              ✅
+Landing futura          ⏳
+```
+
+O participante também consegue enviar foto para robôs da própria equipe.
+
+## 7. PARTICIPANTE — primeira versão
+
+Rota:
+
+```text
+/minha-equipe
+```
+
+Após login com role `PARTICIPANTE`, `/` redireciona para o painel participante.
+
+Entregue para a demonstração:
+
+- resumo da equipe;
+- competidores;
 - robôs;
+- galeria/foto principal;
+- upload de foto;
 - inscrições;
-- próximas partidas;
-- horários;
-- adversários;
-- chave do Sumô;
-- situação na competição;
-- colocação no Follow Line;
-- melhor resultado;
-- histórico.
+- Follow:
+  - posição;
+  - melhor tomada;
+  - melhor tempo;
+  - progresso de tomadas;
+  - histórico por tomada;
+- Sumô:
+  - vitórias/derrotas;
+  - última partida;
+  - resultado;
+  - próxima partida quando existir.
 
-As mudanças de backend já planejadas para pós-Swagger — `TeamMember`, solicitação de adesão, RESPONSAVEL/SUPORTE e projeções autenticadas do participante — entram **como suporte desta fase**, antes de considerar a experiência PARTICIPANTE concluída.
+Pendente para etapa PARTICIPANTE completa:
 
-Não tratá-las como uma quarta interface ou produto separado.
+- convite/aceite real para equipe existente;
+- CRUD visual completo de integrantes;
+- CRUD visual completo de robôs;
+- inscrição em nova categoria pelo portal;
+- gestão mais completa de múltiplas fotos;
+- refinamento visual/responsivo.
 
-## Fase 3 — LANDING PAGE
+## 8. Cenário de demonstração
 
-A Landing só é retomada depois de ADMIN e PARTICIPANTE estarem consolidados.
+Backend:
 
-```text
-ADMIN concluído
-      ↓
-PARTICIPANTE concluído
-      ↓
-revisão final /api/v1/public/**
-      ↓
-LANDING 0 — auditoria
-      ↓
-Landing final
-```
-
----
-
-# 5. Perfis e experiências
-
-```text
-ORGANIZACAO
-PARTICIPANTE
-```
-
-A aplicação autenticada possui **duas experiências completas dentro do mesmo `gestao/`**.
-
-```text
-ORGANIZACAO  -> operar e administrar a competição
-PARTICIPANTE -> acompanhar a própria participação no evento
-```
-
-Não criar outro frontend separado apenas para competidores.
-
-## ORGANIZACAO
-
-Opera:
-
-- competições;
-- categorias;
-- inscrições;
-- Follow Line;
-- Sumô;
-- inspeções;
-- chaveamentos;
-- partidas;
-- rounds;
-- resultados;
-- cadastros administrativos.
-
-## PARTICIPANTE
-
-Fluxo de primeiro acesso definido:
-
-```text
-Criar conta
-    ↓
-UserAccount PARTICIPANTE
-    ↓
-Minha equipe
-    ↓
-Já tem equipe?
-├── NÃO → criar equipe → vira líder
-└── SIM → buscar equipe → solicitar entrada → líder aprova/rejeita
-    ↓
-Equipe pronta
-    ↓
-Inscrição de um robô
-├── 1 responsável
-└── 0..N suportes
-```
-
-Durante o evento, o participante precisa de um **dashboard competitivo próprio**, capaz de responder:
-
-- qual é minha próxima partida/tentativa;
-- horário, quando existir;
-- adversário no Sumô;
-- situação atual na chave;
-- se avançou, foi eliminado ou é campeão, quando o backend fornecer esse estado;
-- colocação oficial no Follow Line;
-- melhor resultado oficial;
-- inscrições e robôs vinculados;
-- equipe e membros.
-
-Documento específico:
-
-```text
-docs/EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
-```
-
-Onboarding:
-
-```text
-docs/ONBOARDING_PARTICIPANTE.md
-backend: rascomp/docs/POS_SWAGGER_USUARIOS_EQUIPES_INSCRICAO.md
-```
-
----
-
-# 6. Autenticação
-
-Implementado:
-
-```text
-POST /api/v1/auth/register
-POST /api/v1/auth/login
-GET  /api/v1/auth/me
-Authorization: Bearer <JWT>
-```
-
-Rotas públicas da Gestão:
-
-```text
-/login
-/cadastro
-/recuperar-senha
+```powershell
+$env:SPRING_PROFILES_ACTIVE="testdata"
+.\mvnw spring-boot:run
 ```
 
 Frontend:
 
-- Pinia para sessão;
-- `localStorage` quando “Lembrar de mim” está marcado;
-- `sessionStorage` caso contrário;
-- interceptor Axios;
-- limpeza em 401;
-- rotas por role;
-- logout;
-- cadastro de participante com login automático;
-- tela de recuperação preparada, backend ainda pendente.
-
-Validação local da integração Gestão ↔ Backend realizada com sucesso em 2026-08-24:
-
-```text
-backend local      ✅
-frontend local     ✅
-login ORGANIZACAO  ✅
-```
-
----
-
-# 7. Paleta e direção visual da Gestão
-
-Base aprovada:
-
-```text
-Roxo principal       #4F1967
-Rubro principal      #9F0F3B
-Rubro destaque       #C31549
-Sidebar escura
-Superfícies claras
-```
-
-Referência visual oficial: protótipo aprovado na conversa do projeto com:
-
-- login split-panel;
-- sidebar administrativa escura;
-- topbar clara;
-- dashboard operacional;
-- cards de métricas;
-- tabelas limpas;
-- bracket visual;
-- tela de partida/rounds;
-- identidade tecnológica sem excesso de neon/cyberpunk.
-
-A experiência PARTICIPANTE usa a mesma identidade visual, porém com informação orientada ao competidor e não à operação administrativa.
-
----
-
-# 8. Rotas atuais e rotas-alvo
-
-## Rotas atuais
-
-```text
-/login
-/cadastro
-/recuperar-senha
-/
-/competicoes
-/inscricoes
-/follow-line
-/sumo
-/minha-equipe
-```
-
-## Navegação ORGANIZACAO
-
-```text
-GERAL
-└── Visão geral
-
-COMPETIÇÃO
-├── Competições
-└── Inscrições
-
-OPERAÇÃO
-├── Seguidor de Linha
-└── Sumô
-```
-
-## Navegação PARTICIPANTE alvo
-
-```text
-GERAL
-├── Meu painel
-└── Minha equipe
-
-MEUS RECURSOS
-├── Meus robôs
-└── Minhas inscrições
-
-COMPETIÇÃO
-├── Próximas partidas
-├── Minha chave        // Sumô
-├── Minha colocação    // Follow Line
-└── Histórico
-```
-
-A navegação pode ser adaptativa conforme as modalidades em que o participante estiver inscrito.
-
----
-
-# 9. GESTÃO UI — trilha ADMIN / ORGANIZACAO
-
-## UI 1 — Shell + Dashboard ORGANIZACAO
-
-Status: **IMPLEMENTADO / AGUARDANDO VALIDAÇÃO LOCAL VISUAL**
-
-Alterações:
-
-- [x] sidebar refinada;
-- [x] agrupamento Geral / Competição / Operação;
-- [x] topbar contextual por rota;
-- [x] identificação do perfil;
-- [x] competição em foco;
-- [x] métricas reais;
-- [x] contagem de inscrições da edição;
-- [x] contagem de equipes;
-- [x] contagem de robôs;
-- [x] contagem de competidores;
-- [x] pendências da edição;
-- [x] últimas inscrições;
-- [x] atalhos rápidos de operação;
-- [x] responsividade inicial.
-
-Não foram criados números falsos para reproduzir o mockup.
-
-## UI 2 — Inscrições ORGANIZACAO
-
-Status: **IMPLEMENTADO / AGUARDANDO VALIDAÇÃO LOCAL**
-
-Entregue:
-
-- [x] competição em foco;
-- [x] métricas total/pendentes/aprovadas/rejeitadas;
-- [x] filtros por competição e status;
-- [x] busca por equipe, robô, categoria, solicitante ou competidor;
-- [x] tabela operacional refinada;
-- [x] detalhe da inscrição em drawer;
-- [x] visualização dos competidores;
-- [x] observação original preservada;
-- [x] aprovação/rejeição com confirmação;
-- [x] leitura de `reviewedByUser` / `reviewedAt`;
-- [x] atualização após mutação;
-- [x] responsividade inicial.
-
-## UI 3 — Follow Line ORGANIZACAO
-
-**PRÓXIMA ETAPA ADMINISTRATIVA** depois da validação local das telas já alteradas.
-
-Planejado:
-
-- competição/categoria em foco;
-- inscritos;
-- lançamento de tentativa;
-- tomadas/tentativas;
-- penalidade/checkpoints;
-- ranking oficial;
-- histórico operacional;
-- refetch após mutação.
-
-## UI 4 — Sumô / Inspeção ORGANIZACAO
-
-Planejado:
-
-- inscrições aprovadas;
-- inspeção;
-- aptidão;
-- bloqueios claros antes do bracket.
-
-## UI 5 — Sumô / Bracket visual ORGANIZACAO
-
-Referência oficial: bracket em árvore do protótipo aprovado.
-
-O frontend nunca decide quem avança.
-
-## UI 6 — Sumô / Partida e Rounds ORGANIZACAO
-
-Planejado:
-
-- participantes A/B;
-- placar consolidado;
-- lista de rounds;
-- vencedor de cada round;
-- registro do próximo round;
-- resultado automático do backend;
-- atualização do bracket após resultado.
-
-## UI ADMIN — Consolidação
-
-Antes de mudar o foco para PARTICIPANTE:
-
-- estados loading/erro/vazio;
-- responsividade;
-- acessibilidade básica;
-- 404;
-- revisão de erros HTTP;
-- typecheck;
-- build;
-- validação local do fluxo administrativo.
-
----
-
-# 10. Trilha USUARIO / PARTICIPANTE — experiência competitiva
-
-Essa trilha começa **somente após a consolidação da interface ADMIN / ORGANIZACAO**.
-
-## PARTICIPANTE 1 — Dashboard competitivo
-
-Planejado:
-
-- próxima partida/atividade em destaque;
-- horário quando houver `dataHora`;
-- adversário no Sumô;
-- robô/categoria/modalidade;
-- inscrições ativas;
-- situação dos robôs;
-- atalhos para chave, ranking e histórico.
-
-## PARTICIPANTE 2 — Equipe e adesão
-
-- criar equipe;
-- buscar equipe;
-- solicitar entrada;
-- líder aprova/rejeita;
-- membros da equipe;
-- ownership.
-
-Solicitação/aprovação depende do backend pós-Swagger.
-
-## PARTICIPANTE 3 — Meus robôs
-
-- listar robôs;
-- detalhes;
-- fotos;
-- inscrições associadas;
-- histórico competitivo.
-
-## PARTICIPANTE 4 — Minhas inscrições
-
-- competição;
-- categoria;
-- robô;
-- status;
-- responsável;
-- suportes;
-- observação;
-- resultado quando aplicável.
-
-## PARTICIPANTE 5 — Meu Sumô
-
-- chave da categoria;
-- partidas próprias;
-- próxima partida;
-- adversário;
-- rodada;
-- horário;
-- rounds/resultados;
-- situação oficial quando projetada pelo backend.
-
-## PARTICIPANTE 6 — Meu Follow Line
-
-- posição oficial;
-- melhor resultado;
-- tempo bruto/final;
-- penalidade;
-- tomada/tentativa;
-- ranking completo da categoria.
-
-## PARTICIPANTE 7 — Histórico
-
-- participações finalizadas;
-- resultados;
-- posições;
-- partidas;
-- robôs utilizados.
-
----
-
-# 11. Contratos atuais úteis para o PARTICIPANTE
-
-Já existem dados suficientes para uma primeira versão útil combinando:
-
-```text
-/api/v1/participante/equipes
-/api/v1/participante/equipes/{teamId}/robos
-/api/v1/participante/equipes/{teamId}/inscricoes
-
-/api/v1/public/chaveamentos
-/api/v1/public/partidas
-/api/v1/public/resultados
-/api/v1/public/ranking/seguidor-linha
-```
-
-`MatchDTO` já contém `registrationAId`, `registrationBId`, `rodada`, `ordem`, `dataHora` e `status`.
-
-O ranking Follow Line já contém `registrationId` e `posicao` calculada pelo backend.
-
-Pode-se cruzar IDs próprios com projeções públicas para exibição inicial.
-
-No pós-Swagger, avaliar projeções autenticadas específicas para reduzir junções no frontend e entregar semântica pronta como próxima partida e situação competitiva.
-
----
-
-# 12. Extensibilidade de modalidades
-
-Não hardcodar a experiência visual assumindo que o sistema terá para sempre apenas duas opções.
-
-Backend atual:
-
-```text
-SUMO
-FOLLOW_LINE
-```
-
-Backlog pós-Swagger:
-
-```text
-SUMO
-├── RC
-└── AUTÔNOMO
-
-FOLLOW_LINE
-├── padrão
-└── cores (futuro)
-
-COMBATE (futuro)
-RESGATE (futuro)
-```
-
-Documento backend:
-
-```text
-rascomp/docs/POS_SWAGGER_MODALIDADES_E_CATEGORIAS.md
-```
-
----
-
-# 13. Landing
-
-Estado: **PAUSADA / FUNDAÇÃO TÉCNICA**.
-
-Retomada somente após:
-
-```text
-ADMIN / ORGANIZACAO consolidado
-      ↓
-USUARIO / PARTICIPANTE consolidado
-      ↓
-revisão final dos contratos /api/v1/public/**
-      ↓
-LANDING 0 — auditoria
-```
-
----
-
-# 14. Execução local
-
-Gestão:
-
-```bash
+```powershell
 cd gestao
-cp .env.example .env
 npm install
 npm run dev
 ```
 
-URLs padrão:
+### Organização
 
 ```text
-Gestão   http://localhost:5173
-Landing  http://localhost:5174
-Backend  http://localhost:8080
+organizacao.demo@rascomp.local
+Rascomp@2026
 ```
 
-Antes de considerar uma etapa tecnicamente concluída:
+### Participante
 
-```bash
+```text
+lider.demo@rascomp.local
+Rascomp@2026
+```
+
+### Edição ao vivo
+
+```text
+RRC 2026 · Demonstração ao vivo
+```
+
+Estado:
+
+- EM_ANDAMENTO;
+- progresso ~50%;
+- aprovadas + pendentes + rejeitada;
+- ranking Follow pronto;
+- Chronos Demo com 2/3 tomadas preenchidas;
+- Tomada 3 disponível para operação ao vivo;
+- Titan Demo com vitória em Sumô;
+- chave parcial;
+- penalidade;
+- Suicídio/WO;
+- categoria com BYEs.
+
+### Histórico
+
+```text
+RRC 2025 · Histórico completo
+```
+
+- FINALIZADA;
+- 32 robôs;
+- chave 16 avos → final;
+- resultados já ocorridos.
+
+Roteiro:
+
+```text
+docs/ROTEIRO_DEMO_2026-08-27.md
+```
+
+## 9. Qualidade
+
+Workflow criado:
+
+```text
+.github/workflows/frontend-checks.yml
+```
+
+Executa:
+
+```text
+npm ci
 npm run typecheck
 npm run build
 ```
 
----
-
-# 15. Próxima ação oficial
+Backend no checkpoint atual:
 
 ```text
-AGORA
-ADMIN / ORGANIZACAO
-├── validar Login
-├── validar Dashboard
-├── validar Inscrições
-├── UI 3 — Follow Line
-├── UI 4 — Sumô / Inspeção
-├── UI 5 — Bracket visual
-├── UI 6 — Partida / Rounds
-└── consolidação ADMIN
-        ↓
-DEPOIS
-USUARIO / PARTICIPANTE
-├── dashboard competitivo
-├── equipe / adesão
-├── robôs
-├── inscrições
-├── próximas partidas
-├── minha chave
-├── meu ranking
-└── histórico
-        ↓
-POR ÚLTIMO
-LANDING PAGE
+45 testes
+0 failures
+0 errors
+```
+
+## 10. Regras arquiteturais
+
+O frontend não deve calcular oficialmente:
+
+- elegibilidade;
+- inspeção;
+- ranking;
+- BYE;
+- progressão;
+- vencedor;
+- campeão;
+- resultado.
+
+Esses valores vêm do backend.
+
+## 11. Próximos passos após a demo
+
+```text
+1. validar todos os cenários testdata localmente
+2. corrigir qualquer ajuste visual detectado na apresentação
+3. fechar consolidação final do ADMIN
+4. retomar PARTICIPANTE como etapa principal
+5. completar fluxo de equipe/robôs/inscrições
+6. iniciar LANDING RAS UFRB + RRC
 ```
