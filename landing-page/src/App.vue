@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api, assetUrl } from './api'
+import InstitutionalHeader from './components/InstitutionalHeader.vue'
 
 const loading = ref(true)
 const error = ref('')
@@ -100,11 +101,7 @@ onBeforeUnmount(() => timer && clearInterval(timer))
 
 <template>
   <div class="public-app">
-    <header class="site-header">
-      <a href="#top" class="public-brand"><img src="/rascomp-logo.webp" alt="RASCOMP" /><strong>RASCOMP</strong></a>
-      <nav><a href="#ao-vivo">Ao vivo</a><a href="#equipes">Equipes</a><a href="#modalidades">Modalidades</a></nav>
-      <a class="outline-link" :href="managementUrl">Área do participante</a>
-    </header>
+    <InstitutionalHeader :competition="currentCompetition" :management-url="managementUrl" />
 
     <main id="top">
       <section class="hero">
