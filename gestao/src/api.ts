@@ -18,7 +18,8 @@ import type {
   Team,
   Robot,
   Competitor,
-  UserAccount
+  UserAccount,
+  UserRole
 } from './types'
 
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '')
@@ -105,7 +106,19 @@ export const adminApi = {
   },
   updateRegistration: (id: number, payload: Registration) => http.put<Registration>(`/api/v1/inscricoes/${id}`, payload).then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/equipes').then((r) => r.data),
+  setTeamActive: (id: number, ativo: boolean) =>
+    ativo
+      ? http.patch<Team>(`/api/v1/equipes/${id}/reativar`).then((r) => r.data)
+      : http.delete(`/api/v1/equipes/${id}`).then(() => undefined),
   robots: () => http.get<Robot[]>('/api/v1/robos').then((r) => r.data),
+  setRobotActive: (id: number, ativo: boolean) =>
+    ativo
+      ? http.patch<Robot>(`/api/v1/robos/${id}/reativar`).then((r) => r.data)
+      : http.delete(`/api/v1/robos/${id}`).then(() => undefined),
+  users: (role: UserRole) =>
+    http.get<UserAccount[]>('/api/v1/usuarios', { params: { role } }).then((r) => r.data),
+  setUserActive: (id: number, ativo: boolean) =>
+    http.patch<UserAccount>(`/api/v1/usuarios/${id}/ativo`, null, { params: { ativo } }).then((r) => r.data),
   robotPhotos: (robotId: number) => http.get<RobotImage[]>(`/api/v1/robos/${robotId}/fotos`).then((r) => r.data),
   competitors: () => http.get<Competitor[]>('/api/v1/competidores').then((r) => r.data),
   rankingFollow: (competitionId: number, categoryId: number) =>
