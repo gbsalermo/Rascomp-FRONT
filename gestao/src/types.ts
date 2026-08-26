@@ -14,7 +14,7 @@ export type RegistrationStatus =
   | 'DESCLASSIFICADA'
 export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
 export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
-export type RoundSumoOutcomeReason = 'DISPUTA' | 'SUICIDIO_WO'
+export type RoundSumoOutcomeReason = 'DISPUTA' | 'SUICIDIO_WO' | 'PENALIDADES'
 
 export interface UserAccount {
   id: number
