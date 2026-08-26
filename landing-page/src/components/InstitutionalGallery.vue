@@ -5,6 +5,7 @@ type GalleryFilter = 'Todos' | 'RRC' | 'Oficinas' | 'RAS nas Escolas' | 'Premia�
 
 type GalleryAlbum = {
   id: number
+  slug: string
   title: string
   category: Exclude<GalleryFilter, 'Todos'>
   description: string
@@ -16,10 +17,12 @@ type GalleryAlbum = {
 const filters: GalleryFilter[] = ['Todos', 'RRC', 'Oficinas', 'RAS nas Escolas', 'Premiações', 'Eventos']
 const activeFilter = ref<GalleryFilter>('Todos')
 const selectedAlbum = ref<GalleryAlbum | null>(null)
+const galleryBaseUrl = (import.meta.env.VITE_GALERIA_URL || 'http://localhost:5175').replace(/\/$/, '')
 
 const albums: GalleryAlbum[] = [
   {
     id: 1,
+    slug: 'rrc-2026',
     title: 'RRC 2026',
     category: 'RRC',
     description: 'Momentos das edições do RRC e da nossa equipe em ação dentro e fora das pistas.',
@@ -29,6 +32,7 @@ const albums: GalleryAlbum[] = [
   },
   {
     id: 2,
+    slug: 'oficina-de-robotica',
     title: 'Oficina de Robótica',
     category: 'Oficinas',
     description: 'Capacitação, aprendizado e compartilhamento de conhecimento com a comunidade.',
@@ -38,6 +42,7 @@ const albums: GalleryAlbum[] = [
   },
   {
     id: 3,
+    slug: 'ras-nas-escolas',
     title: 'RAS nas Escolas',
     category: 'RAS nas Escolas',
     description: 'Levando tecnologia, inspiração e ciência para estudantes de escolas da nossa região.',
@@ -47,6 +52,7 @@ const albums: GalleryAlbum[] = [
   },
   {
     id: 4,
+    slug: 'conquistas-e-premiacoes',
     title: 'Conquistas e Premiações',
     category: 'Premiações',
     description: 'Registros de conquistas que representam trabalho, dedicação e evolução técnica.',
@@ -56,6 +62,7 @@ const albums: GalleryAlbum[] = [
   },
   {
     id: 5,
+    slug: 'eventos-institucionais',
     title: 'Eventos Institucionais',
     category: 'Eventos',
     description: 'Palestras, workshops, integrações e momentos que fortalecem nossa comunidade.',
@@ -76,6 +83,10 @@ function selectAlbum(album: GalleryAlbum) {
 
 function closePreview() {
   selectedAlbum.value = null
+}
+
+function albumUrl(album: GalleryAlbum) {
+  return `${galleryBaseUrl}/albuns/${album.slug}`
 }
 </script>
 
@@ -133,14 +144,14 @@ function closePreview() {
               <span>▣ {{ album.date }}</span>
             </div>
             <p>{{ album.description }}</p>
-            <button type="button" class="gallery-open-album" @click="selectAlbum(album)">Ver álbum <span aria-hidden="true">→</span></button>
+            <a class="gallery-open-album" :href="albumUrl(album)">Ver álbum <span aria-hidden="true">→</span></a>
           </div>
         </article>
       </div>
 
       <div class="gallery-help-note">
         <span aria-hidden="true">▧</span>
-        <p>Clique em um álbum para visualizar as fotos em tamanho ampliado.</p>
+        <p>Clique na capa para uma prévia rápida ou em “Ver álbum” para abrir a galeria completa.</p>
       </div>
     </div>
 
@@ -151,11 +162,11 @@ function closePreview() {
       </header>
       <div class="gallery-preview-media" :class="`tone-${selectedAlbum.tone}`">
         <span>{{ selectedAlbum.category }}</span>
-        <button type="button" aria-label="Próxima foto">›</button>
+        <a :href="albumUrl(selectedAlbum)" aria-label="Abrir álbum completo">›</a>
       </div>
       <footer>
-        <span>1 / {{ selectedAlbum.count }}</span>
-        <div class="gallery-preview-dots" aria-hidden="true"><i class="active" /><i /><i /><i /><i /></div>
+        <span>Prévia · {{ selectedAlbum.count }} fotos</span>
+        <a :href="albumUrl(selectedAlbum)">Abrir álbum →</a>
       </footer>
     </aside>
   </section>
