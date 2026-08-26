@@ -1,152 +1,105 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
-> Documento exclusivo da aplicação pública em `landing-page/`.
->
-> Este arquivo é a referência principal para continuidade da Landing.
+> Documento principal de continuidade da aplicação pública em `landing-page/`.
+> Atualizar este arquivo ao concluir cada janela da Home.
 
 ---
 
 # 1. Identidade correta
 
-## RAS UFRB
-
-É a identidade institucional principal do site.
-
-A Home deve representar o capítulo IEEE Robotics & Automation Society da UFRB durante todo o ano. O visitante deve entender a equipe, atuação, projetos, robôs, premiações, eventos, ações de extensão e competições promovidas pela RAS.
-
-## RRC
-
-RRC é o evento/competição. Deve ganhar bastante destaque quando houver edição ativa, mas **não deve dominar a identidade institucional da Home**.
-
-## RASCOMP
-
-RASCOMP é o software/plataforma de gestão. Não é o nome do evento e não deve substituir a identidade RAS UFRB na Landing.
-
 ```text
-RAS UFRB = instituição/capítulo
-RRC      = evento/competição
-RASCOMP  = plataforma/software
+RAS UFRB = identidade institucional pública
+RRC      = evento/competição de robótica
+RASCOMP  = plataforma/software de gestão
 ```
 
-Camunda permanece fora da arquitetura.
+A Home é **o site institucional da RAS UFRB**, não o site do RRC.
+O RRC deve ganhar destaque quando houver contexto competitivo, mas não pode dominar a identidade da página durante todo o ano.
+
+Camunda está fora do projeto.
 
 ---
 
-# 2. Estratégia atual de desenvolvimento
+# 2. Direção visual aprovada
 
-A Landing possui uma fundação Vue 3 + TypeScript + Vite e um POC antigo de integração pública com o backend.
+Referência de arquitetura/ritmo: ERBASE, sem copiar código, textos ou assets.
 
-O POC anterior não define o design final. A Landing começou agora uma fase de **construção visual janela por janela**, mesmo enquanto a consolidação do ADMIN continua em outro fluxo.
+Direção final:
 
-Regra de trabalho:
-
-```text
-1. definir uma janela
-2. implementar a janela
-3. registrar a decisão neste arquivo
-4. gerar uma demonstração visual
-5. só então seguir para a próxima janela
-```
-
-Integrações competitivas completas e validações públicas finais continuam dependentes da consolidação do Gestão/backend.
-
----
-
-# 3. Referência visual
-
-Referência estrutural escolhida anteriormente:
-
-```text
-https://github.com/DouglasTeyh/erbase-2026-main
-```
-
-Usar como referência de arquitetura de informação, navegação, ritmo, footer institucional e organização de evento — sem copiar código, textos ou assets.
-
-Direção visual aprovada:
-
-- fundo branco predominante;
-- roxo para estrutura/institucional;
-- rubro para CTA, competição e pontos de destaque;
-- cinzas muito claros para separar áreas;
+- fundo branco dominante;
+- aparência institucional, leve e tecnológica;
+- roxo como estrutura institucional;
+- rubro para CTAs, competição e destaques;
+- cinzas claros para separar áreas;
 - bastante espaço em branco;
-- aparência institucional e tecnológica;
-- evitar visual cyberpunk/pesado;
-- evitar aparência de dashboard;
-- fotos reais serão adicionadas depois; placeholders ou ausência de imagens são aceitáveis durante a construção.
+- fotografia real quando o acervo oficial estiver disponível;
+- transições suaves;
+- evitar visual cyberpunk, dashboard ou excesso de cards pequenos.
+
+Imagens temporárias/placeholder são permitidas durante a construção. Assets oficiais serão substituídos depois.
 
 ---
 
-# 4. Arquitetura da Home — janelas aprovadas
+# 3. Método de desenvolvimento — CONGELADO
 
-A Home institucional será construída nesta ordem:
+A Home será construída **janela por janela**.
+
+Cada janela só avança depois de três entregas:
 
 ```text
-HEADER
-│
-├── 1. HERO / PAINEL DE DESTAQUES
-│
-├── 2. SOBRE IEEE + RAS
-│
-├── 3. GALERIA
-│
-├── 4. EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
-│
-├── 5. EVENTOS PROMOVIDOS PELA RAS
-│
-├── 6. [CONDICIONAL] COMPETIÇÃO ATUAL
-│       ├── 7. CRONOGRAMA DA COMPETIÇÃO
-│       └── 8. ACOMPANHAR COMPETIÇÃO
-│
-├── 9. EDIÇÕES ANTERIORES
-│
-├── faixa curta de novidades quando houver conteúdo real
-│
-└── 12. FOOTER INSTITUCIONAL
+1. implementação em landing-page/
+2. atualização deste arquivo de continuidade
+3. demo visual para avaliação
 ```
 
-A numeração acompanha as decisões da conversa original. Notícias não terão uma grande janela própria: entram prioritariamente no Hero/painel e, no máximo, em uma faixa curta.
+O usuário pode revisar visualmente depois no PC; enquanto estiver longe, demos servem como referência de direção.
 
 ---
 
-# 5. HEADER — APROVADO E IMPLEMENTADO
+# 4. Arquitetura atual da Home
 
-Status: **PRIMEIRA VERSÃO IMPLEMENTADA — aguardando validação local futura**.
+```text
+HEADER                                      ✅ implementado
+│
+├── HERO / PAINEL DE DESTAQUES              ✅ implementação inicial
+│
+├── SOBRE IEEE + RAS                        ⏭ próxima janela
+│
+├── GALERIA                                 planejado
+│
+├── EQUIPE / DIRETORIA / ROBÔS / PRÊMIOS   planejado
+│
+├── EVENTOS DA RAS                          planejado
+│
+├── [CONDICIONAL] COMPETIÇÃO ATUAL          planejado
+│       ├── CRONOGRAMA DA COMPETIÇÃO
+│       └── ACOMPANHAR / AO VIVO
+│
+├── EDIÇÕES ANTERIORES                      planejado
+│
+├── faixa curta de novidades                integrada principalmente ao Hero
+│
+└── FOOTER INSTITUCIONAL                    planejado
+```
 
-Arquivos:
+---
+
+# 5. JANELA 1 — HEADER ✅
+
+Componente:
 
 ```text
 landing-page/src/components/InstitutionalHeader.vue
 landing-page/src/header.css
-landing-page/src/App.vue
-landing-page/src/main.ts
 ```
 
-## Estrutura aprovada
+Estrutura desktop:
 
 ```text
-[ IEEE RAS UFRB ]   Início   Sobre   Competição ▾   Calendário   Eventos   Contato   [ Inscrições ]
+[ IEEE RAS UFRB ]   Início   Sobre   Competição⌄   Calendário   Eventos   Contato   [ Inscrições ]
 ```
 
-### Marca
-
-- identidade principal: IEEE RAS UFRB;
-- não exibir RRC ao lado da marca;
-- não usar RasComp como marca principal do Header;
-- asset oficial definitivo será substituído depois;
-- por enquanto foi criada representação textual/provisória para não bloquear desenvolvimento.
-
-### Menu principal
-
-```text
-Início
-Sobre
-Competição ▾
-Calendário
-Eventos
-Contato
-```
-
-### Dropdown Competição
+## Competição — dropdown
 
 ```text
 Competição atual
@@ -156,110 +109,161 @@ Chaveamento
 Edições anteriores
 ```
 
-Cronograma e Resultados ficam dentro de `Competição`, e não no nível principal da navegação.
+Resultados e cronograma não ficam no primeiro nível da navegação.
 
-### Calendário
+## Calendário
 
-Representa calendário institucional amplo da RAS, incluindo por exemplo:
+Calendário geral do capítulo, incluindo:
 
 - visitas em escolas;
 - oficinas;
 - competições;
-- ações de extensão;
-- atividades do capítulo.
+- ações/eventos institucionais.
 
-### Eventos
+## Eventos
 
-Área para eventos promovidos ou organizados pela RAS, como:
+Apresenta eventos promovidos/participados pela RAS.
 
-- RRC;
-- Robodori;
-- RAS nas Escolas;
-- oficinas;
-- outros eventos futuros.
+## CTA Inscrições
 
-### CTA de inscrições
+Só aparece quando a competição pública estiver em `INSCRICOES_ABERTAS`.
 
-O botão `Inscrições` é contextual e só aparece quando a competição pública retornada pelo backend estiver com status `INSCRICOES_ABERTAS`.
+## Competição ativa
 
-### Aviso de competição ativa
-
-Quando existir competição com status `EM_ANDAMENTO`, uma faixa institucional pequena aparece acima do Header:
+Quando existir competição `EM_ANDAMENTO`, mostrar faixa fina acima do header:
 
 ```text
-RRC em andamento · <nome da edição>                         Acompanhar competição →
+RRC em andamento · <edição>                Acompanhar competição →
 ```
 
-Objetivo: permitir que o visitante pule para a área competitiva sem transformar o Header em um site do RRC.
+Objetivo: permitir salto direto para competição sem transformar o site institucional em site do RRC.
 
-### Responsividade
+## Responsividade
 
-- desktop: navegação horizontal;
-- mobile/tablet: menu hambúrguer;
-- dropdown de competição adaptado ao menu mobile;
-- CTA de inscrições entra no menu no mobile.
+- header sticky;
+- desktop horizontal;
+- mobile com hambúrguer;
+- dropdown adaptado no menu mobile;
+- CTA entra no menu no mobile.
 
-### Direção visual
+## Logo
 
-- fundo branco;
-- altura aproximada de 70–78px;
-- borda inferior neutra clara;
-- roxo como cor institucional de hover/seleção;
-- rubro para CTA;
-- sticky no topo;
-- faixa de competição ativa usa gradiente roxo → rubro, mas é estreita e discreta.
+O layout atual usa marca textual temporária. Substituir pelo asset oficial IEEE RAS/UFRB quando o arquivo definitivo for fornecido.
 
 ---
 
-# 6. PRÓXIMA JANELA — HERO / PAINEL DE DESTAQUES
+# 6. JANELA 2 — HERO / PAINEL DE DESTAQUES ✅ IMPLEMENTAÇÃO INICIAL
 
-Ainda não implementada.
+Componente:
 
-Conceito já aprovado:
+```text
+landing-page/src/components/HighlightsHero.vue
+landing-page/src/highlights-hero.css
+```
 
-O Hero não será um banner estático do RRC. Deve funcionar como **painel editorial vivo da RAS UFRB**, semelhante ao slider existente na landing de fotografia do usuário.
+O Hero **não é um banner fixo do RRC**.
+Ele funciona como uma capa editorial dinâmica da RAS UFRB, inspirado na lógica de slider já usada em outra landing do usuário.
 
-Possíveis slides:
+## Objetivo
 
-- apresentação breve da RAS;
-- evento acontecendo agora;
-- visita às escolas;
-- oficina;
-- participação em competição/evento;
-- premiação;
-- projeto atual;
-- chamada para RRC;
-- chamada de inscrição;
+Responder rapidamente:
+
+```text
+O que a RAS UFRB está fazendo agora?
+```
+
+## Slides iniciais
+
+Conteúdo editorial temporário preparado para:
+
+1. apresentação institucional da RAS UFRB;
+2. competição atual, somente quando aplicável;
+3. RAS nas Escolas;
+4. oficinas/formação.
+
+Futuramente podem entrar:
+
+- participação em eventos externos;
+- premiações;
+- projetos atuais;
+- novas oficinas;
+- chamadas institucionais;
 - notícia relevante.
 
-Estrutura base de cada slide:
+## Estrutura de cada slide
 
 ```text
-categoria
+categoria/editoria
 Título
 Resumo curto
-[ Ver mais ]
-+ imagem/foto quando disponível
+[ CTA principal ] [ CTA secundário opcional ]
+
+imagem/foto à direita
 ```
 
-Pode haver abaixo do slide principal uma faixa discreta com outros destaques recentes.
+As imagens atuais são placeholders neutros e devem ser substituídas por acervo oficial posteriormente.
 
-Se houver competição RAS/RasComp ativa, deve existir desde o Hero uma forma clara de pular para a janela de competição atual.
+## Comportamento
+
+- avanço automático aproximadamente a cada 7 segundos;
+- botões anterior/próximo;
+- índice `01 / 04`;
+- cartões inferiores permitem selecionar diretamente outro destaque;
+- responsivo;
+- em telas pequenas reduz a quantidade de previews para não sobrecarregar.
+
+## Slide competitivo condicional
+
+Só entra no Hero quando a competição pública estiver em:
+
+```text
+EM_ANDAMENTO
+INSCRICOES_ABERTAS
+INSCRICOES_ENCERRADAS
+```
+
+Quando `EM_ANDAMENTO`:
+
+```text
+[ Acompanhar competição ]
+```
+
+Quando `INSCRICOES_ABERTAS`, também pode mostrar:
+
+```text
+[ Fazer inscrição ]
+```
+
+Nunca tornar o RRC o slide institucional permanente quando não houver motivo atual.
+
+## Linha curta de novidades
+
+A antiga ideia de uma seção grande de notícias foi descartada.
+O Hero possui uma linha discreta de novidades/agenda, deixando o conteúdo editorial concentrado no painel inicial.
+
+## Visual
+
+- fundo predominantemente branco;
+- roxo e rubro em detalhes;
+- grande área de texto + mídia;
+- sem fundo escuro pesado;
+- aspecto de portal institucional/editorial, não card esportivo;
+- bordas e sombras discretas.
 
 ---
 
-# 7. SOBRE — conceito aprovado
+# 7. JANELA 3 — SOBRE IEEE + RAS ⏭ PRÓXIMA
 
-Após o Hero, a área Sobre apresentará IEEE e RAS UFRB.
-
-Layout pretendido:
+Conceito aprovado:
 
 ```text
-[ slide quadrado de fotos ]    [ IEEE ] [ RAS UFRB ]
-                               texto alternável
+[ slider quadrado de fotos ]      [ IEEE ] [ RAS UFRB ]
+                                  texto alternável
 ```
 
-O slide da esquerda poderá mostrar:
+## Mídia à esquerda
+
+Slider quadrado pode mostrar:
 
 - equipe;
 - premiações;
@@ -268,15 +272,30 @@ O slide da esquerda poderá mostrar:
 - oficinas;
 - ações em escolas.
 
-As abas/títulos `IEEE` e `RAS UFRB` trocam o texto sem trocar de página.
+## Conteúdo à direita
+
+Dois títulos/abas:
+
+```text
+IEEE
+RAS UFRB
+```
+
+Ao clicar, troca apenas o conteúdo textual, sem navegar para outra página.
+
+Objetivo:
+
+- explicar primeiro o ecossistema IEEE;
+- explicar o que é o capítulo RAS UFRB;
+- deixar claro papel, propósito, formação, tecnologia e extensão.
 
 ---
 
-# 8. GALERIA — posição aprovada
+# 8. JANELA 4 — GALERIA
 
-A galeria entra cedo na Home, após o Sobre ou imediatamente depois da área institucional inicial.
+A galeria entra cedo, após o Sobre ou imediatamente depois da apresentação institucional.
 
-Preferência por filtros:
+Filtros desejados:
 
 ```text
 Todos
@@ -287,15 +306,13 @@ Premiações
 Eventos
 ```
 
-A fonte e gestão das imagens ainda serão definidas. Imagens definitivas não são requisito para construir o layout.
+Fonte/armazenamento das imagens ainda será definida.
 
 ---
 
-# 9. EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES — conceito aprovado
+# 9. JANELA 5 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
 
-Substitui a ideia simples de uma faixa de números.
-
-Bloco principal:
+Substitui uma faixa simples de números.
 
 ```text
 [ Equipe ] [ Diretoria ]       ROBÔS
@@ -305,17 +322,17 @@ lista visual de integrantes    lista expansível
                                lista expansível
 ```
 
-### Equipe/Diretoria
+## Equipe / Diretoria
 
-- alternância por dois botões/tabs;
-- integrante em card compacto;
-- hover/expansão aumenta a foto;
-- mostra nome e modalidade/área;
-- diretoria pode mostrar função.
+- alternância por tabs;
+- card compacto por integrante;
+- hover/expansão aumenta foto;
+- nome + área/modalidade;
+- diretoria inclui função.
 
-### Robôs
+## Robôs
 
-Itens expansíveis com:
+Ao expandir:
 
 - foto;
 - modalidade;
@@ -324,9 +341,9 @@ Itens expansíveis com:
 - competições;
 - resultados relevantes.
 
-### Premiações
+## Premiações
 
-Itens expansíveis com:
+Ao expandir:
 
 - colocação;
 - evento;
@@ -338,11 +355,11 @@ Itens expansíveis com:
 
 ---
 
-# 10. EVENTOS DA RAS — conceito aprovado
+# 10. JANELA 6 — EVENTOS DA RAS
 
-Eventos promovidos pela RAS terão cards/barras horizontais expansíveis.
+Cards/barras horizontais expansíveis.
 
-Eventos citados:
+Eventos iniciais citados:
 
 ```text
 RRC
@@ -359,21 +376,15 @@ Ao expandir:
 - periodicidade;
 - fotos;
 - edições;
-- link para página específica quando existir.
+- link específico quando existir.
 
 ---
 
-# 11. COMPETIÇÃO ATUAL — CONDICIONAL
+# 11. JANELA 7 — COMPETIÇÃO ATUAL (CONDICIONAL)
 
-Essa janela só aparece quando existir uma competição pública da RAS gerenciada pelo RasComp.
+Só renderizar quando existir competição pública da RAS gerenciada pelo RasComp.
 
-Se não houver competição aplicável:
-
-```text
-não renderizar a seção
-```
-
-Quando houver:
+Quando existir:
 
 ```text
 COMPETIÇÃO ATUAL
@@ -390,72 +401,46 @@ resultados
 [ Acompanhar competição ]
 ```
 
-A Landing nunca calcula regras competitivas oficiais.
+A Landing é apenas leitura pública. Backend/RasComp permanecem fonte de verdade.
 
 ---
 
-# 12. CRONOGRAMA DA COMPETIÇÃO
+# 12. JANELA 8 — CRONOGRAMA + ACOMPANHAR
 
-Só aparece no contexto de competição atual quando houver dados aplicáveis.
+Só aparece no contexto de competição atual.
 
-Linha institucional simples:
+Cronograma institucional simples:
 
 ```text
 Inscrições → Homologação → Chaves → Inspeção → Eliminatórias → Finais
 ```
 
----
-
-# 13. ACOMPANHAR COMPETIÇÃO
-
-Área dinâmica ligada ao RasComp.
-
-Tabs planejadas:
+Área de acompanhamento:
 
 ```text
-Ao vivo
-Partidas
-Chave
-Ranking
-Resultados
+[ Ao vivo ] [ Partidas ] [ Chave ] [ Ranking ] [ Resultados ]
 ```
-
-Dados vêm da API pública e o backend permanece fonte de verdade.
 
 ---
 
-# 14. EDIÇÕES ANTERIORES
+# 13. JANELA 9 — EDIÇÕES ANTERIORES
 
-Manter histórico por ano/edição.
+Histórico por edição/ano.
 
-Cada edição pode apresentar:
+Pode apresentar:
 
 - resumo;
 - campeões;
 - modalidades;
 - fotos;
 - resultados;
-- chaveamento quando disponível.
+- chaveamento quando houver dados.
 
 ---
 
-# 15. NOTÍCIAS / NOVIDADES
+# 14. JANELA 10 — FOOTER INSTITUCIONAL
 
-Não haverá inicialmente uma grande seção de notícias.
-
-Prioridades:
-
-1. notícias/destaques dentro do slider do Hero;
-2. opcionalmente uma faixa curta de novidades em outra parte da Home;
-3. só criar página/seção robusta se houver fonte real e rotina de atualização.
-
----
-
-# 16. FOOTER — conceito aprovado
-
-Seguir a lógica institucional da ERBASE, sem copiar visual ou código.
-
-Estrutura:
+Seguir a lógica de footer institucional observada na ERBASE, sem copiar código/visual.
 
 ```text
 RAS UFRB
@@ -487,113 +472,118 @@ Instagram
 localização
 ```
 
-Fundo roxo profundo, com detalhes rubros discretos.
+Fundo roxo profundo com detalhes rubros discretos.
 
 ---
 
-# 17. Conteúdo estático x dinâmico
+# 15. Conteúdo estático x dinâmico
 
-## Institucional/editorial
+## Estático/editorial inicialmente
 
-Pode permanecer inicialmente no frontend:
-
-- apresentação IEEE/RAS;
+- apresentação RAS UFRB;
+- IEEE;
 - história;
 - eventos;
 - projetos;
-- equipe/diretoria;
+- diretoria;
+- equipe;
+- robôs históricos;
 - premiações;
-- informações de robôs;
 - parceiros;
-- contato;
 - textos institucionais.
 
-## Dinâmico
+## Dinâmico via backend público
 
-Deve vir do backend público quando aplicável:
-
-- competição ativa;
+- competição atual;
 - status;
-- categorias;
 - inscrições;
-- equipes/robôs participantes;
+- categorias;
+- equipes/robôs quando aplicável;
 - ranking Follow Line;
-- chaveamento Sumô;
+- chaveamentos Sumô;
 - partidas;
 - resultados;
-- vencedores;
-- campeão;
-- histórico competitivo quando suportado.
+- campeões.
 
----
-
-# 18. Fluxo de dados competitivo
+Fluxo:
 
 ```text
-Gestão
-  ↓
-Backend Spring Boot
-  ↓
-/api/v1/public/**
-  ↓
-Landing
+Gestão → Backend Spring Boot → /api/v1/public/** → Landing
 ```
 
-A Landing:
+A Landing nunca:
 
-- não escreve resultado;
-- não gera chave;
-- não decide vencedor;
-- não calcula ranking oficial;
-- não altera inscrição;
-- não fabrica estado público.
+- gera chave;
+- decide vencedor;
+- calcula ranking oficial;
+- altera inscrição;
+- escreve resultado oficial.
 
 ---
 
-# 19. Stack
+# 16. Imagens e mídia — pendente
+
+Durante construção:
 
 ```text
-Vue 3
-TypeScript
-Vite
+placeholder / nenhuma imagem = permitido
 ```
 
-Estrutura alvo continua componentizada, com separação de componentes institucionais e áreas dinâmicas do RRC.
+Antes de publicação definir:
+
+- acervo oficial;
+- autorização;
+- fonte/armazenamento;
+- créditos;
+- legendas;
+- otimização;
+- lazy loading.
 
 ---
 
-# 20. Checklist imediato
+# 17. Checklist técnico antes de publicar
 
-## Header
-
-- [x] estrutura definida;
-- [x] componente criado;
-- [x] dropdown Competição;
-- [x] Calendário/Eventos no menu principal;
-- [x] CTA Inscrições contextual;
-- [x] faixa condicional de competição em andamento;
-- [x] responsividade inicial;
-- [ ] substituir marca provisória pelo asset oficial IEEE RAS/UFRB;
-- [ ] validar localmente desktop;
-- [ ] validar localmente mobile;
-- [ ] ajustar após feedback visual.
-
-## Próximo
-
-- [ ] definir e implementar Hero/painel de destaques;
-- [ ] gerar demo visual do Hero;
-- [ ] registrar decisão neste arquivo antes de avançar.
+- [ ] TypeScript/typecheck;
+- [ ] build;
+- [ ] mobile;
+- [ ] navegação por teclado;
+- [ ] foco visível;
+- [ ] contraste;
+- [ ] alt text;
+- [ ] prefers-reduced-motion;
+- [ ] SEO;
+- [ ] Open Graph;
+- [ ] favicon/manifest;
+- [ ] sitemap/robots;
+- [ ] performance;
+- [ ] tratamento de erro/loading/vazio;
+- [ ] 404 pública.
 
 ---
 
-# 21. Regra de continuidade
-
-Não pular janelas.
-
-A próxima tarefa oficial da Landing é:
+# 18. Estado atual
 
 ```text
-JANELA 2 — HERO / PAINEL DE DESTAQUES DA RAS UFRB
+JANELA 1 — Header                  ✅ implementada + demo
+JANELA 2 — Hero/Destaques         ✅ implementação inicial + demo pendente nesta etapa
+JANELA 3 — Sobre IEEE/RAS          ⏭ próxima
+JANELA 4 — Galeria                 ⬜
+JANELA 5 — Equipe/Robôs/Prêmios    ⬜
+JANELA 6 — Eventos                 ⬜
+JANELA 7 — Competição atual        ⬜
+JANELA 8 — Cronograma/Acompanhar   ⬜
+JANELA 9 — Edições anteriores      ⬜
+JANELA 10 — Footer                 ⬜
 ```
 
-Antes de avançar para Sobre, o Hero deve estar estruturalmente definido, implementado, documentado e demonstrado visualmente.
+A implementação das janelas institucionais pode avançar visualmente mesmo antes da consolidação total do ADMIN, desde que contratos competitivos não sejam considerados definitivos antes da validação do backend/gestão.
+
+---
+
+# 19. Próximo passo
+
+Após aprovar a demo da Janela 2:
+
+```text
+JANELA 3 — SOBRE IEEE + RAS UFRB
+```
