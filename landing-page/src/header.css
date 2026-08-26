@@ -1,0 +1,308 @@
+.institutional-header-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.header-container {
+  width: min(1420px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.institutional-header {
+  height: 78px;
+  padding: 0;
+  background: rgba(255, 255, 255, .97);
+  border-bottom: 1px solid #ece8ef;
+  backdrop-filter: blur(16px);
+}
+
+.header-main-row {
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 28px;
+}
+
+.institutional-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: max-content;
+}
+
+.institutional-brand-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 2px solid #5d2281;
+  border-radius: 13px;
+  color: #5d2281;
+  font-size: .8rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  background: #fff;
+}
+
+.institutional-brand-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.institutional-brand-copy strong {
+  color: #211929;
+  font-size: .96rem;
+  letter-spacing: .015em;
+}
+
+.institutional-brand-copy small {
+  color: #817888;
+  font-size: .66rem;
+}
+
+.institutional-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 27px;
+  color: #3f3944;
+  font-size: .84rem;
+  font-weight: 700;
+}
+
+.institutional-nav > a,
+.competition-nav-dropdown > summary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  cursor: pointer;
+  list-style: none;
+  transition: color .16s ease;
+}
+
+.competition-nav-dropdown > summary::-webkit-details-marker {
+  display: none;
+}
+
+.institutional-nav > a:hover,
+.competition-nav-dropdown > summary:hover,
+.institutional-nav > a.active {
+  color: #5d2281;
+}
+
+.institutional-nav > a.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #5d2281, #a71549);
+}
+
+.competition-nav-dropdown {
+  position: relative;
+}
+
+.competition-nav-dropdown summary {
+  gap: 5px;
+}
+
+.competition-nav-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  display: none;
+  width: 220px;
+  padding: 8px;
+  border: 1px solid #ebe5ee;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(39, 22, 47, .12);
+  transform: translateX(-50%);
+}
+
+.competition-nav-dropdown[open] .competition-nav-menu {
+  display: grid;
+}
+
+.competition-nav-menu a {
+  padding: 10px 11px;
+  border-radius: 9px;
+  color: #4d4652;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.competition-nav-menu a:hover {
+  color: #78123d;
+  background: #fff5f8;
+}
+
+.header-registration-cta {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border-radius: 10px;
+  background: #a71549;
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(167, 21, 73, .16);
+  transition: transform .16s ease, background .16s ease;
+}
+
+.header-registration-cta:hover {
+  background: #8f103e;
+  transform: translateY(-1px);
+}
+
+.mobile-registration-cta,
+.public-menu-toggle {
+  display: none;
+}
+
+.competition-notice {
+  background: linear-gradient(90deg, #5d2281 0%, #7e1c68 48%, #a71549 100%);
+  color: #fff;
+}
+
+.competition-notice-inner {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: .72rem;
+}
+
+.competition-notice-inner b {
+  letter-spacing: .03em;
+}
+
+.competition-notice-inner a {
+  font-weight: 800;
+}
+
+@media (max-width: 1080px) {
+  .institutional-nav {
+    gap: 18px;
+  }
+
+  .institutional-brand-copy small {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .institutional-header {
+    height: 70px;
+  }
+
+  .header-container {
+    width: min(100% - 28px, 1420px);
+  }
+
+  .header-main-row {
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+  }
+
+  .institutional-brand-mark {
+    width: 42px;
+    height: 42px;
+  }
+
+  .public-menu-toggle {
+    grid-column: 3;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    align-content: center;
+    gap: 4px;
+    justify-items: center;
+    border: 1px solid #e6dfe9;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .public-menu-toggle span {
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: #4d2a58;
+  }
+
+  .institutional-nav {
+    position: absolute;
+    top: 70px;
+    left: 14px;
+    right: 14px;
+    display: none;
+    align-items: stretch;
+    padding: 12px;
+    border: 1px solid #e9e2ec;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 45px rgba(39, 22, 47, .14);
+  }
+
+  .institutional-nav.open {
+    display: grid;
+  }
+
+  .institutional-nav > a,
+  .competition-nav-dropdown > summary {
+    min-height: 42px;
+    padding: 0 10px;
+    border-radius: 8px;
+  }
+
+  .institutional-nav > a.active::after {
+    display: none;
+  }
+
+  .competition-nav-menu {
+    position: static;
+    width: auto;
+    padding: 4px 0 4px 12px;
+    border: 0;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .desktop-registration-cta {
+    display: none;
+  }
+
+  .mobile-registration-cta {
+    display: inline-flex !important;
+    color: #fff !important;
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 560px) {
+  .institutional-brand-copy small {
+    display: none;
+  }
+
+  .institutional-brand-copy strong {
+    font-size: .84rem;
+  }
+
+  .competition-notice-inner {
+    min-height: 38px;
+    font-size: .66rem;
+  }
+
+  .competition-notice-inner > span span {
+    display: none;
+  }
+}
