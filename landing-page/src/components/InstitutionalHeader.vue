@@ -30,7 +30,7 @@ function closeMobile() {
         <a href="#top" class="institutional-brand" aria-label="RAS UFRB — início" @click="closeMobile">
           <img
             class="institutional-brand-logo"
-            src="https://raw.githubusercontent.com/gbsalermo/Rascomp-FRONT/main/gestao/public/ieee-ras-official.png"
+            src="/ieee-ras-official.png"
             alt="IEEE Robotics & Automation Society"
           />
           <span class="institutional-brand-copy">
