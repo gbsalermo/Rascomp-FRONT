@@ -4,7 +4,9 @@ import type {
   Bracket,
   Category,
   Competition,
+  ConfigFollow,
   ConfigSumo,
+  FollowAttempt,
   Match,
   MatchResult,
   RankingItem,
@@ -116,8 +118,16 @@ export const adminApi = {
         params: { competitionId, categoryId }
       })
       .then((r) => r.data),
-  createFollowAttempt: (payload: Record<string, unknown>) =>
-    http.post('/api/v1/tentativas-seguidor-linha', payload).then((r) => r.data),
+  followConfig: (categoryId: number) =>
+    http.get<ConfigFollow>(`/api/v1/categorias/${categoryId}/config-follow`).then((r) => r.data),
+  followAttempts: (competitionId: number, categoryId: number) =>
+    http
+      .get<FollowAttempt[]>('/api/v1/tentativas-seguidor-linha/por-contexto', {
+        params: { competitionId, categoryId }
+      })
+      .then((r) => r.data),
+  createFollowAttempt: (payload: Omit<FollowAttempt, 'id' | 'competitionId' | 'categoryId' | 'teamNome' | 'robotNome' | 'tempoFinalSegundos' | 'dataCadastro'>) =>
+    http.post<FollowAttempt>('/api/v1/tentativas-seguidor-linha', payload).then((r) => r.data),
   inspectSumo: (payload: Record<string, unknown>) =>
     http.post('/api/v1/inspecoes-sumo', payload).then((r) => r.data),
   sumoConfig: (categoryId: number) =>
