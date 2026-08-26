@@ -1,44 +1,43 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-type GalleryFilter = 'Todos' | 'RRC' | 'Oficinas' | 'RAS nas Escolas' | 'Premiações' | 'Eventos'
+type GalleryFilter = 'Todos' | 'RRC' | 'Oficinas' | 'RAS nas Escolas' | 'Competições' | 'Premiações' | 'Eventos' | 'Visitas Técnicas'
 
-type GalleryItem = {
+type GalleryAlbum = {
   id: number
   title: string
   category: Exclude<GalleryFilter, 'Todos'>
-  subtitle: string
-  date: string
+  description: string
+  year: string
+  count: number
   tone: 'purple' | 'red' | 'neutral'
-  layout: 'wide' | 'tall' | 'square'
 }
 
-const filters: GalleryFilter[] = ['Todos', 'RRC', 'Oficinas', 'RAS nas Escolas', 'Premiações', 'Eventos']
+const filters: GalleryFilter[] = ['Todos', 'RRC', 'Oficinas', 'RAS nas Escolas', 'Competições', 'Premiações', 'Eventos', 'Visitas Técnicas']
 const activeFilter = ref<GalleryFilter>('Todos')
-const selectedItem = ref<GalleryItem | null>(null)
+const selectedAlbum = ref<GalleryAlbum | null>(null)
 
-const items: GalleryItem[] = [
-  { id: 1, title: 'Equipe em competição', category: 'RRC', subtitle: 'Preparação e bastidores de uma edição do RRC.', date: '2026', tone: 'red', layout: 'wide' },
-  { id: 2, title: 'Oficina de robótica', category: 'Oficinas', subtitle: 'Formação prática com eletrônica, programação e construção.', date: '2026', tone: 'purple', layout: 'tall' },
-  { id: 3, title: 'RAS nas Escolas', category: 'RAS nas Escolas', subtitle: 'Extensão e aproximação com estudantes da educação básica.', date: '2026', tone: 'neutral', layout: 'square' },
-  { id: 4, title: 'Premiação da equipe', category: 'Premiações', subtitle: 'Resultados que registram a evolução coletiva do capítulo.', date: '2025', tone: 'red', layout: 'square' },
-  { id: 5, title: 'Participação institucional', category: 'Eventos', subtitle: 'Representação da RAS UFRB em atividades acadêmicas e tecnológicas.', date: '2025', tone: 'purple', layout: 'wide' },
-  { id: 6, title: 'Robôs em pista', category: 'RRC', subtitle: 'Testes, competição e desenvolvimento técnico em equipe.', date: '2025', tone: 'neutral', layout: 'tall' },
-  { id: 7, title: 'Formação de novos membros', category: 'Oficinas', subtitle: 'Atividades técnicas para aproximar novos estudantes da robótica.', date: '2025', tone: 'purple', layout: 'square' },
-  { id: 8, title: 'Encontro com a comunidade', category: 'Eventos', subtitle: 'Troca de conhecimento, divulgação científica e integração.', date: '2025', tone: 'red', layout: 'square' }
+const albums: GalleryAlbum[] = [
+  { id: 1, title: 'RRC — Competição de Robótica', category: 'RRC', description: 'Momentos das edições do RRC e da nossa equipe em ação dentro e fora das pistas.', year: '2026', count: 128, tone: 'red' },
+  { id: 2, title: 'Oficinas e Cursos', category: 'Oficinas', description: 'Capacitação, aprendizado e compartilhamento de conhecimento com a comunidade.', year: '2026', count: 86, tone: 'purple' },
+  { id: 3, title: 'RAS nas Escolas', category: 'RAS nas Escolas', description: 'Levando tecnologia, inspiração e ciência para estudantes de escolas da nossa região.', year: '2026', count: 72, tone: 'neutral' },
+  { id: 4, title: 'Outras Competições', category: 'Competições', description: 'Participações em eventos e torneios de robótica em diferentes modalidades.', year: '2025', count: 94, tone: 'red' },
+  { id: 5, title: 'Conquistas e Premiações', category: 'Premiações', description: 'Cada conquista é resultado de muito trabalho, dedicação e paixão pela robótica.', year: '2025', count: 41, tone: 'purple' },
+  { id: 6, title: 'Eventos Institucionais', category: 'Eventos', description: 'Palestras, workshops, integrações e momentos que fortalecem nossa comunidade.', year: '2025', count: 83, tone: 'neutral' },
+  { id: 7, title: 'Visitas Técnicas', category: 'Visitas Técnicas', description: 'Conhecimento na prática: empresas, laboratórios e centros de inovação.', year: '2025', count: 37, tone: 'purple' }
 ]
 
-const visibleItems = computed(() => {
-  if (activeFilter.value === 'Todos') return items
-  return items.filter((item) => item.category === activeFilter.value)
+const visibleAlbums = computed(() => {
+  if (activeFilter.value === 'Todos') return albums
+  return albums.filter((album) => album.category === activeFilter.value)
 })
 
-function openItem(item: GalleryItem) {
-  selectedItem.value = item
+function openAlbum(album: GalleryAlbum) {
+  selectedAlbum.value = album
 }
 
-function closeItem() {
-  selectedItem.value = null
+function closeAlbum() {
+  selectedAlbum.value = null
 }
 </script>
 
@@ -48,10 +47,10 @@ function closeItem() {
       <header class="institutional-gallery-heading">
         <div>
           <span>Galeria</span>
-          <h2>Um pouco do que construímos, vivemos e compartilhamos.</h2>
-          <p>Registros de competições, oficinas, ações de extensão, premiações e eventos da RAS UFRB.</p>
+          <h2>Galeria de Momentos</h2>
+          <p>Registros de eventos, competições, oficinas e ações que fazem parte da história da RAS UFRB.</p>
         </div>
-        <a href="#eventos" class="gallery-view-more">Ver todas as atividades <span aria-hidden="true">→</span></a>
+        <a href="#eventos" class="gallery-view-more">Ver todas as fotos <span aria-hidden="true">→</span></a>
       </header>
 
       <div class="gallery-filter-row" aria-label="Filtrar galeria">
@@ -66,41 +65,44 @@ function closeItem() {
         </button>
       </div>
 
-      <div class="gallery-mosaic" :class="{ filtered: activeFilter !== 'Todos' }">
-        <button
-          v-for="item in visibleItems"
-          :key="item.id"
-          type="button"
-          class="gallery-card"
-          :class="[`layout-${item.layout}`, `tone-${item.tone}`]"
-          @click="openItem(item)"
-        >
-          <div class="gallery-image-placeholder" aria-hidden="true">
-            <span>Foto oficial</span>
-          </div>
-          <div class="gallery-card-overlay">
-            <span>{{ item.category }}</span>
-            <div>
-              <strong>{{ item.title }}</strong>
-              <small>{{ item.date }}</small>
+      <div class="gallery-albums-grid">
+        <article v-for="album in visibleAlbums" :key="album.id" class="gallery-album-card">
+          <button type="button" class="gallery-album-media" :class="`tone-${album.tone}`" @click="openAlbum(album)">
+            <div class="gallery-album-main-placeholder"><span>{{ album.category }}</span></div>
+            <div class="gallery-album-thumbs" aria-hidden="true">
+              <span />
+              <span />
+              <span />
             </div>
+            <span class="gallery-photo-count">▣ {{ album.count }} fotos</span>
+          </button>
+          <div class="gallery-album-copy">
+            <strong>{{ album.title }}</strong>
+            <p>{{ album.description }}</p>
           </div>
-        </button>
+        </article>
+
+        <aside v-if="activeFilter === 'Todos'" class="gallery-share-card">
+          <div class="gallery-share-icon" aria-hidden="true">📷</div>
+          <h3>Tem um registro incrível?</h3>
+          <p>Compartilhe suas fotos com a gente e faça parte da nossa história.</p>
+          <a href="#contato">Enviar fotos <span aria-hidden="true">→</span></a>
+        </aside>
       </div>
 
-      <p class="gallery-note">As imagens atuais são placeholders. O layout já está pronto para receber o acervo oficial por evento e categoria.</p>
+      <p class="gallery-note">Novas fotos poderão ser organizadas por álbum/evento. O acervo oficial será conectado depois sem alterar esta estrutura.</p>
     </div>
 
-    <div v-if="selectedItem" class="gallery-lightbox" role="dialog" aria-modal="true" :aria-label="selectedItem.title" @click.self="closeItem">
+    <div v-if="selectedAlbum" class="gallery-lightbox" role="dialog" aria-modal="true" :aria-label="selectedAlbum.title" @click.self="closeAlbum">
       <article class="gallery-lightbox-card">
-        <button type="button" class="gallery-lightbox-close" aria-label="Fechar" @click="closeItem">×</button>
-        <div class="gallery-lightbox-media" :class="`tone-${selectedItem.tone}`">
-          <span>Imagem oficial será adicionada posteriormente</span>
+        <button type="button" class="gallery-lightbox-close" aria-label="Fechar" @click="closeAlbum">×</button>
+        <div class="gallery-lightbox-media" :class="`tone-${selectedAlbum.tone}`">
+          <span>Álbum oficial será carregado aqui</span>
         </div>
         <div class="gallery-lightbox-copy">
-          <span>{{ selectedItem.category }} · {{ selectedItem.date }}</span>
-          <h3>{{ selectedItem.title }}</h3>
-          <p>{{ selectedItem.subtitle }}</p>
+          <span>{{ selectedAlbum.category }} · {{ selectedAlbum.year }} · {{ selectedAlbum.count }} fotos</span>
+          <h3>{{ selectedAlbum.title }}</h3>
+          <p>{{ selectedAlbum.description }}</p>
         </div>
       </article>
     </div>
