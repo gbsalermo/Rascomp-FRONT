@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api, assetUrl } from './api'
 import InstitutionalHeader from './components/InstitutionalHeader.vue'
+import HighlightsHero from './components/HighlightsHero.vue'
 
 const loading = ref(true)
 const error = ref('')
@@ -104,15 +105,7 @@ onBeforeUnmount(() => timer && clearInterval(timer))
     <InstitutionalHeader :competition="currentCompetition" :management-url="managementUrl" />
 
     <main id="top">
-      <section class="hero">
-        <div class="hero-copy">
-          <span class="eyebrow">IEEE Robotics & Automation Society · UFRB</span>
-          <h1>Robôs na arena.<br /><em>Resultados na hora.</em></h1>
-          <p>O RASCOMP conecta organização, competidores e público em uma única competição rastreável — da inscrição ao pódio.</p>
-          <div class="hero-actions"><a href="#ao-vivo" class="solid-link">Acompanhar competição</a><a href="#equipes" class="ghost-link">Conhecer equipes</a></div>
-        </div>
-        <div class="hero-mark"><img src="/rascomp-logo.webp" alt="Logo RASCOMP" /></div>
-      </section>
+      <HighlightsHero :competition="currentCompetition" :management-url="managementUrl" />
 
       <section v-if="error" class="public-section"><div class="public-alert"><strong>Interface pronta.</strong><p>{{ error }}</p><small>A landing consome exclusivamente <code>/api/v1/public/**</code>.</small></div></section>
 
