@@ -153,6 +153,13 @@
   border-top:3px solid #7c2a91;
 }
 
+.footer-bottom-actions>a[href="/privacidade"],
+.footer-bottom-actions>a[href="/termos-de-uso"]{
+  pointer-events:none;
+  opacity:.82;
+  cursor:default;
+}
+
 @media(max-width:1280px){
   .footer-contact-column{
     border-top-color:rgba(255,255,255,.20);
