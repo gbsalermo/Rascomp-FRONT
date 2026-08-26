@@ -35,6 +35,27 @@ Direção:
 - transições suaves;
 - evitar cyberpunk, aparência de dashboard e excesso de cards pequenos.
 
+## Paleta institucional congelada
+
+A Landing deve reutilizar a mesma identidade já usada no Header e não criar uma paleta paralela.
+
+```text
+Rubro principal        #D20F39
+Rubro secundário       #CF1037
+Rubro escuro           #B70C32
+Roxo principal         #5D2281
+Roxo de interação      #6B1F8A
+Texto principal        #2B2230
+Cinza/borda suave      #E9E2EC
+Fundo principal        #FFFFFF
+```
+
+Regra visual:
+
+- rubro = títulos, links importantes, competição e ações de destaque;
+- roxo = estrutura, sublinhados, hover, CTAs secundários e fechamento institucional;
+- não transformar a Landing em um site inteiramente roxo ou inteiramente vermelho.
+
 Imagens, logos, datas e números podem permanecer como placeholders até o material oficial ser fornecido.
 
 ---
@@ -95,7 +116,7 @@ Decisões congeladas:
 3. a janela competitiva só aparece quando houver competição pública da RAS em `EM_ANDAMENTO` gerenciada pelo RasComp;
 4. competição não faz parte da janela de Equipe/Robôs/Premiações;
 5. Follow Line e Sumô possuem acompanhamento separado dentro da janela competitiva;
-6. o Footer encerra a Home com identidade institucional e parceiros/apoios.
+6. o Footer encerra a Home com identidade institucional, navegação, parceiros e contato.
 
 Narrativa:
 
@@ -110,7 +131,7 @@ eventos e atuação da RAS
    ↓
 competição atual, somente quando estiver ocorrendo
    ↓
-apoio, parceiros e contato
+footer institucional
 ```
 
 ---
@@ -156,7 +177,7 @@ Fidelidade revisada:
 - CTA Inscrições rubro;
 - mobile com hambúrguer + identidade + CTA.
 
-Logo oficial IEEE RAS/UFRB ainda será substituído pelo asset definitivo.
+Logo oficial IEEE RAS/UFRB ainda será consolidado como asset definitivo da própria Landing.
 
 ---
 
@@ -485,7 +506,7 @@ Fallback atual: 20 segundos.
 
 ---
 
-# 12. JANELA 8 — FOOTER INSTITUCIONAL ✅ IMPLEMENTAÇÃO INICIAL / DEMO AGORA
+# 12. JANELA 8 — FOOTER INSTITUCIONAL ✅ DEMO FINAL APROVADA + IMPLEMENTAÇÃO ALINHADA
 
 Arquivos:
 
@@ -503,75 +524,139 @@ Integração no final do `App.vue`:
 
 O footer provisório do RasComp foi removido da Home.
 
-## Estrutura implementada
+## Alvo visual final
+
+A versão final aprovada segue a lógica institucional da ERBASE, mas sem copiar código ou assets.
+
+O footer possui duas camadas:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ RAS UFRB            INSTITUCIONAL      COMPETIÇÃO       CONTATO            │
-│ descrição           Sobre              RRC              e-mail             │
-│ redes               Equipe/Diretoria   Competição atual localização        │
-│                     Galeria            Cronograma        atividades →       │
-│                     Eventos            Resultados                           │
-│                     Calendário          Chaveamento                         │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ APOIO E PARCEIROS                                                         │
-│ [ UFRB ] [ IEEE ] [ IEEE RAS ] [ CETEC ] [ + parceiros futuros ]          │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ copyright            competição via RasComp                 voltar ao topo │
+│ ÁREA BRANCA                                                                 │
+│                                                                             │
+│ IEEE RAS UFRB | NAVEGAÇÃO | LINKS ÚTEIS | APOIO/PARCEIROS | FALE CONOSCO │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FAIXA ROXO PROFUNDO                                                         │
+│ RAS/IEEE | missão | copyright + feito com ♥ | privacidade | termos | ↑    │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Direção visual
+## Área branca
 
-- fundo roxo profundo;
-- detalhe rubro fino no topo;
-- branco e lilás suave para textos;
-- aparência institucional;
-- sem excesso de cards;
-- blocos de parceiros discretos;
-- responsivo.
+Identidade:
 
-## Identidade
+- IEEE RAS UFRB;
+- Robotics & Automation Society;
+- UFRB Student Chapter;
+- descrição institucional curta;
+- localização;
+- contato;
+- redes sociais.
 
-O foco do Footer é a **RAS UFRB**, não o software RasComp.
+Navegação:
 
-RasComp aparece apenas na linha inferior como plataforma responsável pelos dados competitivos oficiais.
-
-## Links
-
-Institucional:
-
-- Sobre;
-- Equipe e Diretoria;
-- Galeria;
+- Início;
+- Sobre a RAS;
+- Equipe;
+- Robôs;
 - Eventos;
-- Calendário.
+- Competição;
+- Galeria;
+- Contato.
 
-Competição:
+Links úteis:
 
-- RRC;
-- Competição atual;
-- Cronograma;
-- Resultados;
-- Chaveamento.
+- IEEE RAS Global;
+- IEEE Brasil;
+- IEEE Xplore;
+- Eventos;
+- recursos para estudantes;
+- guias e materiais;
+- código de conduta.
 
-Apoio/parceiros preparados inicialmente:
+Apoio e parceiros:
 
 - UFRB;
 - IEEE;
 - IEEE RAS;
 - CETEC;
-- espaço para patrocinadores/parceiros futuros.
+- CTA `Seja um parceiro`.
 
-## Pendências editoriais
+Contato:
 
-Antes da publicação substituir placeholders por:
+- E-mail;
+- Instagram;
+- mensagem/formulário futuro.
 
-- logo oficial definitivo;
-- e-mail oficial;
-- URLs reais de Instagram/YouTube/LinkedIn/GitHub;
-- logos dos parceiros;
-- parceiros/patrocinadores confirmados.
+Contatos não confirmados continuam marcados como placeholders, sem inventar informação oficial.
+
+## Tipografia aprovada
+
+O usuário rejeitou letras pequenas/fracas.
+
+Regra:
+
+- títulos fortes e legíveis;
+- links com peso alto;
+- corpo com tamanho confortável;
+- evitar microtexto decorativo;
+- manter respiro entre colunas.
+
+## Uso de rubro e roxo
+
+A área branca não deve virar monocromática.
+
+Aprovado:
+
+- **rubro** em títulos, ícones e links principais;
+- **roxo** em sublinhados, hover, CTA de parceiro e detalhes;
+- texto descritivo em grafite para manter leitura;
+- faixa final em **roxo profundo**, não preto puro;
+- linha superior da faixa final em roxo.
+
+Essa combinação deve permanecer alinhada à identidade visual usada no Header.
+
+## Faixa final
+
+A faixa final é obrigatória e funciona como fechamento visual da Home.
+
+Inclui:
+
+- identidade IEEE RAS UFRB;
+- frase institucional curta;
+- copyright dinâmico pelo ano atual;
+- `Feito com ♥ por membros da RAS UFRB`;
+- Privacidade;
+- Termos de Uso;
+- botão circular `↑` para voltar ao topo.
+
+## Asset institucional
+
+A implementação usa o asset original de IEEE RAS já existente no repositório, em vez de gerar uma nova logo.
+
+Enquanto o asset não for duplicado fisicamente para `landing-page/public/`, a Landing referencia temporariamente o arquivo original existente no projeto de gestão. Antes da publicação definitiva, mover/copiar o asset oficial para a própria pasta pública da Landing para eliminar dependência externa.
+
+## Responsividade
+
+Desktop:
+
+- cinco colunas na área branca;
+- faixa inferior horizontal.
+
+Tablet:
+
+- colunas reorganizadas;
+- contato passa para uma linha própria quando necessário.
+
+Mobile:
+
+- blocos empilhados;
+- tipografia mantém legibilidade;
+- parceiros em grade reduzida;
+- faixa final empilhada;
+- botão voltar ao topo permanece acessível.
 
 ---
 
@@ -623,7 +708,8 @@ Antes da publicação definir:
 - legendas;
 - otimização;
 - lazy loading;
-- logos institucionais e de parceiros.
+- logos institucionais e de parceiros;
+- cópia local do asset oficial IEEE RAS para `landing-page/public/`.
 
 ---
 
@@ -643,7 +729,9 @@ Antes da publicação definir:
 - [ ] sitemap/robots;
 - [ ] performance;
 - [ ] loading/erro/vazio;
-- [ ] 404 pública.
+- [ ] 404 pública;
+- [ ] copiar asset oficial IEEE RAS para o `public/` da Landing;
+- [ ] substituir contatos e parceiros placeholders por dados confirmados.
 
 ---
 
@@ -657,21 +745,39 @@ JANELA 4 — Equipe/Diretoria/Robôs/Prêmios  ✅ demo 1 aprovada + implementa�
 JANELA 5 — Galeria                          ✅ implementada + demo + fidelidade revisada
 JANELA 6 — Eventos                          ✅ demo aprovada + implementação alinhada
 JANELA 7 — Competição/Acompanhamento        ✅ demo simplificada aprovada + implementação alinhada
-JANELA 8 — Footer                           ✅ implementação inicial; demo agora
+JANELA 8 — Footer                           ✅ demo final aprovada + implementação alinhada
 ```
 
 ---
 
 # 17. Próximo passo
 
-1. avaliar a demo da Janela 8;
-2. ajustar a implementação para máxima fidelidade;
-3. depois fazer revisão integrada da Landing inteira;
-4. quando houver acesso local, rodar:
+A arquitetura visual das 8 janelas da Home está fechada.
+
+Próxima fase:
 
 ```text
-npm run typecheck
-npm run build
+REVISÃO INTEGRADA DA LANDING
 ```
 
-Depois disso, corrigir imagens/assets oficiais, textos definitivos, contatos, parceiros e dados institucionais antes da publicação.
+Quando houver acesso local:
+
+```bash
+cd landing-page
+npm run typecheck
+npm run build
+npm run dev
+```
+
+Revisar no navegador:
+
+1. transições entre as janelas;
+2. consistência da paleta rubro + roxo;
+3. espaçamento vertical;
+4. mobile/tablet;
+5. links internos;
+6. estados com e sem competição `EM_ANDAMENTO`;
+7. placeholders de imagens, contatos, parceiros e números;
+8. Footer final e retorno ao topo.
+
+Depois disso, substituir assets e conteúdo editorial temporário pelo material oficial antes da publicação.
