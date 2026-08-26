@@ -95,7 +95,12 @@ function canRegister(match: Match) {
           class="bracket-match"
           :class="[
             `round-${match.rodada}`,
-            { 'is-final': match.rodada === maxRound, 'is-upper': match.ordem % 2 === 1, 'is-lower': match.ordem % 2 === 0 }
+            {
+              'is-final': match.rodada === maxRound,
+              'is-upper': match.ordem % 2 === 1,
+              'is-lower': match.ordem % 2 === 0,
+              'has-result': Boolean(resultFor(match.id))
+            }
           ]"
           :style="matchGridStyle(match)"
         >
@@ -175,22 +180,27 @@ function canRegister(match: Match) {
 }
 
 .stage-heading {
-  padding: 0 2px 10px;
-  border-bottom: 2px solid #eee7eb;
+  padding: 0 2px 12px;
+  border-bottom: 3px solid #d7a9b9;
+}
+
+.stage-heading:last-child {
+  border-bottom-color: #a91243;
 }
 
 .stage-heading span {
   display: block;
   color: #8f1238;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: .08em;
 }
 
 .stage-heading small {
-  color: #90858b;
+  color: #7f6b74;
   font-size: 11px;
+  font-weight: 600;
 }
 
 .bracket-grid {
@@ -203,11 +213,22 @@ function canRegister(match: Match) {
   position: relative;
   align-self: center;
   z-index: 2;
-  border: 1px solid #e3d6dd;
+  border: 1px solid #dcc8d1;
   border-radius: 14px;
   background: #fff;
-  box-shadow: 0 8px 24px rgba(67, 20, 43, .06);
+  box-shadow: 0 8px 24px rgba(67, 20, 43, .07);
   overflow: visible;
+}
+
+.bracket-match.is-final {
+  border: 2px solid #c94b75;
+  background: linear-gradient(180deg, #fff 0%, #fff7fa 100%);
+  box-shadow: 0 14px 32px rgba(143, 18, 56, .14);
+}
+
+.bracket-match.is-final .match-head {
+  background: #fff1f5;
+  border-bottom-color: #efd2dc;
 }
 
 .bracket-match:not(.round-1)::before {
@@ -216,7 +237,7 @@ function canRegister(match: Match) {
   left: -28px;
   top: 50%;
   width: 28px;
-  border-top: 3px solid #c39aaa;
+  border-top: 4px solid #bd6f8b;
 }
 
 .bracket-match:not(.is-final)::after {
@@ -225,14 +246,20 @@ function canRegister(match: Match) {
   right: -28px;
   top: 50%;
   width: 28px;
-  border-top: 3px solid #c39aaa;
+  border-top: 4px solid #bd6f8b;
 }
 
 .branch-line {
   position: absolute;
   right: -29px;
-  width: 3px;
-  background: #c39aaa;
+  width: 4px;
+  background: #bd6f8b;
+}
+
+.has-result:not(.is-final)::after,
+.has-result .branch-line {
+  border-color: #9f0f3b;
+  background: #9f0f3b;
 }
 
 .is-upper .branch-line {
@@ -254,9 +281,9 @@ function canRegister(match: Match) {
   border-bottom: 1px solid #f0e8ec;
   background: #fbf8fa;
   border-radius: 14px 14px 0 0;
-  color: #796b72;
+  color: #6f5d65;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .competitor-row {
@@ -270,8 +297,13 @@ function canRegister(match: Match) {
 }
 
 .competitor-row.winner {
-  background: #fff4f7;
+  background: linear-gradient(90deg, #fff0f5 0%, #fff7f9 100%);
   color: #9f0f3b;
+  font-weight: 700;
+}
+
+.competitor-row.winner strong {
+  font-weight: 800;
 }
 
 .competitor-row strong {
@@ -289,6 +321,12 @@ function canRegister(match: Match) {
   border-radius: 8px;
   background: #f3e7ec;
   color: #8f1238;
+  font-weight: 800;
+}
+
+.competitor-row.winner b {
+  background: #9f0f3b;
+  color: #fff;
 }
 
 .seed-dot {
@@ -322,7 +360,7 @@ function canRegister(match: Match) {
 }
 
 .battle-action:hover { text-decoration: underline; }
-.winner-note { color: #24724f; font-size: 11px; font-weight: 700; }
+.winner-note { color: #1f714d; font-size: 11px; font-weight: 800; }
 .read-only-note { color: #8c8187; font-size: 11px; }
 
 @media (max-width: 760px) {
