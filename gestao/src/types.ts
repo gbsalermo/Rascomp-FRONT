@@ -65,6 +65,15 @@ export interface ConfigSumo {
   permiteRoundDesempate: boolean
 }
 
+export interface ConfigFollow {
+  id?: number
+  competitionCategoryId: number
+  numeroTomadas: number
+  tentativasPorTomada: number
+  maxTempoSegundos: number
+  numeroCheckpoints: number
+}
+
 export interface Registration {
   id: number
   competitionId: number
@@ -89,12 +98,34 @@ export interface Registration {
 export interface RankingItem {
   posicao?: number
   registrationId: number
+  robotId?: number
   teamNome?: string
   robotNome?: string
-  tempoBruto?: number
+  tempoBrutoSegundos?: number
   penalidadeSegundos?: number
-  tempoFinal?: number
+  tempoFinalSegundos?: number
+  tomada?: number
+  numeroTentativa?: number
   [key: string]: unknown
+}
+
+export interface FollowAttempt {
+  id: number
+  registrationId: number
+  competitionId?: number
+  categoryId?: number
+  teamNome?: string
+  robotNome?: string
+  tomada: number
+  numeroTentativa: number
+  tempoSegundos?: number
+  checkpointsAlcancados: number
+  penalidadeSegundos: number
+  tempoFinalSegundos?: number
+  concluida: boolean
+  valida: boolean
+  observacao?: string
+  dataCadastro?: string
 }
 
 export interface Bracket {
