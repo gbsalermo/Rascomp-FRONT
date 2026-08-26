@@ -6,7 +6,7 @@ const props = defineProps<{
   managementUrl: string
 }>()
 
-type HeroTone = 'institutional' | 'community' | 'workshop' | 'competition'
+type HeroTone = 'institutional' | 'community' | 'workshop' | 'competition' | 'award'
 
 type HeroSlide = {
   id: string
@@ -21,6 +21,14 @@ type HeroSlide = {
   mediaLabel: string
 }
 
+type NewsItem = {
+  tag: string
+  date: string
+  title: string
+  description: string
+  tone: HeroTone
+}
+
 const current = ref(0)
 let timer: number | undefined
 
@@ -32,23 +40,23 @@ const slides = computed<HeroSlide[]>(() => {
   const items: HeroSlide[] = [
     {
       id: 'ras',
-      eyebrow: 'IEEE Robotics & Automation Society · UFRB',
+      eyebrow: 'RAS UFRB',
       title: 'Tecnologia, formação e comunidade em movimento.',
       description:
         'O capítulo estudantil da RAS UFRB conecta estudantes por meio da robótica, automação, projetos, oficinas e ações de extensão.',
       cta: 'Conheça a RAS UFRB',
       href: '#sobre',
-      secondary: 'Ver nossas atividades',
+      secondary: 'Nossas atividades',
       secondaryHref: '#eventos',
       tone: 'institutional',
       mediaLabel: 'Foto institucional da equipe'
     },
     {
       id: 'schools',
-      eyebrow: 'Extensão · RAS nas Escolas',
-      title: 'Robótica também começa fora do laboratório.',
+      eyebrow: 'RAS nas Escolas',
+      title: 'Inspirando o futuro com ciência e tecnologia.',
       description:
-        'Ações em escolas aproximam estudantes da ciência, da engenharia e da programação através de experiências práticas.',
+        'Visitamos escolas para compartilhar conhecimento, despertar novas ideias e aproximar estudantes da robótica.',
       cta: 'Conhecer a iniciativa',
       href: '#eventos',
       tone: 'community',
@@ -56,32 +64,88 @@ const slides = computed<HeroSlide[]>(() => {
     },
     {
       id: 'workshop',
-      eyebrow: 'Formação · Oficinas',
-      title: 'Aprender fazendo é parte da nossa cultura.',
+      eyebrow: 'Oficinas',
+      title: 'Aprendizado que transforma.',
       description:
-        'Oficinas e atividades técnicas criam espaço para experimentar eletrônica, programação, automação e construção de robôs.',
+        'Nossas oficinas aproximam estudantes da tecnologia e do fazer inovador por meio de experiências práticas.',
       cta: 'Ver atividades',
       href: '#eventos',
       tone: 'workshop',
       mediaLabel: 'Foto de oficina ou treinamento'
+    },
+    {
+      id: 'awards',
+      eyebrow: 'Premiações',
+      title: 'Conquistas que nos movem.',
+      description:
+        'Cada prêmio e resultado registra dedicação, trabalho em equipe, aprendizado e evolução técnica do capítulo.',
+      cta: 'Conhecer conquistas',
+      href: '#equipe',
+      tone: 'award',
+      mediaLabel: 'Foto de premiação ou troféu'
     }
   ]
 
   if (competitionVisible.value) {
-    items.splice(1, 0, {
+    items.unshift({
       id: 'competition',
-      eyebrow: props.competition?.status === 'EM_ANDAMENTO' ? 'Competição em andamento' : 'Próxima competição',
-      title: props.competition?.nome || 'Competição de robótica da RAS UFRB',
+      eyebrow: props.competition?.status === 'EM_ANDAMENTO' ? 'Competição' : 'Próxima competição',
+      title:
+        props.competition?.status === 'EM_ANDAMENTO'
+          ? `${props.competition?.nome || 'RRC'} em andamento!`
+          : props.competition?.nome || 'Competição de robótica da RAS UFRB',
       description:
         props.competition?.descricao ||
-        'Acompanhe inscrições, equipes, robôs, partidas, chaveamento e resultados oficiais publicados pelo RasComp.',
+        'Acompanhe equipes, robôs, partidas, chaveamento, ranking e resultados oficiais da competição.',
       cta: props.competition?.status === 'EM_ANDAMENTO' ? 'Acompanhar competição' : 'Ver competição',
       href: '#competicao-atual',
-      secondary: props.competition?.status === 'INSCRICOES_ABERTAS' ? 'Fazer inscrição' : undefined,
-      secondaryHref: props.competition?.status === 'INSCRICOES_ABERTAS' ? props.managementUrl : undefined,
+      secondary: props.competition?.status === 'INSCRICOES_ABERTAS' ? 'Fazer inscrição' : 'Saiba mais',
+      secondaryHref:
+        props.competition?.status === 'INSCRICOES_ABERTAS' ? props.managementUrl : '#competicao-atual',
       tone: 'competition',
       mediaLabel: 'Foto da competição atual'
     })
+  }
+
+  return items
+})
+
+const newsItems = computed<NewsItem[]>(() => {
+  const items: NewsItem[] = [
+    {
+      tag: 'Oficina',
+      date: 'Em breve',
+      title: 'Oficinas e formação',
+      description: 'Novas atividades técnicas da RAS UFRB aparecem aqui conforme forem divulgadas.',
+      tone: 'workshop'
+    },
+    {
+      tag: 'RAS nas Escolas',
+      date: 'Agenda',
+      title: 'Ações de extensão',
+      description: 'Visitas, demonstrações e atividades com escolas ganham destaque no painel.',
+      tone: 'community'
+    },
+    {
+      tag: 'Premiação',
+      date: 'Destaque',
+      title: 'Conquistas do capítulo',
+      description: 'Resultados relevantes e reconhecimentos podem ser publicados nesta área.',
+      tone: 'award'
+    }
+  ]
+
+  if (competitionVisible.value) {
+    items[0] = {
+      tag: 'Competição',
+      date: props.competition?.status === 'EM_ANDAMENTO' ? 'Agora' : 'Próxima',
+      title: props.competition?.nome || 'Competição atual',
+      description:
+        props.competition?.status === 'EM_ANDAMENTO'
+          ? 'A competição está em andamento. Acompanhe os dados publicados pelo RasComp.'
+          : 'Acompanhe as informações e atualizações da próxima competição.',
+      tone: 'competition'
+    }
   }
 
   return items
@@ -93,29 +157,24 @@ function goTo(index: number) {
   current.value = index
   restartTimer()
 }
-
 function previous() {
   current.value = (current.value - 1 + slides.value.length) % slides.value.length
   restartTimer()
 }
-
 function next() {
   current.value = (current.value + 1) % slides.value.length
   restartTimer()
 }
-
 function startTimer() {
   stopTimer()
   timer = window.setInterval(() => {
     current.value = (current.value + 1) % slides.value.length
   }, 7000)
 }
-
 function stopTimer() {
   if (timer) window.clearInterval(timer)
   timer = undefined
 }
-
 function restartTimer() {
   startTimer()
 }
@@ -127,58 +186,91 @@ onBeforeUnmount(stopTimer)
 <template>
   <section class="highlights-hero" aria-label="Destaques da RAS UFRB">
     <div class="highlights-shell">
-      <div class="highlights-stage" :class="`tone-${activeSlide.tone}`">
-        <div class="highlights-copy">
-          <span class="highlights-kicker">{{ activeSlide.eyebrow }}</span>
-          <h1>{{ activeSlide.title }}</h1>
-          <p>{{ activeSlide.description }}</p>
-
-          <div class="highlights-actions">
-            <a class="highlight-primary" :href="activeSlide.href">{{ activeSlide.cta }} <span aria-hidden="true">→</span></a>
-            <a
-              v-if="activeSlide.secondary && activeSlide.secondaryHref"
-              class="highlight-secondary"
-              :href="activeSlide.secondaryHref"
-            >
-              {{ activeSlide.secondary }}
-            </a>
-          </div>
-        </div>
-
-        <div class="highlights-media" aria-hidden="true">
-          <div class="media-placeholder">
+      <div class="hero-editorial-grid">
+        <article
+          class="highlights-stage"
+          :class="`tone-${activeSlide.tone}`"
+          @mouseenter="stopTimer"
+          @mouseleave="startTimer"
+        >
+          <div class="stage-visual-placeholder" aria-hidden="true">
             <span>{{ activeSlide.mediaLabel }}</span>
-            <small>imagem será substituída por acervo oficial</small>
+            <small>substituir por foto oficial</small>
           </div>
-        </div>
+          <div class="stage-overlay" />
 
-        <div class="hero-slide-controls" aria-label="Controles do destaque">
-          <button type="button" aria-label="Destaque anterior" @click="previous">←</button>
-          <span>{{ String(current + 1).padStart(2, '0') }} / {{ String(slides.length).padStart(2, '0') }}</span>
-          <button type="button" aria-label="Próximo destaque" @click="next">→</button>
-        </div>
+          <div class="highlights-copy">
+            <span class="highlights-kicker">{{ activeSlide.eyebrow }}</span>
+            <h1>{{ activeSlide.title }}</h1>
+            <p>{{ activeSlide.description }}</p>
+
+            <div class="highlights-actions">
+              <a class="highlight-primary" :href="activeSlide.href">{{ activeSlide.cta }} <span aria-hidden="true">→</span></a>
+              <a
+                v-if="activeSlide.secondary && activeSlide.secondaryHref"
+                class="highlight-secondary"
+                :href="activeSlide.secondaryHref"
+              >
+                {{ activeSlide.secondary }}
+              </a>
+            </div>
+          </div>
+
+          <button class="hero-edge-arrow previous" type="button" aria-label="Destaque anterior" @click="previous">‹</button>
+          <button class="hero-edge-arrow next" type="button" aria-label="Próximo destaque" @click="next">›</button>
+
+          <div class="hero-dots" aria-label="Selecionar destaque">
+            <button
+              v-for="(slide, index) in slides"
+              :key="slide.id"
+              type="button"
+              :class="{ active: index === current }"
+              :aria-label="`Mostrar ${slide.title}`"
+              @click="goTo(index)"
+            />
+          </div>
+        </article>
+
+        <aside class="hero-news-panel" aria-label="Últimas novidades da RAS UFRB">
+          <div class="hero-news-heading">
+            <strong>Últimas novidades</strong>
+            <a href="#eventos">Ver todas <span aria-hidden="true">→</span></a>
+          </div>
+
+          <article v-for="item in newsItems" :key="`${item.tag}-${item.title}`" class="hero-news-item">
+            <div class="hero-news-thumb" :class="`tone-${item.tone}`" aria-hidden="true" />
+            <div class="hero-news-copy">
+              <div class="hero-news-meta">
+                <span>{{ item.tag }}</span>
+                <small>{{ item.date }}</small>
+              </div>
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.description }}</p>
+            </div>
+          </article>
+        </aside>
       </div>
 
-      <div class="highlights-index" aria-label="Outros destaques">
+      <div class="hero-previews" aria-label="Slides do painel">
         <button
-          v-for="(slide, index) in slides"
+          v-for="(slide, index) in slides.slice(0, 4)"
           :key="slide.id"
           type="button"
-          :class="{ active: index === current }"
+          class="hero-preview-card"
+          :class="[`tone-${slide.tone}`, { active: index === current }]"
           @click="goTo(index)"
         >
-          <span>{{ String(index + 1).padStart(2, '0') }}</span>
-          <div>
-            <small>{{ slide.eyebrow.split('·')[0].trim() }}</small>
+          <div class="preview-visual-placeholder" aria-hidden="true" />
+          <div class="preview-overlay" />
+          <div class="preview-copy">
+            <span>{{ slide.eyebrow }}</span>
             <strong>{{ slide.title }}</strong>
+            <p>{{ slide.description }}</p>
+          </div>
+          <div class="preview-dots" aria-hidden="true">
+            <i v-for="(_, dotIndex) in slides.slice(0, 4)" :key="dotIndex" :class="{ active: dotIndex === index }" />
           </div>
         </button>
-      </div>
-
-      <div class="highlights-newsline" aria-label="Novidades da RAS UFRB">
-        <span>Novidades</span>
-        <p>Oficinas, visitas, competições e atividades do capítulo ganham destaque aqui conforme forem publicadas.</p>
-        <a href="#eventos">Ver agenda <span aria-hidden="true">→</span></a>
       </div>
     </div>
   </section>
