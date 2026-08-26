@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
@@ -54,18 +54,32 @@ const currentWinner = computed<'A' | 'B' | undefined>(() => {
   if (score.value.B >= target) return 'B'
   return undefined
 })
-const canSave = computed(() => Boolean(form.choice) && !readOnly.value && !currentWinner.value)
+const penaltyLoser = computed<'A' | 'B' | undefined>(() => {
+  if (form.penalidadesA === 2 && form.penalidadesB < 2) return 'A'
+  if (form.penalidadesB === 2 && form.penalidadesA < 2) return 'B'
+  return undefined
+})
+const bothAtPenaltyLimit = computed(() => form.penalidadesA === 2 && form.penalidadesB === 2)
+const canSave = computed(() => Boolean(form.choice) && !readOnly.value && !currentWinner.value && !bothAtPenaltyLimit.value)
 
 function phaseLabel(round: number) {
   return `Rodada ${round}`
 }
 
 function chooseWinner(side: 'A' | 'B') {
+  if (penaltyLoser.value === side) {
+    ElMessage.warning('Um robô com 2 penalidades perde o round automaticamente.')
+    return
+  }
   form.choice = side
   form.motivoResultado = 'DISPUTA'
 }
 
 function chooseWo(loser: 'A' | 'B') {
+  if (penaltyLoser.value) {
+    ElMessage.warning('O resultado já foi definido automaticamente pelas 2 penalidades.')
+    return
+  }
   form.choice = loser === 'A' ? 'B' : 'A'
   form.motivoResultado = 'SUICIDIO_WO'
 }
@@ -81,8 +95,12 @@ function roundWinner(round: RoundSumo) {
     if (round.status === 'ANULADO') return 'Round anulado'
     return 'Round cancelado'
   }
-  const wo = round.motivoResultado === 'SUICIDIO_WO' ? ' · Suicídio/WO do adversário' : ''
-  return `${round.winnerRobotNome || 'Vencedor'} venceu${wo}`
+  const detail = round.motivoResultado === 'SUICIDIO_WO'
+    ? ' · Suicídio/WO do adversário'
+    : round.motivoResultado === 'PENALIDADES'
+      ? ' · adversário atingiu 2 penalidades'
+      : ''
+  return `${round.winnerRobotNome || 'Vencedor'} venceu${detail}`
 }
 
 function formatDate(value?: string) {
@@ -99,6 +117,31 @@ function resetForm() {
   form.penalidadesB = 0
   form.observacao = ''
 }
+
+watch(
+  [() => form.penalidadesA, () => form.penalidadesB],
+  () => {
+    if (bothAtPenaltyLimit.value) {
+      form.choice = undefined
+      form.motivoResultado = 'DISPUTA'
+      return
+    }
+    if (penaltyLoser.value === 'A') {
+      form.choice = 'B'
+      form.motivoResultado = 'PENALIDADES'
+      return
+    }
+    if (penaltyLoser.value === 'B') {
+      form.choice = 'A'
+      form.motivoResultado = 'PENALIDADES'
+      return
+    }
+    if (form.motivoResultado === 'PENALIDADES') {
+      form.choice = undefined
+      form.motivoResultado = 'DISPUTA'
+    }
+  }
+)
 
 async function load() {
   if (!Number.isFinite(matchId.value) || matchId.value <= 0) {
@@ -149,7 +192,11 @@ async function saveRound() {
         observacao: form.observacao || undefined
       }]
     })
-    ElMessage.success('Round registrado. Placar e progressão atualizados pelo backend.')
+    ElMessage.success(
+      form.motivoResultado === 'PENALIDADES'
+        ? 'Round registrado com derrota automática por 2 penalidades.'
+        : 'Round registrado. Placar e progressão atualizados pelo backend.'
+    )
     resetForm()
     await load()
   } catch (error: any) {
@@ -258,11 +305,25 @@ onMounted(load)
             <div class="control-section">
               <span class="control-label">Vitória no round</span>
               <div class="winner-actions">
-                <button type="button" class="arena-action winner-a" :class="{ selected: form.choice === 'A' && form.motivoResultado === 'DISPUTA' }" @click="chooseWinner('A')">
-                  <small>Vitória</small><strong>{{ match.robotANome }}</strong>
+                <button
+                  type="button"
+                  class="arena-action winner-a"
+                  :class="{ selected: form.choice === 'A', 'penalty-winner': form.choice === 'A' && form.motivoResultado === 'PENALIDADES' }"
+                  :disabled="penaltyLoser === 'A'"
+                  @click="chooseWinner('A')"
+                >
+                  <small>{{ form.choice === 'A' && form.motivoResultado === 'PENALIDADES' ? 'Vitória automática' : 'Vitória' }}</small>
+                  <strong>{{ match.robotANome }}</strong>
                 </button>
-                <button type="button" class="arena-action winner-b" :class="{ selected: form.choice === 'B' && form.motivoResultado === 'DISPUTA' }" @click="chooseWinner('B')">
-                  <small>Vitória</small><strong>{{ match.robotBNome }}</strong>
+                <button
+                  type="button"
+                  class="arena-action winner-b"
+                  :class="{ selected: form.choice === 'B', 'penalty-winner': form.choice === 'B' && form.motivoResultado === 'PENALIDADES' }"
+                  :disabled="penaltyLoser === 'B'"
+                  @click="chooseWinner('B')"
+                >
+                  <small>{{ form.choice === 'B' && form.motivoResultado === 'PENALIDADES' ? 'Vitória automática' : 'Vitória' }}</small>
+                  <strong>{{ match.robotBNome }}</strong>
                 </button>
               </div>
             </div>
@@ -270,16 +331,29 @@ onMounted(load)
             <div class="control-section">
               <span class="control-label">Penalidades do round</span>
               <div class="penalty-grid">
-                <div class="penalty-box">
+                <div class="penalty-box" :class="{ 'penalty-limit-hit': form.penalidadesA === 2 }">
                   <strong>{{ match.robotANome }}</strong>
-                  <div class="penalty-control"><button type="button" @click="form.penalidadesA = Math.max(0, form.penalidadesA - 1)">−</button><b>{{ form.penalidadesA }}</b><button type="button" @click="form.penalidadesA = Math.min(2, form.penalidadesA + 1)">+</button></div>
+                  <div class="penalty-control">
+                    <button type="button" @click="form.penalidadesA = Math.max(0, form.penalidadesA - 1)">−</button>
+                    <b>{{ form.penalidadesA }}</b>
+                    <button type="button" :disabled="form.penalidadesA >= 2 || form.penalidadesB >= 2" @click="form.penalidadesA = Math.min(2, form.penalidadesA + 1)">+</button>
+                  </div>
                 </div>
-                <div class="penalty-box">
+                <div class="penalty-box" :class="{ 'penalty-limit-hit': form.penalidadesB === 2 }">
                   <strong>{{ match.robotBNome }}</strong>
-                  <div class="penalty-control"><button type="button" @click="form.penalidadesB = Math.max(0, form.penalidadesB - 1)">−</button><b>{{ form.penalidadesB }}</b><button type="button" @click="form.penalidadesB = Math.min(2, form.penalidadesB + 1)">+</button></div>
+                  <div class="penalty-control">
+                    <button type="button" @click="form.penalidadesB = Math.max(0, form.penalidadesB - 1)">−</button>
+                    <b>{{ form.penalidadesB }}</b>
+                    <button type="button" :disabled="form.penalidadesB >= 2 || form.penalidadesA >= 2" @click="form.penalidadesB = Math.min(2, form.penalidadesB + 1)">+</button>
+                  </div>
                 </div>
               </div>
-              <small class="provisional-rule">Limite provisório: 2 por robô. A consequência automática ainda não foi definida.</small>
+              <small class="penalty-rule">
+                <template v-if="penaltyLoser === 'A'">{{ match.robotANome }} atingiu 2 penalidades e perdeu o round. Vitória automática de {{ match.robotBNome }}.</template>
+                <template v-else-if="penaltyLoser === 'B'">{{ match.robotBNome }} atingiu 2 penalidades e perdeu o round. Vitória automática de {{ match.robotANome }}.</template>
+                <template v-else>Regra: ao atingir 2 penalidades, o robô perde o round automaticamente.</template>
+              </small>
+              <small v-if="bothAtPenaltyLimit" class="penalty-error">O round deve terminar na segunda penalidade de um dos robôs; não registre 2 penalidades para os dois lados.</small>
             </div>
 
             <div class="control-section">
@@ -355,13 +429,19 @@ onMounted(load)
 .arena-action { min-height:72px; display:grid; align-content:center; justify-items:center; gap:3px; padding:10px; }
 .arena-action small { color:#8a7b82; } .arena-action strong { font-size:14px; }
 .arena-action:hover,.wo-button:hover,.neutral-actions button:hover { border-color:#c31549; }
+.arena-action:disabled { opacity:.45; cursor:not-allowed; }
 .winner-a.selected { border-color:#25975e; background:#eefaf3; box-shadow:inset 0 0 0 1px #25975e; }
 .winner-b.selected { border-color:#c31549; background:#fff1f5; box-shadow:inset 0 0 0 1px #c31549; }
+.arena-action.penalty-winner { border-color:#b56a00; background:#fff8e8; box-shadow:inset 0 0 0 1px #b56a00; }
 .penalty-box { display:grid; gap:8px; padding:10px; border:1px solid #eadfe4; border-radius:12px; background:#fbf9fa; }
+.penalty-box.penalty-limit-hit { border-color:#c31549; background:#fff0f4; box-shadow:inset 0 0 0 1px rgba(195,21,73,.25); }
 .penalty-box > strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; }
 .penalty-control { display:grid; grid-template-columns:38px 1fr 38px; align-items:center; gap:6px; }
 .penalty-control button { height:36px; border:1px solid #dfd2d8; border-radius:9px; background:#fff; color:#8f1238; font-size:20px; cursor:pointer; }
-.penalty-control b { text-align:center; font-size:20px; } .provisional-rule { color:#94878d; font-size:9px; }
+.penalty-control button:disabled { opacity:.35; cursor:not-allowed; }
+.penalty-control b { text-align:center; font-size:20px; }
+.penalty-rule { color:#7f273f; font-size:10px; font-weight:700; line-height:1.4; }
+.penalty-error { color:#b42318; font-size:10px; font-weight:800; }
 .wo-button { min-height:46px; padding:8px 10px; color:#7f273f; font-size:11px; font-weight:800; }
 .wo-button.selected { border-color:#9f0f3b; background:#fff0f4; box-shadow:inset 0 0 0 1px #9f0f3b; }
 .neutral-actions { grid-template-columns:repeat(3,1fr); }
