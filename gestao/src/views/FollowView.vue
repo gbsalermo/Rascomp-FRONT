@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
 import { useCompetitionStore } from '../store'
 import type { Category, ConfigFollow, FollowAttempt, RankingItem, Registration } from '../types'
 
+const route = useRoute()
+const router = useRouter()
 const competition = useCompetitionStore()
 const loading = ref(false)
 const ready = ref(false)
@@ -15,21 +18,10 @@ const history = ref<FollowAttempt[]>([])
 const config = ref<ConfigFollow>()
 const competitionId = ref<number>()
 const categoryId = ref<number>()
-const dialog = ref(false)
+const registrationDialog = ref(false)
+const selectedRegistrationId = ref<number>()
 const historySearch = ref('')
 const historyStatus = ref<'TODOS' | 'VALIDA' | 'INVALIDA' | 'INCOMPLETA'>('TODOS')
-
-const attempt = reactive({
-  registrationId: undefined as number | undefined,
-  tomada: 1,
-  numeroTentativa: 1,
-  tempoSegundos: 0,
-  checkpointsAlcancados: 0,
-  penalidadeSegundos: 0,
-  concluida: true,
-  valida: true,
-  observacao: ''
-})
 
 const approved = computed(() =>
   registrations.value.filter(
@@ -42,6 +34,10 @@ const validCompletedCount = computed(() =>
 )
 
 const bestTime = computed(() => ranking.value[0]?.tempoFinalSegundos)
+
+const selectedRegistration = computed(() =>
+  approved.value.find((item) => item.id === selectedRegistrationId.value)
+)
 
 const filteredHistory = computed(() => {
   const term = historySearch.value.trim().toLocaleLowerCase('pt-BR')
@@ -60,6 +56,12 @@ const filteredHistory = computed(() => {
   })
 })
 
+function queryNumber(value: unknown) {
+  const raw = Array.isArray(value) ? value[0] : value
+  const parsed = Number(raw)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
 function formatSeconds(value?: number) {
   if (value == null) return '—'
   return `${Number(value).toFixed(3)} s`
@@ -76,6 +78,20 @@ function formatDate(value?: string) {
   }).format(new Date(value))
 }
 
+function remainingSlotsFor(registrationId: number) {
+  if (!config.value) return 0
+  const total = config.value.numeroTomadas * config.value.tentativasPorTomada
+  const used = history.value.filter((item) => item.registrationId === registrationId).length
+  return Math.max(0, total - used)
+}
+
+function progressFor(registrationId: number) {
+  if (!config.value) return '—'
+  const total = config.value.numeroTomadas * config.value.tentativasPorTomada
+  const remaining = remainingSlotsFor(registrationId)
+  return `${total - remaining} / ${total} tentativas registradas`
+}
+
 async function initialize() {
   loading.value = true
   try {
@@ -85,9 +101,19 @@ async function initialize() {
     ])
 
     categories.value = cats.filter((item) => item.ativo !== false)
-    competitionId.value = competition.selectedId || competition.competitions[0]?.id
-    categoryId.value = categories.value[0]?.id
 
+    const requestedCompetition = queryNumber(route.query.competitionId)
+    const requestedCategory = queryNumber(route.query.categoryId)
+
+    competitionId.value = competition.competitions.some((item) => item.id === requestedCompetition)
+      ? requestedCompetition
+      : competition.selectedId || competition.competitions[0]?.id
+
+    categoryId.value = categories.value.some((item) => item.id === requestedCategory)
+      ? requestedCategory
+      : categories.value[0]?.id
+
+    if (competitionId.value && competition.selectedId !== competitionId.value) competition.select(competitionId.value)
     await loadContext()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar a operação do Follow Line.')
@@ -126,45 +152,7 @@ async function loadContext() {
   }
 }
 
-function findNextSlot(registrationId: number) {
-  if (!config.value) return undefined
-
-  for (let tomada = 1; tomada <= config.value.numeroTomadas; tomada++) {
-    for (let numeroTentativa = 1; numeroTentativa <= config.value.tentativasPorTomada; numeroTentativa++) {
-      const occupied = history.value.some(
-        (item) => item.registrationId === registrationId
-          && item.tomada === tomada
-          && item.numeroTentativa === numeroTentativa
-      )
-      if (!occupied) return { tomada, numeroTentativa }
-    }
-  }
-
-  return undefined
-}
-
-function applyNextSlot(registrationId?: number) {
-  if (!registrationId) return
-  const slot = findNextSlot(registrationId)
-  if (!slot) return
-  attempt.tomada = slot.tomada
-  attempt.numeroTentativa = slot.numeroTentativa
-}
-
-function resetAttempt() {
-  attempt.registrationId = approved.value[0]?.id
-  attempt.tomada = 1
-  attempt.numeroTentativa = 1
-  attempt.tempoSegundos = 0
-  attempt.checkpointsAlcancados = 0
-  attempt.penalidadeSegundos = 0
-  attempt.concluida = true
-  attempt.valida = true
-  attempt.observacao = ''
-  applyNextSlot(attempt.registrationId)
-}
-
-function openAttemptDialog() {
+function openTakeDialog() {
   if (!config.value) {
     return ElMessage.warning('Esta categoria ainda não possui configuração de Follow Line.')
   }
@@ -172,34 +160,24 @@ function openAttemptDialog() {
     return ElMessage.warning('Não há inscrições aprovadas nesta categoria.')
   }
 
-  resetAttempt()
-  if (attempt.registrationId && !findNextSlot(attempt.registrationId)) {
-    return ElMessage.warning('Todas as tentativas configuradas para esta inscrição já foram registradas.')
-  }
-  dialog.value = true
+  selectedRegistrationId.value = approved.value.find((item) => remainingSlotsFor(item.id) > 0)?.id || approved.value[0]?.id
+  registrationDialog.value = true
 }
 
-async function saveAttempt() {
-  if (!attempt.registrationId) return ElMessage.warning('Selecione a inscrição.')
-
-  try {
-    await adminApi.createFollowAttempt({
-      registrationId: attempt.registrationId,
-      tomada: attempt.tomada,
-      numeroTentativa: attempt.numeroTentativa,
-      tempoSegundos: attempt.tempoSegundos,
-      checkpointsAlcancados: attempt.checkpointsAlcancados,
-      penalidadeSegundos: attempt.penalidadeSegundos,
-      concluida: attempt.concluida,
-      valida: attempt.valida,
-      observacao: attempt.observacao || undefined
-    })
-    ElMessage.success('Tentativa registrada. Ranking e histórico atualizados pelo backend.')
-    dialog.value = false
-    await loadContext()
-  } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a tentativa.')
+function openSelectedTake() {
+  if (!selectedRegistrationId.value || !competitionId.value || !categoryId.value) {
+    return ElMessage.warning('Selecione uma inscrição.')
   }
+
+  registrationDialog.value = false
+  router.push({
+    name: 'follow-run',
+    params: { registrationId: selectedRegistrationId.value },
+    query: {
+      competitionId: competitionId.value,
+      categoryId: categoryId.value
+    }
+  })
 }
 
 watch(competitionId, async (value) => {
@@ -213,10 +191,6 @@ watch(categoryId, async () => {
   await loadContext()
 })
 
-watch(() => attempt.registrationId, (value) => {
-  if (dialog.value) applyNextSlot(value)
-})
-
 onMounted(initialize)
 </script>
 
@@ -226,9 +200,9 @@ onMounted(initialize)
       <div>
         <span class="eyebrow">Operação · Follow Line</span>
         <h1>Seguidor de Linha</h1>
-        <p class="muted">Registre as passagens e acompanhe a classificação oficial calculada pelo backend.</p>
+        <p class="muted">Registre tomadas e acompanhe a classificação oficial calculada pelo backend.</p>
       </div>
-      <el-button class="brand-button" @click="openAttemptDialog">Registrar tentativa</el-button>
+      <el-button class="brand-button" @click="openTakeDialog">Registrar tomada</el-button>
     </div>
 
     <article class="filter-bar">
@@ -373,82 +347,44 @@ onMounted(initialize)
       </el-table>
     </article>
 
-    <el-dialog v-model="dialog" title="Registrar tentativa" width="min(640px, 94vw)">
-      <div class="follow-attempt-dialog">
-        <label class="span-2">Inscrição
-          <el-select v-model="attempt.registrationId" style="width:100%" filterable>
+    <el-dialog v-model="registrationDialog" title="Registrar tomada" width="min(560px, 94vw)">
+      <div class="follow-registration-dialog">
+        <div>
+          <span class="eyebrow">Entrada na pista</span>
+          <h3>Qual robô vai realizar a tomada?</h3>
+          <p class="muted">Selecione uma inscrição aprovada. A tela operacional abrirá automaticamente na primeira tomada ainda incompleta.</p>
+        </div>
+
+        <label>Inscrição
+          <el-select v-model="selectedRegistrationId" filterable style="width:100%">
             <el-option
               v-for="item in approved"
               :key="item.id"
-              :label="`${item.robotNome} · ${item.teamNome}`"
+              :label="`${item.robotNome} · ${item.teamNome} · ${remainingSlotsFor(item.id)} restantes`"
               :value="item.id"
             />
           </el-select>
         </label>
 
-        <label>Tomada
-          <el-input-number
-            v-model="attempt.tomada"
-            :min="1"
-            :max="config?.numeroTomadas || 1"
-            controls-position="right"
-          />
-        </label>
-        <label>Tentativa
-          <el-input-number
-            v-model="attempt.numeroTentativa"
-            :min="1"
-            :max="config?.tentativasPorTomada || 1"
-            controls-position="right"
-          />
-        </label>
-
-        <label>Tempo (s)
-          <el-input-number
-            v-model="attempt.tempoSegundos"
-            :min="0"
-            :precision="3"
-            :step="10"
-            :step-strictly="false"
-            controls-position="right"
-          />
-          <small>Os botões variam ±10 s; o valor pode ser digitado com precisão normalmente.</small>
-        </label>
-        <label>Penalidade (s)
-          <el-input-number
-            v-model="attempt.penalidadeSegundos"
-            :min="0"
-            controls-position="right"
-          />
-        </label>
-
-        <label>Checkpoints alcançados
-          <el-input-number
-            v-model="attempt.checkpointsAlcancados"
-            :min="0"
-            :max="config?.numeroCheckpoints || 0"
-            controls-position="right"
-          />
-          <small v-if="config">0 a {{ config.numeroCheckpoints }} conforme configuração.</small>
-        </label>
-
-        <div class="follow-attempt-flags">
-          <el-checkbox v-model="attempt.concluida">Tentativa concluída</el-checkbox>
-          <el-checkbox v-model="attempt.valida">Tentativa válida</el-checkbox>
-        </div>
-
-        <label class="span-2">Observação
-          <el-input v-model="attempt.observacao" type="textarea" :rows="3" placeholder="Opcional" />
-        </label>
-
-        <div v-if="config" class="span-2 follow-attempt-rule-note">
-          Limite configurado: {{ config.maxTempoSegundos }} s. Se o tempo ultrapassar esse valor, o backend persiste a passagem como inválida.
+        <div v-if="selectedRegistration && config" class="follow-registration-preview">
+          <div class="follow-registration-avatar">
+            {{ selectedRegistration.robotNome?.slice(0, 2).toUpperCase() || 'RB' }}
+          </div>
+          <div>
+            <strong>{{ selectedRegistration.robotNome }}</strong>
+            <span>{{ selectedRegistration.teamNome }}</span>
+            <small>{{ progressFor(selectedRegistration.id) }}</small>
+          </div>
+          <b>{{ remainingSlotsFor(selectedRegistration.id) }}</b>
+          <small>tentativas restantes</small>
         </div>
       </div>
 
       <template #footer>
-        <el-button @click="dialog=false">Cancelar</el-button>
-        <el-button class="brand-button" @click="saveAttempt">Registrar tentativa</el-button>
+        <el-button @click="registrationDialog=false">Cancelar</el-button>
+        <el-button class="brand-button" :disabled="!selectedRegistrationId" @click="openSelectedTake">
+          Abrir tomada
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -572,49 +508,68 @@ onMounted(initialize)
   font-size: 10px;
 }
 
-.follow-attempt-dialog {
+.follow-registration-dialog {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
-.follow-attempt-dialog label {
+.follow-registration-dialog h3 {
+  margin: 3px 0 5px;
+}
+
+.follow-registration-dialog p {
+  margin: 0;
+}
+
+.follow-registration-dialog label {
   display: grid;
   gap: 7px;
   color: #342830;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
-.follow-attempt-dialog label > small {
-  color: #8d7e86;
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1.35;
-}
-
-.follow-attempt-dialog .el-input-number {
-  width: 100%;
-}
-
-.span-2 {
-  grid-column: 1 / -1;
-}
-
-.follow-attempt-flags {
-  display: flex;
+.follow-registration-preview {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 18px;
-  min-height: 40px;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #eadde3;
+  border-radius: 14px;
+  background: #fff8fa;
 }
 
-.follow-attempt-rule-note {
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #f8f4f6;
-  color: #786871;
+.follow-registration-avatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #4f1967, #9f0f3b);
+  color: #fff;
+  font-weight: 900;
+}
+
+.follow-registration-preview > div:nth-child(2) {
+  display: grid;
+  gap: 2px;
+}
+
+.follow-registration-preview span,
+.follow-registration-preview small {
+  color: #86777f;
   font-size: 10px;
-  line-height: 1.45;
+}
+
+.follow-registration-preview b {
+  color: #9f0f3b;
+  font-size: 24px;
+}
+
+.follow-registration-preview > small:last-child {
+  grid-column: 3;
+  margin-top: -10px;
 }
 
 @media (max-width: 1080px) {
@@ -647,18 +602,13 @@ onMounted(initialize)
     width: 100% !important;
   }
 
-  .follow-attempt-dialog {
-    grid-template-columns: 1fr;
+  .follow-registration-preview {
+    grid-template-columns: auto 1fr;
   }
 
-  .follow-attempt-dialog .span-2 {
-    grid-column: auto;
-  }
-
-  .follow-attempt-flags {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 6px;
+  .follow-registration-preview b,
+  .follow-registration-preview > small:last-child {
+    grid-column: 2;
   }
 }
 </style>
