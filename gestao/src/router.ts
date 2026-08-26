@@ -10,6 +10,7 @@ import RegistrationsView from './views/RegistrationsView.vue'
 import AdminCatalogView from './views/AdminCatalogView.vue'
 import FollowView from './views/FollowView.vue'
 import SumoView from './views/SumoView.vue'
+import SumoMatchView from './views/SumoMatchView.vue'
 import BracketHistoryView from './views/BracketHistoryView.vue'
 import MatchesView from './views/MatchesView.vue'
 import ResultsView from './views/ResultsView.vue'
@@ -41,6 +42,7 @@ const router = createRouter({
         { path: 'modalidades', name: 'modalities-admin', component: AdminCatalogView, meta: organizationMeta },
         { path: 'follow-line', name: 'follow', component: FollowView, meta: organizationMeta },
         { path: 'sumo', name: 'sumo', component: SumoView, meta: organizationMeta },
+        { path: 'sumo/partida/:matchId', name: 'sumo-match', component: SumoMatchView, meta: organizationMeta },
         { path: 'chaves', name: 'brackets-history', component: BracketHistoryView, meta: organizationMeta },
         { path: 'partidas', name: 'matches-admin', component: MatchesView, meta: organizationMeta },
         { path: 'resultados', name: 'results-admin', component: ResultsView, meta: organizationMeta },
