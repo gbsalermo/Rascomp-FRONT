@@ -56,8 +56,6 @@ Cada janela só avança depois de três entregas:
 
 A demo aprovada **não é apenas inspiração**. Ela passa a ser o alvo visual da implementação.
 
-Para cada janela:
-
 ```text
 Demo aprovada
       ↓
@@ -86,9 +84,9 @@ HEADER                                      ✅ implementado e refinado conforme
 │
 ├── SOBRE IEEE + RAS                        ✅ implementado e aproximado da demo
 │
-├── GALERIA                                 ⏭ próxima janela
+├── GALERIA                                 ✅ implementada; demo desta etapa
 │
-├── EQUIPE / DIRETORIA / ROBÔS / PRÊMIOS   planejado
+├── EQUIPE / DIRETORIA / ROBÔS / PRÊMIOS   ⏭ próxima janela
 │
 ├── EVENTOS DA RAS                          planejado
 │
@@ -134,16 +132,7 @@ Resultados e cronograma não ficam no primeiro nível da navegação.
 
 ## Calendário
 
-Calendário geral do capítulo, incluindo:
-
-- visitas em escolas;
-- oficinas;
-- competições;
-- ações/eventos institucionais.
-
-## Eventos
-
-Apresenta eventos promovidos/participados pela RAS.
+Calendário geral do capítulo, incluindo visitas em escolas, oficinas, competições e ações/eventos institucionais.
 
 ## CTA Inscrições
 
@@ -157,23 +146,19 @@ Quando existir competição `EM_ANDAMENTO`, mostrar faixa fina rubra acima do He
 RRC em andamento · <edição>                Acompanhar competição →
 ```
 
-Objetivo: permitir salto direto para competição sem transformar o site institucional em site do RRC.
-
 ## Refinamento de fidelidade aplicado
 
-Após comparar implementação com a demo aprovada:
-
-- faixa de competição ativa passou a ser rubra, como no mockup;
-- item ativo usa linha inferior rubra simples;
-- roxo fica como hover/estrutura institucional;
-- botão `Inscrições` usa rubro mais direto;
-- header mantém fundo branco e sombra/borda muito discretas;
-- mobile aproxima a composição da demo: hambúrguer à esquerda, identidade institucional no centro/esquerda e CTA à direita quando aplicável;
-- menu aberto continua contendo navegação completa e CTA contextual.
+- faixa ativa rubra como no mockup;
+- item ativo com linha inferior rubra simples;
+- roxo usado como hover/estrutura institucional;
+- botão `Inscrições` rubro;
+- fundo branco e sombra/borda discretas;
+- mobile aproximado da demo: hambúrguer + identidade + CTA;
+- menu aberto mantém navegação completa e CTA contextual.
 
 ## Logo
 
-O layout ainda usa uma marca temporária. Substituir pelo asset oficial IEEE RAS/UFRB quando o arquivo definitivo for fornecido.
+O layout ainda usa marca temporária. Substituir pelo asset oficial IEEE RAS/UFRB quando fornecido.
 
 ---
 
@@ -186,35 +171,21 @@ landing-page/src/components/HighlightsHero.vue
 landing-page/src/highlights-hero.css
 ```
 
-O Hero **não é um banner fixo do RRC**.
-Ele funciona como uma capa editorial dinâmica da RAS UFRB.
+O Hero funciona como uma capa editorial dinâmica da RAS UFRB, não como banner permanente do RRC.
 
-## Objetivo
-
-Responder rapidamente:
-
-```text
-O que a RAS UFRB está fazendo agora?
-```
-
-## Estrutura visual final baseada na demo
+## Estrutura visual final
 
 ```text
 ┌─────────────────────────────────────────────┬──────────────────────┐
-│                                             │ ÚLTIMAS NOVIDADES    │
-│       SLIDE VISUAL PRINCIPAL                │                      │
+│       SLIDE VISUAL PRINCIPAL                │ ÚLTIMAS NOVIDADES    │
 │       foto + overlay                        │ item 1               │
-│       categoria                             │ item 2               │
-│       título                                │ item 3               │
-│       resumo                                │                      │
-│       [ CTA ] [ CTA ]                       │                      │
+│       categoria / título / resumo           │ item 2               │
+│       [ CTA ] [ CTA ]                       │ item 3               │
 │       ‹             dots              ›     │                      │
 └─────────────────────────────────────────────┴──────────────────────┘
 
 [ preview 1 ] [ preview 2 ] [ preview 3 ] [ preview 4 ]
 ```
-
-Essa estrutura substituiu a versão anterior de `texto à esquerda + mídia à direita`, que estava conceitualmente correta mas não suficientemente fiel à demo.
 
 ## Slides iniciais
 
@@ -224,39 +195,20 @@ Essa estrutura substituiu a versão anterior de `texto à esquerda + mídia à d
 - oficinas/formação;
 - premiações/conquistas.
 
-Futuramente podem entrar:
-
-- participação em eventos externos;
-- projetos atuais;
-- novas oficinas;
-- chamadas institucionais;
-- notícia relevante.
-
 ## Painel lateral de novidades
 
-A demo aprovada possui uma coluna `Últimas novidades`, portanto a implementação também possui esse bloco.
-
-Pode destacar:
-
-- competição ativa;
-- oficinas;
-- RAS nas Escolas;
-- premiações;
-- novidades institucionais.
-
-O conteúdo atual é temporário/editorial e pode ser substituído por fonte real posteriormente.
+Pode destacar competição ativa, oficinas, RAS nas Escolas, premiações e novidades institucionais.
 
 ## Comportamento
 
 - autoplay aproximadamente a cada 7 segundos;
-- pausa ao interagir/posicionar o cursor no slide principal;
+- pausa ao interagir/hover;
 - setas laterais;
-- dots na base;
-- CTA principal em rubro;
-- CTA secundário transparente;
-- quatro cards-preview abaixo do slide em desktop;
+- dots;
+- CTA principal rubro;
+- quatro cards-preview abaixo no desktop;
 - clique no preview troca o slide;
-- responsivo: painel de novidades e previews reorganizam em tablet/mobile.
+- responsivo.
 
 ## Slide competitivo condicional
 
@@ -268,24 +220,7 @@ INSCRICOES_ABERTAS
 INSCRICOES_ENCERRADAS
 ```
 
-Quando `EM_ANDAMENTO`:
-
-```text
-[ Acompanhar competição ]
-```
-
-Quando `INSCRICOES_ABERTAS`:
-
-```text
-[ Fazer inscrição ]
-```
-
-O RRC nunca vira o slide institucional permanente sem contexto atual.
-
-## Imagens
-
-Enquanto não houver acervo oficial, o layout usa áreas visuais/gradientes placeholder no lugar das fotos.
-A troca futura por fotografias reais não deve exigir mudança estrutural.
+O RRC nunca vira slide institucional permanente sem contexto atual.
 
 ---
 
@@ -307,7 +242,7 @@ landing-page/src/about.css
 [ membros ] [ robôs ] [ prêmios ] [ eventos ] [ escolas visitadas ]
 ```
 
-A implementação foi posteriormente aproximada da demo aprovada, incluindo:
+A implementação foi aproximada da demo, incluindo:
 
 - grande mídia principal à esquerda;
 - miniaturas inferiores;
@@ -317,34 +252,38 @@ A implementação foi posteriormente aproximada da demo aprovada, incluindo:
 
 Os números e fotos são placeholders até confirmação oficial.
 
-## Conteúdo
-
-### IEEE
-
-- comunidade técnica internacional;
-- formação e desenvolvimento profissional;
-- integração entre pesquisa, indústria e universidade.
-
-### RAS UFRB
-
-- projetos práticos de robótica e automação;
-- competições, oficinas e ações de extensão;
-- aprendizado colaborativo e desenvolvimento de equipe.
-
-## CTAs
-
-```text
-[ Conheça nossas ações ]
-[ Ver equipe ]
-```
-
 ---
 
-# 8. JANELA 4 — GALERIA ⏭ PRÓXIMA
+# 8. JANELA 4 — GALERIA ✅
 
-A galeria entra cedo, após o Sobre.
+Componentes:
 
-Filtros desejados:
+```text
+landing-page/src/components/InstitutionalGallery.vue
+landing-page/src/gallery.css
+```
+
+A galeria entra imediatamente após o Sobre para dar vida visual ao site ainda na primeira metade da Home.
+
+## Estrutura implementada
+
+```text
+GALERIA
+Um pouco do que construímos, vivemos e compartilhamos.
+
+[ Todos ] [ RRC ] [ Oficinas ] [ RAS nas Escolas ] [ Premiações ] [ Eventos ]
+
+┌───────────────────────────┬────────────┬────────────┐
+│        foto ampla         │ foto alta  │ foto       │
+│                           │            │            │
+├─────────────┬─────────────┼────────────┼────────────┤
+│ foto        │ foto        │ foto       │ foto       │
+└─────────────┴─────────────┴────────────┴────────────┘
+```
+
+O mosaico usa proporções variadas para evitar aparência de grid genérico de cards.
+
+## Filtros
 
 ```text
 Todos
@@ -355,13 +294,55 @@ Premiações
 Eventos
 ```
 
-Fonte/armazenamento das imagens ainda será definida.
+Ao filtrar, a grade se reorganiza sem trocar de página.
 
-A demo da Galeria também deverá ser implementada com alta fidelidade estrutural antes de avançar.
+## Conteúdo de cada item
+
+- categoria;
+- título;
+- ano/data curta;
+- imagem;
+- resumo para visualização ampliada.
+
+## Visualização ampliada
+
+Ao clicar numa foto, abrir lightbox/modal com:
+
+- imagem grande;
+- categoria;
+- data/ano;
+- título;
+- descrição.
+
+Isso permite explorar registros sem transformar a Home em um álbum longo.
+
+## Imagens atuais
+
+As imagens são placeholders. A estrutura foi construída para que a troca pelo acervo oficial não exija redesenho.
+
+Ainda será necessário definir antes da publicação:
+
+- origem/armazenamento das fotos;
+- autorização e créditos;
+- legenda;
+- associação com eventos;
+- otimização e lazy loading.
+
+## Responsividade
+
+- desktop: mosaico com 12 colunas e proporções variadas;
+- tablet: blocos maiores e menos colunas;
+- mobile: uma coluna, com primeiro destaque podendo ocupar maior ênfase;
+- filtros roláveis horizontalmente em telas pequenas;
+- lightbox adaptado para celular.
+
+## Demo
+
+A demo gerada nesta etapa é o alvo visual da Janela 4. Após aprovação, qualquer divergência estrutural encontrada no navegador deve ser corrigida antes de considerar a galeria consolidada.
 
 ---
 
-# 9. JANELA 5 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
+# 9. JANELA 5 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ⏭ PRÓXIMA
 
 ```text
 [ Equipe ] [ Diretoria ]       ROBÔS
@@ -458,8 +439,6 @@ A Landing é apenas leitura pública. Backend/RasComp permanecem fonte de verdad
 
 Só aparece no contexto de competição atual.
 
-Cronograma institucional simples:
-
 ```text
 Inscrições → Homologação → Chaves → Inspeção → Eliminatórias → Finais
 ```
@@ -474,16 +453,7 @@ Inscrições → Homologação → Chaves → Inspeção → Eliminatórias → 
 
 # 13. JANELA 9 — EDIÇÕES ANTERIORES
 
-Histórico por edição/ano.
-
-Pode apresentar:
-
-- resumo;
-- campeões;
-- modalidades;
-- fotos;
-- resultados;
-- chaveamento quando houver dados.
+Histórico por edição/ano com resumo, campeões, modalidades, fotos, resultados e chaveamento quando houver dados.
 
 ---
 
@@ -554,39 +524,19 @@ Fundo roxo profundo com detalhes rubros discretos.
 - resultados;
 - campeões.
 
-Fluxo:
-
 ```text
 Gestão → Backend Spring Boot → /api/v1/public/** → Landing
 ```
 
-A Landing nunca:
-
-- gera chave;
-- decide vencedor;
-- calcula ranking oficial;
-- altera inscrição;
-- escreve resultado oficial.
+A Landing nunca gera chave, decide vencedor, calcula ranking oficial, altera inscrição ou escreve resultado oficial.
 
 ---
 
 # 16. Imagens e mídia — pendente
 
-Durante construção:
+Durante construção, placeholder ou nenhuma imagem é permitido.
 
-```text
-placeholder / nenhuma imagem = permitido
-```
-
-Antes de publicação definir:
-
-- acervo oficial;
-- autorização;
-- fonte/armazenamento;
-- créditos;
-- legendas;
-- otimização;
-- lazy loading.
+Antes de publicação definir acervo oficial, autorização, fonte/armazenamento, créditos, legendas, otimização e lazy loading.
 
 ---
 
@@ -616,8 +566,8 @@ Antes de publicação definir:
 JANELA 1 — Header                  ✅ implementada + demo + fidelidade revisada
 JANELA 2 — Hero/Destaques         ✅ implementada + demo + fidelidade revisada
 JANELA 3 — Sobre IEEE/RAS          ✅ implementada + demo + fidelidade revisada
-JANELA 4 — Galeria                 ⏭ próxima
-JANELA 5 — Equipe/Robôs/Prêmios    ⬜
+JANELA 4 — Galeria                 ✅ implementada + demo nesta etapa
+JANELA 5 — Equipe/Robôs/Prêmios    ⏭ próxima
 JANELA 6 — Eventos                 ⬜
 JANELA 7 — Competição atual        ⬜
 JANELA 8 — Cronograma/Acompanhar   ⬜
@@ -631,8 +581,10 @@ A implementação das janelas institucionais pode avançar visualmente mesmo ant
 
 # 19. Próximo passo
 
+Após avaliar a demo da Galeria:
+
 ```text
-JANELA 4 — GALERIA
+JANELA 5 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
 ```
 
-Antes de avançar após cada demo, aplicar o mesmo princípio usado nas Janelas 1–3: **a estrutura aprovada na demo deve estar refletida no código o mais fielmente possível**.
+Antes de avançar após cada demo, aplicar o mesmo princípio usado nas Janelas 1–4: **a estrutura aprovada na demo deve estar refletida no código o mais fielmente possível**.
