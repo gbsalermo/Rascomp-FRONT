@@ -10,10 +10,10 @@ Feedback obtido após teste local do frontend de gestão.
 1. Dashboard + Sidebar ✅
 2. Autenticação / persistência ✅
 3. Tela Competição ✅
-4. Histórico de chaves ✅ implementação concluída / validar localmente
-5. Follow Line ← PRÓXIMA ETAPA
-6. Dados temporários de teste
-7. Consolidação visual e técnica
+4. Histórico de chaves ✅ validado localmente
+5. Follow Line ✅ implementação concluída / validar localmente
+6. Dados temporários de teste ✅ cenários opt-in de Chaves e Follow Line
+7. Consolidação visual e técnica ← PRÓXIMA APÓS VALIDAÇÃO DO FOLLOW
 ```
 
 ## Backlog de revisão
@@ -28,11 +28,11 @@ Feedback obtido após teste local do frontend de gestão.
 - [x] 8. Criar histórico de chaveamentos por competição/categoria, preservando chaves anteriores.
 - [x] 9. Renomear seção “Operação” do sidebar para “Categorias”.
 - [x] 10. Reestruturar tela “Competição”: detalhar a competição em foco (descrição, categorias em uso, inscrições, datas, status etc.) e separar gerenciamento/listagem de edições.
-- [ ] 11. Criar dados temporários/seed de desenvolvimento no backend para testar o fluxo completo.
-- [ ] 12. Follow Line: alterar passo do controle de tempo para 10 s (ajuste fino via digitação continua possível).
-- [ ] 13. Revisar uso de checkpoints no Follow Line e tornar o conceito explícito ou remover da operação se não fizer sentido para a regra oficial.
-- [ ] 14. Remover quadro “Regra estrutural” da tela de Follow Line.
-- [ ] 15. Exibir histórico real de tentativas/tempos do Follow Line após registro.
+- [x] 11. Criar dados temporários/seed de desenvolvimento no backend para testar o fluxo completo.
+- [x] 12. Follow Line: alterar passo do controle de tempo para 10 s (ajuste fino via digitação continua possível).
+- [x] 13. Revisar uso de checkpoints no Follow Line e tornar o conceito explícito ou remover da operação se não fizer sentido para a regra oficial.
+- [x] 14. Remover quadro “Regra estrutural” da tela de Follow Line.
+- [x] 15. Exibir histórico real de tentativas/tempos do Follow Line após registro.
 - [ ] 16. Continuar evolução visual/informacional do ADMIN até atingir o nível do esboço aprovado.
 
 ## Dashboard + Sidebar — entregue
@@ -90,7 +90,7 @@ Por isso a central **não inventa** categorias configuradas para uma edição. O
 
 Se futuramente for necessário configurar previamente quais categorias cada edição aceita, isso exige contrato/relacionamento explícito no backend.
 
-## Histórico de chaves — implementado
+## Histórico de chaves — implementado e validado
 
 A regra anterior de um único chaveamento por competição/categoria foi substituída por versionamento real no backend.
 
@@ -118,8 +118,33 @@ Entregue:
 - chave histórica é somente leitura e não permite registrar novos rounds;
 - páginas `/partidas` e `/resultados` mostram por padrão apenas chaves vigentes;
 - quando acessadas pelo histórico, essas páginas exibem somente a chave solicitada;
-- API pública continua expondo apenas chaveamentos atuais/ativos, evitando publicar versões substituídas.
+- API pública continua expondo apenas chaveamentos atuais/ativos, evitando publicar versões substituídas;
+- Sumô passou a exibir árvore visual de campeonato e registrar vários rounds de uma batalha em uma única operação administrativa.
 
-## Observação sobre checkpoints
+## Follow Line — implementação concluída / validar localmente
 
-O backend atual possui `numeroCheckpoints` na configuração de Follow Line e registra `checkpointsAlcancados` por tentativa. Hoje o serviço valida apenas se a quantidade informada está entre 0 e o máximo configurado. A decisão de negócio sobre como isso deve influenciar classificação/abandono ainda precisa ser confirmada antes da consolidação do frontend.
+A tela deixou de ser apenas ranking + formulário e passou a funcionar como centro operacional da modalidade.
+
+Entregue:
+
+- contexto global de competição em foco;
+- leitura real de `ConfigFollow` por categoria;
+- resumo de inscrições aprovadas, tentativas, formato e melhor tempo;
+- ranking corrigido para os nomes reais do contrato backend (`tempoBrutoSegundos` e `tempoFinalSegundos`);
+- ranking continua integralmente calculado pelo backend;
+- passo dos controles de tempo alterado para ±10 s, mantendo digitação livre/precisa;
+- limites de tomada, tentativa e checkpoints dirigidos pela configuração da categoria;
+- seleção de inscrição sugere o próximo slot livre de tomada/tentativa sem substituir a validação do backend;
+- quadro “Regra estrutural” removido;
+- histórico real por competição/categoria com robô, equipe, tomada, tentativa, tempo, penalidade, tempo final, checkpoints, concluída, válida e data/hora;
+- endpoint administrativo de histórico contextual em `/api/v1/tentativas-seguidor-linha/por-contexto`;
+- DTO de tentativa agora expõe contexto operacional e `tempoFinalSegundos` calculado no backend;
+- cenário temporário opt-in `rascomp.test-data.follow-line-enabled=true` com tentativas válidas, inválida e não concluída.
+
+### Checkpoints
+
+O backend atual possui `numeroCheckpoints` na configuração de Follow Line e registra `checkpointsAlcancados` por tentativa. O serviço valida apenas se a quantidade informada está entre 0 e o máximo configurado.
+
+O `RankingFollowService` **não usa checkpoints como critério de classificação**. Ele considera apenas tentativas válidas e concluídas e ordena pelo tempo final (`tempo + penalidade`). Por isso a Gestão apresenta checkpoint como dado operacional/configurado, sem inventar pontuação, abandono ou desempate que não existem no domínio atual.
+
+Se a regra oficial do RRC futuramente definir impacto de checkpoint na classificação, essa mudança deve primeiro entrar no backend e nos testes; só depois a interface deve refletir a nova regra.
