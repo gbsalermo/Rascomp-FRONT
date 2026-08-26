@@ -1,7 +1,7 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
 > Documento principal de continuidade da aplicação pública em `landing-page/`.
-> Atualizar este arquivo ao concluir cada janela da Home.
+> Atualizar este arquivo ao concluir ou revisar cada janela da Home.
 
 ---
 
@@ -13,7 +13,7 @@ RRC      = evento/competição de robótica
 RASCOMP  = plataforma/software de gestão
 ```
 
-A Home é o site institucional da RAS UFRB. O RRC ganha destaque quando houver contexto competitivo, mas não domina a identidade da página durante todo o ano.
+A Home é o **site institucional da RAS UFRB**. O RRC ganha destaque quando houver contexto competitivo, mas não domina a identidade do site durante todo o ano.
 
 Camunda está fora do projeto.
 
@@ -41,7 +41,7 @@ Imagens, logos e números podem permanecer como placeholders até o material ofi
 
 # 3. Método de desenvolvimento — CONGELADO
 
-A Home será construída janela por janela.
+A Home será construída **janela por janela**.
 
 Cada janela precisa de:
 
@@ -49,8 +49,20 @@ Cada janela precisa de:
 1. implementação em landing-page/
 2. atualização deste arquivo
 3. demo visual
-4. revisão de fidelidade: demo aprovada = alvo da implementação
+4. revisão de fidelidade
 ```
+
+Regra principal:
+
+```text
+Demo aprovada
+      ↓
+Implementação o mais fiel possível
+      ↓
+Ajustes finos posteriores no navegador
+```
+
+A demo aprovada é o alvo visual, não apenas inspiração.
 
 Podem divergir temporariamente apenas:
 
@@ -59,13 +71,9 @@ Podem divergir temporariamente apenas:
 - números institucionais ainda não confirmados;
 - conteúdo dinâmico cujo contrato do backend ainda não esteja consolidado.
 
-Estrutura, proporções, hierarquia, comportamento, tabs, sliders, cards e distribuição visual devem seguir a demo aprovada o mais de perto possível.
-
 ---
 
-# 4. Ordem oficial da Home — ATUALIZADA
-
-A sequência conceitual oficial agora é:
+# 4. Ordem oficial da Home
 
 ```text
 HEADER
@@ -85,14 +93,15 @@ HEADER
 └── FOOTER INSTITUCIONAL
 ```
 
-Decisões desta revisão:
+Decisões congeladas:
 
 1. `Equipe / Diretoria / Robôs / Premiações` fica antes da Galeria;
-2. não haverá uma janela independente de edições anteriores na Home;
-3. `Competição atual`, `Cronograma` e `Acompanhar` deixam de ser janelas separadas e passam a compor **uma única grande janela competitiva condicional**;
-4. essa janela competitiva só aparece quando houver uma competição pública da RAS gerenciada pelo RasComp.
+2. **Edições anteriores foi removido do esqueleto da Home**;
+3. `Competição atual`, `Cronograma` e `Acompanhar` formam **uma única janela competitiva condicional**;
+4. a janela competitiva só aparece quando houver competição pública da RAS gerenciada pelo RasComp;
+5. competição não faz parte da janela de Equipe/Robôs/Premiações.
 
-Narrativa institucional:
+Narrativa:
 
 ```text
 quem somos
@@ -103,7 +112,7 @@ registros visuais dessa trajetória
    ↓
 eventos e atuação da RAS
    ↓
-competição atual, quando existir
+competição atual, somente quando existir
 ```
 
 ---
@@ -132,25 +141,25 @@ Resultados
 Chaveamento
 ```
 
-O item de edições anteriores foi removido.
+`Edições anteriores` foi removido.
 
-Com competição em andamento:
+Quando houver competição em andamento:
 
 ```text
 RRC em andamento · <edição>                Acompanhar competição →
 ```
 
-Fidelidade revisada contra a demo:
+Fidelidade revisada:
 
 - faixa ativa rubra;
 - linha inferior rubra no item ativo;
 - roxo em hover/estrutura;
-- CTA `Inscrições` rubro;
+- CTA Inscrições rubro;
 - fundo branco;
 - mobile com hambúrguer + identidade + CTA;
 - menu aberto completo.
 
-Logo oficial IEEE RAS/UFRB será substituído depois.
+Logo oficial IEEE RAS/UFRB ainda será substituído pelo asset definitivo.
 
 ---
 
@@ -163,7 +172,7 @@ landing-page/src/components/HighlightsHero.vue
 landing-page/src/highlights-hero.css
 ```
 
-Estrutura final baseada na demo:
+Estrutura baseada na demo:
 
 ```text
 ┌─────────────────────────────────────────────┬──────────────────────┐
@@ -195,7 +204,7 @@ Comportamento:
 - painel lateral de novidades;
 - responsivo.
 
-RRC só aparece com contexto competitivo real.
+RRC só aparece como slide quando houver contexto competitivo real.
 
 ---
 
@@ -229,7 +238,7 @@ Fotos e números ainda são placeholders.
 
 ---
 
-# 8. JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ✅ IMPLEMENTAÇÃO INICIAL
+# 8. JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ✅ IMPLEMENTAÇÃO REVISADA
 
 Arquivos:
 
@@ -238,7 +247,7 @@ landing-page/src/components/TeamRobotsAwards.vue
 landing-page/src/team-robots-awards.css
 ```
 
-Já inserida antes da Galeria no `App.vue`:
+Posição no `App.vue`:
 
 ```text
 <InstitutionalAbout />
@@ -246,7 +255,7 @@ Já inserida antes da Galeria no `App.vue`:
 <InstitutionalGallery />
 ```
 
-## Estrutura implementada
+## Estrutura correta
 
 ```text
 PESSOAS, PROJETOS E CONQUISTAS
@@ -254,42 +263,62 @@ PESSOAS, PROJETOS E CONQUISTAS
 ┌─────────────────────────────────────┬──────────────────────────────┐
 │ [ EQUIPE ] [ DIRETORIA ]            │ ROBÔS                        │
 │                                     │ item expansível              │
-│ [pessoa][pessoa][pessoa][pessoa]    │ item expansível              │
-│ hover/toque expande integrante      │ item expansível              │
-│ nome + área + cargo quando houver   ├──────────────────────────────┤
-│                                     │ PREMIAÇÕES                    │
+│ EQUIPE = LISTA                      │ item expansível              │
+│ membro                              │ item expansível              │
+│ membro                              ├──────────────────────────────┤
+│ membro                              │ PREMIAÇÕES                    │
+│ membro                              │ item expansível              │
 │                                     │ item expansível              │
-│                                     │ item expansível              │
+│ DIRETORIA = MOSAICO DE FOTOS        │                              │
 └─────────────────────────────────────┴──────────────────────────────┘
 ```
 
-## Equipe / Diretoria
+## Equipe — LISTA
 
-- alternância por tabs;
-- cards verticais de integrantes;
-- ao passar o mouse, focar ou tocar, o integrante cresce horizontalmente;
-- nome e área/modalidade aparecem no destaque;
-- diretoria mostra também função/cargo;
-- no mobile o mesmo conceito funciona por toque e scroll horizontal;
-- fotos reais ainda serão adicionadas.
+A equipe deve comportar muitos integrantes sem transformar a seção em uma parede de cards.
 
-Os nomes atuais são placeholders editoriais até o cadastro oficial da equipe/diretoria.
+Cada linha mostra:
+
+- miniatura/foto;
+- nome;
+- área/modalidade;
+- seta/destaque.
+
+Interação:
+
+- hover/foco/toque destaca o integrante;
+- a foto cresce discretamente;
+- a linha se desloca/realça suavemente;
+- mobile funciona por toque.
+
+Fotos e nomes atuais são placeholders.
+
+## Diretoria — MOSAICO
+
+A diretoria mantém o formato visual aprovado na demo:
+
+- mosaico de fotos;
+- cargo/função;
+- nome;
+- área;
+- overlay discreto;
+- sem aparência de lista administrativa.
+
+Equipe e Diretoria continuam acessíveis por tabs, mas **cada tab possui layout próprio**.
 
 ## Robôs
 
 Lista expansível à direita.
 
-Ao abrir um robô:
+Ao abrir:
 
-- mídia/foto;
+- foto;
 - nome;
 - modalidade;
 - ano/status;
 - descrição;
 - competições;
 - resultado/destaque.
-
-Os dados ainda são parcialmente placeholders e serão substituídos pelo histórico oficial do capítulo.
 
 ## Premiações
 
@@ -303,23 +332,13 @@ Ao abrir:
 - modalidade;
 - equipe;
 - robô;
-- descrição da conquista.
+- descrição.
 
-## Visual
+## Regra importante
 
-- fundo branco;
-- painel de pessoas com bastante área fotográfica;
-- roxo para identidade institucional;
-- rubro para conquistas/detalhes;
-- expansões suaves;
-- sem aparência de tabela ou CRUD;
-- desktop em duas colunas;
-- tablet empilha legado em dois painéis;
-- mobile em uma coluna.
+**Nenhum card de competição atual aparece nesta janela.**
 
-## Próxima ação desta janela
-
-Gerar a demo visual e comparar com a implementação, fazendo o mesmo refinamento de fidelidade usado nas Janelas 1–5 antes de avançar.
+A competição atual pertence exclusivamente à janela competitiva condicional descrita mais abaixo.
 
 ---
 
@@ -332,7 +351,7 @@ landing-page/src/components/InstitutionalGallery.vue
 landing-page/src/gallery.css
 ```
 
-Posição oficial: imediatamente após a Janela de Equipe/Robôs/Premiações.
+Posição: imediatamente após a janela de Equipe/Robôs/Premiações.
 
 Estrutura aprovada:
 
@@ -351,7 +370,7 @@ Galeria
  Ver álbum Ver álbum Ver álbum
 ```
 
-Cada álbum usa:
+Cada álbum:
 
 - foto principal;
 - três miniaturas;
@@ -368,7 +387,7 @@ Fotos, quantidades e datas atuais são placeholders.
 
 ---
 
-# 10. JANELA 6 — EVENTOS DA RAS ⏭ APÓS EQUIPE/GALERIA
+# 10. JANELA 6 — EVENTOS DA RAS ⏭ PRÓXIMA APÓS CONSOLIDAR A JANELA 4
 
 Conceito:
 
@@ -390,16 +409,16 @@ Ao expandir:
 - público;
 - periodicidade;
 - fotos;
-- edições/realizações do evento quando relevante;
+- realizações/edições quando relevante;
 - link específico quando existir.
 
 ---
 
 # 11. JANELA 7 — COMPETIÇÃO ATUAL + CRONOGRAMA + ACOMPANHAR (CONDICIONAL)
 
-**Esta passa a ser uma única janela.**
+**Uma única janela competitiva.**
 
-Só aparece quando existir competição pública da RAS gerenciada pelo RasComp.
+Só renderiza quando existir competição pública da RAS gerenciada pelo RasComp.
 
 Estrutura planejada:
 
@@ -422,11 +441,11 @@ próxima partida / chave / ranking / resultados recentes
 
 Regras:
 
-- se não houver competição pública da RAS/RasComp aplicável, **a janela não renderiza**;
-- quando existir, o Hero/Header podem oferecer atalho direto para ela;
-- backend/RasComp são fonte de verdade;
-- Landing é somente leitura pública;
-- frontend não decide vencedor, não gera chave e não calcula classificação oficial.
+- sem competição pública aplicável → janela não renderiza;
+- Hero/Header podem apontar diretamente para ela;
+- Backend/RasComp são fonte de verdade;
+- Landing é somente leitura;
+- frontend não gera chave, não decide vencedor e não calcula classificação oficial.
 
 ---
 
@@ -544,23 +563,24 @@ Antes da publicação definir:
 # 16. Estado atual
 
 ```text
-JANELA 1 — Header                          ✅ implementada + demo + fidelidade revisada
-JANELA 2 — Hero/Destaques                 ✅ implementada + demo + fidelidade revisada
-JANELA 3 — Sobre IEEE/RAS                  ✅ implementada + demo + fidelidade revisada
-JANELA 4 — Equipe/Diretoria/Robôs/Prêmios ✅ implementação inicial; demo agora
-JANELA 5 — Galeria                         ✅ implementada + demo + fidelidade revisada
-JANELA 6 — Eventos                         ⬜
+JANELA 1 — Header                           ✅ implementada + demo + fidelidade revisada
+JANELA 2 — Hero/Destaques                  ✅ implementada + demo + fidelidade revisada
+JANELA 3 — Sobre IEEE/RAS                   ✅ implementada + demo + fidelidade revisada
+JANELA 4 — Equipe/Diretoria/Robôs/Prêmios  ✅ implementação revisada; demo corrigida agora
+JANELA 5 — Galeria                          ✅ implementada + demo + fidelidade revisada
+JANELA 6 — Eventos                          ⬜
 JANELA 7 — Competição/Cronograma/Acompanhar ⬜ janela única condicional
-JANELA 8 — Footer                          ⬜
+JANELA 8 — Footer                           ⬜
 ```
 
 ---
 
 # 17. Próximo passo
 
+1. comparar a demo corrigida da Janela 4 com a implementação;
+2. fazer ajustes finos se necessário;
+3. depois seguir para:
+
 ```text
-1. gerar demo da Janela 4
-2. comparar implementação x demo
-3. refinar fidelidade
-4. seguir para Eventos da RAS
+JANELA 6 — EVENTOS DA RAS
 ```
