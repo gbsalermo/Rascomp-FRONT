@@ -4,6 +4,7 @@ import { api, assetUrl } from './api'
 import InstitutionalHeader from './components/InstitutionalHeader.vue'
 import HighlightsHero from './components/HighlightsHero.vue'
 import InstitutionalAbout from './components/InstitutionalAbout.vue'
+import InstitutionalGallery from './components/InstitutionalGallery.vue'
 
 const loading = ref(true)
 const error = ref('')
@@ -108,6 +109,7 @@ onBeforeUnmount(() => timer && clearInterval(timer))
     <main id="top">
       <HighlightsHero :competition="currentCompetition" :management-url="managementUrl" />
       <InstitutionalAbout />
+      <InstitutionalGallery />
 
       <section v-if="error" class="public-section"><div class="public-alert"><strong>Interface pronta.</strong><p>{{ error }}</p><small>A landing consome exclusivamente <code>/api/v1/public/**</code>.</small></div></section>
 
