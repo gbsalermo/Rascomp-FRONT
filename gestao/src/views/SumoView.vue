@@ -58,8 +58,6 @@ const filteredBrackets = computed(() =>
 )
 const approved = computed(() => registrations.value.filter((r) => r.status === 'APROVADA' && r.categoryId === categoryId.value))
 const selectedMatch = computed(() => matches.value.find((m) => m.id === battle.matchId))
-
-const existingBattleScore = computed(() => scoreUntil(Number.POSITIVE_INFINITY, false))
 const projectedBattleScore = computed(() => scoreUntil(Number.POSITIVE_INFINITY, true))
 const pendingBattleRounds = computed(() => battleSlots.value.filter((slot) => slot.choice))
 const battleWinner = computed<'A' | 'B' | undefined>(() => {
@@ -279,6 +277,10 @@ function chooseRound(slot: BattleSlot, choice: BattleSlot['choice']) {
   }
 }
 
+function handleRoundChoice(slot: BattleSlot, value: unknown) {
+  chooseRound(slot, value as BattleSlot['choice'])
+}
+
 function applyFinish(side: 'A' | 'B') {
   if (!battleConfig.value || !selectedMatch.value) return
 
@@ -301,6 +303,11 @@ function applyFinish(side: 'A' | 'B') {
 function roundWinnerLabel(round: RoundSumo) {
   if (round.status !== 'FINALIZADO') return round.status.replaceAll('_', ' ')
   return round.winnerRobotNome ? `${round.winnerRobotNome} venceu` : 'Finalizado'
+}
+
+function existingRoundLabel(numeroRound: number) {
+  const round = existingRound(numeroRound)
+  return round ? roundWinnerLabel(round) : ''
 }
 
 async function saveBattle() {
@@ -454,7 +461,7 @@ onMounted(initialize)
 
               <div v-if="existingRound(slot.numeroRound)" class="round-existing">
                 <StatusBadge :value="existingRound(slot.numeroRound)?.status" />
-                <strong>{{ roundWinnerLabel(existingRound(slot.numeroRound)!) }}</strong>
+                <strong>{{ existingRoundLabel(slot.numeroRound) }}</strong>
               </div>
 
               <el-radio-group
@@ -462,7 +469,7 @@ onMounted(initialize)
                 :model-value="slot.choice"
                 :disabled="!roundEnabled(slot.numeroRound)"
                 class="round-choice-group"
-                @update:model-value="chooseRound(slot, $event as BattleSlot['choice'])"
+                @update:model-value="handleRoundChoice(slot, $event)"
               >
                 <el-radio-button value="A">{{ selectedMatch.robotANome }}</el-radio-button>
                 <el-radio-button value="B">{{ selectedMatch.robotBNome }}</el-radio-button>
