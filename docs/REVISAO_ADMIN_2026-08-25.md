@@ -119,7 +119,9 @@ Entregue:
 - páginas `/partidas` e `/resultados` mostram por padrão apenas chaves vigentes;
 - quando acessadas pelo histórico, essas páginas exibem somente a chave solicitada;
 - API pública continua expondo apenas chaveamentos atuais/ativos, evitando publicar versões substituídas;
-- Sumô passou a exibir árvore visual de campeonato e registrar vários rounds de uma batalha em uma única operação administrativa.
+- Sumô passou a exibir árvore visual de campeonato e registrar vários rounds de uma batalha em uma única operação administrativa;
+- cada partida de Sumô possui agora uma tela operacional própria em `/sumo/partida/:matchId`, com placar, participantes, histórico de rounds e ações grandes para uso em arena;
+- partidas finalizadas ou históricas abrem a mesma tela em modo de consulta.
 
 ## Sumô — categorias RC/Autônomo e Mini/3 kg
 
@@ -146,7 +148,7 @@ Para evitar duplicação entre RC e Autônomo, as ocorrências abaixo pertencem 
 - limite provisório atual: **2 penalidades por robô/round**;
 - enquanto a regra oficial não for confirmada, atingir 2 penalidades **não produz consequência automática** no vencedor; o dado é preservado para auditoria e posterior consolidação da regra;
 - migration V7 adiciona `motivo_resultado`, `penalidades_a` e `penalidades_b` em `rounds_sumo`;
-- o modal administrativo de batalha permite registrar Suicídio/WO e penalidades junto dos demais resultados do round.
+- a tela operacional da partida permite registrar Suicídio/WO e penalidades junto dos demais resultados do round.
 
 ## Follow Line — implementação concluída / validar localmente
 
@@ -161,12 +163,18 @@ Entregue:
 - ranking continua integralmente calculado pelo backend;
 - passo dos controles de tempo alterado para ±10 s, mantendo digitação livre/precisa;
 - limites de tomada, tentativa e checkpoints dirigidos pela configuração da categoria;
-- seleção de inscrição sugere o próximo slot livre de tomada/tentativa sem substituir a validação do backend;
 - quadro “Regra estrutural” removido;
 - histórico real por competição/categoria com robô, equipe, tomada, tentativa, tempo, penalidade, tempo final, checkpoints, concluída, válida e data/hora;
 - endpoint administrativo de histórico contextual em `/api/v1/tentativas-seguidor-linha/por-contexto`;
-- DTO de tentativa agora expõe contexto operacional e `tempoFinalSegundos` calculado no backend;
-- cenário temporário opt-in `rascomp.test-data.follow-line-enabled=true` com tentativas válidas, inválida e não concluída.
+- DTO de tentativa expõe contexto operacional e `tempoFinalSegundos` calculado no backend;
+- cenário temporário opt-in `rascomp.test-data.follow-line-enabled=true` com tentativas válidas, inválida e não concluída;
+- ação principal alterada para **Registrar tomada**: primeiro seleciona a inscrição aprovada e depois abre a tela operacional do robô;
+- nova rota `/follow-line/tomada/:registrationId` agrupa visualmente as tentativas pela própria combinação `tomada + numeroTentativa` já existente no backend;
+- tela operacional mostra avatar/futura foto do robô, equipe, tomada atual, tomadas ainda abertas, tentativas restantes e melhor tempo do robô;
+- tomadas possuem navegação própria (`Tomada 1`, `Tomada 2`, etc.) e listam as tentativas como o Sumô lista rounds;
+- a primeira tomada incompleta é selecionada automaticamente e, ao completar uma tomada, a interface avança para a próxima disponível;
+- registro da tentativa permanece individual e backend-first, com tempo, penalidade, checkpoints, concluída, válida e observação;
+- nenhuma entidade `Tomada` foi criada no backend: a interface apenas organiza os registros já existentes sem duplicar regra de negócio.
 
 ### Checkpoints
 
