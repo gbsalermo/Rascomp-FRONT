@@ -13,6 +13,7 @@ export type RegistrationStatus =
   | 'CANCELADA'
   | 'DESCLASSIFICADA'
 export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
+export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
 
 export interface UserAccount {
   id: number
@@ -51,6 +52,17 @@ export interface Category {
   competitionId?: number
   ativo?: boolean
   [key: string]: unknown
+}
+
+export interface ConfigSumo {
+  id?: number
+  categoryId: number
+  pesoMax: number
+  exigeInspecao: boolean
+  maxTentativasInspecao: number
+  numeroRounds: number
+  roundsParaVencer: number
+  permiteRoundDesempate: boolean
 }
 
 export interface Registration {
@@ -121,6 +133,17 @@ export interface MatchResult {
   pontosA?: number
   pontosB?: number
   [key: string]: unknown
+}
+
+export interface RoundSumo {
+  id: number
+  matchId: number
+  numeroRound: number
+  winnerRegistrationId?: number
+  winnerRobotNome?: string
+  status: RoundSumoStatus
+  observacao?: string
+  dataCadastro?: string
 }
 
 export interface Team {
