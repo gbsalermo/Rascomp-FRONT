@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import type { Match, MatchResult } from '../types'
 import StatusBadge from './StatusBadge.vue'
 
@@ -9,8 +8,6 @@ const props = defineProps<{
   results: MatchResult[]
   readOnly?: boolean
 }>()
-
-const router = useRouter()
 
 const rounds = computed(() =>
   [...new Set(props.matches.map((item) => item.rodada))].sort((a, b) => a - b)
@@ -54,7 +51,8 @@ function isWinner(match: Match, registrationId?: number) {
 }
 
 function canOpen(match: Match) {
-  return Boolean(match.registrationAId)
+  return Boolean(match.id)
+    && Boolean(match.registrationAId)
     && Boolean(match.registrationBId)
     && match.status !== 'BYE'
     && match.status !== 'AGUARDANDO_PARTICIPANTES'
@@ -67,17 +65,16 @@ function canRegister(match: Match) {
     && match.status !== 'CANCELADA'
 }
 
-function openArena(match: Match) {
-  if (!canOpen(match)) return
-  router.push({
+function arenaRoute(match: Match) {
+  return {
     name: 'sumo-match',
-    params: { matchId: match.id },
+    params: { matchId: String(match.id) },
     query: {
-      competitionId: match.competitionId,
-      categoryId: match.categoryId,
-      bracketId: match.bracketId
+      ...(match.competitionId ? { competitionId: String(match.competitionId) } : {}),
+      ...(match.categoryId ? { categoryId: String(match.categoryId) } : {}),
+      ...(match.bracketId ? { bracketId: String(match.bracketId) } : {})
     }
-  })
+  }
 }
 </script>
 
@@ -149,14 +146,13 @@ function openArena(match: Match) {
             <span v-if="resultFor(match.id)" class="winner-note">
               {{ resultFor(match.id)?.winnerRobotNome }} avançou
             </span>
-            <button
+            <router-link
               v-if="canOpen(match)"
-              type="button"
+              :to="arenaRoute(match)"
               class="battle-action"
-              @click="openArena(match)"
             >
               {{ canRegister(match) ? 'Abrir partida' : 'Ver partida' }}
-            </button>
+            </router-link>
             <span v-else-if="readOnly" class="read-only-note">Somente leitura</span>
           </footer>
         </article>
@@ -270,6 +266,7 @@ function openArena(match: Match) {
   right: -29px;
   width: 4px;
   background: #bd6f8b;
+  pointer-events: none;
 }
 
 .has-result:not(.is-final)::after,
@@ -367,6 +364,8 @@ function openArena(match: Match) {
 }
 
 .battle-action {
+  position: relative;
+  z-index: 3;
   border: 0;
   padding: 0;
   background: transparent;
@@ -375,6 +374,7 @@ function openArena(match: Match) {
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .battle-action:hover { text-decoration: underline; }
