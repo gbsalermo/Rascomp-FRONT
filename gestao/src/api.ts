@@ -55,7 +55,6 @@ http.interceptors.response.use(
   (error) => {
     const requestUrl = String(error.config?.url || '')
     const credentialRequest = requestUrl.includes('/api/v1/auth/login') || requestUrl.includes('/api/v1/auth/register')
-
     if (error.response?.status === 401 && !credentialRequest) {
       clearStoredSession()
       if (typeof window !== 'undefined') window.dispatchEvent(new Event(AUTH_UNAUTHORIZED_EVENT))
@@ -66,16 +65,9 @@ http.interceptors.response.use(
 
 export const authApi = {
   login: (email: string, senha: string, lembrarDeMim = false) =>
-    http
-      .post<AuthResponse>('/api/v1/auth/login', { email, senha, lembrarDeMim })
-      .then((r) => r.data),
-  register: (
-    payload: { nome: string; email: string; senha: string; telefone?: string },
-    lembrarDeMim = false
-  ) =>
-    http
-      .post<AuthResponse>('/api/v1/auth/register', { ...payload, lembrarDeMim })
-      .then((r) => r.data),
+    http.post<AuthResponse>('/api/v1/auth/login', { email, senha, lembrarDeMim }).then((r) => r.data),
+  register: (payload: { nome: string; email: string; senha: string; telefone?: string }, lembrarDeMim = false) =>
+    http.post<AuthResponse>('/api/v1/auth/register', { ...payload, lembrarDeMim }).then((r) => r.data),
   me: () => http.get<UserAccount>('/api/v1/auth/me').then((r) => r.data)
 }
 
@@ -97,83 +89,42 @@ export const publicApi = {
 
 export const adminApi = {
   competitions: (status?: string) =>
-    http
-      .get<Competition[]>(status ? '/api/v1/competicoes/por-status' : '/api/v1/competicoes', {
-        params: status ? { status } : undefined
-      })
-      .then((r) => r.data),
-  createCompetition: (payload: Competition) =>
-    http.post<Competition>('/api/v1/competicoes', payload).then((r) => r.data),
-  updateCompetition: (id: number, payload: Competition) =>
-    http.put<Competition>(`/api/v1/competicoes/${id}`, payload).then((r) => r.data),
+    http.get<Competition[]>(status ? '/api/v1/competicoes/por-status' : '/api/v1/competicoes', {
+      params: status ? { status } : undefined
+    }).then((r) => r.data),
+  createCompetition: (payload: Competition) => http.post<Competition>('/api/v1/competicoes', payload).then((r) => r.data),
+  updateCompetition: (id: number, payload: Competition) => http.put<Competition>(`/api/v1/competicoes/${id}`, payload).then((r) => r.data),
   categories: (modalidade?: string) =>
-    http
-      .get<Category[]>(modalidade ? '/api/v1/categorias/por-modalidade' : '/api/v1/categorias', {
-        params: modalidade ? { modalidade } : undefined
-      })
-      .then((r) => r.data),
+    http.get<Category[]>(modalidade ? '/api/v1/categorias/por-modalidade' : '/api/v1/categorias', {
+      params: modalidade ? { modalidade } : undefined
+    }).then((r) => r.data),
   registrations: (params?: { competitionId?: number; status?: string }) => {
-    if (params?.competitionId) {
-      return http
-        .get<Registration[]>('/api/v1/inscricoes/por-competicao', {
-          params: { competitionId: params.competitionId }
-        })
-        .then((r) => r.data)
-    }
-    if (params?.status) {
-      return http
-        .get<Registration[]>('/api/v1/inscricoes/por-status', { params: { status: params.status } })
-        .then((r) => r.data)
-    }
+    if (params?.competitionId) return http.get<Registration[]>('/api/v1/inscricoes/por-competicao', { params: { competitionId: params.competitionId } }).then((r) => r.data)
+    if (params?.status) return http.get<Registration[]>('/api/v1/inscricoes/por-status', { params: { status: params.status } }).then((r) => r.data)
     return http.get<Registration[]>('/api/v1/inscricoes').then((r) => r.data)
   },
-  updateRegistration: (id: number, payload: Registration) =>
-    http.put<Registration>(`/api/v1/inscricoes/${id}`, payload).then((r) => r.data),
+  updateRegistration: (id: number, payload: Registration) => http.put<Registration>(`/api/v1/inscricoes/${id}`, payload).then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/equipes').then((r) => r.data),
   robots: () => http.get<Robot[]>('/api/v1/robos').then((r) => r.data),
   robotPhotos: (robotId: number) => http.get<RobotImage[]>(`/api/v1/robos/${robotId}/fotos`).then((r) => r.data),
   competitors: () => http.get<Competitor[]>('/api/v1/competidores').then((r) => r.data),
   rankingFollow: (competitionId: number, categoryId: number) =>
-    http
-      .get<RankingItem[]>('/api/v1/ranking/seguidor-linha', {
-        params: { competitionId, categoryId }
-      })
-      .then((r) => r.data),
-  followConfig: (categoryId: number) =>
-    http.get<ConfigFollow>(`/api/v1/categorias/${categoryId}/config-follow`).then((r) => r.data),
+    http.get<RankingItem[]>('/api/v1/ranking/seguidor-linha', { params: { competitionId, categoryId } }).then((r) => r.data),
+  followConfig: (categoryId: number) => http.get<ConfigFollow>(`/api/v1/categorias/${categoryId}/config-follow`).then((r) => r.data),
   followAttempts: (competitionId: number, categoryId: number) =>
-    http
-      .get<FollowAttempt[]>('/api/v1/tentativas-seguidor-linha/por-contexto', {
-        params: { competitionId, categoryId }
-      })
-      .then((r) => r.data),
+    http.get<FollowAttempt[]>('/api/v1/tentativas-seguidor-linha/por-contexto', { params: { competitionId, categoryId } }).then((r) => r.data),
   createFollowAttempt: (payload: Omit<FollowAttempt, 'id' | 'competitionId' | 'categoryId' | 'teamNome' | 'robotNome' | 'tempoFinalSegundos' | 'dataCadastro'>) =>
     http.post<FollowAttempt>('/api/v1/tentativas-seguidor-linha', payload).then((r) => r.data),
-  inspectSumo: (payload: Record<string, unknown>) =>
-    http.post('/api/v1/inspecoes-sumo', payload).then((r) => r.data),
-  sumoConfig: (categoryId: number) =>
-    http.get<ConfigSumo>(`/api/v1/categorias/${categoryId}/config-sumo`).then((r) => r.data),
-  brackets: (competitionId: number) =>
-    http
-      .get<Bracket[]>('/api/v1/chaveamentos/por-competicao', { params: { competitionId } })
-      .then((r) => r.data),
+  inspectSumo: (payload: Record<string, unknown>) => http.post('/api/v1/inspecoes-sumo', payload).then((r) => r.data),
+  sumoConfig: (categoryId: number) => http.get<ConfigSumo>(`/api/v1/categorias/${categoryId}/config-sumo`).then((r) => r.data),
+  brackets: (competitionId: number) => http.get<Bracket[]>('/api/v1/chaveamentos/por-competicao', { params: { competitionId } }).then((r) => r.data),
   generateBracket: (competitionId: number, categoryId: number) =>
-    http
-      .post<Bracket>('/api/v1/chaveamentos/gerar', null, { params: { competitionId, categoryId } })
-      .then((r) => r.data),
+    http.post<Bracket>('/api/v1/chaveamentos/gerar', null, { params: { competitionId, categoryId } }).then((r) => r.data),
   match: (matchId: number) => http.get<Match>(`/api/v1/partidas/${matchId}`).then((r) => r.data),
-  matches: (bracketId: number) =>
-    http
-      .get<Match[]>('/api/v1/partidas/por-chaveamento', { params: { bracketId } })
-      .then((r) => r.data),
-  results: (bracketId: number) =>
-    http
-      .get<MatchResult[]>('/api/v1/resultados-partida/por-chaveamento', { params: { bracketId } })
-      .then((r) => r.data),
-  rounds: (matchId: number) =>
-    http.get<RoundSumo[]>('/api/v1/rounds-sumo/por-partida', { params: { matchId } }).then((r) => r.data),
-  createRound: (payload: Record<string, unknown>) =>
-    http.post<RoundSumo>('/api/v1/rounds-sumo', payload).then((r) => r.data),
+  matches: (bracketId: number) => http.get<Match[]>('/api/v1/partidas/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
+  results: (bracketId: number) => http.get<MatchResult[]>('/api/v1/resultados-partida/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
+  rounds: (matchId: number) => http.get<RoundSumo[]>('/api/v1/rounds-sumo/por-partida', { params: { matchId } }).then((r) => r.data),
+  createRound: (payload: Record<string, unknown>) => http.post<RoundSumo>('/api/v1/rounds-sumo', payload).then((r) => r.data),
   registerSumoBattle: (payload: {
     matchId: number
     rounds: Array<{
@@ -188,21 +139,12 @@ export const adminApi = {
 }
 
 export const participantApi = {
-  institutions: () =>
-    http
-      .get<Array<{ id: number; nome: string; sigla?: string }>>('/api/v1/public/instituicoes')
-      .then((r) => r.data),
+  institutions: () => http.get<Array<{ id: number; nome: string; sigla?: string }>>('/api/v1/public/instituicoes').then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/participante/equipes').then((r) => r.data),
-  createTeam: (payload: { nome: string; institutionId: number }) =>
-    http.post<Team>('/api/v1/participante/equipes', payload).then((r) => r.data),
-  competitors: (teamId: number) =>
-    http
-      .get<Competitor[]>(`/api/v1/participante/equipes/${teamId}/competidores`)
-      .then((r) => r.data),
-  robots: (teamId: number) =>
-    http.get<Robot[]>(`/api/v1/participante/equipes/${teamId}/robos`).then((r) => r.data),
-  robotPhotos: (robotId: number) =>
-    http.get<RobotImage[]>(`/api/v1/participante/robos/${robotId}/fotos`).then((r) => r.data),
+  createTeam: (payload: { nome: string; institutionId: number }) => http.post<Team>('/api/v1/participante/equipes', payload).then((r) => r.data),
+  competitors: (teamId: number) => http.get<Competitor[]>(`/api/v1/participante/equipes/${teamId}/competidores`).then((r) => r.data),
+  robots: (teamId: number) => http.get<Robot[]>(`/api/v1/participante/equipes/${teamId}/robos`).then((r) => r.data),
+  robotPhotos: (robotId: number) => http.get<RobotImage[]>(`/api/v1/participante/robos/${robotId}/fotos`).then((r) => r.data),
   uploadRobotPhoto: (robotId: number, file: File) => {
     const form = new FormData()
     form.append('arquivo', file)
@@ -212,12 +154,10 @@ export const participantApi = {
   },
   setPrincipalRobotPhoto: (robotId: number, imageId: number) =>
     http.patch<RobotImage>(`/api/v1/participante/robos/${robotId}/fotos/${imageId}/principal`).then((r) => r.data),
-  deleteRobotPhoto: (robotId: number, imageId: number) =>
-    http.delete(`/api/v1/participante/robos/${robotId}/fotos/${imageId}`),
-  registrations: (teamId: number) =>
-    http
-      .get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`)
-      .then((r) => r.data),
+  deleteRobotPhoto: (robotId: number, imageId: number) => http.delete(`/api/v1/participante/robos/${robotId}/fotos/${imageId}`),
+  registrations: (teamId: number) => http.get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`).then((r) => r.data),
   followAttempts: (registrationId: number) =>
-    http.get<FollowAttempt[]>(`/api/v1/participante/inscricoes/${registrationId}/tentativas-follow`).then((r) => r.data)
+    http.get<FollowAttempt[]>(`/api/v1/participante/inscricoes/${registrationId}/tentativas-follow`).then((r) => r.data),
+  followConfig: (registrationId: number) =>
+    http.get<ConfigFollow>(`/api/v1/participante/inscricoes/${registrationId}/config-follow`).then((r) => r.data)
 }
