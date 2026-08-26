@@ -65,9 +65,7 @@ Estrutura, proporções, hierarquia, comportamento, tabs, sliders, cards e distr
 
 # 4. Ordem oficial da Home — ATUALIZADA
 
-A seção `Equipe / Diretoria / Robôs / Premiações` foi movida para antes da Galeria por decisão conceitual.
-
-Fluxo oficial:
+A sequência conceitual oficial agora é:
 
 ```text
 HEADER
@@ -82,16 +80,19 @@ HEADER
 │
 ├── EVENTOS DA RAS
 │
-├── [CONDICIONAL] COMPETIÇÃO ATUAL
-│       ├── CRONOGRAMA DA COMPETIÇÃO
-│       └── ACOMPANHAR / AO VIVO
-│
-├── EDIÇÕES ANTERIORES
+├── [CONDICIONAL] COMPETIÇÃO ATUAL + CRONOGRAMA + ACOMPANHAR
 │
 └── FOOTER INSTITUCIONAL
 ```
 
-Justificativa conceitual:
+Decisões desta revisão:
+
+1. `Equipe / Diretoria / Robôs / Premiações` fica antes da Galeria;
+2. não haverá uma janela independente de edições anteriores na Home;
+3. `Competição atual`, `Cronograma` e `Acompanhar` deixam de ser janelas separadas e passam a compor **uma única grande janela competitiva condicional**;
+4. essa janela competitiva só aparece quando houver uma competição pública da RAS gerenciada pelo RasComp.
+
+Narrativa institucional:
 
 ```text
 quem somos
@@ -99,9 +100,11 @@ quem somos
 quem faz parte / o que construímos / o que conquistamos
    ↓
 registros visuais dessa trajetória
+   ↓
+eventos e atuação da RAS
+   ↓
+competição atual, quando existir
 ```
-
-Isso cria uma narrativa institucional mais natural antes de entrar em eventos e competição.
 
 ---
 
@@ -127,8 +130,9 @@ Competição atual
 Cronograma
 Resultados
 Chaveamento
-Edições anteriores
 ```
+
+O item de edições anteriores foi removido.
 
 Com competição em andamento:
 
@@ -225,58 +229,101 @@ Fotos e números ainda são placeholders.
 
 ---
 
-# 8. JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ⏭ PRÓXIMA
+# 8. JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ✅ IMPLEMENTAÇÃO INICIAL
 
-**Esta é agora a próxima janela da Home e deve entrar antes da Galeria no `App.vue`.**
-
-Conceito aprovado:
+Arquivos:
 
 ```text
-[ Equipe ] [ Diretoria ]        ROBÔS
-lista visual de integrantes     lista expansível
+landing-page/src/components/TeamRobotsAwards.vue
+landing-page/src/team-robots-awards.css
+```
 
-                                PREMIAÇÕES
-                                lista expansível
+Já inserida antes da Galeria no `App.vue`:
+
+```text
+<InstitutionalAbout />
+<TeamRobotsAwards />
+<InstitutionalGallery />
+```
+
+## Estrutura implementada
+
+```text
+PESSOAS, PROJETOS E CONQUISTAS
+
+┌─────────────────────────────────────┬──────────────────────────────┐
+│ [ EQUIPE ] [ DIRETORIA ]            │ ROBÔS                        │
+│                                     │ item expansível              │
+│ [pessoa][pessoa][pessoa][pessoa]    │ item expansível              │
+│ hover/toque expande integrante      │ item expansível              │
+│ nome + área + cargo quando houver   ├──────────────────────────────┤
+│                                     │ PREMIAÇÕES                    │
+│                                     │ item expansível              │
+│                                     │ item expansível              │
+└─────────────────────────────────────┴──────────────────────────────┘
 ```
 
 ## Equipe / Diretoria
 
 - alternância por tabs;
-- cards visuais de integrantes;
-- hover/expansão aumenta a foto;
-- mostrar nome + área/modalidade;
-- diretoria mostra função/cargo;
-- evitar tabela ou visual de cadastro.
+- cards verticais de integrantes;
+- ao passar o mouse, focar ou tocar, o integrante cresce horizontalmente;
+- nome e área/modalidade aparecem no destaque;
+- diretoria mostra também função/cargo;
+- no mobile o mesmo conceito funciona por toque e scroll horizontal;
+- fotos reais ainda serão adicionadas.
+
+Os nomes atuais são placeholders editoriais até o cadastro oficial da equipe/diretoria.
 
 ## Robôs
 
-Lista expansível. Ao abrir:
+Lista expansível à direita.
 
-- foto;
+Ao abrir um robô:
+
+- mídia/foto;
 - nome;
 - modalidade;
-- ano;
+- ano/status;
 - descrição;
 - competições;
-- resultados relevantes.
+- resultado/destaque.
+
+Os dados ainda são parcialmente placeholders e serão substituídos pelo histórico oficial do capítulo.
 
 ## Premiações
 
-Lista expansível. Ao abrir:
+Lista expansível independente.
 
-- colocação;
+Ao abrir:
+
+- título/colocação;
 - evento;
 - data;
+- modalidade;
 - equipe;
 - robô;
-- modalidade;
-- descrição.
+- descrição da conquista.
 
-A demo desta janela deverá ser criada e depois implementada com alta fidelidade antes de avançar.
+## Visual
+
+- fundo branco;
+- painel de pessoas com bastante área fotográfica;
+- roxo para identidade institucional;
+- rubro para conquistas/detalhes;
+- expansões suaves;
+- sem aparência de tabela ou CRUD;
+- desktop em duas colunas;
+- tablet empilha legado em dois painéis;
+- mobile em uma coluna.
+
+## Próxima ação desta janela
+
+Gerar a demo visual e comparar com a implementação, fazendo o mesmo refinamento de fidelidade usado nas Janelas 1–5 antes de avançar.
 
 ---
 
-# 9. JANELA 5 — GALERIA ✅ IMPLEMENTADA
+# 9. JANELA 5 — GALERIA ✅
 
 Arquivos:
 
@@ -285,17 +332,9 @@ landing-page/src/components/InstitutionalGallery.vue
 landing-page/src/gallery.css
 ```
 
-A Galeria já está implementada, porém sua posição oficial agora é **depois de Equipe / Diretoria / Robôs / Premiações**.
+Posição oficial: imediatamente após a Janela de Equipe/Robôs/Premiações.
 
-No momento, como a nova Janela 4 ainda não existe em código, ela pode aparecer logo após `Sobre` no `App.vue`. Ao implementar a Janela 4, a ordem deve ficar obrigatoriamente:
-
-```text
-<InstitutionalAbout />
-<TeamRobotsAwards />
-<InstitutionalGallery />
-```
-
-## Estrutura aprovada da Galeria
+Estrutura aprovada:
 
 ```text
 MEMÓRIAS E REGISTROS
@@ -323,20 +362,15 @@ Cada álbum usa:
 - descrição;
 - ação `Ver álbum`.
 
-Ao clicar, abrir prévia flutuante com:
-
-- título;
-- mídia grande;
-- próximo;
-- contador;
-- dots;
-- fechar.
+Ao clicar, abrir prévia flutuante com mídia, próximo, contador, dots e fechar.
 
 Fotos, quantidades e datas atuais são placeholders.
 
 ---
 
-# 10. JANELA 6 — EVENTOS DA RAS
+# 10. JANELA 6 — EVENTOS DA RAS ⏭ APÓS EQUIPE/GALERIA
+
+Conceito:
 
 Cards/barras horizontais expansíveis.
 
@@ -356,64 +390,47 @@ Ao expandir:
 - público;
 - periodicidade;
 - fotos;
-- edições;
+- edições/realizações do evento quando relevante;
 - link específico quando existir.
 
 ---
 
-# 11. JANELA 7 — COMPETIÇÃO ATUAL (CONDICIONAL)
+# 11. JANELA 7 — COMPETIÇÃO ATUAL + CRONOGRAMA + ACOMPANHAR (CONDICIONAL)
+
+**Esta passa a ser uma única janela.**
 
 Só aparece quando existir competição pública da RAS gerenciada pelo RasComp.
 
+Estrutura planejada:
+
 ```text
 COMPETIÇÃO ATUAL
-RRC 20XX
-status
-modalidades
-equipes
-robôs
-inscrições
-próximas partidas
-chave
-ranking
-resultados
+RRC 20XX                           [ status ]
+
+resumo / modalidades / equipes / robôs / inscrições
+
+CRONOGRAMA
+Inscrições → Homologação → Chaves → Inspeção → Eliminatórias → Finais
+
+ACOMPANHAR
+[ Ao vivo ] [ Partidas ] [ Chave ] [ Ranking ] [ Resultados ]
+
+próxima partida / chave / ranking / resultados recentes
+
 [ Acompanhar competição ]
 ```
 
-A Landing é somente leitura pública. Backend/RasComp permanecem fonte de verdade.
+Regras:
+
+- se não houver competição pública da RAS/RasComp aplicável, **a janela não renderiza**;
+- quando existir, o Hero/Header podem oferecer atalho direto para ela;
+- backend/RasComp são fonte de verdade;
+- Landing é somente leitura pública;
+- frontend não decide vencedor, não gera chave e não calcula classificação oficial.
 
 ---
 
-# 12. JANELA 8 — CRONOGRAMA + ACOMPANHAR
-
-Só aparece no contexto de competição atual.
-
-```text
-Inscrições → Homologação → Chaves → Inspeção → Eliminatórias → Finais
-```
-
-Área de acompanhamento:
-
-```text
-[ Ao vivo ] [ Partidas ] [ Chave ] [ Ranking ] [ Resultados ]
-```
-
----
-
-# 13. JANELA 9 — EDIÇÕES ANTERIORES
-
-Histórico por edição/ano:
-
-- resumo;
-- campeões;
-- modalidades;
-- fotos;
-- resultados;
-- chaveamento quando houver dados.
-
----
-
-# 14. JANELA 10 — FOOTER INSTITUCIONAL
+# 12. JANELA 8 — FOOTER INSTITUCIONAL
 
 Seguir a lógica institucional da ERBASE, sem copiar código/visual.
 
@@ -432,7 +449,7 @@ COMPETIÇÃO
 RRC
 Regulamentos
 Resultados
-Edições anteriores
+Chaveamento
 
 APOIO E PARCEIROS
 UFRB
@@ -451,7 +468,7 @@ Fundo roxo profundo com detalhes rubros discretos.
 
 ---
 
-# 15. Conteúdo estático x dinâmico
+# 13. Conteúdo estático x dinâmico
 
 ## Estático/editorial inicialmente
 
@@ -488,7 +505,7 @@ A Landing nunca gera chave, decide vencedor, calcula ranking oficial, altera ins
 
 ---
 
-# 16. Imagens e mídia — pendente
+# 14. Imagens e mídia — pendente
 
 Durante construção, placeholders são permitidos.
 
@@ -504,7 +521,7 @@ Antes da publicação definir:
 
 ---
 
-# 17. Checklist técnico antes de publicar
+# 15. Checklist técnico antes de publicar
 
 - [ ] TypeScript/typecheck;
 - [ ] build;
@@ -524,27 +541,26 @@ Antes da publicação definir:
 
 ---
 
-# 18. Estado atual
+# 16. Estado atual
 
 ```text
 JANELA 1 — Header                          ✅ implementada + demo + fidelidade revisada
 JANELA 2 — Hero/Destaques                 ✅ implementada + demo + fidelidade revisada
 JANELA 3 — Sobre IEEE/RAS                  ✅ implementada + demo + fidelidade revisada
-JANELA 4 — Equipe/Diretoria/Robôs/Prêmios ⏭ próxima
+JANELA 4 — Equipe/Diretoria/Robôs/Prêmios ✅ implementação inicial; demo agora
 JANELA 5 — Galeria                         ✅ implementada + demo + fidelidade revisada
 JANELA 6 — Eventos                         ⬜
-JANELA 7 — Competição atual                ⬜
-JANELA 8 — Cronograma/Acompanhar           ⬜
-JANELA 9 — Edições anteriores              ⬜
-JANELA 10 — Footer                         ⬜
+JANELA 7 — Competição/Cronograma/Acompanhar ⬜ janela única condicional
+JANELA 8 — Footer                          ⬜
 ```
 
 ---
 
-# 19. Próximo passo
+# 17. Próximo passo
 
 ```text
-JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
+1. gerar demo da Janela 4
+2. comparar implementação x demo
+3. refinar fidelidade
+4. seguir para Eventos da RAS
 ```
-
-Ao implementar, inserir o componente **entre `InstitutionalAbout` e `InstitutionalGallery`** no `App.vue`.
