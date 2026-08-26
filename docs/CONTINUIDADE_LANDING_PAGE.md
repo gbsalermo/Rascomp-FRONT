@@ -2,264 +2,532 @@
 
 > Documento exclusivo da aplicação pública em `landing-page/`.
 >
-> Este arquivo deve ser a principal referência quando o desenvolvimento da Landing for retomado.
+> Este arquivo é a referência principal para continuidade da Landing.
 
 ---
 
-# 1. Identidade correta do projeto
+# 1. Identidade correta
 
 ## RAS UFRB
 
-É a identidade institucional pública que o site deve representar.
+É a identidade institucional principal do site.
 
-A Landing não será somente uma página da competição. Ela deve funcionar como o **site da IEEE Robotics & Automation Society — RAS UFRB**, útil durante todo o ano.
+A Home deve representar o capítulo IEEE Robotics & Automation Society da UFRB durante todo o ano. O visitante deve entender a equipe, atuação, projetos, robôs, premiações, eventos, ações de extensão e competições promovidas pela RAS.
 
 ## RRC
 
-**RRC é o evento/competição.**
-
-A área pública do evento deve concentrar:
-
-- edição atual;
-- inscrições;
-- modalidades;
-- regulamento;
-- cronograma;
-- equipes e robôs;
-- acompanhamento ao vivo;
-- ranking;
-- chaveamentos;
-- partidas;
-- resultados;
-- vencedores;
-- histórico das edições.
+RRC é o evento/competição. Deve ganhar bastante destaque quando houver edição ativa, mas **não deve dominar a identidade institucional da Home**.
 
 ## RASCOMP
 
-**RASCOMP é o nome da plataforma de software**, não o nome público do evento.
-
-Arquitetura atual:
+RASCOMP é o software/plataforma de gestão. Não é o nome do evento e não deve substituir a identidade RAS UFRB na Landing.
 
 ```text
-Gestão + Backend Spring Boot + experiência pública
+RAS UFRB = instituição/capítulo
+RRC      = evento/competição
+RASCOMP  = plataforma/software
 ```
 
-Camunda foi retirado do planejamento.
+Camunda permanece fora da arquitetura.
 
 ---
 
-# 2. Estado atual e decisão de pausa
+# 2. Estratégia atual de desenvolvimento
 
-Existe uma fundação Vue 3 + TypeScript + Vite em `landing-page/` e um POC capaz de consultar dados públicos do backend.
+A Landing possui uma fundação Vue 3 + TypeScript + Vite e um POC antigo de integração pública com o backend.
 
-Esse código **não define o design final**. Ele deve ser tratado como:
+O POC anterior não define o design final. A Landing começou agora uma fase de **construção visual janela por janela**, mesmo enquanto a consolidação do ADMIN continua em outro fluxo.
+
+Regra de trabalho:
 
 ```text
-fundação técnica + prova de integração
+1. definir uma janela
+2. implementar a janela
+3. registrar a decisão neste arquivo
+4. gerar uma demonstração visual
+5. só então seguir para a próxima janela
 ```
 
-A Landing está oficialmente **PAUSADA** enquanto o sistema de Gestão é concluído.
-
-## Condição para retomada
-
-O desenvolvimento real da Landing só começa depois de:
-
-- [ ] sistema de Gestão consolidado;
-- [ ] fluxos principais de organização validados;
-- [ ] fluxos principais de participante validados;
-- [ ] chaveamento/partidas/resultados do Sumô validados ponta a ponta;
-- [ ] Follow Line validado ponta a ponta;
-- [ ] contratos públicos do backend revisados;
-- [ ] dados que precisam aparecer publicamente identificados.
+Integrações competitivas completas e validações públicas finais continuam dependentes da consolidação do Gestão/backend.
 
 ---
 
-# 3. Referência visual e estrutural
+# 3. Referência visual
 
-Referência escolhida:
+Referência estrutural escolhida anteriormente:
 
 ```text
 https://github.com/DouglasTeyh/erbase-2026-main
 ```
 
-Usar como referência de **arquitetura de informação, ritmo visual e experiência de site de evento**, não para copiar código, textos ou assets.
+Usar como referência de arquitetura de informação, navegação, ritmo, footer institucional e organização de evento — sem copiar código, textos ou assets.
 
-Pontos de referência:
+Direção visual aprovada:
 
-- navegação pública simples;
-- navbar e footer reutilizáveis;
-- hero de grande impacto;
-- vídeo/imagem de fundo quando fizer sentido;
-- contador para o evento;
-- blocos editoriais claros;
-- CTAs de inscrição;
-- páginas específicas para assuntos importantes;
-- programação em seção própria;
-- organização, apoio e parceiros;
-- animações leves de entrada/scroll.
+- fundo branco predominante;
+- roxo para estrutura/institucional;
+- rubro para CTA, competição e pontos de destaque;
+- cinzas muito claros para separar áreas;
+- bastante espaço em branco;
+- aparência institucional e tecnológica;
+- evitar visual cyberpunk/pesado;
+- evitar aparência de dashboard;
+- fotos reais serão adicionadas depois; placeholders ou ausência de imagens são aceitáveis durante a construção.
 
 ---
 
-# 4. Objetivo do site público
+# 4. Arquitetura da Home — janelas aprovadas
 
-Atender cinco públicos principais:
-
-1. visitante institucional da RAS UFRB;
-2. interessado em competir no RRC;
-3. competidor inscrito;
-4. público acompanhando ao vivo;
-5. visitante pós-evento.
-
-Fluxo competitivo público:
+A Home institucional será construída nesta ordem:
 
 ```text
-Home
- ↓
-RRC
- ↓
-modalidade
- ├── Follow Line -> ranking / tempos
- └── Sumô        -> chave / partidas / resultados
+HEADER
+│
+├── 1. HERO / PAINEL DE DESTAQUES
+│
+├── 2. SOBRE IEEE + RAS
+│
+├── 3. GALERIA
+│
+├── 4. EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
+│
+├── 5. EVENTOS PROMOVIDOS PELA RAS
+│
+├── 6. [CONDICIONAL] COMPETIÇÃO ATUAL
+│       ├── 7. CRONOGRAMA DA COMPETIÇÃO
+│       └── 8. ACOMPANHAR COMPETIÇÃO
+│
+├── 9. EDIÇÕES ANTERIORES
+│
+├── faixa curta de novidades quando houver conteúdo real
+│
+└── 12. FOOTER INSTITUCIONAL
 ```
+
+A numeração acompanha as decisões da conversa original. Notícias não terão uma grande janela própria: entram prioritariamente no Hero/painel e, no máximo, em uma faixa curta.
 
 ---
 
-# 5. Arquitetura de informação planejada
+# 5. HEADER — APROVADO E IMPLEMENTADO
+
+Status: **PRIMEIRA VERSÃO IMPLEMENTADA — aguardando validação local futura**.
+
+Arquivos:
 
 ```text
-SITE RAS UFRB
-│
-├── /
-│   ├── Hero institucional
-│   ├── Destaques atuais
-│   ├── Quem somos
-│   ├── Projetos
-│   ├── RRC em destaque
-│   ├── Eventos/atividades
-│   ├── Diretoria
-│   ├── Parceiros/apoio
-│   └── Contato
-│
-├── /sobre
-├── /projetos
-├── /eventos
-├── /diretoria
-├── /contato
-│
-└── /rrc
-    ├── edição atual
-    ├── sobre
-    ├── modalidades
-    ├── regulamento
-    ├── cronograma/programação
-    ├── inscrição
-    ├── equipes
-    ├── robôs
-    ├── ao-vivo
-    │   ├── follow-line
-    │   └── sumo
-    ├── resultados
-    ├── galeria (quando houver suporte real)
-    └── edições anteriores
+landing-page/src/components/InstitutionalHeader.vue
+landing-page/src/header.css
+landing-page/src/App.vue
+landing-page/src/main.ts
 ```
 
----
+## Estrutura aprovada
 
-# 6. Navegação inicial proposta
+```text
+[ IEEE RAS UFRB ]   Início   Sobre   Competição ▾   Calendário   Eventos   Contato   [ Inscrições ]
+```
+
+### Marca
+
+- identidade principal: IEEE RAS UFRB;
+- não exibir RRC ao lado da marca;
+- não usar RasComp como marca principal do Header;
+- asset oficial definitivo será substituído depois;
+- por enquanto foi criada representação textual/provisória para não bloquear desenvolvimento.
+
+### Menu principal
 
 ```text
 Início
 Sobre
+Competição ▾
+Calendário
+Eventos
+Contato
+```
+
+### Dropdown Competição
+
+```text
+Competição atual
+Cronograma
+Resultados
+Chaveamento
+Edições anteriores
+```
+
+Cronograma e Resultados ficam dentro de `Competição`, e não no nível principal da navegação.
+
+### Calendário
+
+Representa calendário institucional amplo da RAS, incluindo por exemplo:
+
+- visitas em escolas;
+- oficinas;
+- competições;
+- ações de extensão;
+- atividades do capítulo.
+
+### Eventos
+
+Área para eventos promovidos ou organizados pela RAS, como:
+
+- RRC;
+- Robodori;
+- RAS nas Escolas;
+- oficinas;
+- outros eventos futuros.
+
+### CTA de inscrições
+
+O botão `Inscrições` é contextual e só aparece quando a competição pública retornada pelo backend estiver com status `INSCRICOES_ABERTAS`.
+
+### Aviso de competição ativa
+
+Quando existir competição com status `EM_ANDAMENTO`, uma faixa institucional pequena aparece acima do Header:
+
+```text
+RRC em andamento · <nome da edição>                         Acompanhar competição →
+```
+
+Objetivo: permitir que o visitante pule para a área competitiva sem transformar o Header em um site do RRC.
+
+### Responsividade
+
+- desktop: navegação horizontal;
+- mobile/tablet: menu hambúrguer;
+- dropdown de competição adaptado ao menu mobile;
+- CTA de inscrições entra no menu no mobile.
+
+### Direção visual
+
+- fundo branco;
+- altura aproximada de 70–78px;
+- borda inferior neutra clara;
+- roxo como cor institucional de hover/seleção;
+- rubro para CTA;
+- sticky no topo;
+- faixa de competição ativa usa gradiente roxo → rubro, mas é estreita e discreta.
+
+---
+
+# 6. PRÓXIMA JANELA — HERO / PAINEL DE DESTAQUES
+
+Ainda não implementada.
+
+Conceito já aprovado:
+
+O Hero não será um banner estático do RRC. Deve funcionar como **painel editorial vivo da RAS UFRB**, semelhante ao slider existente na landing de fotografia do usuário.
+
+Possíveis slides:
+
+- apresentação breve da RAS;
+- evento acontecendo agora;
+- visita às escolas;
+- oficina;
+- participação em competição/evento;
+- premiação;
+- projeto atual;
+- chamada para RRC;
+- chamada de inscrição;
+- notícia relevante.
+
+Estrutura base de cada slide:
+
+```text
+categoria
+Título
+Resumo curto
+[ Ver mais ]
++ imagem/foto quando disponível
+```
+
+Pode haver abaixo do slide principal uma faixa discreta com outros destaques recentes.
+
+Se houver competição RAS/RasComp ativa, deve existir desde o Hero uma forma clara de pular para a janela de competição atual.
+
+---
+
+# 7. SOBRE — conceito aprovado
+
+Após o Hero, a área Sobre apresentará IEEE e RAS UFRB.
+
+Layout pretendido:
+
+```text
+[ slide quadrado de fotos ]    [ IEEE ] [ RAS UFRB ]
+                               texto alternável
+```
+
+O slide da esquerda poderá mostrar:
+
+- equipe;
+- premiações;
+- eventos;
+- projetos;
+- oficinas;
+- ações em escolas.
+
+As abas/títulos `IEEE` e `RAS UFRB` trocam o texto sem trocar de página.
+
+---
+
+# 8. GALERIA — posição aprovada
+
+A galeria entra cedo na Home, após o Sobre ou imediatamente depois da área institucional inicial.
+
+Preferência por filtros:
+
+```text
+Todos
+RRC
+Oficinas
+RAS nas Escolas
+Premiações
+Eventos
+```
+
+A fonte e gestão das imagens ainda serão definidas. Imagens definitivas não são requisito para construir o layout.
+
+---
+
+# 9. EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES — conceito aprovado
+
+Substitui a ideia simples de uma faixa de números.
+
+Bloco principal:
+
+```text
+[ Equipe ] [ Diretoria ]       ROBÔS
+lista visual de integrantes    lista expansível
+
+                               PREMIAÇÕES
+                               lista expansível
+```
+
+### Equipe/Diretoria
+
+- alternância por dois botões/tabs;
+- integrante em card compacto;
+- hover/expansão aumenta a foto;
+- mostra nome e modalidade/área;
+- diretoria pode mostrar função.
+
+### Robôs
+
+Itens expansíveis com:
+
+- foto;
+- modalidade;
+- ano;
+- descrição;
+- competições;
+- resultados relevantes.
+
+### Premiações
+
+Itens expansíveis com:
+
+- colocação;
+- evento;
+- data;
+- equipe;
+- robô;
+- modalidade;
+- descrição.
+
+---
+
+# 10. EVENTOS DA RAS — conceito aprovado
+
+Eventos promovidos pela RAS terão cards/barras horizontais expansíveis.
+
+Eventos citados:
+
+```text
+RRC
+Robodori
+RAS nas Escolas
+Oficinas
+```
+
+Ao expandir:
+
+- descrição;
+- objetivo;
+- público;
+- periodicidade;
+- fotos;
+- edições;
+- link para página específica quando existir.
+
+---
+
+# 11. COMPETIÇÃO ATUAL — CONDICIONAL
+
+Essa janela só aparece quando existir uma competição pública da RAS gerenciada pelo RasComp.
+
+Se não houver competição aplicável:
+
+```text
+não renderizar a seção
+```
+
+Quando houver:
+
+```text
+COMPETIÇÃO ATUAL
+RRC 20XX
+status
+modalidades
+equipes
+robôs
+inscrições
+próximas partidas
+chave
+ranking
+resultados
+[ Acompanhar competição ]
+```
+
+A Landing nunca calcula regras competitivas oficiais.
+
+---
+
+# 12. CRONOGRAMA DA COMPETIÇÃO
+
+Só aparece no contexto de competição atual quando houver dados aplicáveis.
+
+Linha institucional simples:
+
+```text
+Inscrições → Homologação → Chaves → Inspeção → Eliminatórias → Finais
+```
+
+---
+
+# 13. ACOMPANHAR COMPETIÇÃO
+
+Área dinâmica ligada ao RasComp.
+
+Tabs planejadas:
+
+```text
+Ao vivo
+Partidas
+Chave
+Ranking
+Resultados
+```
+
+Dados vêm da API pública e o backend permanece fonte de verdade.
+
+---
+
+# 14. EDIÇÕES ANTERIORES
+
+Manter histórico por ano/edição.
+
+Cada edição pode apresentar:
+
+- resumo;
+- campeões;
+- modalidades;
+- fotos;
+- resultados;
+- chaveamento quando disponível.
+
+---
+
+# 15. NOTÍCIAS / NOVIDADES
+
+Não haverá inicialmente uma grande seção de notícias.
+
+Prioridades:
+
+1. notícias/destaques dentro do slider do Hero;
+2. opcionalmente uma faixa curta de novidades em outra parte da Home;
+3. só criar página/seção robusta se houver fonte real e rotina de atualização.
+
+---
+
+# 16. FOOTER — conceito aprovado
+
+Seguir a lógica institucional da ERBASE, sem copiar visual ou código.
+
+Estrutura:
+
+```text
+RAS UFRB
+logo + descrição + redes
+
+LINKS INSTITUCIONAIS
+Sobre
+Equipe
+Diretoria
 Projetos
 Eventos
+
+COMPETIÇÃO
 RRC
-Diretoria
+Regulamentos
+Resultados
+Edições anteriores
+
+APOIO E PARCEIROS
+UFRB
+IEEE
+IEEE RAS
+CETEC
+patrocinadores futuros
+
+CONTATO
+e-mail
+Instagram
+localização
 ```
 
-CTAs contextuais:
-
-```text
-[ Área do participante ]
-[ Inscreva-se ]
-[ Ao vivo ]
-```
+Fundo roxo profundo, com detalhes rubros discretos.
 
 ---
 
-# 7. Estrutura técnica alvo
+# 17. Conteúdo estático x dinâmico
 
-A aplicação continuará em Vue 3 + TypeScript + Vite.
+## Institucional/editorial
 
-```text
-landing-page/
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   │   ├── navigation/
-│   │   ├── sections/
-│   │   ├── cards/
-│   │   ├── feedback/
-│   │   └── live/
-│   ├── layouts/
-│   ├── pages/
-│   │   ├── institutional/
-│   │   └── rrc/
-│   ├── features/
-│   │   ├── competitions/
-│   │   ├── teams/
-│   │   ├── robots/
-│   │   ├── follow-line/
-│   │   └── sumo/
-│   ├── services/public-api/
-│   ├── router/
-│   ├── styles/
-│   ├── types/
-│   ├── App.vue
-│   └── main.ts
-└── package.json
-```
+Pode permanecer inicialmente no frontend:
 
----
-
-# 8. Conteúdo estático x dinâmico
-
-## Editorial/institucional
-
-Pode permanecer versionado no frontend inicialmente:
-
-- apresentação da RAS UFRB;
+- apresentação IEEE/RAS;
 - história;
+- eventos;
 - projetos;
-- apresentação do RRC;
-- regulamentos/documentos;
-- contato;
-- diretoria;
+- equipe/diretoria;
+- premiações;
+- informações de robôs;
 - parceiros;
-- textos de modalidades.
+- contato;
+- textos institucionais.
 
 ## Dinâmico
 
-Deve vir do backend público:
+Deve vir do backend público quando aplicável:
 
-- competição/edição atual;
+- competição ativa;
 - status;
 - categorias;
-- equipes;
-- robôs;
-- competidores quando permitido;
+- inscrições;
+- equipes/robôs participantes;
 - ranking Follow Line;
-- chaveamentos Sumô;
+- chaveamento Sumô;
 - partidas;
 - resultados;
 - vencedores;
-- campeão.
-
-A Landing nunca será fonte oficial de regra competitiva.
+- campeão;
+- histórico competitivo quando suportado.
 
 ---
 
-# 9. Fluxo de dados
+# 18. Fluxo de dados competitivo
 
 ```text
 Gestão
@@ -273,338 +541,59 @@ Landing
 
 A Landing:
 
-- não escreve resultado oficial;
+- não escreve resultado;
 - não gera chave;
 - não decide vencedor;
 - não calcula ranking oficial;
 - não altera inscrição;
-- não consulta endpoints administrativos para fabricar estado público.
+- não fabrica estado público.
 
 ---
 
-# 10. Modos da página do RRC
-
-## Pré-evento
-
-- identidade da edição;
-- data/local;
-- countdown;
-- modalidades;
-- regulamento;
-- cronograma;
-- inscrição;
-- organização/apoio.
-
-## Evento em andamento
-
-Prioridade: **acompanhar**.
+# 19. Stack
 
 ```text
-● RRC AO VIVO
-
-Follow Line
-ranking atualizado
-
-Sumô
-chave e partidas
+Vue 3
+TypeScript
+Vite
 ```
 
-## Pós-evento
-
-- campeões;
-- resultados;
-- pódios;
-- equipes;
-- robôs;
-- registros da edição;
-- histórico.
+Estrutura alvo continua componentizada, com separação de componentes institucionais e áreas dinâmicas do RRC.
 
 ---
 
-# 11. Experiência por modalidade
+# 20. Checklist imediato
 
-## Follow Line
+## Header
 
-Priorizar:
+- [x] estrutura definida;
+- [x] componente criado;
+- [x] dropdown Competição;
+- [x] Calendário/Eventos no menu principal;
+- [x] CTA Inscrições contextual;
+- [x] faixa condicional de competição em andamento;
+- [x] responsividade inicial;
+- [ ] substituir marca provisória pelo asset oficial IEEE RAS/UFRB;
+- [ ] validar localmente desktop;
+- [ ] validar localmente mobile;
+- [ ] ajustar após feedback visual.
 
-- posição;
-- equipe;
-- robô;
-- melhor resultado público;
-- ranking atualizado.
+## Próximo
 
-## Sumô
-
-Priorizar:
-
-- bracket visual;
-- rodada;
-- confronto;
-- status;
-- vencedor confirmado;
-- progressão;
-- campeão.
-
-O bracket público pode seguir a mesma linguagem visual aprovada na Gestão, mas adaptado para leitura pública/mobile/telão.
+- [ ] definir e implementar Hero/painel de destaques;
+- [ ] gerar demo visual do Hero;
+- [ ] registrar decisão neste arquivo antes de avançar.
 
 ---
 
-# 12. Atualização ao vivo
+# 21. Regra de continuidade
 
-MVP inicial:
+Não pular janelas.
+
+A próxima tarefa oficial da Landing é:
 
 ```text
-polling controlado
+JANELA 2 — HERO / PAINEL DE DESTAQUES DA RAS UFRB
 ```
 
-Regras:
-
-- polling apenas onde necessário;
-- reduzir/pausar em aba inativa quando possível;
-- indicar última atualização quando útil;
-- manter o último estado confirmado em falha temporária;
-- nunca fabricar resultado para aparentar tempo real.
-
-SSE/WebSocket só entram se houver benefício real.
-
----
-
-# 13. Identidade visual
-
-Base:
-
-```text
-Roxo profundo
-Rubro/vermelho
-Neutros claros/escuros
-```
-
-Direção:
-
-- hero grande;
-- fotografia/vídeo real de robótica;
-- espaço em branco;
-- títulos fortes;
-- seções bem delimitadas;
-- transições suaves;
-- aparência institucional e tecnológica;
-- mobile first.
-
-Evitar:
-
-- aparência de dashboard;
-- excesso de cards pequenos;
-- tabelas administrativas na Home;
-- cyberpunk exagerado;
-- poluição visual;
-- confundir RASCOMP com RRC.
-
----
-
-# 14. Design System público — a definir
-
-- [ ] paleta final;
-- [ ] tipografia;
-- [ ] escala de títulos;
-- [ ] grid/containers;
-- [ ] breakpoints;
-- [ ] CTAs;
-- [ ] badges;
-- [ ] cards;
-- [ ] ranking público;
-- [ ] bracket público;
-- [ ] navbar;
-- [ ] footer;
-- [ ] hero;
-- [ ] loading/erro/vazio;
-- [ ] animações;
-- [ ] tratamento de imagens.
-
----
-
-# 15. Conteúdo institucional a levantar
-
-- [ ] texto oficial da RAS UFRB;
-- [ ] história;
-- [ ] missão/objetivos;
-- [ ] diretoria atual;
-- [ ] projetos atuais/históricos;
-- [ ] eventos/oficinas;
-- [ ] redes sociais;
-- [ ] contato;
-- [ ] logos oficiais;
-- [ ] parceiros/apoio;
-- [ ] fotos autorizadas;
-- [ ] informações oficiais do RRC;
-- [ ] data/local;
-- [ ] regulamento;
-- [ ] modalidades;
-- [ ] cronograma;
-- [ ] premiação;
-- [ ] edições anteriores.
-
----
-
-# 16. Fotos e mídia
-
-Foto de robô não equivale a galeria do evento.
-
-Para fotos do dia, momentos da rodada e álbuns será necessário definir:
-
-- fonte/armazenamento;
-- upload;
-- crédito;
-- legenda;
-- visibilidade;
-- otimização.
-
----
-
-# 17. SEO, acessibilidade e performance
-
-Antes do lançamento:
-
-- [ ] títulos/descriptions;
-- [ ] Open Graph;
-- [ ] favicon/manifest;
-- [ ] sitemap/robots;
-- [ ] URLs estáveis;
-- [ ] headings semânticos;
-- [ ] alt text;
-- [ ] navegação por teclado;
-- [ ] contraste;
-- [ ] foco visível;
-- [ ] `prefers-reduced-motion`;
-- [ ] imagens responsivas/lazy loading;
-- [ ] fallback de vídeo;
-- [ ] bundle controlado.
-
----
-
-# 18. Etapas oficiais
-
-## LANDING P0 — pausa/preparação
-
-Status: **EM ESPERA**.
-
-- [x] Vue 3 + TypeScript + Vite existentes;
-- [x] POC de API pública existente;
-- [x] referência ERBASE escolhida;
-- [x] RAS / RRC / RASCOMP definidos;
-- [x] continuidade dedicada criada;
-- [x] Camunda retirado da arquitetura;
-- [ ] Gestão finalizada;
-- [ ] contratos públicos revisados.
-
-## LANDING 0 — auditoria pós-Gestão
-
-- [ ] revisar backend final;
-- [ ] revisar `/api/v1/public/**`;
-- [ ] mapear DTOs/status finais;
-- [ ] identificar lacunas de ao vivo/histórico/mídia.
-
-## LANDING 1 — arquitetura de informação + conteúdo
-
-- [ ] sitemap;
-- [ ] navegação;
-- [ ] páginas RAS/RRC;
-- [ ] CTAs;
-- [ ] textos/assets oficiais;
-- [ ] estático x dinâmico.
-
-## LANDING 2 — identidade + Design System
-
-- [ ] paleta;
-- [ ] tipografia;
-- [ ] grid;
-- [ ] navbar/footer;
-- [ ] hero;
-- [ ] cards;
-- [ ] ranking;
-- [ ] bracket;
-- [ ] loaders;
-- [ ] animações/mobile.
-
-## LANDING 3 — fundação estrutural Vue
-
-- [ ] Vue Router;
-- [ ] layouts;
-- [ ] páginas;
-- [ ] componentes;
-- [ ] API pública centralizada;
-- [ ] tipos;
-- [ ] erros/404/configuração.
-
-## LANDING 4 — institucional RAS UFRB
-
-- [ ] Home;
-- [ ] Sobre;
-- [ ] Projetos;
-- [ ] Eventos;
-- [ ] Diretoria;
-- [ ] Contato;
-- [ ] parceiros/apoio.
-
-## LANDING 5 — RRC pré-evento
-
-- [ ] edição;
-- [ ] hero;
-- [ ] data/local;
-- [ ] countdown;
-- [ ] modalidades;
-- [ ] regulamento;
-- [ ] cronograma;
-- [ ] CTA de inscrição;
-- [ ] organização/apoio.
-
-## LANDING 6 — integração pública dinâmica
-
-- [ ] competição/status;
-- [ ] categorias;
-- [ ] equipes/robôs;
-- [ ] competidores quando permitido;
-- [ ] loading/vazio/erro;
-- [ ] cache/refetch.
-
-## LANDING 7 — RRC ao vivo
-
-### Follow Line
-- [ ] ranking;
-- [ ] melhores resultados;
-- [ ] atualização automática.
-
-### Sumô
-- [ ] bracket;
-- [ ] partidas;
-- [ ] rodada;
-- [ ] vencedor;
-- [ ] progressão;
-- [ ] campeão;
-- [ ] atualização automática.
-
-## LANDING 8 — pós-evento + histórico
-
-- [ ] resultados permanentes;
-- [ ] campeões/pódios;
-- [ ] equipes/robôs;
-- [ ] edições anteriores;
-- [ ] URLs permanentes;
-- [ ] galeria quando suportada.
-
-## LANDING 9 — consolidação/publicação
-
-- [ ] SEO;
-- [ ] acessibilidade;
-- [ ] performance;
-- [ ] mobile;
-- [ ] browsers;
-- [ ] build;
-- [ ] deploy.
-
----
-
-# 19. Próximo gatilho
-
-Não avançar a Landing agora.
-
-Retomar somente após a Gestão estar funcional e validada com os fluxos reais do RRC, especialmente chaveamento, rounds, resultados e projeções públicas.
+Antes de avançar para Sobre, o Hero deve estar estruturalmente definido, implementado, documentado e demonstrado visualmente.
