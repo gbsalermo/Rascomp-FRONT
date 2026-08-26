@@ -39,29 +39,16 @@
           </div>
         </section>
 
-        <nav class="footer-link-column" aria-label="Navegação institucional">
-          <h3>Navegação</h3>
-          <span class="footer-heading-line" aria-hidden="true" />
-          <a href="#top"><span aria-hidden="true">⌂</span>Início<b aria-hidden="true">›</b></a>
-          <a href="#sobre"><span aria-hidden="true">ⓘ</span>Sobre a RAS<b aria-hidden="true">›</b></a>
-          <a href="#equipe"><span aria-hidden="true">♙</span>Equipe<b aria-hidden="true">›</b></a>
-          <a href="#equipe"><span aria-hidden="true">▣</span>Robôs<b aria-hidden="true">›</b></a>
-          <a href="#eventos"><span aria-hidden="true">□</span>Eventos<b aria-hidden="true">›</b></a>
-          <a href="#competicao-atual"><span aria-hidden="true">♜</span>Competição<b aria-hidden="true">›</b></a>
-          <a href="#galeria"><span aria-hidden="true">▧</span>Galeria<b aria-hidden="true">›</b></a>
-          <a href="#contato"><span aria-hidden="true">➤</span>Contato<b aria-hidden="true">›</b></a>
-        </nav>
-
         <nav class="footer-link-column footer-useful-links" aria-label="Links úteis">
+          <span class="footer-useful-eyebrow">Explore e conecte-se</span>
           <h3>Links úteis</h3>
           <span class="footer-heading-line" aria-hidden="true" />
-          <a href="https://www.ieee-ras.org/" target="_blank" rel="noreferrer"><span aria-hidden="true">◎</span>IEEE RAS Global</a>
-          <a href="https://www.ieee.org.br/" target="_blank" rel="noreferrer"><span aria-hidden="true">⚑</span>IEEE Brasil</a>
-          <a href="https://ieeexplore.ieee.org/" target="_blank" rel="noreferrer"><span aria-hidden="true">⌕</span>IEEE Xplore</a>
-          <a href="#eventos"><span aria-hidden="true">□</span>Eventos</a>
-          <a href="#" @click.prevent><span aria-hidden="true">◇</span>Recursos para estudantes</a>
-          <a href="#" @click.prevent><span aria-hidden="true">▤</span>Guias e materiais</a>
-          <a href="#" @click.prevent><span aria-hidden="true">♢</span>Código de conduta</a>
+          <a href="https://www.ieee-ras.org/" target="_blank" rel="noreferrer"><span aria-hidden="true">◎</span><div><strong>IEEE RAS Global</strong><small>Sociedade internacional de robótica e automação</small></div></a>
+          <a href="https://www.ieee.org.br/" target="_blank" rel="noreferrer"><span aria-hidden="true">⚑</span><div><strong>IEEE Brasil</strong><small>Atuação e iniciativas do IEEE no Brasil</small></div></a>
+          <a href="https://ieeexplore.ieee.org/" target="_blank" rel="noreferrer"><span aria-hidden="true">⌕</span><div><strong>IEEE Xplore</strong><small>Biblioteca digital de artigos e publicações</small></div></a>
+          <a href="#eventos"><span aria-hidden="true">□</span><div><strong>Eventos da RAS UFRB</strong><small>Oficinas, visitas, palestras e competições</small></div></a>
+          <a href="#" @click.prevent><span aria-hidden="true">◇</span><div><strong>Recursos para estudantes</strong><small>Conteúdo acadêmico e oportunidades</small></div></a>
+          <a href="#" @click.prevent><span aria-hidden="true">▤</span><div><strong>Guias e materiais</strong><small>Materiais de apoio do capítulo</small></div></a>
         </nav>
 
         <section class="footer-partners-column" aria-label="Apoio e parceiros">
