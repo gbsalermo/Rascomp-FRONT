@@ -58,7 +58,6 @@ function closeMobile() {
               <a href="#cronograma-competicao" @click="closeMobile">Cronograma</a>
               <a href="#resultados" @click="closeMobile">Resultados</a>
               <a href="#chaveamento" @click="closeMobile">Chaveamento</a>
-              <a href="#edicoes-anteriores" @click="closeMobile">Edições anteriores</a>
             </div>
           </details>
 
