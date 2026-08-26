@@ -149,7 +149,7 @@ function selectBracket(event: Event) {
             <div><strong>{{ uniqueTeams }}</strong><span>Equipes</span></div>
             <div><strong>{{ uniqueRobots }}</strong><span>Robôs</span></div>
             <div><strong>{{ modalityCount }}</strong><span>Modalidades</span></div>
-            <div><strong>{{ registrations.length }}</strong><span>Inscrições</span></div>
+            <div><strong>{{ approvedRegistrations.length }}</strong><span>Inscrições aprovadas</span></div>
           </div>
 
           <div id="cronograma-competicao" class="competition-progress-track">
@@ -189,7 +189,7 @@ function selectBracket(event: Event) {
           </button>
         </article>
 
-        <article class="competition-modality-card sumo-card">
+        <article id="chaveamento" class="competition-modality-card sumo-card">
           <header class="competition-card-heading with-action">
             <div>
               <span class="competition-card-icon red" aria-hidden="true">⚙</span>
@@ -216,7 +216,7 @@ function selectBracket(event: Event) {
             {{ showFullBracket ? 'Ocultar chave' : 'Ver chave completa' }} <span aria-hidden="true">→</span>
           </button>
 
-          <div v-if="showFullBracket" id="chaveamento" class="competition-mini-bracket">
+          <div v-if="showFullBracket" class="competition-mini-bracket">
             <section v-for="([round, roundMatches]) in bracketRounds" :key="round">
               <strong>Rodada {{ round }}</strong>
               <span v-for="match in roundMatches" :key="match.id">{{ match.robotANome || 'A definir' }} × {{ match.robotBNome || 'A definir' }}</span>
