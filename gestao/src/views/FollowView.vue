@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
 import { useCompetitionStore } from '../store'
 import type { Category, ConfigFollow, FollowAttempt, RankingItem, Registration } from '../types'
+import FollowTakeHistory from '../components/FollowTakeHistory.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,16 +22,11 @@ const categoryId = ref<number>()
 const registrationDialog = ref(false)
 const selectedRegistrationId = ref<number>()
 const historySearch = ref('')
-const historyStatus = ref<'TODOS' | 'VALIDA' | 'INVALIDA' | 'INCOMPLETA'>('TODOS')
 
 const approved = computed(() =>
   registrations.value.filter(
     (item) => item.status === 'APROVADA' && item.ativo !== false && item.categoryId === categoryId.value
   )
-)
-
-const validCompletedCount = computed(() =>
-  history.value.filter((item) => item.valida && item.concluida).length
 )
 
 const bestTime = computed(() => ranking.value[0]?.tempoFinalSegundos)
@@ -39,21 +35,18 @@ const selectedRegistration = computed(() =>
   approved.value.find((item) => item.id === selectedRegistrationId.value)
 )
 
-const filteredHistory = computed(() => {
-  const term = historySearch.value.trim().toLocaleLowerCase('pt-BR')
+const registeredTakeCount = computed(() =>
+  new Set(history.value.map((item) => `${item.registrationId}:${item.tomada}`)).size
+)
 
-  return history.value.filter((item) => {
-    const matchesTerm = !term
-      || item.robotNome?.toLocaleLowerCase('pt-BR').includes(term)
-      || item.teamNome?.toLocaleLowerCase('pt-BR').includes(term)
-
-    const matchesStatus = historyStatus.value === 'TODOS'
-      || (historyStatus.value === 'VALIDA' && item.valida && item.concluida)
-      || (historyStatus.value === 'INVALIDA' && !item.valida)
-      || (historyStatus.value === 'INCOMPLETA' && !item.concluida)
-
-    return matchesTerm && matchesStatus
-  })
+const completeTakeCount = computed(() => {
+  if (!config.value) return 0
+  const counts = new Map<string, number>()
+  for (const item of history.value) {
+    const key = `${item.registrationId}:${item.tomada}`
+    counts.set(key, (counts.get(key) || 0) + 1)
+  }
+  return [...counts.values()].filter((count) => count >= config.value!.tentativasPorTomada).length
 })
 
 function queryNumber(value: unknown) {
@@ -67,29 +60,36 @@ function formatSeconds(value?: number) {
   return `${Number(value).toFixed(3)} s`
 }
 
-function formatDate(value?: string) {
-  if (!value) return '—'
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(value))
+function attemptsFor(registrationId: number) {
+  return history.value.filter((item) => item.registrationId === registrationId)
 }
 
 function remainingSlotsFor(registrationId: number) {
   if (!config.value) return 0
   const total = config.value.numeroTomadas * config.value.tentativasPorTomada
-  const used = history.value.filter((item) => item.registrationId === registrationId).length
-  return Math.max(0, total - used)
+  return Math.max(0, total - attemptsFor(registrationId).length)
+}
+
+function remainingTakesFor(registrationId: number) {
+  if (!config.value) return 0
+  let open = 0
+  for (let tomada = 1; tomada <= config.value.numeroTomadas; tomada++) {
+    const count = attemptsFor(registrationId).filter((item) => item.tomada === tomada).length
+    if (count < config.value.tentativasPorTomada) open++
+  }
+  return open
 }
 
 function progressFor(registrationId: number) {
   if (!config.value) return '—'
-  const total = config.value.numeroTomadas * config.value.tentativasPorTomada
-  const remaining = remainingSlotsFor(registrationId)
-  return `${total - remaining} / ${total} tentativas registradas`
+  const attempts = attemptsFor(registrationId)
+  let completedTakes = 0
+  for (let tomada = 1; tomada <= config.value.numeroTomadas; tomada++) {
+    const count = attempts.filter((item) => item.tomada === tomada).length
+    if (count >= config.value.tentativasPorTomada) completedTakes++
+  }
+  const totalAttempts = config.value.numeroTomadas * config.value.tentativasPorTomada
+  return `${completedTakes}/${config.value.numeroTomadas} tomadas completas · ${attempts.length}/${totalAttempts} tentativas`
 }
 
 async function initialize() {
@@ -168,6 +168,9 @@ function openSelectedTake() {
   if (!selectedRegistrationId.value || !competitionId.value || !categoryId.value) {
     return ElMessage.warning('Selecione uma inscrição.')
   }
+  if (remainingSlotsFor(selectedRegistrationId.value) <= 0) {
+    return ElMessage.warning('Todas as tomadas desta inscrição já foram concluídas.')
+  }
 
   registrationDialog.value = false
   router.push({
@@ -200,7 +203,7 @@ onMounted(initialize)
       <div>
         <span class="eyebrow">Operação · Follow Line</span>
         <h1>Seguidor de Linha</h1>
-        <p class="muted">Registre tomadas e acompanhe a classificação oficial calculada pelo backend.</p>
+        <p class="muted">Registre tomadas, acompanhe suas tentativas e consulte a classificação oficial calculada pelo backend.</p>
       </div>
       <el-button class="brand-button" @click="openTakeDialog">Registrar tomada</el-button>
     </div>
@@ -227,17 +230,17 @@ onMounted(initialize)
         <small>aprovadas nesta categoria</small>
       </article>
       <article class="follow-metric-card">
-        <span>Tentativas registradas</span>
-        <strong>{{ history.length }}</strong>
-        <small>{{ validCompletedCount }} válidas e concluídas</small>
+        <span>Tomadas iniciadas</span>
+        <strong>{{ registeredTakeCount }}</strong>
+        <small>{{ completeTakeCount }} tomadas completas</small>
       </article>
       <article class="follow-metric-card">
         <span>Formato da prova</span>
         <strong>{{ config ? `${config.numeroTomadas} × ${config.tentativasPorTomada}` : '—' }}</strong>
-        <small>tomadas × tentativas</small>
+        <small>tomadas × tentativas por tomada</small>
       </article>
       <article class="follow-metric-card highlight">
-        <span>Melhor tempo</span>
+        <span>Melhor tomada geral</span>
         <strong>{{ formatSeconds(bestTime) }}</strong>
         <small>{{ ranking[0]?.robotNome || 'ranking ainda vazio' }}</small>
       </article>
@@ -253,7 +256,7 @@ onMounted(initialize)
         <span><b>{{ config.tentativasPorTomada }}</b> tentativas por tomada</span>
         <span><b>{{ config.numeroCheckpoints }}</b> checkpoints</span>
       </div>
-      <small>Checkpoints são registrados operacionalmente; o ranking atual usa tentativas válidas e concluídas, tempo e penalidade.</small>
+      <small>Cada tomada é representada pela sua melhor tentativa válida e concluída. Entre as tomadas do robô, a melhor tomada é a que entra no ranking.</small>
     </article>
 
     <article class="table-card follow-ranking-card">
@@ -261,7 +264,7 @@ onMounted(initialize)
         <div>
           <span class="eyebrow">Classificação</span>
           <h2>Ranking oficial</h2>
-          <p class="muted">Melhor tentativa válida e concluída de cada robô.</p>
+          <p class="muted">Melhor tomada de cada robô, representada pela melhor tentativa válida e concluída daquela tomada.</p>
         </div>
       </div>
 
@@ -271,8 +274,11 @@ onMounted(initialize)
         </el-table-column>
         <el-table-column prop="robotNome" label="Robô" min-width="150" />
         <el-table-column prop="teamNome" label="Equipe" min-width="150" />
-        <el-table-column label="Melhor passagem" width="135">
-          <template #default="{ row }">T{{ row.tomada }} · #{{ row.numeroTentativa }}</template>
+        <el-table-column label="Melhor tomada" width="120">
+          <template #default="{ row }"><strong>Tomada {{ row.tomada }}</strong></template>
+        </el-table-column>
+        <el-table-column label="Tentativa considerada" width="145">
+          <template #default="{ row }">#{{ row.numeroTentativa }}</template>
         </el-table-column>
         <el-table-column label="Tempo bruto" width="125">
           <template #default="{ row }">{{ formatSeconds(row.tempoBrutoSegundos) }}</template>
@@ -280,7 +286,7 @@ onMounted(initialize)
         <el-table-column label="Penalidade" width="110">
           <template #default="{ row }">+{{ row.penalidadeSegundos || 0 }} s</template>
         </el-table-column>
-        <el-table-column label="Tempo final" width="135">
+        <el-table-column label="Tempo da tomada" width="135">
           <template #default="{ row }"><strong class="ranking-final-time">{{ formatSeconds(row.tempoFinalSegundos) }}</strong></template>
         </el-table-column>
       </el-table>
@@ -289,62 +295,16 @@ onMounted(initialize)
     <article class="table-card follow-history-card">
       <div class="card-heading follow-history-heading">
         <div>
-          <span class="eyebrow">Operação</span>
-          <h2>Histórico de tentativas</h2>
-          <p class="muted">Registro completo das passagens desta competição e categoria.</p>
+          <span class="eyebrow">Auditoria</span>
+          <h2>Histórico de tomadas</h2>
+          <p class="muted">Cada tomada agrupa suas tentativas. Expanda uma tomada para conferir todas as passagens registradas.</p>
         </div>
-        <div class="follow-history-filters">
-          <el-input v-model="historySearch" clearable placeholder="Buscar robô ou equipe" />
-          <el-select v-model="historyStatus" style="width:170px">
-            <el-option label="Todos os status" value="TODOS" />
-            <el-option label="Válidas" value="VALIDA" />
-            <el-option label="Inválidas" value="INVALIDA" />
-            <el-option label="Não concluídas" value="INCOMPLETA" />
-          </el-select>
-        </div>
+        <el-input v-model="historySearch" clearable placeholder="Buscar robô ou equipe" class="follow-history-search" />
       </div>
 
-      <el-table :data="filteredHistory" empty-text="Nenhuma tentativa registrada">
-        <el-table-column label="Robô" min-width="165">
-          <template #default="{ row }">
-            <div class="follow-robot-cell">
-              <strong>{{ row.robotNome || `Inscrição #${row.registrationId}` }}</strong>
-              <small>{{ row.teamNome || '—' }}</small>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="tomada" label="Tomada" width="82" />
-        <el-table-column prop="numeroTentativa" label="Tentativa" width="92" />
-        <el-table-column label="Tempo" width="112">
-          <template #default="{ row }">{{ formatSeconds(row.tempoSegundos) }}</template>
-        </el-table-column>
-        <el-table-column label="Penalidade" width="105">
-          <template #default="{ row }">+{{ row.penalidadeSegundos || 0 }} s</template>
-        </el-table-column>
-        <el-table-column label="Tempo final" width="125">
-          <template #default="{ row }"><strong>{{ formatSeconds(row.tempoFinalSegundos) }}</strong></template>
-        </el-table-column>
-        <el-table-column label="Checkpoints" width="105">
-          <template #default="{ row }">{{ row.checkpointsAlcancados }} / {{ config?.numeroCheckpoints ?? '—' }}</template>
-        </el-table-column>
-        <el-table-column label="Concluída" width="105">
-          <template #default="{ row }">
-            <el-tag :type="row.concluida ? 'success' : 'warning'" effect="light" size="small">
-              {{ row.concluida ? 'Sim' : 'Não' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="Válida" width="95">
-          <template #default="{ row }">
-            <el-tag :type="row.valida ? 'success' : 'danger'" effect="light" size="small">
-              {{ row.valida ? 'Sim' : 'Não' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="Registrada em" width="145">
-          <template #default="{ row }">{{ formatDate(row.dataCadastro) }}</template>
-        </el-table-column>
-      </el-table>
+      <div class="follow-history-content">
+        <FollowTakeHistory :attempts="history" :config="config" :search="historySearch" />
+      </div>
     </article>
 
     <el-dialog v-model="registrationDialog" title="Registrar tomada" width="min(560px, 94vw)">
@@ -352,7 +312,7 @@ onMounted(initialize)
         <div>
           <span class="eyebrow">Entrada na pista</span>
           <h3>Qual robô vai realizar a tomada?</h3>
-          <p class="muted">Selecione uma inscrição aprovada. A tela operacional abrirá automaticamente na primeira tomada ainda incompleta.</p>
+          <p class="muted">Selecione uma inscrição aprovada. A operação abrirá automaticamente na primeira tomada ainda incompleta.</p>
         </div>
 
         <label>Inscrição
@@ -360,7 +320,7 @@ onMounted(initialize)
             <el-option
               v-for="item in approved"
               :key="item.id"
-              :label="`${item.robotNome} · ${item.teamNome} · ${remainingSlotsFor(item.id)} restantes`"
+              :label="`${item.robotNome} · ${item.teamNome} · ${remainingTakesFor(item.id)} tomadas abertas`"
               :value="item.id"
             />
           </el-select>
@@ -375,14 +335,18 @@ onMounted(initialize)
             <span>{{ selectedRegistration.teamNome }}</span>
             <small>{{ progressFor(selectedRegistration.id) }}</small>
           </div>
-          <b>{{ remainingSlotsFor(selectedRegistration.id) }}</b>
-          <small>tentativas restantes</small>
+          <b>{{ remainingTakesFor(selectedRegistration.id) }}</b>
+          <small>tomadas abertas</small>
         </div>
       </div>
 
       <template #footer>
         <el-button @click="registrationDialog=false">Cancelar</el-button>
-        <el-button class="brand-button" :disabled="!selectedRegistrationId" @click="openSelectedTake">
+        <el-button
+          class="brand-button"
+          :disabled="!selectedRegistrationId || remainingSlotsFor(selectedRegistrationId || 0) <= 0"
+          @click="openSelectedTake"
+        >
           Abrir tomada
         </el-button>
       </template>
@@ -463,7 +427,9 @@ onMounted(initialize)
   font-size: 11px;
 }
 
-.follow-config-values b {
+.follow-config-values b,
+.ranking-position,
+.ranking-final-time {
   color: #9f0f3b;
 }
 
@@ -478,34 +444,17 @@ onMounted(initialize)
   overflow: hidden;
 }
 
-.ranking-position,
-.ranking-final-time {
-  color: #9f0f3b;
-}
-
 .follow-history-heading {
   gap: 18px;
   align-items: flex-end;
 }
 
-.follow-history-filters {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+.follow-history-search {
+  width: 250px;
 }
 
-.follow-history-filters .el-input {
-  width: 235px;
-}
-
-.follow-robot-cell {
-  display: grid;
-  gap: 2px;
-}
-
-.follow-robot-cell small {
-  color: #8a7d84;
-  font-size: 10px;
+.follow-history-content {
+  padding: 0 14px 14px;
 }
 
 .follow-registration-dialog {
@@ -591,15 +540,13 @@ onMounted(initialize)
     grid-template-columns: 1fr;
   }
 
-  .follow-history-heading,
-  .follow-history-filters {
+  .follow-history-heading {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .follow-history-filters .el-input,
-  .follow-history-filters .el-select {
-    width: 100% !important;
+  .follow-history-search {
+    width: 100%;
   }
 
   .follow-registration-preview {
