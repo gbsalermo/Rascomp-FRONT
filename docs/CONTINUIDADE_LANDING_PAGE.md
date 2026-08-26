@@ -238,7 +238,7 @@ Fotos e números ainda são placeholders.
 
 ---
 
-# 8. JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ✅ IMPLEMENTAÇÃO REVISADA
+# 8. JANELA 4 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ✅ DEMO 1 APROVADA
 
 Arquivos:
 
@@ -255,90 +255,104 @@ Posição no `App.vue`:
 <InstitutionalGallery />
 ```
 
-## Estrutura correta
+## Alvo visual aprovado
+
+O usuário escolheu a **opção 1 da demo** como base definitiva desta janela.
+
+A competição que aparecia na primeira demo foi descartada desta seção. A janela aprovada fica:
 
 ```text
-PESSOAS, PROJETOS E CONQUISTAS
+┌──────────────────┬──────────────────────┬────────────────────────┐
+│ NOSSA EQUIPE     │ DIRETORIA            │ NOSSOS ROBÔS           │
+│ busca + filtro   │ mosaico de fotos     │ cards com mídia         │
+│ lista de membros │ cargo + nome + área  │ resumo + expandir       │
+│                  │                      │                        │
+├──────────────────┴──────────────────────┤                        │
+│ PREMIAÇÕES                              │                        │
+│ cards horizontais de conquistas         │                        │
+└─────────────────────────────────────────┴────────────────────────┘
 
-┌─────────────────────────────────────┬──────────────────────────────┐
-│ [ EQUIPE ] [ DIRETORIA ]            │ ROBÔS                        │
-│                                     │ item expansível              │
-│ EQUIPE = LISTA                      │ item expansível              │
-│ membro                              │ item expansível              │
-│ membro                              ├──────────────────────────────┤
-│ membro                              │ PREMIAÇÕES                    │
-│ membro                              │ item expansível              │
-│                                     │ item expansível              │
-│ DIRETORIA = MOSAICO DE FOTOS        │                              │
-└─────────────────────────────────────┴──────────────────────────────┘
+[ membros ] [ robôs ] [ competições ] [ prêmios ] [ escolas visitadas ]
 ```
 
 ## Equipe — LISTA
 
-A equipe deve comportar muitos integrantes sem transformar a seção em uma parede de cards.
+A equipe é exibida simultaneamente à diretoria, sem tabs.
 
-Cada linha mostra:
+Inclui:
 
+- campo de busca;
+- filtro de área;
+- lista vertical de integrantes;
 - miniatura/foto;
 - nome;
 - área/modalidade;
-- seta/destaque.
+- destaque no hover/foco;
+- CTA `Ver toda a equipe`.
 
-Interação:
-
-- hover/foco/toque destaca o integrante;
-- a foto cresce discretamente;
-- a linha se desloca/realça suavemente;
-- mobile funciona por toque.
+Isso permite comportar muitos membros sem criar uma parede de cards.
 
 Fotos e nomes atuais são placeholders.
 
 ## Diretoria — MOSAICO
 
-A diretoria mantém o formato visual aprovado na demo:
+A diretoria permanece em mosaico de fotos, conforme aprovado visualmente:
 
-- mosaico de fotos;
+- três colunas no desktop;
+- seis cargos de exemplo;
 - cargo/função;
 - nome;
 - área;
-- overlay discreto;
-- sem aparência de lista administrativa.
+- overlay escuro sobre a mídia;
+- CTA `Ver toda a diretoria`.
 
-Equipe e Diretoria continuam acessíveis por tabs, mas **cada tab possui layout próprio**.
+Equipe e Diretoria são exibidas **ao mesmo tempo**.
 
-## Robôs
+## Robôs — CARDS
 
-Lista expansível à direita.
+Robôs aparecem como cards verticais à direita, próximos da demo escolhida.
 
-Ao abrir:
+Cada card contém:
 
-- foto;
+- mídia/foto;
 - nome;
 - modalidade;
-- ano/status;
-- descrição;
-- competições;
-- resultado/destaque.
+- status;
+- descrição curta;
+- `Saiba mais`;
+- expansão para contexto/histórico adicional.
 
-## Premiações
+## Premiações — FAIXA DE CARDS
 
-Lista expansível independente.
+Premiações ficam abaixo de Equipe + Diretoria, com quatro cards compactos de destaque.
 
-Ao abrir:
+Cada card contém:
 
-- título/colocação;
+- colocação/tipo;
+- título;
 - evento;
-- data;
-- modalidade;
-- equipe;
-- robô;
-- descrição.
+- ano;
+- diferenciação visual de ouro, prata, bronze e destaque.
+
+## Indicadores
+
+A faixa inferior permanece como parte desta janela:
+
+```text
+25+ membros ativos
+7+ robôs desenvolvidos
+18+ competições participadas
+10+ prêmios conquistados
+8+ escolas visitadas
+```
+
+Todos esses números são placeholders até confirmação oficial.
 
 ## Regra importante
 
-**Nenhum card de competição atual aparece nesta janela.**
+**Nenhum card, cronograma ou acompanhamento de competição atual aparece nesta janela.**
 
-A competição atual pertence exclusivamente à janela competitiva condicional descrita mais abaixo.
+Competição atual pertence exclusivamente à Janela 7, que é condicional.
 
 ---
 
@@ -387,7 +401,7 @@ Fotos, quantidades e datas atuais são placeholders.
 
 ---
 
-# 10. JANELA 6 — EVENTOS DA RAS ⏭ PRÓXIMA APÓS CONSOLIDAR A JANELA 4
+# 10. JANELA 6 — EVENTOS DA RAS ⏭ PRÓXIMA
 
 Conceito:
 
@@ -566,9 +580,9 @@ Antes da publicação definir:
 JANELA 1 — Header                           ✅ implementada + demo + fidelidade revisada
 JANELA 2 — Hero/Destaques                  ✅ implementada + demo + fidelidade revisada
 JANELA 3 — Sobre IEEE/RAS                   ✅ implementada + demo + fidelidade revisada
-JANELA 4 — Equipe/Diretoria/Robôs/Prêmios  ✅ implementação revisada; demo corrigida agora
+JANELA 4 — Equipe/Diretoria/Robôs/Prêmios  ✅ demo 1 aprovada + implementação alinhada
 JANELA 5 — Galeria                          ✅ implementada + demo + fidelidade revisada
-JANELA 6 — Eventos                          ⬜
+JANELA 6 — Eventos                          ⬜ próxima
 JANELA 7 — Competição/Cronograma/Acompanhar ⬜ janela única condicional
 JANELA 8 — Footer                           ⬜
 ```
@@ -577,10 +591,8 @@ JANELA 8 — Footer                           ⬜
 
 # 17. Próximo passo
 
-1. comparar a demo corrigida da Janela 4 com a implementação;
-2. fazer ajustes finos se necessário;
-3. depois seguir para:
-
 ```text
 JANELA 6 — EVENTOS DA RAS
 ```
+
+Antes de avançar, ajustes visuais finos da Janela 4 podem ser feitos quando o usuário estiver no PC e conseguir comparar no navegador.
