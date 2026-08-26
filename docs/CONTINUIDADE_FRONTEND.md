@@ -36,16 +36,20 @@ Autenticação                           ✅ validada localmente
 Central da competição                  ✅
 Inscrições                             ✅
 Catálogos                              ✅
+Ativar/desativar equipe                ✅
+Ativar/desativar robô                  ✅
+Gestão de usuários ativo/inativo       ✅
 Histórico de chaves                    ✅ validado localmente
 Árvore visual de Sumô                  ✅
-Tela de arena Sumô                     ✅ implementação
-Penalidades + Suicídio/WO               ✅ implementação
-Follow Line                             ✅ implementação
+Tela de arena Sumô                     ✅
+2 penalidades = derrota do round       ✅ backend + frontend
+Suicídio/WO                            ✅
+Follow Line                            ✅
 Histórico por tomadas                  ✅
 Tela operacional de tomada             ✅
-Fotos em Follow/Sumô                    ✅
-Progresso visual da competição          ✅
-Consolidação final/responsividade       ⏳
+Fotos em Follow/Sumô                   ✅
+Progresso visual da competição         ✅
+Consolidação final/responsividade      ⏳
 ```
 
 ### Rotas ADMIN
@@ -64,6 +68,7 @@ Consolidação final/responsividade       ⏳
 /chaves
 /partidas
 /resultados
+/usuarios
 /configuracoes
 ```
 
@@ -147,6 +152,24 @@ A tela de arena contém:
 
 Partida finalizada ou histórica abre a mesma interface em leitura.
 
+### Regra de penalidades
+
+A regra agora é efetiva e não apenas visual:
+
+```text
+0 penalidades → normal
+1 penalidade  → normal
+2 penalidades → derrota automática no round
+```
+
+Ao atingir a segunda penalidade:
+
+- a UI seleciona o adversário como vencedor;
+- o motivo passa a `PENALIDADES`;
+- o robô penalizado não pode ser escolhido como vencedor;
+- o backend recalcula o vencedor mesmo se o payload vier incorreto;
+- não é aceito um round em que os dois lados terminem com 2 penalidades.
+
 ### Categorias
 
 Não criar motores diferentes para RC/Autônomo.
@@ -160,7 +183,46 @@ Sumô 3 kg Autônomo
 
 são categorias independentes e o backend garante isolamento por `categoryId`.
 
-## 6. Fotos dos robôs
+## 6. Ativo / inativo
+
+### Equipes
+
+Tela `/equipes`:
+
+```text
+Ativa   → Desativar
+Inativa → Reativar
+```
+
+### Robôs
+
+Tela `/robos`:
+
+```text
+Ativo   → Desativar
+Inativo → Reativar
+```
+
+### Usuários
+
+Tela:
+
+```text
+/usuarios
+```
+
+com separação entre:
+
+```text
+PARTICIPANTE
+ORGANIZACAO
+```
+
+A organização pode ativar/desativar contas. A própria conta atualmente logada fica protegida contra desativação acidental na interface.
+
+Desativação é lógica e preserva histórico competitivo.
+
+## 7. Fotos dos robôs
 
 Componente comum:
 
@@ -188,7 +250,7 @@ Landing futura          ⏳
 
 O participante também consegue enviar foto para robôs da própria equipe.
 
-## 7. PARTICIPANTE — primeira versão
+## 8. PARTICIPANTE — primeira versão
 
 Rota:
 
@@ -227,7 +289,7 @@ Pendente para etapa PARTICIPANTE completa:
 - gestão mais completa de múltiplas fotos;
 - refinamento visual/responsivo.
 
-## 8. Cenário de demonstração
+## 9. Cenário de demonstração
 
 Backend:
 
@@ -289,15 +351,15 @@ RRC 2025 · Histórico completo
 - chave 16 avos → final;
 - resultados já ocorridos.
 
-Roteiro:
+Orientação oficial para a apresentação de 26/08/2026:
 
 ```text
-docs/ROTEIRO_DEMO_2026-08-27.md
+docs/ORIENTACAO_DEMONSTRACAO_2026-08-26.md
 ```
 
-## 9. Qualidade
+## 10. Qualidade
 
-Workflow criado:
+Workflow frontend:
 
 ```text
 .github/workflows/frontend-checks.yml
@@ -311,15 +373,15 @@ npm run typecheck
 npm run build
 ```
 
-Backend no checkpoint atual:
+Checkpoint atual:
 
 ```text
-45 testes
-0 failures
-0 errors
+Frontend Checks ✅
+Backend Tests   ✅ 48 testes / 0 falhas / 0 erros
+Demo profile    ✅ MySQL + Flyway + testdata
 ```
 
-## 10. Regras arquiteturais
+## 11. Regras arquiteturais
 
 O frontend não deve calcular oficialmente:
 
@@ -332,12 +394,12 @@ O frontend não deve calcular oficialmente:
 - campeão;
 - resultado.
 
-Esses valores vêm do backend.
+A interface pode antecipar visualmente uma regra para UX, mas o backend continua sendo a fonte de verdade. Exemplo atual: `2 penalidades → derrota do round` é exibido imediatamente no frontend e revalidado obrigatoriamente no backend.
 
-## 11. Próximos passos após a demo
+## 12. Próximos passos após a demo
 
 ```text
-1. validar todos os cenários testdata localmente
+1. validar cenários principais localmente antes da reunião
 2. corrigir qualquer ajuste visual detectado na apresentação
 3. fechar consolidação final do ADMIN
 4. retomar PARTICIPANTE como etapa principal
