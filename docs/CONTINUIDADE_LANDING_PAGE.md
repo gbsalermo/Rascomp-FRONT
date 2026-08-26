@@ -33,7 +33,7 @@ Direção:
 - bastante respiro;
 - fotografia real quando houver acervo oficial;
 - transições suaves;
-- evitar cyberpunk, aparência de dashboard e excesso de informação simultânea.
+- evitar cyberpunk, aparência de dashboard e excesso de cards pequenos.
 
 Imagens, logos, datas e números podem permanecer como placeholders até o material oficial ser fornecido.
 
@@ -92,9 +92,10 @@ Decisões congeladas:
 
 1. Equipe/Diretoria/Robôs/Premiações fica antes da Galeria;
 2. `Edições anteriores` foi removido do esqueleto da Home;
-3. competição atual e acompanhamento ficam numa única janela;
-4. a janela competitiva só aparece para competição pública da RAS em `EM_ANDAMENTO` gerenciada pelo RasComp;
-5. competição não faz parte da janela de Equipe/Robôs/Premiações.
+3. a janela competitiva só aparece quando houver competição pública da RAS em `EM_ANDAMENTO` gerenciada pelo RasComp;
+4. competição não faz parte da janela de Equipe/Robôs/Premiações;
+5. Follow Line e Sumô possuem acompanhamento separado dentro da janela competitiva;
+6. o Footer encerra a Home com identidade institucional e parceiros/apoios.
 
 Narrativa:
 
@@ -108,6 +109,8 @@ registros visuais dessa trajetória
 eventos e atuação da RAS
    ↓
 competição atual, somente quando estiver ocorrendo
+   ↓
+apoio, parceiros e contato
 ```
 
 ---
@@ -144,6 +147,15 @@ Quando houver competição em andamento:
 RRC em andamento · <edição>                Acompanhar competição →
 ```
 
+Fidelidade revisada:
+
+- faixa ativa rubra;
+- item ativo com linha rubra;
+- fundo branco;
+- roxo em estrutura/hover;
+- CTA Inscrições rubro;
+- mobile com hambúrguer + identidade + CTA.
+
 Logo oficial IEEE RAS/UFRB ainda será substituído pelo asset definitivo.
 
 ---
@@ -174,10 +186,10 @@ Estrutura aprovada:
 Conteúdo preparado:
 
 - apresentação RAS UFRB;
-- competição atual quando aplicável;
 - RAS nas Escolas;
 - oficinas/formação;
-- premiações/conquistas.
+- premiações/conquistas;
+- competição atual quando aplicável.
 
 Comportamento: autoplay, pausa em interação, setas, dots, previews e painel lateral de novidades.
 
@@ -201,7 +213,7 @@ Estrutura:
 [ membros ] [ robôs ] [ prêmios ] [ eventos ] [ escolas visitadas ]
 ```
 
-Implementado próximo da demo com mídia principal, miniaturas, tabs largas, blocos explicativos e faixa inferior de indicadores.
+Implementado próximo da demo com mídia principal, miniaturas, tabs largas, blocos explicativos com ícones e faixa inferior de indicadores.
 
 Fotos e números ainda são placeholders.
 
@@ -231,7 +243,35 @@ A **opção 1 da demo** é o alvo visual aprovado.
 [ membros ] [ robôs ] [ competições ] [ prêmios ] [ escolas visitadas ]
 ```
 
-Equipe e Diretoria aparecem simultaneamente. Nenhum conteúdo da competição atual aparece nesta janela.
+Equipe:
+
+- lista;
+- busca;
+- filtro de área;
+- miniatura, nome e área;
+- destaque no hover/foco;
+- CTA Ver toda a equipe.
+
+Diretoria:
+
+- simultânea à equipe;
+- mosaico de fotos;
+- cargo, nome e área;
+- CTA Ver toda a diretoria.
+
+Robôs:
+
+- cards com mídia;
+- nome, modalidade, status e resumo;
+- expansão/detalhe preparado.
+
+Premiações:
+
+- faixa inferior de cards;
+- ouro, prata, bronze e destaque;
+- evento e ano.
+
+Nenhum conteúdo da competição atual aparece nesta janela.
 
 ---
 
@@ -261,7 +301,9 @@ Galeria
  Ver álbum Ver álbum Ver álbum
 ```
 
-Ao clicar em um álbum, abre prévia flutuante. Fotos, datas e quantidades ainda são placeholders.
+Cada álbum tem foto principal, três miniaturas, categoria, título, quantidade de fotos, data, descrição e ação `Ver álbum`.
+
+Ao clicar, abre prévia flutuante. Fotos, datas e quantidades ainda são placeholders.
 
 ---
 
@@ -274,53 +316,42 @@ landing-page/src/components/InstitutionalEvents.vue
 landing-page/src/events.css
 ```
 
-A versão aprovada é a demo com cards de eventos, agenda e histórico — **não** a ideia inicial de barras expansíveis.
+A demo aprovada substituiu o conceito inicial de barras expansíveis.
 
-Estrutura oficial:
+Estrutura final:
 
 ```text
 EVENTOS DA RAS
-texto institucional
 
-[ Todos os eventos ] [ Organizados pela RAS ] [ Participações ] [ Oficinas ] [ Palestras ] [ Competições ]
+[ Todos ] [ Organizados pela RAS ] [ Participações ] [ Oficinas ] [ Palestras ] [ Competições ]
 
 ┌──────────────────────────────────────────────────────────┬──────────────────────┐
 │ PRÓXIMOS EVENTOS                                         │ PRÓXIMOS NA AGENDA   │
-│ [ RRC ] [ Oficina ] [ Palestra ] [ RAS nas Escolas ]    │ data + evento + tipo │
-│                                                          │ ...                  │
-│             [ Ver todos os eventos ]                     │ Ver agenda completa  │
+│ cards de eventos                                         │ data + evento + tipo │
 ├──────────────────────────────────────────────────────────┼──────────────────────┤
 │ DESTAQUES DE EVENTOS ANTERIORES                          │ FIQUE POR DENTRO     │
-│ [ evento ] [ evento ] [ evento ] [ evento ]              │ e-mail + redes       │
+│ cards históricos                                         │ e-mail + redes       │
 └──────────────────────────────────────────────────────────┴──────────────────────┘
 
 [ eventos ] [ pessoas impactadas ] [ escolas ] [ anos ] [ estados ]
 ```
 
-Já implementado:
+Inclui:
 
-- filtros;
-- quatro próximos eventos em destaque;
+- filtros por tipo;
+- quatro cards de próximos eventos;
 - agenda lateral;
-- cards de eventos anteriores;
-- painel `Fique por dentro`;
-- newsletter demonstrativa;
-- links visuais para redes;
+- eventos anteriores;
+- bloco Fique por dentro;
+- redes sociais;
 - faixa de indicadores;
-- `id="calendario"` na agenda;
-- responsividade.
+- `id="calendario"` na agenda lateral para o Header.
 
-Diferenças temporárias aceitas em relação à demo:
-
-- imagens ainda são placeholders/gradientes;
-- datas e locais são exemplos editoriais;
-- indicadores são placeholders até confirmação oficial.
-
-**Revisão de fidelidade: APROVADA.**
+Imagens, datas, locais e indicadores ainda são placeholders editoriais.
 
 ---
 
-# 11. JANELA 7 — COMPETIÇÃO ATUAL + ACOMPANHAMENTO ✅ DEMO SIMPLIFICADA APROVADA + IMPLEMENTAÇÃO ALINHADA
+# 11. JANELA 7 — COMPETIÇÃO ATUAL + ACOMPANHAMENTO ✅ DEMO SIMPLIFICADA APROVADA
 
 Arquivos:
 
@@ -352,96 +383,84 @@ Eventos da RAS
 Footer
 ```
 
-Não deve existir espaço vazio ou painel competitivo inativo.
+Nenhum espaço vazio, placeholder competitivo ou painel inativo deve ocupar a Home.
 
-`INSCRICOES_ABERTAS`, `PLANEJADA`, `FINALIZADA`, `CANCELADA` e demais estados não exibem esta janela.
+`INSCRICOES_ABERTAS`, `PLANEJADA`, `FINALIZADA` e demais estados não exibem esta janela.
 
-Se existirem duas competições simultaneamente em `EM_ANDAMENTO`, aparece um seletor compacto para alternar entre elas.
+Se existirem duas competições simultaneamente em `EM_ANDAMENTO`, a janela permite alternar entre elas.
 
-## Demo simplificada aprovada
+## Estrutura final aprovada
 
-A primeira demo da Janela 7 foi rejeitada por estar cheia demais. A versão oficial é a segunda demo, mais leve:
+A primeira demo competitiva foi rejeitada por estar carregada demais.
+
+A versão oficial é a simplificada:
 
 ```text
 COMPETIÇÃO ATUAL
-RRC 20XX                             [ Em andamento ]
-resumo curto
+RRC 20XX + Em andamento
+resumo
 
-┌────────────────────────────┬───────────────────────┬───────────────────────┐
-│ PANORAMA GERAL             │ FOLLOW LINE           │ SUMÔ                  │
-│ equipes                    │ top 3 ranking         │ próximos confrontos   │
-│ robôs                      │ robô + tempo          │ A × B                  │
-│ modalidades                │                       │                        │
-│ inscrições                 │ Ver ranking completo  │ Ver chave completa     │
-│                            │                       │                        │
-│ Inscrições → Inspeção      │                       │                        │
-│ → Chaves → Partidas →      │                       │                        │
-│ Finais                     │                       │                        │
-│ [ Acompanhar competição ]  │                       │                        │
-└────────────────────────────┴───────────────────────┴───────────────────────┘
+┌──────────────────────────────┬──────────────────────┬──────────────────────┐
+│ PANORAMA GERAL               │ FOLLOW LINE          │ SUMÔ                 │
+│ equipes / robôs              │ top 3 ranking        │ próximos confrontos  │
+│ modalidades / inscrições     │ tempo oficial        │ robô A × robô B      │
+│ progresso                    │ Ver ranking          │ Ver chave            │
+│ [ Acompanhar competição ]    │                      │                      │
+└──────────────────────────────┴──────────────────────┴──────────────────────┘
 
 PRÓXIMOS DESTAQUES
-[ próxima partida ] [ último resultado ] [ líder/ranking Follow Line ]
+[ próxima partida ] [ último resultado ] [ ranking Follow Line ]
 ```
 
 ## Panorama geral
 
-Exibe somente dados da competição selecionada:
+Usa dados públicos da competição selecionada:
 
-- equipes únicas com inscrição aprovada;
-- robôs únicos com inscrição aprovada;
-- quantidade de modalidades presentes;
-- total de inscrições da competição.
+- equipes únicas;
+- robôs únicos;
+- modalidades/categorias;
+- inscrições aprovadas.
 
-### Progresso simplificado
+A linha de progresso resume:
 
 ```text
 Inscrições → Inspeção → Chaves → Partidas → Finais
 ```
 
-Os estados visuais são derivados dos dados públicos disponíveis.
-
-O frontend não inventa resultados nem progressão oficial.
+É uma indicação visual de andamento, não uma nova fonte de regra de negócio.
 
 ## Follow Line
 
-Card próprio, separado do Sumô.
-
-Mostra inicialmente:
+Acompanhamento dedicado:
 
 - top 3 do ranking oficial;
-- posição;
 - robô;
 - equipe;
-- `tempoFinalSegundos`.
+- `tempoFinalSegundos`;
+- seletor quando houver mais de uma categoria Follow Line;
+- botão `Ver ranking` expande a classificação oficial completa.
 
-Quando houver mais de uma categoria Follow Line, aparece seletor compacto.
-
-`Ver ranking completo` expande até oito posições sem transformar a Home em uma página esportiva pesada.
+O frontend não recalcula ranking.
 
 ## Sumô
 
-Card próprio.
+Acompanhamento dedicado:
 
-Mostra inicialmente até dois próximos confrontos oficiais:
+- próximos confrontos da chave selecionada;
+- robô A × robô B;
+- status;
+- seletor quando houver mais de uma chave;
+- botão `Ver chave` expande o chaveamento por rodada.
 
-```text
-ROBÔ A × ROBÔ B      Em breve / Agora
-```
-
-Quando houver mais de uma chave, aparece seletor compacto.
-
-`Ver chave completa` expande uma representação enxuta das rodadas.
-
-O frontend apenas representa a chave publicada pelo backend e nunca calcula avanço.
+O frontend não gera chave e não avança vencedor.
 
 ## Próximos destaques
 
-Faixa inferior enxuta com:
+Faixa curta no final da janela:
 
-- próxima partida de Sumô;
-- último resultado oficial publicado;
-- líder/ranking atual do Follow Line.
+- próxima partida Sumô;
+- último resultado oficial Sumô;
+- líder/ranking Follow Line.
 
 ## Fonte de verdade
 
@@ -456,71 +475,103 @@ A Landing nunca:
 - decide resultado;
 - recalcula ranking oficial;
 - altera inscrição;
-- registra round ou partida.
-
-## Refatoração do App.vue
-
-Os antigos blocos competitivos separados foram removidos:
-
-```text
-live-strip
-visão geral competitiva isolada
-ranking Follow Line isolado
-Sumô isolado
-robôs/equipes competitivos isolados
-```
-
-Todo o acompanhamento está concentrado em `ActiveCompetition.vue`.
+- registra round/partida.
 
 ## Atualização automática
 
-Enquanto a competição selecionada estiver em `EM_ANDAMENTO`, os dados são recarregados conforme:
-
-```text
-VITE_REFRESH_MS
-```
+Enquanto a competição selecionada estiver em `EM_ANDAMENTO`, os dados são recarregados conforme `VITE_REFRESH_MS`.
 
 Fallback atual: 20 segundos.
 
-**Revisão de fidelidade: a versão simplificada aprovada é agora a implementação oficial.**
-
 ---
 
-# 12. JANELA 8 — FOOTER INSTITUCIONAL ⏭ PRÓXIMA
+# 12. JANELA 8 — FOOTER INSTITUCIONAL ✅ IMPLEMENTAÇÃO INICIAL / DEMO AGORA
 
-Seguir a lógica institucional da ERBASE, sem copiar código/visual.
+Arquivos:
 
 ```text
-RAS UFRB
-logo + descrição + redes
-
-LINKS INSTITUCIONAIS
-Sobre
-Equipe
-Diretoria
-Projetos
-Eventos
-
-COMPETIÇÃO
-RRC
-Regulamentos
-Resultados
-Chaveamento
-
-APOIO E PARCEIROS
-UFRB
-IEEE
-IEEE RAS
-CETEC
-patrocinadores futuros
-
-CONTATO
-e-mail
-Instagram
-localização
+landing-page/src/components/InstitutionalFooter.vue
+landing-page/src/footer.css
 ```
 
-Fundo roxo profundo com detalhes rubros discretos.
+Integração no final do `App.vue`:
+
+```text
+<ActiveCompetition ... />
+<InstitutionalFooter />
+```
+
+O footer provisório do RasComp foi removido da Home.
+
+## Estrutura implementada
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ RAS UFRB            INSTITUCIONAL      COMPETIÇÃO       CONTATO            │
+│ descrição           Sobre              RRC              e-mail             │
+│ redes               Equipe/Diretoria   Competição atual localização        │
+│                     Galeria            Cronograma        atividades →       │
+│                     Eventos            Resultados                           │
+│                     Calendário          Chaveamento                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ APOIO E PARCEIROS                                                         │
+│ [ UFRB ] [ IEEE ] [ IEEE RAS ] [ CETEC ] [ + parceiros futuros ]          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ copyright            competição via RasComp                 voltar ao topo │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Direção visual
+
+- fundo roxo profundo;
+- detalhe rubro fino no topo;
+- branco e lilás suave para textos;
+- aparência institucional;
+- sem excesso de cards;
+- blocos de parceiros discretos;
+- responsivo.
+
+## Identidade
+
+O foco do Footer é a **RAS UFRB**, não o software RasComp.
+
+RasComp aparece apenas na linha inferior como plataforma responsável pelos dados competitivos oficiais.
+
+## Links
+
+Institucional:
+
+- Sobre;
+- Equipe e Diretoria;
+- Galeria;
+- Eventos;
+- Calendário.
+
+Competição:
+
+- RRC;
+- Competição atual;
+- Cronograma;
+- Resultados;
+- Chaveamento.
+
+Apoio/parceiros preparados inicialmente:
+
+- UFRB;
+- IEEE;
+- IEEE RAS;
+- CETEC;
+- espaço para patrocinadores/parceiros futuros.
+
+## Pendências editoriais
+
+Antes da publicação substituir placeholders por:
+
+- logo oficial definitivo;
+- e-mail oficial;
+- URLs reais de Instagram/YouTube/LinkedIn/GitHub;
+- logos dos parceiros;
+- parceiros/patrocinadores confirmados.
 
 ---
 
@@ -538,7 +589,8 @@ Fundo roxo profundo com detalhes rubros discretos.
 - eventos;
 - projetos;
 - parceiros;
-- textos institucionais.
+- textos institucionais;
+- Footer.
 
 ## Dinâmico via backend público
 
@@ -562,7 +614,16 @@ Gestão → Backend Spring Boot → /api/v1/public/** → Landing
 
 Durante a construção placeholders são permitidos.
 
-Antes da publicação definir acervo oficial, autorização, armazenamento, créditos, legendas, otimização e lazy loading.
+Antes da publicação definir:
+
+- acervo oficial;
+- autorização;
+- armazenamento;
+- créditos;
+- legendas;
+- otimização;
+- lazy loading;
+- logos institucionais e de parceiros.
 
 ---
 
@@ -596,20 +657,21 @@ JANELA 4 — Equipe/Diretoria/Robôs/Prêmios  ✅ demo 1 aprovada + implementa�
 JANELA 5 — Galeria                          ✅ implementada + demo + fidelidade revisada
 JANELA 6 — Eventos                          ✅ demo aprovada + implementação alinhada
 JANELA 7 — Competição/Acompanhamento        ✅ demo simplificada aprovada + implementação alinhada
-JANELA 8 — Footer                           ⏭ próxima
+JANELA 8 — Footer                           ✅ implementação inicial; demo agora
 ```
 
 ---
 
 # 17. Próximo passo
 
+1. avaliar a demo da Janela 8;
+2. ajustar a implementação para máxima fidelidade;
+3. depois fazer revisão integrada da Landing inteira;
+4. quando houver acesso local, rodar:
+
 ```text
-JANELA 8 — FOOTER INSTITUCIONAL
-```
-
-Antes de considerar a Landing consolidada, rodar no ambiente local:
-
-```bash
 npm run typecheck
 npm run build
 ```
+
+Depois disso, corrigir imagens/assets oficiais, textos definitivos, contatos, parceiros e dados institucionais antes da publicação.
