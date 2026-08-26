@@ -146,15 +146,26 @@ export interface Match {
   id: number
   bracketId: number
   bracketNome?: string
+  bracketAtual?: boolean
+  bracketAtivo?: boolean
+  competitionId?: number
+  competitionNome?: string
+  categoryId?: number
+  categoryNome?: string
   rodada: number
   ordem: number
   registrationAId?: number
+  robotAId?: number
   robotANome?: string
+  teamANome?: string
   registrationBId?: number
+  robotBId?: number
   robotBNome?: string
+  teamBNome?: string
   dataHora?: string
   status?: string
   ativo?: boolean
+  dataCadastro?: string
 }
 
 export interface MatchResult {
