@@ -1,135 +1,296 @@
 # RASCOMP Frontend
 
-Frontend do RASCOMP, dividido em duas aplicações Vue independentes no mesmo repositório:
+Frontend da plataforma **RasComp**, separado em duas aplicações:
 
-- **`gestao/`** — sistema autenticado para `ORGANIZACAO` e `PARTICIPANTE`;
-- **`landing-page/`** — site público da RAS UFRB e acompanhamento do evento RRC.
+```text
+gestao/
+└─ sistema autenticado para ORGANIZACAO e PARTICIPANTE
+
+landing-page/
+└─ experiência pública RAS UFRB + RRC
+```
 
 ## Nomenclatura
 
-- **RAS UFRB** — identidade institucional pública;
-- **RRC** — evento/competição de robótica;
-- **RASCOMP** — plataforma de software que sustenta Gestão + Backend + experiência pública.
+- **RAS UFRB** — organização/instituição;
+- **RRC** — evento/competição;
+- **RasComp / RASCOMP** — plataforma de software.
 
-## Arquitetura
+## Stack — Gestão
 
-```text
-PARTICIPANTE / ORGANIZACAO
-           │
-           ▼
-     Frontend Gestão
-           │
-           ▼
-     Spring Boot API
-       ┌───┴──────────────────┐
-       │                      │
-API autenticada       /api/v1/public/**
-                              │
-                              ▼
-                         Site público
-```
+- Vue 3
+- TypeScript
+- Vite
+- Pinia
+- Vue Router
+- Element Plus
+- Axios
 
-O backend é a única fonte de verdade. A Gestão não envia dados diretamente para a Landing.
+## Estado atual
 
-## Stack atual
+### ADMIN / Organização
 
 ```text
-Vue 3 + TypeScript + Vite
-Vue Router + Pinia
-Axios
-Element Plus (Gestão)
+Dashboard + Sidebar                    ✅
+Login / persistência JWT               ✅
+Central da competição                  ✅
+Inscrições                             ✅
+Catálogos                              ✅
+Histórico de chaves                    ✅
+Chave visual de Sumô                   ✅
+Tela operacional da partida            ✅
+Penalidades + Suicídio/WO               ✅
+Follow Line                             ✅
+Tela operacional de tomada             ✅
+Histórico de tomadas                    ✅
+Fotos nas telas de arena                ✅
+Consolidação visual final               ⏳
 ```
 
-A implementação se inspira nos padrões de shell administrativo, sidebar, rotas por permissão e cliente HTTP centralizado de `Armour/vue-typescript-admin-template`, `PanJiaChen/vue-admin-template` e `iview/iview-admin`, mantendo código próprio.
+### PARTICIPANTE
 
-## Gestão
+Existe uma primeira interface funcional e demonstrável em `/minha-equipe`:
 
-Já existe base funcional para:
+- equipe do líder;
+- competidores;
+- robôs;
+- foto principal do robô;
+- upload de foto;
+- inscrições;
+- cartões de participação competitiva;
+- Follow: ranking, melhor tomada, progresso e histórico de tomadas;
+- Sumô: vitórias/derrotas, última partida e próxima partida quando disponível.
 
-- login JWT e `/api/v1/auth/me`;
-- rotas protegidas por `PARTICIPANTE` / `ORGANIZACAO`;
-- dashboard;
-- competições;
-- análise de inscrições;
-- Follow Line: lançamento de tentativas + ranking oficial;
-- Sumô: inspeção + geração de chave + partidas + rounds + resultados;
-- portal do participante em leitura.
+Fluxos completos de convite/entrada em equipe e refinamento final permanecem no roadmap.
 
-### Decisão arquitetural: sem Camunda
+### LANDING
 
-Camunda foi retirado do escopo do RASCOMP.
+Ainda não iniciada como etapa principal. Ela será construída depois do ADMIN e PARTICIPANTE para consumir os resultados públicos já consolidados pelo backend.
 
-Os fluxos competitivos permanecem no domínio Spring Boot. Em especial, o Sumô já possui serviços para:
+## Rotas principais
 
 ```text
-inscrições aprovadas + inspeção apta
-        ↓
-geração de chave
-        ↓
-BYEs automáticos
-        ↓
-partidas
-        ↓
-rounds
-        ↓
-MatchResult automático
-        ↓
-progressão do vencedor
-        ↓
-finalização da chave
+/login
+/cadastro
+
+ADMIN
+/
+/competicoes
+/inscricoes
+/equipes
+/robos
+/modalidades
+/follow-line
+/follow-line/tomada/:registrationId
+/sumo
+/sumo/partida/:matchId
+/chaves
+/partidas
+/resultados
+/configuracoes
+
+PARTICIPANTE
+/minha-equipe
 ```
 
-Não será adicionado workflow engine sem uma necessidade futura concreta de processo duradouro/multiator.
+## Follow Line
 
-## Chaveamento visual
+A interface segue o domínio do backend:
 
-O frontend deverá convergir para o protótipo visual aprovado: bracket em árvore por rodadas, com cards de confronto, conectores, vencedor destacado e abertura da partida/rounds ao clicar.
+```text
+Registrar tomada
+      ↓
+selecionar inscrição
+      ↓
+tela do robô
+      ↓
+Tomada 1
+├─ Tentativa 1
+├─ Tentativa 2
+└─ Tentativa 3
+```
 
-A interface **não calcula a progressão**. Ela renderiza o estado retornado pelo backend usando `rodada`, `ordem`, participantes, status e resultados.
+O ranking mostra a **melhor tomada**, representada pela melhor tentativa válida e concluída daquela tomada.
 
-## Landing
+A tela geral apresenta:
 
-A Landing está pausada como POC técnico. O desenvolvimento final começa após a consolidação da Gestão e revisão dos contratos públicos do backend.
+- ranking oficial;
+- histórico agrupado por tomadas;
+- expansão das tentativas de cada tomada;
+- tempo bruto;
+- penalidade;
+- tempo final;
+- checkpoints;
+- validade/conclusão.
 
-O site final será institucional da RAS UFRB, com uma área forte do RRC para pré-evento, acompanhamento ao vivo e histórico.
+A tela operacional apresenta:
 
-## Backend usado como contrato
+- foto do robô;
+- tomada atual;
+- tomadas restantes;
+- tentativas restantes;
+- histórico daquela tomada;
+- formulário rápido para a próxima tentativa.
 
-Os fluxos de autenticação, participante e API pública foram implementados conforme a arquitetura existente na branch backend `arquitetura-usuarios-acesso`. Essa arquitetura ainda precisa estar presente/confirmada na `main` do backend para a integração final completa.
+## Sumô
 
-## Executar
+A visão principal apresenta chave de campeonato real.
 
-Gestão:
+Ao abrir uma partida:
 
-```bash
+```text
+/sumo/partida/:matchId
+```
+
+é exibido um painel de arena com:
+
+- fotos dos robôs;
+- placar;
+- equipes;
+- rounds já registrados;
+- vitória A/B;
+- penalidades;
+- Suicídio/WO;
+- empate;
+- anulação;
+- cancelamento;
+- observação.
+
+A progressão e o vencedor continuam sendo responsabilidade do backend.
+
+Partidas encerradas/históricas abrem a mesma tela em modo de consulta.
+
+## Fotos dos robôs
+
+Foi criado o componente reutilizável:
+
+```text
+gestao/src/components/RobotPhoto.vue
+```
+
+Ele busca a foto principal pela API pública e usa fallback por iniciais quando não há imagem.
+
+A foto atualmente aparece em:
+
+- portal do participante;
+- operação de Follow;
+- arena de Sumô.
+
+No portal participante também existe upload JPEG/PNG/WEBP para os próprios robôs.
+
+## Executar Gestão
+
+```powershell
 cd gestao
-cp .env.example .env
 npm install
 npm run dev
 ```
 
-Landing POC:
+Validação:
 
-```bash
-cd landing-page
-cp .env.example .env
-npm install
-npm run dev
+```powershell
+npm run typecheck
+npm run build
 ```
 
-Portas padrão:
+Foi adicionado workflow GitHub Actions:
 
 ```text
-Gestão   http://localhost:5173
-Landing  http://localhost:5174
-Backend  http://localhost:8080
+Frontend Checks
+→ npm ci
+→ npm run typecheck
+→ npm run build
 ```
 
-## Documentação
+## Backend local
 
-- `docs/IMPLEMENTACAO_VUE_MVP.md` — estado prático atual e decisões recentes;
-- `docs/SYSTEM_DESIGN_GESTAO.md` — domínio e arquitetura da Gestão;
-- `docs/CONTINUIDADE_LANDING_PAGE.md` — continuidade exclusiva do site público;
-- `docs/CONTINUIDADE_FRONTEND.md` — histórico do planejamento inicial.
+Por padrão:
 
-A decisão tecnológica mais recente é **Vue 3**. Referências históricas a React não representam a implementação atual.
+```text
+VITE_API_URL=http://localhost:8080
+```
+
+Para usar outra API:
+
+```powershell
+$env:VITE_API_URL="http://localhost:8080"
+npm run dev
+```
+
+## Demonstração
+
+No backend, suba com:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE="testdata"
+.\mvnw spring-boot:run
+```
+
+### Organização
+
+```text
+organizacao.demo@rascomp.local
+Rascomp@2026
+```
+
+### Participante
+
+```text
+lider.demo@rascomp.local
+Rascomp@2026
+```
+
+### Cenários preparados
+
+**RRC 2026 · Demonstração ao vivo**
+
+- evento EM_ANDAMENTO;
+- progresso visual próximo de 50%;
+- inscrições pendentes para aprovação;
+- ranking Follow pronto;
+- Chronos Demo com 2/3 tomadas preenchidas;
+- Titan Demo com vitória em Sumô;
+- chave Sumô parcial;
+- penalidade e Suicídio/WO;
+- categoria com BYEs.
+
+**RRC 2025 · Histórico completo**
+
+- evento FINALIZADO;
+- chave de 32 robôs;
+- 16 avos até final;
+- resultados históricos.
+
+O roteiro completo está em:
+
+```text
+docs/ROTEIRO_DEMO_2026-08-27.md
+```
+
+## Direção do projeto
+
+```text
+1. ADMIN / ORGANIZAÇÃO
+   └─ consolidar e validar
+
+2. PARTICIPANTE
+   └─ completar fluxos de equipe/inscrição
+
+3. LANDING PAGE RAS UFRB + RRC
+   └─ consumir dados públicos do backend
+```
+
+## Regra arquitetural
+
+O frontend **não decide**:
+
+- elegibilidade;
+- vencedor;
+- campeão;
+- progressão de chave;
+- BYE;
+- ranking oficial;
+- inspeção;
+- resultado oficial.
+
+Ele apresenta e opera contratos do backend, que permanece como fonte de verdade.
