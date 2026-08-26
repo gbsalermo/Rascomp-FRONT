@@ -14,6 +14,7 @@ export type RegistrationStatus =
   | 'DESCLASSIFICADA'
 export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
 export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
+export type RoundSumoOutcomeReason = 'DISPUTA' | 'SUICIDIO_WO'
 
 export interface UserAccount {
   id: number
@@ -173,6 +174,9 @@ export interface RoundSumo {
   winnerRegistrationId?: number
   winnerRobotNome?: string
   status: RoundSumoStatus
+  motivoResultado?: RoundSumoOutcomeReason
+  penalidadesA?: number
+  penalidadesB?: number
   observacao?: string
   dataCadastro?: string
 }
