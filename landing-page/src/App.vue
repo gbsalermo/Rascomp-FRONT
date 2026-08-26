@@ -6,6 +6,7 @@ import HighlightsHero from './components/HighlightsHero.vue'
 import InstitutionalAbout from './components/InstitutionalAbout.vue'
 import TeamRobotsAwards from './components/TeamRobotsAwards.vue'
 import InstitutionalGallery from './components/InstitutionalGallery.vue'
+import InstitutionalEvents from './components/InstitutionalEvents.vue'
 
 const loading = ref(true)
 const error = ref('')
@@ -112,6 +113,7 @@ onBeforeUnmount(() => timer && clearInterval(timer))
       <InstitutionalAbout />
       <TeamRobotsAwards />
       <InstitutionalGallery />
+      <InstitutionalEvents />
 
       <section v-if="error" class="public-section"><div class="public-alert"><strong>Interface pronta.</strong><p>{{ error }}</p><small>A landing consome exclusivamente <code>/api/v1/public/**</code>.</small></div></section>
 
