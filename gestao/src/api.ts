@@ -80,6 +80,9 @@ export const authApi = {
 }
 
 export const publicApi = {
+  competitions: () => http.get<Competition[]>('/api/v1/public/competicoes').then((r) => r.data),
+  categories: (modalidade?: string) =>
+    http.get<Category[]>('/api/v1/public/categorias', { params: modalidade ? { modalidade } : undefined }).then((r) => r.data),
   robotPhotos: (robotId: number) =>
     http.get<RobotImage[]>(`/api/v1/public/robos/${robotId}/fotos`).then((r) => r.data),
   rankingFollow: (competitionId: number, categoryId: number) =>
@@ -214,5 +217,7 @@ export const participantApi = {
   registrations: (teamId: number) =>
     http
       .get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`)
-      .then((r) => r.data)
+      .then((r) => r.data),
+  followAttempts: (registrationId: number) =>
+    http.get<FollowAttempt[]>(`/api/v1/participante/inscricoes/${registrationId}/tentativas-follow`).then((r) => r.data)
 }
