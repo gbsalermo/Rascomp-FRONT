@@ -18,6 +18,7 @@ import ResultsView from './views/ResultsView.vue'
 import UsersView from './views/UsersView.vue'
 import SettingsView from './views/SettingsView.vue'
 import ParticipantView from './views/ParticipantView.vue'
+import NotFoundView from './views/NotFoundView.vue'
 
 const organizationMeta = { role: 'ORGANIZACAO' }
 
@@ -49,7 +50,7 @@ const router = createRouter({
         { path: 'minha-equipe', name: 'participant', component: ParticipantView, meta: { role: 'PARTICIPANTE' } }
       ]
     },
-    { path: '/:pathMatch(.*)*', redirect: '/' }
+    { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { public: true } }
   ]
 })
 
