@@ -121,6 +121,33 @@ Entregue:
 - API pública continua expondo apenas chaveamentos atuais/ativos, evitando publicar versões substituídas;
 - Sumô passou a exibir árvore visual de campeonato e registrar vários rounds de uma batalha em uma única operação administrativa.
 
+## Sumô — categorias RC/Autônomo e Mini/3 kg
+
+Decisão de domínio:
+
+- `RC` e `AUTÔNOMO` são nomenclaturas de categorias competitivas, não motores de regra diferentes;
+- `MINI` e `3 KG` também são categorias distintas, diferenciadas pelas próprias categorias e por seus `ConfigSumo`;
+- não criar enum/campo técnico para RC versus Autônomo enquanto essa diferença não alterar regras do sistema;
+- as quatro disputas podem existir como categorias independentes, por exemplo:
+  - Mini Sumô RC;
+  - Mini Sumô Autônomo;
+  - Sumô 3 kg RC;
+  - Sumô 3 kg Autônomo;
+- `Registration` continua sendo a unidade competitiva: o mesmo robô híbrido pode ter uma inscrição em Mini RC e outra em Mini Autônomo;
+- o gerador de chave usa `competitionId + categoryId`, portanto inscrições de categorias diferentes nunca entram na mesma chave;
+- resultados, inspeções, rounds e progressão permanecem independentes entre as inscrições/categorias do mesmo robô.
+
+### Regras comuns de round
+
+Para evitar duplicação entre RC e Autônomo, as ocorrências abaixo pertencem ao motor comum de Sumô:
+
+- `SUICIDIO_WO`: motivo de encerramento com derrota do robô que sofreu a ocorrência e vitória do adversário;
+- penalidades por infração são registradas separadamente para robô A e robô B em cada round;
+- limite provisório atual: **2 penalidades por robô/round**;
+- enquanto a regra oficial não for confirmada, atingir 2 penalidades **não produz consequência automática** no vencedor; o dado é preservado para auditoria e posterior consolidação da regra;
+- migration V7 adiciona `motivo_resultado`, `penalidades_a` e `penalidades_b` em `rounds_sumo`;
+- o modal administrativo de batalha permite registrar Suicídio/WO e penalidades junto dos demais resultados do round.
+
 ## Follow Line — implementação concluída / validar localmente
 
 A tela deixou de ser apenas ranking + formulário e passou a funcionar como centro operacional da modalidade.
