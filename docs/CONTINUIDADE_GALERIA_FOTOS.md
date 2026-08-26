@@ -20,6 +20,37 @@ rasufrb.com.br/fotos/albuns/rrc-2026
 
 Mesmo que a implementação continue separada internamente.
 
+## Storage definido
+
+Decisão atual:
+
+```text
+Cloudflare R2
+→ API compatível com S3
+→ backend Spring Boot controla credenciais e object keys
+→ MySQL guardará apenas metadados dos álbuns/fotos
+→ Landing e Photo Gallery nunca recebem Access Key/Secret Key
+```
+
+O backend já possui a infraestrutura R2 opt-in:
+
+```text
+R2StorageProperties
+R2StorageConfiguration
+ObjectStorageService
+R2ObjectStorageService
+```
+
+O R2 permanece `R2_ENABLED=false` por padrão. Portanto essa preparação não altera o armazenamento local das fotos de robô nem qualquer outro fluxo atual.
+
+A integração dispõe de upload pelo backend e geração de URL pré-assinada para a futura tela administrativa.
+
+Documentação de configuração no backend:
+
+```text
+Rascomp/rascomp/docs/CLOUDFLARE_R2.md
+```
+
 ## Estado atual
 
 ### Landing
@@ -47,7 +78,7 @@ Implementado:
 - botão para voltar ao site institucional;
 - CI dedicado com typecheck + build.
 
-## Catálogo
+## Catálogo temporário
 
 Arquivo central:
 
@@ -72,49 +103,61 @@ Album
     └── alt
 ```
 
-## Próximo teste
+Esse catálogo permanece como fallback/demonstração até a API real de álbuns ser criada.
 
-Adicionar um álbum com imagens reais em:
+## Primeiro teste com imagens reais
 
-```text
-photo-gallery/public/albums/<slug>/
-```
-
-Depois preencher `cover` e `photos[].src` no catálogo e validar:
+A próxima validação será feita já pensando no R2:
 
 ```text
-Landing
-→ Ver álbum
-→ Photo Gallery
-→ abrir foto
-→ navegar no lightbox
-→ voltar ao álbum
-→ voltar à Landing
+Cloudflare R2
+→ criar bucket ras-ufrb-media
+→ configurar credenciais apenas no backend
+→ enviar pequeno álbum de teste
+→ obter URLs públicas
+→ validar Photo Gallery
+→ validar prévias na Landing
 ```
 
-## Evolução posterior
+Até esse teste, os placeholders atuais permanecem funcionando normalmente.
 
-A etapa seguinte não deve colocar upload direto no frontend sem backend/storage. O caminho recomendado é:
+## Próxima etapa de desenvolvimento
 
 ```text
 Gestão
 → criar/editar álbum
-→ upload de imagens
-→ backend valida
-→ storage salva originais/thumbnails
+→ backend gera object key
+→ backend gera URL pré-assinada
+→ navegador envia imagem ao R2
+→ backend salva metadados no MySQL
 → API pública publica metadados
-→ Landing consome capas
+→ Landing consome capas/previews
 → Photo Gallery consome álbum completo
 ```
 
-Antes dessa fase definir:
+Implementar nessa etapa:
 
-- storage de imagens;
+- entidades `Album` e `Photo`;
+- migration do banco;
+- DTOs e repositories;
+- endpoints administrativos;
+- endpoints públicos;
 - limite e formatos;
-- compressão;
+- compressão/WebP;
 - thumbnails;
 - ordenação;
 - exclusão segura;
 - capa do álbum;
 - créditos/legendas;
 - política de privacidade e direito de imagem.
+
+## Regra de segurança
+
+Nunca versionar ou expor no frontend:
+
+```text
+R2_ACCESS_KEY_ID
+R2_SECRET_ACCESS_KEY
+```
+
+O frontend recebe somente URLs de leitura ou URLs pré-assinadas temporárias.
