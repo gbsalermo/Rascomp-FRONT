@@ -9,4 +9,5 @@ import './gallery.css'
 import './events.css'
 import './active-competition.css'
 import './footer.css'
+import './footer-ruby.css'
 createApp(App).mount('#app')
