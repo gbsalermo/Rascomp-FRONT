@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { ref } from 'vue'
 
 type PeopleTab = 'equipe' | 'diretoria'
 
@@ -33,7 +33,7 @@ type Award = {
 }
 
 const activePeopleTab = ref<PeopleTab>('equipe')
-const activePersonId = ref<number | null>(1)
+const activeMemberId = ref<number | null>(1)
 const openRobotId = ref<number | null>(1)
 const openAwardId = ref<number | null>(1)
 
@@ -43,7 +43,9 @@ const team: Person[] = [
   { id: 3, name: 'Integrante 03', area: 'Eletrônica', initials: '03' },
   { id: 4, name: 'Integrante 04', area: 'Programação', initials: '04' },
   { id: 5, name: 'Integrante 05', area: 'Extensão', initials: '05' },
-  { id: 6, name: 'Integrante 06', area: 'Projetos', initials: '06' }
+  { id: 6, name: 'Integrante 06', area: 'Projetos', initials: '06' },
+  { id: 7, name: 'Integrante 07', area: 'Comunicação', initials: '07' },
+  { id: 8, name: 'Integrante 08', area: 'Robótica', initials: '08' }
 ]
 
 const board: Person[] = [
@@ -51,7 +53,8 @@ const board: Person[] = [
   { id: 12, name: 'Diretor(a) 02', area: 'Gestão do capítulo', role: 'Vice-presidência', initials: 'VP' },
   { id: 13, name: 'Diretor(a) 03', area: 'Organização', role: 'Secretaria', initials: 'S' },
   { id: 14, name: 'Diretor(a) 04', area: 'Projetos e atividades', role: 'Diretoria técnica', initials: 'DT' },
-  { id: 15, name: 'Diretor(a) 05', area: 'Comunicação', role: 'Diretoria de comunicação', initials: 'DC' }
+  { id: 15, name: 'Diretor(a) 05', area: 'Comunicação', role: 'Diretoria de comunicação', initials: 'DC' },
+  { id: 16, name: 'Diretor(a) 06', area: 'Extensão', role: 'Diretoria de extensão', initials: 'DE' }
 ]
 
 const robots: Robot[] = [
@@ -117,14 +120,8 @@ const awards: Award[] = [
   }
 ]
 
-const visiblePeople = computed(() => (activePeopleTab.value === 'equipe' ? team : board))
-
-watch(activePeopleTab, () => {
-  activePersonId.value = visiblePeople.value[0]?.id ?? null
-})
-
-function togglePerson(id: number) {
-  activePersonId.value = activePersonId.value === id ? null : id
+function toggleMember(id: number) {
+  activeMemberId.value = activeMemberId.value === id ? null : id
 }
 
 function toggleRobot(id: number) {
@@ -143,7 +140,7 @@ function toggleAward(id: number) {
         <span>Pessoas, projetos e conquistas</span>
         <h2>Quem constrói a RAS UFRB e o que já nasceu daqui.</h2>
         <p>
-          Uma visão do time, da diretoria, dos robôs desenvolvidos e das conquistas que ajudam a contar a trajetória do capítulo.
+          Conheça quem faz parte do capítulo, a diretoria, os robôs desenvolvidos e algumas das conquistas que marcam nossa trajetória.
         </p>
       </header>
 
@@ -177,35 +174,50 @@ function toggleAward(id: number) {
             </div>
           </div>
 
-          <div class="people-strip" :class="{ board: activePeopleTab === 'diretoria' }">
+          <div v-if="activePeopleTab === 'equipe'" class="team-member-list" role="tabpanel">
             <button
-              v-for="person in visiblePeople"
+              v-for="person in team"
               :key="person.id"
               type="button"
-              class="person-card"
-              :class="{ active: activePersonId === person.id }"
-              @mouseenter="activePersonId = person.id"
-              @focus="activePersonId = person.id"
-              @click="togglePerson(person.id)"
+              class="team-member-row"
+              :class="{ active: activeMemberId === person.id }"
+              @mouseenter="activeMemberId = person.id"
+              @focus="activeMemberId = person.id"
+              @click="toggleMember(person.id)"
             >
-              <span class="person-photo-placeholder" aria-hidden="true">
+              <span class="team-member-photo" aria-hidden="true">
                 <b>{{ person.initials }}</b>
                 <small>foto</small>
               </span>
-
-              <span class="person-gradient" aria-hidden="true" />
-
-              <span class="person-copy">
-                <small v-if="person.role">{{ person.role }}</small>
+              <span class="team-member-copy">
                 <strong>{{ person.name }}</strong>
-                <span>{{ person.area }}</span>
+                <small>{{ person.area }}</small>
               </span>
+              <span class="team-member-arrow" aria-hidden="true">→</span>
             </button>
           </div>
 
+          <div v-else class="board-mosaic" role="tabpanel">
+            <article v-for="person in board" :key="person.id" class="board-person-card">
+              <div class="board-person-photo" aria-hidden="true">
+                <span>{{ person.initials }}</span>
+                <small>foto oficial</small>
+              </div>
+              <div class="board-person-overlay" />
+              <div class="board-person-copy">
+                <small>{{ person.role }}</small>
+                <strong>{{ person.name }}</strong>
+                <span>{{ person.area }}</span>
+              </div>
+            </article>
+          </div>
+
           <footer class="people-showcase-footer">
-            <p>
-              Passe o cursor sobre um integrante — ou toque no celular — para destacar sua foto, nome e área de atuação.
+            <p v-if="activePeopleTab === 'equipe'">
+              A equipe aparece como lista para comportar melhor muitos integrantes. Ao passar o cursor ou tocar, o item ganha destaque.
+            </p>
+            <p v-else>
+              A diretoria mantém o mosaico fotográfico para destacar funções e lideranças do capítulo.
             </p>
             <a href="#contato">Conheça o capítulo <span aria-hidden="true">→</span></a>
           </footer>
@@ -233,9 +245,7 @@ function toggleAward(id: number) {
                 </button>
 
                 <div v-if="openRobotId === robot.id" class="legacy-detail robot-detail">
-                  <div class="robot-detail-media" aria-hidden="true">
-                    <span>foto do robô</span>
-                  </div>
+                  <div class="robot-detail-media" aria-hidden="true"><span>foto do robô</span></div>
                   <div>
                     <p>{{ robot.description }}</p>
                     <dl>
