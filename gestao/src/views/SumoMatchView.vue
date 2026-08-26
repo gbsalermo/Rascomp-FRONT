@@ -3,13 +3,8 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
-import type {
-  ConfigSumo,
-  Match,
-  RoundSumo,
-  RoundSumoOutcomeReason,
-  RoundSumoStatus
-} from '../types'
+import type { ConfigSumo, Match, RoundSumo, RoundSumoOutcomeReason, RoundSumoStatus } from '../types'
+import RobotPhoto from '../components/RobotPhoto.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 
 type RoundChoice = 'A' | 'B' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
@@ -50,9 +45,7 @@ const score = computed(() => {
 const nextRoundNumber = computed(() => rounds.value.length + 1)
 const nextRoundLabel = computed(() => {
   if (!config.value) return `Round ${nextRoundNumber.value}`
-  return nextRoundNumber.value > config.value.numeroRounds
-    ? 'Round extra'
-    : `Round ${nextRoundNumber.value}`
+  return nextRoundNumber.value > config.value.numeroRounds ? 'Round extra' : `Round ${nextRoundNumber.value}`
 })
 const currentWinner = computed<'A' | 'B' | undefined>(() => {
   const target = config.value?.roundsParaVencer
@@ -62,13 +55,6 @@ const currentWinner = computed<'A' | 'B' | undefined>(() => {
   return undefined
 })
 const canSave = computed(() => Boolean(form.choice) && !readOnly.value && !currentWinner.value)
-
-function initials(name?: string) {
-  const clean = (name || 'Robô').trim().split(/\s+/).filter(Boolean)
-  if (!clean.length) return 'RB'
-  if (clean.length === 1) return clean[0].slice(0, 2).toUpperCase()
-  return `${clean[0][0]}${clean[clean.length - 1][0]}`.toUpperCase()
-}
 
 function phaseLabel(round: number) {
   return `Rodada ${round}`
@@ -102,10 +88,7 @@ function roundWinner(round: RoundSumo) {
 function formatDate(value?: string) {
   if (!value) return ''
   return new Intl.DateTimeFormat('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    day: '2-digit',
-    month: '2-digit'
+    hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit'
   }).format(new Date(value))
 }
 
@@ -122,14 +105,11 @@ async function load() {
     ElMessage.error('Partida inválida.')
     return
   }
-
   loading.value = true
   try {
     const detail = await adminApi.match(matchId.value)
     match.value = detail
-
     if (!detail.categoryId) throw new Error('A partida não possui categoria associada.')
-
     const [sumoConfig, sumoRounds] = await Promise.all([
       adminApi.sumoConfig(detail.categoryId),
       adminApi.rounds(detail.id)
@@ -145,10 +125,8 @@ async function load() {
 
 async function saveRound() {
   if (!match.value || !form.choice || !canSave.value) return
-
   let status: RoundSumoStatus
   let winnerRegistrationId: number | undefined
-
   if (form.choice === 'A') {
     status = 'FINALIZADO'
     winnerRegistrationId = match.value.registrationAId
@@ -158,7 +136,6 @@ async function saveRound() {
   } else {
     status = form.choice
   }
-
   saving.value = true
   try {
     await adminApi.registerSumoBattle({
@@ -215,7 +192,9 @@ onMounted(load)
     <template v-if="match && config">
       <section class="arena-scoreboard">
         <article class="arena-competitor">
-          <div class="robot-photo-placeholder">{{ initials(match.robotANome) }}</div>
+          <div class="robot-photo-placeholder">
+            <RobotPhoto :robot-id="match.robotAId" :robot-name="match.robotANome" />
+          </div>
           <div class="robot-meta">
             <span>Robô A</span>
             <strong>{{ match.robotANome }}</strong>
@@ -236,7 +215,9 @@ onMounted(load)
             <strong>{{ match.robotBNome }}</strong>
             <small>{{ match.teamBNome || 'Equipe' }}</small>
           </div>
-          <div class="robot-photo-placeholder">{{ initials(match.robotBNome) }}</div>
+          <div class="robot-photo-placeholder">
+            <RobotPhoto :robot-id="match.robotBId" :robot-name="match.robotBNome" />
+          </div>
         </article>
       </section>
 
@@ -247,24 +228,16 @@ onMounted(load)
       <div class="arena-workspace">
         <section class="arena-round-history">
           <div class="arena-card-heading">
-            <div>
-              <span class="eyebrow">Rounds</span>
-              <h2>Histórico da batalha</h2>
-            </div>
+            <div><span class="eyebrow">Rounds</span><h2>Histórico da batalha</h2></div>
             <span class="arena-counter">{{ rounds.length }} registrados</span>
           </div>
 
-          <div v-if="!rounds.length" class="arena-empty-rounds">
-            Nenhum round registrado ainda.
-          </div>
+          <div v-if="!rounds.length" class="arena-empty-rounds">Nenhum round registrado ainda.</div>
 
           <article v-for="round in rounds" :key="round.id" class="arena-round-item">
             <div class="round-number-badge">{{ round.numeroRound }}</div>
             <div class="round-summary">
-              <div class="round-summary-top">
-                <strong>Round {{ round.numeroRound }}</strong>
-                <StatusBadge :value="round.status" />
-              </div>
+              <div class="round-summary-top"><strong>Round {{ round.numeroRound }}</strong><StatusBadge :value="round.status" /></div>
               <span>{{ roundWinner(round) }}</span>
               <small>
                 Penalidades: {{ match.robotANome }} {{ round.penalidadesA || 0 }} · {{ match.robotBNome }} {{ round.penalidadesB || 0 }}
@@ -277,10 +250,7 @@ onMounted(load)
 
         <aside class="arena-control-panel">
           <div class="arena-card-heading">
-            <div>
-              <span class="eyebrow">Registro rápido</span>
-              <h2>{{ nextRoundLabel }}</h2>
-            </div>
+            <div><span class="eyebrow">Registro rápido</span><h2>{{ nextRoundLabel }}</h2></div>
             <span v-if="currentWinner" class="arena-finished">Batalha encerrada</span>
           </div>
 
@@ -288,23 +258,11 @@ onMounted(load)
             <div class="control-section">
               <span class="control-label">Vitória no round</span>
               <div class="winner-actions">
-                <button
-                  type="button"
-                  class="arena-action winner-a"
-                  :class="{ selected: form.choice === 'A' && form.motivoResultado === 'DISPUTA' }"
-                  @click="chooseWinner('A')"
-                >
-                  <small>Vitória</small>
-                  <strong>{{ match.robotANome }}</strong>
+                <button type="button" class="arena-action winner-a" :class="{ selected: form.choice === 'A' && form.motivoResultado === 'DISPUTA' }" @click="chooseWinner('A')">
+                  <small>Vitória</small><strong>{{ match.robotANome }}</strong>
                 </button>
-                <button
-                  type="button"
-                  class="arena-action winner-b"
-                  :class="{ selected: form.choice === 'B' && form.motivoResultado === 'DISPUTA' }"
-                  @click="chooseWinner('B')"
-                >
-                  <small>Vitória</small>
-                  <strong>{{ match.robotBNome }}</strong>
+                <button type="button" class="arena-action winner-b" :class="{ selected: form.choice === 'B' && form.motivoResultado === 'DISPUTA' }" @click="chooseWinner('B')">
+                  <small>Vitória</small><strong>{{ match.robotBNome }}</strong>
                 </button>
               </div>
             </div>
@@ -314,19 +272,11 @@ onMounted(load)
               <div class="penalty-grid">
                 <div class="penalty-box">
                   <strong>{{ match.robotANome }}</strong>
-                  <div class="penalty-control">
-                    <button type="button" @click="form.penalidadesA = Math.max(0, form.penalidadesA - 1)">−</button>
-                    <b>{{ form.penalidadesA }}</b>
-                    <button type="button" @click="form.penalidadesA = Math.min(2, form.penalidadesA + 1)">+</button>
-                  </div>
+                  <div class="penalty-control"><button type="button" @click="form.penalidadesA = Math.max(0, form.penalidadesA - 1)">−</button><b>{{ form.penalidadesA }}</b><button type="button" @click="form.penalidadesA = Math.min(2, form.penalidadesA + 1)">+</button></div>
                 </div>
                 <div class="penalty-box">
                   <strong>{{ match.robotBNome }}</strong>
-                  <div class="penalty-control">
-                    <button type="button" @click="form.penalidadesB = Math.max(0, form.penalidadesB - 1)">−</button>
-                    <b>{{ form.penalidadesB }}</b>
-                    <button type="button" @click="form.penalidadesB = Math.min(2, form.penalidadesB + 1)">+</button>
-                  </div>
+                  <div class="penalty-control"><button type="button" @click="form.penalidadesB = Math.max(0, form.penalidadesB - 1)">−</button><b>{{ form.penalidadesB }}</b><button type="button" @click="form.penalidadesB = Math.min(2, form.penalidadesB + 1)">+</button></div>
                 </div>
               </div>
               <small class="provisional-rule">Limite provisório: 2 por robô. A consequência automática ainda não foi definida.</small>
@@ -335,18 +285,8 @@ onMounted(load)
             <div class="control-section">
               <span class="control-label">Perda por Suicídio / WO</span>
               <div class="wo-actions">
-                <button
-                  type="button"
-                  class="wo-button"
-                  :class="{ selected: form.choice === 'B' && form.motivoResultado === 'SUICIDIO_WO' }"
-                  @click="chooseWo('A')"
-                >Suicídio/WO de {{ match.robotANome }}</button>
-                <button
-                  type="button"
-                  class="wo-button"
-                  :class="{ selected: form.choice === 'A' && form.motivoResultado === 'SUICIDIO_WO' }"
-                  @click="chooseWo('B')"
-                >Suicídio/WO de {{ match.robotBNome }}</button>
+                <button type="button" class="wo-button" :class="{ selected: form.choice === 'B' && form.motivoResultado === 'SUICIDIO_WO' }" @click="chooseWo('A')">Suicídio/WO de {{ match.robotANome }}</button>
+                <button type="button" class="wo-button" :class="{ selected: form.choice === 'A' && form.motivoResultado === 'SUICIDIO_WO' }" @click="chooseWo('B')">Suicídio/WO de {{ match.robotBNome }}</button>
               </div>
             </div>
 
@@ -359,25 +299,12 @@ onMounted(load)
               </div>
             </div>
 
-            <label class="arena-note">
-              Observação
-              <el-input v-model="form.observacao" type="textarea" :rows="3" placeholder="Opcional" />
-            </label>
-
-            <button
-              type="button"
-              class="arena-save"
-              :disabled="!canSave || saving"
-              @click="saveRound"
-            >
-              {{ saving ? 'Registrando...' : `Registrar ${nextRoundLabel}` }}
-            </button>
+            <label class="arena-note">Observação<el-input v-model="form.observacao" type="textarea" :rows="3" placeholder="Opcional" /></label>
+            <button type="button" class="arena-save" :disabled="!canSave || saving" @click="saveRound">{{ saving ? 'Registrando...' : `Registrar ${nextRoundLabel}` }}</button>
           </template>
 
           <div v-else class="arena-closed-state">
-            <strong v-if="currentWinner">
-              {{ currentWinner === 'A' ? match.robotANome : match.robotBNome }} venceu a batalha
-            </strong>
+            <strong v-if="currentWinner">{{ currentWinner === 'A' ? match.robotANome : match.robotBNome }} venceu a batalha</strong>
             <strong v-else>Somente leitura</strong>
             <span>O histórico permanece disponível ao lado.</span>
           </div>
@@ -388,417 +315,63 @@ onMounted(load)
 </template>
 
 <style scoped>
-.arena-page {
-  display: grid;
-  gap: 18px;
-}
-
-.arena-header {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-}
-
-.arena-back {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid #e5d9df;
-  border-radius: 12px;
-  background: #fff;
-  color: #5a4650;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.arena-title h1 {
-  margin: 2px 0 3px;
-  font-size: 24px;
-}
-
-.arena-title p {
-  margin: 0;
-  color: #756870;
-  font-size: 12px;
-}
-
-.arena-scoreboard {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr);
-  align-items: center;
-  gap: 14px;
-  padding: 22px;
-  border: 1px solid #e8dde2;
-  border-radius: 20px;
-  background: linear-gradient(180deg, #fff 0%, #fffafb 100%);
-  box-shadow: 0 12px 32px rgba(73, 28, 49, .07);
-}
-
-.arena-competitor {
-  display: grid;
-  grid-template-columns: 84px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-}
-
-.arena-competitor-b {
-  grid-template-columns: auto minmax(0, 1fr) 84px;
-}
-
-.robot-photo-placeholder {
-  display: grid;
-  place-items: center;
-  width: 84px;
-  height: 84px;
-  border: 2px solid #eadde3;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f3e7ec 0%, #f7f2f5 100%);
-  color: #8f1238;
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: -.04em;
-}
-
-.robot-meta {
-  display: grid;
-  gap: 2px;
-}
-
-.robot-meta-b {
-  justify-items: end;
-  text-align: right;
-}
-
-.robot-meta span {
-  color: #9b8d94;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-}
-
-.robot-meta strong {
-  color: #31242b;
-  font-size: 22px;
-}
-
-.robot-meta small {
-  color: #7e7077;
-}
-
-.arena-score {
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  color: #fff;
-  font-size: 26px;
-}
-
-.score-a { background: #25975e; }
-.score-b { background: #c31549; }
-
-.arena-versus {
-  display: grid;
-  justify-items: center;
-  gap: 5px;
-  color: #685860;
-}
-
-.arena-versus span {
-  font-size: 18px;
-  font-weight: 900;
-}
-
-.arena-versus small {
-  max-width: 110px;
-  text-align: center;
-  font-size: 10px;
-}
-
-.arena-readonly-banner {
-  padding: 10px 14px;
-  border: 1px solid #edd7df;
-  border-radius: 12px;
-  background: #fff5f8;
-  color: #8f1238;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.arena-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr);
-  gap: 18px;
-  align-items: start;
-}
-
-.arena-round-history,
-.arena-control-panel {
-  border: 1px solid #e8dde2;
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(73, 28, 49, .05);
-}
-
-.arena-round-history { padding: 18px; }
-.arena-control-panel { padding: 18px; position: sticky; top: 18px; }
-
-.arena-card-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.arena-card-heading h2 {
-  margin: 2px 0 0;
-  font-size: 17px;
-}
-
-.arena-counter,
-.arena-finished {
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: #f3edf0;
-  color: #7f6570;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.arena-finished {
-  background: #e9f7ef;
-  color: #25704b;
-}
-
-.arena-empty-rounds {
-  padding: 28px 10px;
-  text-align: center;
-  color: #8c8086;
-}
-
-.arena-round-item {
-  display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  gap: 12px;
-  padding: 13px 0;
-  border-top: 1px solid #f1e9ed;
-}
-
-.round-number-badge {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #f4ebef;
-  color: #9f0f3b;
-  font-weight: 900;
-}
-
-.round-summary {
-  display: grid;
-  gap: 3px;
-}
-
-.round-summary-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.round-summary > span { color: #4f4148; font-size: 12px; }
-.round-summary > small { color: #8a7b82; font-size: 10px; }
-.round-summary > em { color: #675a61; font-size: 10px; font-style: normal; }
-
-.control-section {
-  display: grid;
-  gap: 8px;
-  padding: 13px 0;
-  border-top: 1px solid #f0e8ec;
-}
-
-.control-label {
-  color: #6f6067;
-  font-size: 10px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-}
-
-.winner-actions,
-.wo-actions,
-.neutral-actions,
-.penalty-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
-}
-
-.arena-action,
-.wo-button,
-.neutral-actions button {
-  border: 1px solid #e2d3da;
-  border-radius: 12px;
-  background: #fff;
-  cursor: pointer;
-  transition: .15s ease;
-}
-
-.arena-action {
-  min-height: 72px;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 3px;
-  padding: 10px;
-}
-
-.arena-action small { color: #8a7b82; }
-.arena-action strong { font-size: 14px; }
-.arena-action:hover,
-.wo-button:hover,
-.neutral-actions button:hover { border-color: #c31549; }
-
-.winner-a.selected {
-  border-color: #25975e;
-  background: #eefaf3;
-  box-shadow: inset 0 0 0 1px #25975e;
-}
-
-.winner-b.selected {
-  border-color: #c31549;
-  background: #fff1f5;
-  box-shadow: inset 0 0 0 1px #c31549;
-}
-
-.penalty-box {
-  display: grid;
-  gap: 8px;
-  padding: 10px;
-  border: 1px solid #eadfe4;
-  border-radius: 12px;
-  background: #fbf9fa;
-}
-
-.penalty-box > strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 11px;
-}
-
-.penalty-control {
-  display: grid;
-  grid-template-columns: 38px 1fr 38px;
-  align-items: center;
-  gap: 6px;
-}
-
-.penalty-control button {
-  height: 36px;
-  border: 1px solid #dfd2d8;
-  border-radius: 9px;
-  background: #fff;
-  color: #8f1238;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.penalty-control b { text-align: center; font-size: 20px; }
-.provisional-rule { color: #94878d; font-size: 9px; }
-
-.wo-button {
-  min-height: 46px;
-  padding: 8px 10px;
-  color: #7f273f;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.wo-button.selected {
-  border-color: #9f0f3b;
-  background: #fff0f4;
-  box-shadow: inset 0 0 0 1px #9f0f3b;
-}
-
-.neutral-actions {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.neutral-actions button {
-  min-height: 38px;
-  color: #6e5f66;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.neutral-actions button.selected {
-  border-color: #6c5177;
-  background: #f5f0f7;
-  color: #4f1967;
-}
-
-.arena-note {
-  display: grid;
-  gap: 6px;
-  margin-top: 12px;
-  color: #6d5d65;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.arena-save {
-  width: 100%;
-  min-height: 48px;
-  margin-top: 14px;
-  border: 0;
-  border-radius: 12px;
-  background: linear-gradient(90deg, #6f1b7d 0%, #9f0f3b 100%);
-  color: #fff;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 8px 18px rgba(111, 27, 125, .18);
-}
-
-.arena-save:disabled {
-  opacity: .45;
-  cursor: not-allowed;
-}
-
-.arena-closed-state {
-  display: grid;
-  gap: 5px;
-  padding: 28px 10px;
-  text-align: center;
-}
-
-.arena-closed-state strong { color: #8f1238; font-size: 16px; }
-.arena-closed-state span { color: #84767d; font-size: 11px; }
-
-@media (max-width: 980px) {
-  .arena-workspace { grid-template-columns: 1fr; }
-  .arena-control-panel { position: static; }
-}
-
-@media (max-width: 760px) {
-  .arena-scoreboard { grid-template-columns: 1fr; }
-  .arena-versus { order: 2; }
-  .arena-competitor { order: 1; }
-  .arena-competitor-b { order: 3; }
-  .arena-competitor,
-  .arena-competitor-b { grid-template-columns: 72px minmax(0, 1fr) auto; }
-  .arena-competitor-b .arena-score { order: 3; }
-  .arena-competitor-b .robot-meta { order: 2; justify-items: start; text-align: left; }
-  .arena-competitor-b .robot-photo-placeholder { order: 1; }
-  .robot-photo-placeholder { width: 72px; height: 72px; }
-  .winner-actions,
-  .wo-actions,
-  .penalty-grid { grid-template-columns: 1fr; }
-}
+.arena-page { display:grid; gap:18px; }
+.arena-header { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:14px; }
+.arena-back { display:grid; place-items:center; width:42px; height:42px; border:1px solid #e5d9df; border-radius:12px; background:#fff; color:#5a4650; font-size:22px; cursor:pointer; }
+.arena-title h1 { margin:2px 0 3px; font-size:24px; }
+.arena-title p { margin:0; color:#756870; font-size:12px; }
+.arena-scoreboard { display:grid; grid-template-columns:minmax(0,1fr) 120px minmax(0,1fr); align-items:center; gap:14px; padding:22px; border:1px solid #e8dde2; border-radius:20px; background:linear-gradient(180deg,#fff 0%,#fffafb 100%); box-shadow:0 12px 32px rgba(73,28,49,.07); }
+.arena-competitor { display:grid; grid-template-columns:84px minmax(0,1fr) auto; align-items:center; gap:14px; }
+.arena-competitor-b { grid-template-columns:auto minmax(0,1fr) 84px; }
+.robot-photo-placeholder { width:84px; height:84px; border:2px solid #eadde3; border-radius:50%; overflow:hidden; background:#f3e7ec; color:#8f1238; font-size:22px; font-weight:900; }
+.robot-meta { display:grid; gap:2px; }
+.robot-meta-b { justify-items:end; text-align:right; }
+.robot-meta span { color:#9b8d94; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+.robot-meta strong { color:#31242b; font-size:22px; }
+.robot-meta small { color:#7e7077; }
+.arena-score { display:grid; place-items:center; width:52px; height:52px; border-radius:14px; color:#fff; font-size:26px; }
+.score-a { background:#25975e; } .score-b { background:#c31549; }
+.arena-versus { display:grid; justify-items:center; gap:5px; color:#685860; }
+.arena-versus span { font-size:18px; font-weight:900; }
+.arena-versus small { max-width:110px; text-align:center; font-size:10px; }
+.arena-readonly-banner { padding:10px 14px; border:1px solid #edd7df; border-radius:12px; background:#fff5f8; color:#8f1238; font-size:12px; font-weight:700; }
+.arena-workspace { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr); gap:18px; align-items:start; }
+.arena-round-history,.arena-control-panel { border:1px solid #e8dde2; border-radius:18px; background:#fff; box-shadow:0 10px 28px rgba(73,28,49,.05); }
+.arena-round-history { padding:18px; } .arena-control-panel { padding:18px; position:sticky; top:18px; }
+.arena-card-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.arena-card-heading h2 { margin:2px 0 0; font-size:17px; }
+.arena-counter,.arena-finished { padding:5px 8px; border-radius:999px; background:#f3edf0; color:#7f6570; font-size:10px; font-weight:800; }
+.arena-finished { background:#e9f7ef; color:#25704b; }
+.arena-empty-rounds { padding:28px 10px; text-align:center; color:#8c8086; }
+.arena-round-item { display:grid; grid-template-columns:38px minmax(0,1fr); gap:12px; padding:13px 0; border-top:1px solid #f1e9ed; }
+.round-number-badge { display:grid; place-items:center; width:34px; height:34px; border-radius:10px; background:#f4ebef; color:#9f0f3b; font-weight:900; }
+.round-summary { display:grid; gap:3px; }
+.round-summary-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.round-summary > span { color:#4f4148; font-size:12px; } .round-summary > small { color:#8a7b82; font-size:10px; } .round-summary > em { color:#675a61; font-size:10px; font-style:normal; }
+.control-section { display:grid; gap:8px; padding:13px 0; border-top:1px solid #f0e8ec; }
+.control-label { color:#6f6067; font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.08em; }
+.winner-actions,.wo-actions,.neutral-actions,.penalty-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.arena-action,.wo-button,.neutral-actions button { border:1px solid #e2d3da; border-radius:12px; background:#fff; cursor:pointer; transition:.15s ease; }
+.arena-action { min-height:72px; display:grid; align-content:center; justify-items:center; gap:3px; padding:10px; }
+.arena-action small { color:#8a7b82; } .arena-action strong { font-size:14px; }
+.arena-action:hover,.wo-button:hover,.neutral-actions button:hover { border-color:#c31549; }
+.winner-a.selected { border-color:#25975e; background:#eefaf3; box-shadow:inset 0 0 0 1px #25975e; }
+.winner-b.selected { border-color:#c31549; background:#fff1f5; box-shadow:inset 0 0 0 1px #c31549; }
+.penalty-box { display:grid; gap:8px; padding:10px; border:1px solid #eadfe4; border-radius:12px; background:#fbf9fa; }
+.penalty-box > strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; }
+.penalty-control { display:grid; grid-template-columns:38px 1fr 38px; align-items:center; gap:6px; }
+.penalty-control button { height:36px; border:1px solid #dfd2d8; border-radius:9px; background:#fff; color:#8f1238; font-size:20px; cursor:pointer; }
+.penalty-control b { text-align:center; font-size:20px; } .provisional-rule { color:#94878d; font-size:9px; }
+.wo-button { min-height:46px; padding:8px 10px; color:#7f273f; font-size:11px; font-weight:800; }
+.wo-button.selected { border-color:#9f0f3b; background:#fff0f4; box-shadow:inset 0 0 0 1px #9f0f3b; }
+.neutral-actions { grid-template-columns:repeat(3,1fr); }
+.neutral-actions button { min-height:38px; color:#6e5f66; font-size:11px; font-weight:800; }
+.neutral-actions button.selected { border-color:#6c5177; background:#f5f0f7; color:#4f1967; }
+.arena-note { display:grid; gap:6px; margin-top:12px; color:#6d5d65; font-size:11px; font-weight:700; }
+.arena-save { width:100%; min-height:48px; margin-top:14px; border:0; border-radius:12px; background:linear-gradient(90deg,#6f1b7d 0%,#9f0f3b 100%); color:#fff; font-weight:900; cursor:pointer; box-shadow:0 8px 18px rgba(111,27,125,.18); }
+.arena-save:disabled { opacity:.45; cursor:not-allowed; }
+.arena-closed-state { display:grid; gap:5px; padding:28px 10px; text-align:center; }
+.arena-closed-state strong { color:#8f1238; font-size:16px; } .arena-closed-state span { color:#84767d; font-size:11px; }
+@media (max-width:980px) { .arena-workspace { grid-template-columns:1fr; } .arena-control-panel { position:static; } }
+@media (max-width:760px) { .arena-scoreboard { grid-template-columns:1fr; } .arena-versus { order:2; } .arena-competitor { order:1; } .arena-competitor-b { order:3; } .arena-competitor,.arena-competitor-b { grid-template-columns:72px minmax(0,1fr) auto; } .arena-competitor-b .arena-score { order:3; } .arena-competitor-b .robot-meta { order:2; justify-items:start; text-align:left; } .arena-competitor-b .robot-photo-placeholder { order:1; } .robot-photo-placeholder { width:72px; height:72px; } .winner-actions,.wo-actions,.penalty-grid { grid-template-columns:1fr; } }
 </style>
