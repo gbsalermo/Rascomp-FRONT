@@ -25,12 +25,7 @@ const router = createRouter({
   routes: [
     { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
     { path: '/cadastro', name: 'register', component: RegisterView, meta: { public: true } },
-    {
-      path: '/recuperar-senha',
-      name: 'password-recovery',
-      component: PasswordRecoveryView,
-      meta: { public: true }
-    },
+    { path: '/recuperar-senha', name: 'password-recovery', component: PasswordRecoveryView, meta: { public: true } },
     {
       path: '/',
       component: ShellLayout,
@@ -49,12 +44,7 @@ const router = createRouter({
         { path: 'partidas', name: 'matches-admin', component: MatchesView, meta: organizationMeta },
         { path: 'resultados', name: 'results-admin', component: ResultsView, meta: organizationMeta },
         { path: 'configuracoes', name: 'settings-admin', component: SettingsView, meta: organizationMeta },
-        {
-          path: 'minha-equipe',
-          name: 'participant',
-          component: ParticipantView,
-          meta: { role: 'PARTICIPANTE' }
-        }
+        { path: 'minha-equipe', name: 'participant', component: ParticipantView, meta: { role: 'PARTICIPANTE' } }
       ]
     },
     { path: '/:pathMatch(.*)*', redirect: '/' }
@@ -74,7 +64,7 @@ router.beforeEach(async (to) => {
 
   if (to.meta.public) {
     if (auth.isAuthenticated && auth.user && ['login', 'register'].includes(String(to.name))) {
-      return { name: 'dashboard' }
+      return auth.user.role === 'PARTICIPANTE' ? { name: 'participant' } : { name: 'dashboard' }
     }
     return true
   }
@@ -83,8 +73,14 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
 
+  if (auth.user.role === 'PARTICIPANTE' && to.name === 'dashboard') {
+    return { name: 'participant' }
+  }
+
   const requiredRole = to.meta.role as string | undefined
-  if (requiredRole && auth.user.role !== requiredRole) return { name: 'dashboard' }
+  if (requiredRole && auth.user.role !== requiredRole) {
+    return auth.user.role === 'PARTICIPANTE' ? { name: 'participant' } : { name: 'dashboard' }
+  }
   return true
 })
 
