@@ -1,76 +1,64 @@
-# Site Público — RAS UFRB / RRC
+# Site Público — IEEE RAS UFRB
 
-Aplicação pública em **Vue 3 + TypeScript + Vite**.
+Aplicação pública institucional da **IEEE Robotics & Automation Society — RAS UFRB**, construída em **Vue 3 + TypeScript + Vite**.
 
 ## Nomenclatura oficial
 
-- **RAS UFRB**: identidade institucional principal do site;
-- **RRC**: evento/competição de robótica apresentado e acompanhado pelo público;
-- **RASCOMP**: nome da plataforma de software que sustenta Gestão + Backend + experiência pública.
+- **RAS UFRB** = identidade institucional principal do site;
+- **RRC** = evento/competição de robótica;
+- **RasComp / RASCOMP** = plataforma de software responsável por gestão, backend e dados competitivos.
 
-A Landing não deve apresentar o RRC como "RASCOMP".
+A Landing nunca deve apresentar o evento RRC como “RASCOMP”.
 
 ---
 
 ## Estado atual
 
-**PAUSADA / FUNDAÇÃO TÉCNICA**.
-
-O código existente deve ser tratado como POC técnico de Vue + integração com `/api/v1/public/**`, e não como design final.
-
-O desenvolvimento real será retomado somente depois de:
+A arquitetura visual da Home está fechada em 8 janelas:
 
 ```text
-Gestão consolidada
-    ↓
-revisão dos contratos públicos
-    ↓
-Landing
+1. Header
+2. Hero / Painel de Destaques
+3. Sobre IEEE + RAS UFRB
+4. Equipe / Diretoria / Robôs / Premiações
+5. Galeria
+6. Eventos da RAS
+7. Competição atual + acompanhamento [CONDICIONAL]
+8. Footer institucional
 ```
 
-Camunda não faz mais parte da arquitetura planejada do RASCOMP.
+A próxima fase é **revisão integrada no navegador**, substituição de placeholders e validação técnica.
 
----
-
-## Objetivo final
-
-A aplicação deve funcionar como o **site oficial da RAS UFRB durante todo o ano** e conter uma área forte dedicada ao **RRC**.
-
-Direção geral:
+Documentos de referência:
 
 ```text
-RAS UFRB
-├── Início
-├── Sobre
-├── Projetos
-├── Eventos
-├── Diretoria
-├── Contato
-└── RRC
-    ├── edição atual
-    ├── modalidades
-    ├── regulamento
-    ├── cronograma
-    ├── inscrições
-    ├── equipes/robôs
-    ├── ao vivo
-    │   ├── Follow Line
-    │   └── Sumô
-    ├── resultados
-    └── edições anteriores
+docs/CONTINUIDADE_LANDING_PAGE.md
+docs/STATUS_LANDING_PAGE.md
+docs/REVISAO_DEMO_LANDING_PAGE.md
 ```
 
 ---
 
-## Referência visual/estrutural
+## Identidade visual
 
-Base conceitual escolhida:
+Paleta congelada:
 
 ```text
-https://github.com/DouglasTeyh/erbase-2026-main
+Rubro principal        #D20F39
+Rubro secundário       #CF1037
+Rubro escuro           #B70C32
+Roxo principal         #5D2281
+Roxo de interação      #6B1F8A
+Texto principal        #2B2230
+Cinza/borda suave      #E9E2EC
+Fundo principal        #FFFFFF
 ```
 
-Usar como referência de experiência de site de evento — hero forte, navegação pública, blocos editoriais, programação, organização, parceiros, footer institucional e animações leves — sem copiar código, identidade, textos ou assets.
+Regra:
+
+- rubro = títulos, competição, alertas e CTA principal;
+- roxo = estrutura, hover, sublinhados, CTA secundário e fechamento institucional;
+- Footer = área principal rubra + faixa final roxo profundo.
 
 ---
 
@@ -83,31 +71,138 @@ Backend Spring Boot
   ↓
 /api/v1/public/**
   ↓
-Site público
+Landing pública
 ```
 
 A Landing não calcula oficialmente ranking, vencedor, chaveamento ou progressão.
 
----
-
-## Documento principal
-
-Toda a continuidade específica desta aplicação está em:
+A Janela 7 só aparece quando:
 
 ```text
-docs/CONTINUIDADE_LANDING_PAGE.md
+competition.status === EM_ANDAMENTO
 ```
 
 ---
 
-## Rodar o POC atual
+## Rodar a Landing
 
-```bash
-cp .env.example .env
+```powershell
+cd Rascomp-FRONT\landing-page
+Copy-Item .env.example .env
 npm install
+npm run typecheck
+npm run build
 npm run dev
 ```
 
-Porta padrão: `5174`.
+Porta padrão:
 
-> Rodar o POC serve apenas para validar a fundação e a API pública. Não usar sua aparência atual como referência do produto final.
+```text
+http://localhost:5174
+```
+
+Gestão, por padrão:
+
+```text
+http://localhost:5173
+```
+
+Backend, por padrão:
+
+```text
+http://localhost:8080
+```
+
+---
+
+## Cenário completo para demonstração
+
+O backend possui um profile opt-in `testdata` com competição em andamento, Follow Line, Sumô, BYEs, resultados e histórico.
+
+No PowerShell, antes de subir o backend:
+
+```powershell
+cd Rascomp\rascomp
+$env:SPRING_PROFILES_ACTIVE="testdata"
+.\run-local.ps1
+```
+
+O profile habilita:
+
+```text
+rascomp.test-data.bracket-history-enabled=true
+rascomp.test-data.follow-line-enabled=true
+rascomp.test-data.demo-showcase-enabled=true
+```
+
+Credenciais criadas pelo cenário de demonstração:
+
+```text
+PARTICIPANTE
+lider.demo@rascomp.local
+Rascomp@2026
+
+ORGANIZAÇÃO
+organizacao.demo@rascomp.local
+Rascomp@2026
+```
+
+Esse cenário cria uma competição `EM_ANDAMENTO`, permitindo demonstrar a Janela 7 completa.
+
+---
+
+## Antes de apresentar
+
+Executar nesta ordem:
+
+```powershell
+# backend
+cd Rascomp\rascomp
+$env:SPRING_PROFILES_ACTIVE="testdata"
+.\run-local.ps1
+
+# gestão
+cd Rascomp-FRONT\gestao
+npm install
+npm run dev
+
+# landing
+cd Rascomp-FRONT\landing-page
+npm install
+npm run typecheck
+npm run build
+npm run dev
+```
+
+Na Landing, conferir:
+
+```text
+Header
+→ Hero
+→ Sobre
+→ Equipe/Diretoria/Robôs/Premiações
+→ Galeria
+→ Eventos
+→ Competição atual / Follow Line / Sumô
+→ Footer
+```
+
+---
+
+## Pendências conhecidas
+
+Ainda não são conteúdo final:
+
+- fotos institucionais;
+- membros e diretoria;
+- parte dos robôs/projetos;
+- premiações;
+- números institucionais;
+- agenda/eventos editoriais;
+- contatos e redes sociais;
+- parceiros;
+- newsletter;
+- páginas de Privacidade e Termos;
+- asset IEEE RAS ainda deve ser copiado fisicamente para `landing-page/public/` antes da publicação.
+
+Esses itens não impedem a demonstração de layout/fluxo, mas devem ser substituídos antes da publicação oficial.
