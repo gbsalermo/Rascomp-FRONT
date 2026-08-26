@@ -9,6 +9,7 @@ import CompetitionsView from './views/CompetitionsView.vue'
 import RegistrationsView from './views/RegistrationsView.vue'
 import AdminCatalogView from './views/AdminCatalogView.vue'
 import FollowView from './views/FollowView.vue'
+import FollowRunView from './views/FollowRunView.vue'
 import SumoView from './views/SumoView.vue'
 import SumoMatchView from './views/SumoMatchView.vue'
 import BracketHistoryView from './views/BracketHistoryView.vue'
@@ -41,6 +42,7 @@ const router = createRouter({
         { path: 'robos', name: 'robots-admin', component: AdminCatalogView, meta: organizationMeta },
         { path: 'modalidades', name: 'modalities-admin', component: AdminCatalogView, meta: organizationMeta },
         { path: 'follow-line', name: 'follow', component: FollowView, meta: organizationMeta },
+        { path: 'follow-line/tomada/:registrationId', name: 'follow-run', component: FollowRunView, meta: organizationMeta },
         { path: 'sumo', name: 'sumo', component: SumoView, meta: organizationMeta },
         { path: 'sumo/partida/:matchId', name: 'sumo-match', component: SumoMatchView, meta: organizationMeta },
         { path: 'chaves', name: 'brackets-history', component: BracketHistoryView, meta: organizationMeta },
