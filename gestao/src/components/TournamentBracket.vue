@@ -53,18 +53,22 @@ function isWinner(match: Match, registrationId?: number) {
   return Boolean(result?.winnerRegistrationId && registrationId === result.winnerRegistrationId)
 }
 
-function canRegister(match: Match) {
-  return !props.readOnly
-    && Boolean(match.registrationAId)
+function canOpen(match: Match) {
+  return Boolean(match.registrationAId)
     && Boolean(match.registrationBId)
-    && match.status !== 'FINALIZADA'
-    && match.status !== 'CANCELADA'
     && match.status !== 'BYE'
     && match.status !== 'AGUARDANDO_PARTICIPANTES'
 }
 
+function canRegister(match: Match) {
+  return !props.readOnly
+    && canOpen(match)
+    && match.status !== 'FINALIZADA'
+    && match.status !== 'CANCELADA'
+}
+
 function openArena(match: Match) {
-  if (!canRegister(match)) return
+  if (!canOpen(match)) return
   router.push({
     name: 'sumo-match',
     params: { matchId: match.id },
@@ -146,12 +150,12 @@ function openArena(match: Match) {
               {{ resultFor(match.id)?.winnerRobotNome }} avançou
             </span>
             <button
-              v-else-if="canRegister(match)"
+              v-if="canOpen(match)"
               type="button"
               class="battle-action"
               @click="openArena(match)"
             >
-              Abrir partida
+              {{ canRegister(match) ? 'Abrir partida' : 'Ver partida' }}
             </button>
             <span v-else-if="readOnly" class="read-only-note">Somente leitura</span>
           </footer>
@@ -357,6 +361,8 @@ function openArena(match: Match) {
   min-height: 34px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 5px 10px 7px;
 }
 
