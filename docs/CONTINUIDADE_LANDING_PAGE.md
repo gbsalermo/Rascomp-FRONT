@@ -13,8 +13,7 @@ RRC      = evento/competição de robótica
 RASCOMP  = plataforma/software de gestão
 ```
 
-A Home é **o site institucional da RAS UFRB**, não o site do RRC.
-O RRC deve ganhar destaque quando houver contexto competitivo, mas não pode dominar a identidade da página durante todo o ano.
+A Home é o site institucional da RAS UFRB. O RRC ganha destaque quando houver contexto competitivo, mas não domina a identidade da página durante todo o ano.
 
 Camunda está fora do projeto.
 
@@ -42,7 +41,7 @@ Imagens temporárias/placeholder são permitidas durante a construção. Assets 
 
 # 3. Método de desenvolvimento — CONGELADO
 
-A Home será construída **janela por janela**.
+A Home será construída janela por janela.
 
 Cada janela só avança depois de três entregas:
 
@@ -54,7 +53,7 @@ Cada janela só avança depois de três entregas:
 
 ## Regra de fidelidade visual
 
-A demo aprovada **não é apenas inspiração**. Ela passa a ser o alvo visual da implementação.
+A demo aprovada não é apenas inspiração: ela é o alvo visual da implementação.
 
 ```text
 Demo aprovada
@@ -64,7 +63,7 @@ Implementação o mais fiel possível
 Ajustes finos posteriores no navegador
 ```
 
-Podem divergir temporariamente apenas:
+Só podem divergir temporariamente:
 
 - fotografias oficiais ainda não fornecidas;
 - logos/assets oficiais ainda não adicionados;
@@ -78,13 +77,13 @@ Estrutura, proporções, hierarquia, comportamento, tabs, sliders, cards e distr
 # 4. Arquitetura atual da Home
 
 ```text
-HEADER                                      ✅ implementado e refinado conforme demo
+HEADER                                      ✅ implementado + fidelidade revisada
 │
-├── HERO / PAINEL DE DESTAQUES              ✅ implementado e refinado conforme demo
+├── HERO / PAINEL DE DESTAQUES              ✅ implementado + fidelidade revisada
 │
-├── SOBRE IEEE + RAS                        ✅ implementado e aproximado da demo
+├── SOBRE IEEE + RAS                        ✅ implementado + fidelidade revisada
 │
-├── GALERIA                                 ✅ implementada; demo desta etapa
+├── GALERIA                                 ✅ implementada + fidelidade revisada
 │
 ├── EQUIPE / DIRETORIA / ROBÔS / PRÊMIOS   ⏭ próxima janela
 │
@@ -96,8 +95,6 @@ HEADER                                      ✅ implementado e refinado conforme
 │
 ├── EDIÇÕES ANTERIORES                      planejado
 │
-├── faixa curta de novidades                integrada principalmente ao Hero
-│
 └── FOOTER INSTITUCIONAL                    planejado
 ```
 
@@ -105,7 +102,7 @@ HEADER                                      ✅ implementado e refinado conforme
 
 # 5. JANELA 1 — HEADER ✅
 
-Componentes:
+Arquivos:
 
 ```text
 landing-page/src/components/InstitutionalHeader.vue
@@ -118,7 +115,7 @@ Estrutura desktop:
 [ IEEE RAS UFRB ]   Início   Sobre   Competição⌄   Calendário   Eventos   Contato   [ Inscrições ]
 ```
 
-## Competição — dropdown
+Dropdown `Competição`:
 
 ```text
 Competição atual
@@ -128,52 +125,36 @@ Chaveamento
 Edições anteriores
 ```
 
-Resultados e cronograma não ficam no primeiro nível da navegação.
-
-## Calendário
-
-Calendário geral do capítulo, incluindo visitas em escolas, oficinas, competições e ações/eventos institucionais.
-
-## CTA Inscrições
-
-Só aparece quando a competição pública estiver em `INSCRICOES_ABERTAS`.
-
-## Competição ativa
-
-Quando existir competição `EM_ANDAMENTO`, mostrar faixa fina rubra acima do Header:
+Com competição em andamento, faixa rubra acima do Header:
 
 ```text
 RRC em andamento · <edição>                Acompanhar competição →
 ```
 
-## Refinamento de fidelidade aplicado
+Refinamentos de fidelidade já aplicados:
 
-- faixa ativa rubra como no mockup;
+- faixa ativa rubra;
 - item ativo com linha inferior rubra simples;
-- roxo usado como hover/estrutura institucional;
-- botão `Inscrições` rubro;
+- roxo usado para hover/estrutura institucional;
+- CTA `Inscrições` rubro;
 - fundo branco e sombra/borda discretas;
-- mobile aproximado da demo: hambúrguer + identidade + CTA;
-- menu aberto mantém navegação completa e CTA contextual.
+- mobile próximo da demo com hambúrguer + identidade + CTA;
+- menu aberto mantém navegação completa.
 
-## Logo
-
-O layout ainda usa marca temporária. Substituir pelo asset oficial IEEE RAS/UFRB quando fornecido.
+Logo oficial IEEE RAS/UFRB ainda será substituído quando o asset definitivo for fornecido.
 
 ---
 
 # 6. JANELA 2 — HERO / PAINEL DE DESTAQUES ✅
 
-Componentes:
+Arquivos:
 
 ```text
 landing-page/src/components/HighlightsHero.vue
 landing-page/src/highlights-hero.css
 ```
 
-O Hero funciona como uma capa editorial dinâmica da RAS UFRB, não como banner permanente do RRC.
-
-## Estrutura visual final
+Estrutura visual final:
 
 ```text
 ┌─────────────────────────────────────────────┬──────────────────────┐
@@ -187,7 +168,7 @@ O Hero funciona como uma capa editorial dinâmica da RAS UFRB, não como banner 
 [ preview 1 ] [ preview 2 ] [ preview 3 ] [ preview 4 ]
 ```
 
-## Slides iniciais
+Slides preparados:
 
 - apresentação institucional da RAS UFRB;
 - competição atual quando aplicável;
@@ -195,45 +176,31 @@ O Hero funciona como uma capa editorial dinâmica da RAS UFRB, não como banner 
 - oficinas/formação;
 - premiações/conquistas.
 
-## Painel lateral de novidades
+Comportamento:
 
-Pode destacar competição ativa, oficinas, RAS nas Escolas, premiações e novidades institucionais.
-
-## Comportamento
-
-- autoplay aproximadamente a cada 7 segundos;
-- pausa ao interagir/hover;
+- autoplay ~7s;
+- pausa em interação/hover;
 - setas laterais;
 - dots;
 - CTA principal rubro;
-- quatro cards-preview abaixo no desktop;
-- clique no preview troca o slide;
+- quatro cards-preview no desktop;
+- painel lateral de últimas novidades;
 - responsivo.
 
-## Slide competitivo condicional
-
-Só entra quando a competição pública estiver em:
-
-```text
-EM_ANDAMENTO
-INSCRICOES_ABERTAS
-INSCRICOES_ENCERRADAS
-```
-
-O RRC nunca vira slide institucional permanente sem contexto atual.
+O RRC só entra como slide quando houver contexto competitivo real.
 
 ---
 
 # 7. JANELA 3 — SOBRE IEEE + RAS ✅
 
-Componentes:
+Arquivos:
 
 ```text
 landing-page/src/components/InstitutionalAbout.vue
 landing-page/src/about.css
 ```
 
-## Estrutura visual-alvo
+Estrutura visual-alvo:
 
 ```text
 [ galeria/collage visual ]         [ O QUE É O IEEE ] [ O QUE É A RAS UFRB ]
@@ -242,46 +209,50 @@ landing-page/src/about.css
 [ membros ] [ robôs ] [ prêmios ] [ eventos ] [ escolas visitadas ]
 ```
 
-A implementação foi aproximada da demo, incluindo:
+Já aproximado da demo com:
 
-- grande mídia principal à esquerda;
+- mídia principal à esquerda;
 - miniaturas inferiores;
 - tabs largas no painel direito;
 - blocos explicativos com ícones;
 - faixa inferior de cinco indicadores.
 
-Os números e fotos são placeholders até confirmação oficial.
+Fotos e números atuais são placeholders.
 
 ---
 
 # 8. JANELA 4 — GALERIA ✅
 
-Componentes:
+Arquivos:
 
 ```text
 landing-page/src/components/InstitutionalGallery.vue
 landing-page/src/gallery.css
 ```
 
-A galeria entra imediatamente após o Sobre para dar vida visual ao site ainda na primeira metade da Home.
+A primeira implementação ainda carregava CSS da ideia antiga em mosaico. Após comparação com a demo aprovada, foi corrigida para o conceito definitivo de álbuns por evento/categoria.
 
-## Estrutura implementada
+## Estrutura visual aprovada e implementada
 
 ```text
-GALERIA
-Um pouco do que construímos, vivemos e compartilhamos.
+MEMÓRIAS E REGISTROS
+Galeria
+texto institucional curto
 
 [ Todos ] [ RRC ] [ Oficinas ] [ RAS nas Escolas ] [ Premiações ] [ Eventos ]
 
-┌───────────────────────────┬────────────┬────────────┐
-│        foto ampla         │ foto alta  │ foto       │
-│                           │            │            │
-├─────────────┬─────────────┼────────────┼────────────┤
-│ foto        │ foto        │ foto       │ foto       │
-└─────────────┴─────────────┴────────────┴────────────┘
+┌─────────────────────┐ ┌─────────────────────┐ ┌─────────────────────┐
+│ foto principal       │ │ foto principal       │ │ foto principal       │
+│                     │ │                     │ │                     │
+├──────┬──────┬───────┤ ├──────┬──────┬───────┤ ├──────┬──────┬───────┤
+│mini  │mini  │mini   │ │mini  │mini  │mini   │ │mini  │mini  │mini   │
+└──────┴──────┴───────┘ └──────┴──────┴───────┘ └──────┴──────┴───────┘
+ categoria                categoria                categoria
+ título                   título                   título
+ qtd. fotos · data        qtd. fotos · data        qtd. fotos · data
+ descrição                descrição                descrição
+ Ver álbum →              Ver álbum →              Ver álbum →
 ```
-
-O mosaico usa proporções variadas para evitar aparência de grid genérico de cards.
 
 ## Filtros
 
@@ -294,55 +265,57 @@ Premiações
 Eventos
 ```
 
-Ao filtrar, a grade se reorganiza sem trocar de página.
+## Álbuns temporários preparados
 
-## Conteúdo de cada item
+- RRC 2026;
+- Oficina de Robótica;
+- RAS nas Escolas;
+- Conquistas e Premiações;
+- Eventos Institucionais.
 
-- categoria;
-- título;
-- ano/data curta;
-- imagem;
-- resumo para visualização ampliada.
+Os dados atuais de quantidade/data são placeholders editoriais e devem ser substituídos por dados reais depois.
 
-## Visualização ampliada
+## Prévia do álbum
 
-Ao clicar numa foto, abrir lightbox/modal com:
+Ao clicar em um álbum, abre uma prévia flutuante no canto inferior direito, próxima da demo aprovada:
 
-- imagem grande;
-- categoria;
-- data/ano;
-- título;
-- descrição.
+- título `Prévia do álbum`;
+- mídia grande;
+- botão de próxima foto;
+- contador `1 / N`;
+- dots;
+- botão fechar.
 
-Isso permite explorar registros sem transformar a Home em um álbum longo.
+Quando o acervo real for conectado, essa estrutura pode evoluir para navegação completa sem redesenhar a Home.
 
-## Imagens atuais
+## Imagens
 
-As imagens são placeholders. A estrutura foi construída para que a troca pelo acervo oficial não exija redesenho.
+Atualmente são placeholders visuais. A troca por fotos reais não deve exigir mudança estrutural.
 
-Ainda será necessário definir antes da publicação:
+Antes da publicação ainda definir:
 
-- origem/armazenamento das fotos;
-- autorização e créditos;
-- legenda;
-- associação com eventos;
-- otimização e lazy loading.
+- armazenamento/origem do acervo;
+- autorização;
+- créditos;
+- legendas;
+- associação das fotos a cada álbum/evento;
+- otimização/lazy loading.
 
 ## Responsividade
 
-- desktop: mosaico com 12 colunas e proporções variadas;
-- tablet: blocos maiores e menos colunas;
-- mobile: uma coluna, com primeiro destaque podendo ocupar maior ênfase;
-- filtros roláveis horizontalmente em telas pequenas;
-- lightbox adaptado para celular.
+- desktop: 3 colunas de álbuns;
+- tablet: 2 colunas;
+- mobile: 1 coluna;
+- filtros roláveis em telas pequenas;
+- prévia flutuante adaptada à largura do dispositivo.
 
-## Demo
-
-A demo gerada nesta etapa é o alvo visual da Janela 4. Após aprovação, qualquer divergência estrutural encontrada no navegador deve ser corrigida antes de considerar a galeria consolidada.
+A demo aprovada desta janela é o alvo visual.
 
 ---
 
 # 9. JANELA 5 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES ⏭ PRÓXIMA
+
+Conceito aprovado:
 
 ```text
 [ Equipe ] [ Diretoria ]       ROBÔS
@@ -352,17 +325,15 @@ lista visual de integrantes    lista expansível
                                lista expansível
 ```
 
-## Equipe / Diretoria
+Equipe/Diretoria:
 
-- alternância por tabs;
+- tabs;
 - card compacto por integrante;
 - hover/expansão aumenta foto;
 - nome + área/modalidade;
 - diretoria inclui função.
 
-## Robôs
-
-Ao expandir:
+Robôs ao expandir:
 
 - foto;
 - modalidade;
@@ -371,9 +342,7 @@ Ao expandir:
 - competições;
 - resultados relevantes.
 
-## Premiações
-
-Ao expandir:
+Premiações ao expandir:
 
 - colocação;
 - evento;
@@ -389,7 +358,7 @@ Ao expandir:
 
 Cards/barras horizontais expansíveis.
 
-Eventos iniciais citados:
+Eventos iniciais:
 
 ```text
 RRC
@@ -412,7 +381,7 @@ Ao expandir:
 
 # 11. JANELA 7 — COMPETIÇÃO ATUAL (CONDICIONAL)
 
-Só renderizar quando existir competição pública da RAS gerenciada pelo RasComp.
+Só aparece quando existir competição pública da RAS gerenciada pelo RasComp.
 
 Quando existir:
 
@@ -431,7 +400,7 @@ resultados
 [ Acompanhar competição ]
 ```
 
-A Landing é apenas leitura pública. Backend/RasComp permanecem fonte de verdade.
+Landing = leitura pública. Backend/RasComp permanecem fonte de verdade.
 
 ---
 
@@ -497,7 +466,7 @@ Fundo roxo profundo com detalhes rubros discretos.
 
 # 15. Conteúdo estático x dinâmico
 
-## Estático/editorial inicialmente
+Estático/editorial inicialmente:
 
 - apresentação RAS UFRB;
 - IEEE;
@@ -511,7 +480,7 @@ Fundo roxo profundo com detalhes rubros discretos.
 - parceiros;
 - textos institucionais.
 
-## Dinâmico via backend público
+Dinâmico via backend público:
 
 - competição atual;
 - status;
@@ -566,7 +535,7 @@ Antes de publicação definir acervo oficial, autorização, fonte/armazenamento
 JANELA 1 — Header                  ✅ implementada + demo + fidelidade revisada
 JANELA 2 — Hero/Destaques         ✅ implementada + demo + fidelidade revisada
 JANELA 3 — Sobre IEEE/RAS          ✅ implementada + demo + fidelidade revisada
-JANELA 4 — Galeria                 ✅ implementada + demo nesta etapa
+JANELA 4 — Galeria                 ✅ implementada + demo + fidelidade revisada
 JANELA 5 — Equipe/Robôs/Prêmios    ⏭ próxima
 JANELA 6 — Eventos                 ⬜
 JANELA 7 — Competição atual        ⬜
@@ -575,16 +544,12 @@ JANELA 9 — Edições anteriores      ⬜
 JANELA 10 — Footer                 ⬜
 ```
 
-A implementação das janelas institucionais pode avançar visualmente mesmo antes da consolidação total do ADMIN, desde que contratos competitivos não sejam considerados definitivos antes da validação do backend/gestão.
+A implementação das janelas institucionais pode avançar visualmente antes da consolidação total do ADMIN, desde que contratos competitivos não sejam considerados definitivos antes da validação do backend/gestão.
 
 ---
 
 # 19. Próximo passo
 
-Após avaliar a demo da Galeria:
-
 ```text
 JANELA 5 — EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
 ```
-
-Antes de avançar após cada demo, aplicar o mesmo princípio usado nas Janelas 1–4: **a estrutura aprovada na demo deve estar refletida no código o mais fielmente possível**.
