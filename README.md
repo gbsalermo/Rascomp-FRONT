@@ -125,61 +125,31 @@ A mudança será feita também no backend; esconder itens de menu não é consid
 
 ## Próximas frentes aprovadas
 
-### 1. Estabilização
+O roteiro completo, com ordem, descrição e critério de conclusão de cada etapa, está em:
 
-- corrigir riscos encontrados na revisão estrutural;
-- consolidar CSS/código redundante;
-- manter CI verde;
-- limpar artefatos antigos.
+```text
+docs/ETAPAS_POS_PROJETO.md
+```
 
-### 2. Permissões
+Resumo:
 
-Implementar `DEV`, `GESTAO`, `MIDIA`, `PARTICIPANTE`.
-
-### 3. Ajustes Gerais DEV
-
-Painel DEV-only para operações estruturais que hoje exigiriam banco:
-
-- alterar role;
-- transferir competidor/equipe;
-- transferir robô;
-- trocar responsável;
-- corrigir inscrição;
-- ativar/desativar entidades;
-- manutenção com auditoria.
-
-### 4. Gestor de mídia
-
-Dentro de `gestao/`:
-
-- tópicos;
-- textos;
-- imagens/mídias;
-- slots/janelas da Landing;
-- ordem;
-- publicação;
-- galeria.
-
-A Landing deixa de depender de conteúdo institucional hardcoded.
-
-### 5. Regras
-
-Cards expansíveis para:
-
-- Follow Line;
-- Sumô e subcategorias;
-- Futebol de Robôs;
-- Ambiente/Vestimenta.
-
-Os textos precisam ser confirmados contra o regulamento oficial antes de publicação.
-
-### 6. Futebol de Robôs
-
-Nova modalidade competitiva em que a RAS fornece os robôs. O participante poderá se inscrever sem possuir robô próprio. Esse requisito exige mudança real no backend porque `Registration.robot` é obrigatório hoje.
-
-### 7. Participante completo + Landing consolidada
-
-Completar fluxos de equipe/inscrição e integrar conteúdo/mídia públicos.
+```text
+0  Baseline da versão aprovada
+1  Correções de lógica
+2  Limpeza técnica
+3  DEV / GESTAO / MIDIA / PARTICIPANTE
+4  Avisos ao participante + Telegram futuro
+5  Ajustes Gerais DEV + auditoria
+6  Portabilidade institucional
+7  Gestor de Mídia / CMS
+8  Regras
+9  Futebol de Robôs
+10 Participante completo
+11 Landing + Galeria
+12 Hardening
+13 Bateria manual completa
+14 Deploy em nuvem / Cloudflare
+```
 
 ## Rotas autenticadas atuais
 
@@ -209,6 +179,7 @@ Completar fluxos de equipe/inscrição e integrar conteúdo/mídia públicos.
 Novas rotas previstas:
 
 ```text
+/avisos
 /midia
 /regras
 /ajustes-gerais
@@ -237,7 +208,7 @@ Backend no último checkpoint revisado:
 Demo profile com MySQL/Flyway ✅
 ```
 
-## Executar Gestão
+## Executar Gestão localmente
 
 ```powershell
 cd gestao
@@ -258,6 +229,8 @@ API padrão:
 VITE_API_URL=http://localhost:8080
 ```
 
+O modo local será preservado mesmo depois de existir a implantação em nuvem.
+
 ## Fonte de verdade
 
 O frontend não decide oficialmente:
@@ -276,9 +249,11 @@ Essas regras precisam existir no backend.
 
 ## Documentação principal
 
-- `docs/DOSSIE_PROJETO_RASCOMP.md` — **mapa mestre de arquitetura, manutenção, riscos e roadmap**
+- `docs/DOSSIE_PROJETO_RASCOMP.md` — **mapa mestre de arquitetura, manutenção e riscos**
+- `docs/ETAPAS_POS_PROJETO.md` — **roteiro pós-projeto, etapa por etapa**
+- `docs/DEPLOY_CLOUDFLARE.md` — **guia passo a passo para manter local + publicar versão cloud**
 - `docs/CONTINUIDADE_FRONTEND.md` — checkpoint de continuidade
 - `docs/SYSTEM_DESIGN_GESTAO.md` — desenho histórico da gestão
 - `docs/STATUS_LANDING_PAGE.md` — acompanhamento específico da Landing
 
-Para descobrir **qual arquivo alterar quando uma regra muda**, comece pelo dossiê mestre.
+Para descobrir **qual arquivo alterar quando uma regra muda**, comece pelo dossiê mestre. Para saber **qual é a próxima etapa**, use `ETAPAS_POS_PROJETO.md`.
