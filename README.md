@@ -1,22 +1,33 @@
 # RASCOMP Frontend
 
-Frontend da plataforma **RasComp**, separado em duas aplicações:
+Frontend da plataforma **RasComp**.
+
+```text
+RAS UFRB = organização / capítulo estudantil
+RRC      = evento / competição
+RasComp  = plataforma de software
+```
+
+## Aplicações do repositório
+
+O repositório possui hoje **três aplicações**:
 
 ```text
 gestao/
-└─ sistema autenticado para ORGANIZACAO e PARTICIPANTE
+├─ interface autenticada da organização
+├─ portal do participante
+└─ futuro gestor de mídia + ferramentas DEV
 
 landing-page/
-└─ experiência pública RAS UFRB + RRC
+└─ site institucional público RAS UFRB + RRC
+
+photo-gallery/
+└─ protótipo público separado da galeria de fotos
 ```
 
-## Nomenclatura
+## Stack
 
-- **RAS UFRB** — organização/instituição;
-- **RRC** — evento/competição;
-- **RasComp / RASCOMP** — plataforma de software.
-
-## Stack — Gestão
+### Gestão
 
 - Vue 3
 - TypeScript
@@ -26,54 +37,157 @@ landing-page/
 - Element Plus
 - Axios
 
-## Estado atual
+### Landing / Galeria
 
-### ADMIN / Organização
+- Vue 3
+- TypeScript
+- Vite
+
+## Estado funcional atual
+
+### Organização / operação
 
 ```text
 Dashboard + Sidebar                    ✅
-Login / persistência JWT               ✅
+Autenticação JWT                       ✅
 Central da competição                  ✅
 Inscrições                             ✅
-Catálogos                              ✅
+Equipes / robôs / modalidades          ✅
+Usuários ativo/inativo                 ✅
+Follow Line                            ✅
+Histórico por tomadas                  ✅
+Operação de tomada                     ✅
+Sumô                                   ✅
+Chave visual                           ✅
+Arena da partida                       ✅
+2 penalidades = derrota do round       ✅
+Suicídio/WO                            ✅
 Histórico de chaves                    ✅
-Chave visual de Sumô                   ✅
-Tela operacional da partida            ✅
-Penalidades + Suicídio/WO               ✅
-Follow Line                             ✅
-Tela operacional de tomada             ✅
-Histórico de tomadas                    ✅
-Fotos nas telas de arena                ✅
-Consolidação visual final               ⏳
+Fotos de robôs                         ✅
 ```
 
-### PARTICIPANTE
+### Participante
 
-Existe uma primeira interface funcional e demonstrável em `/minha-equipe`:
+A primeira versão funcional existe em:
 
-- equipe do líder;
+```text
+/minha-equipe
+```
+
+Inclui:
+
+- equipe;
 - competidores;
 - robôs;
-- foto principal do robô;
-- upload de foto;
+- foto principal/upload;
 - inscrições;
-- cartões de participação competitiva;
-- Follow: ranking, melhor tomada, progresso e histórico de tomadas;
-- Sumô: vitórias/derrotas, última partida e próxima partida quando disponível.
+- acompanhamento Follow;
+- histórico de tomadas;
+- acompanhamento de Sumô.
 
-Fluxos completos de convite/entrada em equipe e refinamento final permanecem no roadmap.
+### Landing pública
 
-### LANDING
+A Landing **já existe** em `landing-page/` e consome a API pública competitiva.
 
-Ainda não iniciada como etapa principal. Ela será construída depois do ADMIN e PARTICIPANTE para consumir os resultados públicos já consolidados pelo backend.
+Hoje parte do conteúdo institucional ainda está hardcoded nos componentes. Isso será substituído pelo futuro módulo de **MÍDIA/CMS**.
 
-## Rotas principais
+### Galeria
+
+`photo-gallery/` ainda usa álbuns/placeholders estáticos em `src/data/albums.ts`. Na implementação do CMS será decidido se ela continua como aplicação separada ou se será absorvida pela Landing.
+
+## Arquitetura atual de acesso
+
+O sistema ainda está no modelo legado:
+
+```text
+ORGANIZACAO
+PARTICIPANTE
+```
+
+Essa arquitetura será substituída pelo modelo aprovado pós-apresentação:
+
+```text
+DEV
+├─ acesso total e manutenção estrutural
+
+GESTAO
+├─ operação competitiva
+└─ sem criação de competição/manutenção estrutural
+
+MIDIA
+└─ gestão editorial da Landing
+
+PARTICIPANTE
+└─ portal da própria equipe/inscrições
+```
+
+A mudança será feita também no backend; esconder itens de menu não é considerado controle de acesso.
+
+## Próximas frentes aprovadas
+
+### 1. Estabilização
+
+- corrigir riscos encontrados na revisão estrutural;
+- consolidar CSS/código redundante;
+- manter CI verde;
+- limpar artefatos antigos.
+
+### 2. Permissões
+
+Implementar `DEV`, `GESTAO`, `MIDIA`, `PARTICIPANTE`.
+
+### 3. Ajustes Gerais DEV
+
+Painel DEV-only para operações estruturais que hoje exigiriam banco:
+
+- alterar role;
+- transferir competidor/equipe;
+- transferir robô;
+- trocar responsável;
+- corrigir inscrição;
+- ativar/desativar entidades;
+- manutenção com auditoria.
+
+### 4. Gestor de mídia
+
+Dentro de `gestao/`:
+
+- tópicos;
+- textos;
+- imagens/mídias;
+- slots/janelas da Landing;
+- ordem;
+- publicação;
+- galeria.
+
+A Landing deixa de depender de conteúdo institucional hardcoded.
+
+### 5. Regras
+
+Cards expansíveis para:
+
+- Follow Line;
+- Sumô e subcategorias;
+- Futebol de Robôs;
+- Ambiente/Vestimenta.
+
+Os textos precisam ser confirmados contra o regulamento oficial antes de publicação.
+
+### 6. Futebol de Robôs
+
+Nova modalidade competitiva em que a RAS fornece os robôs. O participante poderá se inscrever sem possuir robô próprio. Esse requisito exige mudança real no backend porque `Registration.robot` é obrigatório hoje.
+
+### 7. Participante completo + Landing consolidada
+
+Completar fluxos de equipe/inscrição e integrar conteúdo/mídia públicos.
+
+## Rotas autenticadas atuais
 
 ```text
 /login
 /cadastro
+/recuperar-senha
 
-ADMIN
 /
 /competicoes
 /inscricoes
@@ -87,96 +201,41 @@ ADMIN
 /chaves
 /partidas
 /resultados
+/usuarios
 /configuracoes
-
-PARTICIPANTE
 /minha-equipe
 ```
 
-## Follow Line
-
-A interface segue o domínio do backend:
+Novas rotas previstas:
 
 ```text
-Registrar tomada
-      ↓
-selecionar inscrição
-      ↓
-tela do robô
-      ↓
-Tomada 1
-├─ Tentativa 1
-├─ Tentativa 2
-└─ Tentativa 3
+/midia
+/regras
+/ajustes-gerais
+/futebol
 ```
 
-O ranking mostra a **melhor tomada**, representada pela melhor tentativa válida e concluída daquela tomada.
+Os nomes finais podem mudar na implementação.
 
-A tela geral apresenta:
+## Qualidade
 
-- ranking oficial;
-- histórico agrupado por tomadas;
-- expansão das tentativas de cada tomada;
-- tempo bruto;
-- penalidade;
-- tempo final;
-- checkpoints;
-- validade/conclusão.
-
-A tela operacional apresenta:
-
-- foto do robô;
-- tomada atual;
-- tomadas restantes;
-- tentativas restantes;
-- histórico daquela tomada;
-- formulário rápido para a próxima tentativa.
-
-## Sumô
-
-A visão principal apresenta chave de campeonato real.
-
-Ao abrir uma partida:
+Gestão possui workflow:
 
 ```text
-/sumo/partida/:matchId
+Frontend Checks
+→ npm ci
+→ npm run typecheck
+→ npm run build
 ```
 
-é exibido um painel de arena com:
-
-- fotos dos robôs;
-- placar;
-- equipes;
-- rounds já registrados;
-- vitória A/B;
-- penalidades;
-- Suicídio/WO;
-- empate;
-- anulação;
-- cancelamento;
-- observação.
-
-A progressão e o vencedor continuam sendo responsabilidade do backend.
-
-Partidas encerradas/históricas abrem a mesma tela em modo de consulta.
-
-## Fotos dos robôs
-
-Foi criado o componente reutilizável:
+Backend no último checkpoint revisado:
 
 ```text
-gestao/src/components/RobotPhoto.vue
+48 testes
+0 falhas
+0 erros
+Demo profile com MySQL/Flyway ✅
 ```
-
-Ele busca a foto principal pela API pública e usa fallback por iniciais quando não há imagem.
-
-A foto atualmente aparece em:
-
-- portal do participante;
-- operação de Follow;
-- arena de Sumô.
-
-No portal participante também existe upload JPEG/PNG/WEBP para os próprios robôs.
 
 ## Executar Gestão
 
@@ -193,104 +252,33 @@ npm run typecheck
 npm run build
 ```
 
-Foi adicionado workflow GitHub Actions:
-
-```text
-Frontend Checks
-→ npm ci
-→ npm run typecheck
-→ npm run build
-```
-
-## Backend local
-
-Por padrão:
+API padrão:
 
 ```text
 VITE_API_URL=http://localhost:8080
 ```
 
-Para usar outra API:
+## Fonte de verdade
 
-```powershell
-$env:VITE_API_URL="http://localhost:8080"
-npm run dev
-```
-
-## Demonstração
-
-No backend, suba com:
-
-```powershell
-$env:SPRING_PROFILES_ACTIVE="testdata"
-.\mvnw spring-boot:run
-```
-
-### Organização
-
-```text
-organizacao.demo@rascomp.local
-Rascomp@2026
-```
-
-### Participante
-
-```text
-lider.demo@rascomp.local
-Rascomp@2026
-```
-
-### Cenários preparados
-
-**RRC 2026 · Demonstração ao vivo**
-
-- evento EM_ANDAMENTO;
-- progresso visual próximo de 50%;
-- inscrições pendentes para aprovação;
-- ranking Follow pronto;
-- Chronos Demo com 2/3 tomadas preenchidas;
-- Titan Demo com vitória em Sumô;
-- chave Sumô parcial;
-- penalidade e Suicídio/WO;
-- categoria com BYEs.
-
-**RRC 2025 · Histórico completo**
-
-- evento FINALIZADO;
-- chave de 32 robôs;
-- 16 avos até final;
-- resultados históricos.
-
-O roteiro completo está em:
-
-```text
-docs/ROTEIRO_DEMO_2026-08-27.md
-```
-
-## Direção do projeto
-
-```text
-1. ADMIN / ORGANIZAÇÃO
-   └─ consolidar e validar
-
-2. PARTICIPANTE
-   └─ completar fluxos de equipe/inscrição
-
-3. LANDING PAGE RAS UFRB + RRC
-   └─ consumir dados públicos do backend
-```
-
-## Regra arquitetural
-
-O frontend **não decide**:
+O frontend não decide oficialmente:
 
 - elegibilidade;
+- ranking;
+- inspeção;
+- BYE;
 - vencedor;
 - campeão;
-- progressão de chave;
-- BYE;
-- ranking oficial;
-- inspeção;
-- resultado oficial.
+- progressão;
+- resultado competitivo;
+- autorização real.
 
-Ele apresenta e opera contratos do backend, que permanece como fonte de verdade.
+Essas regras precisam existir no backend.
+
+## Documentação principal
+
+- `docs/DOSSIE_PROJETO_RASCOMP.md` — **mapa mestre de arquitetura, manutenção, riscos e roadmap**
+- `docs/CONTINUIDADE_FRONTEND.md` — checkpoint de continuidade
+- `docs/SYSTEM_DESIGN_GESTAO.md` — desenho histórico da gestão
+- `docs/STATUS_LANDING_PAGE.md` — acompanhamento específico da Landing
+
+Para descobrir **qual arquivo alterar quando uma regra muda**, comece pelo dossiê mestre.
