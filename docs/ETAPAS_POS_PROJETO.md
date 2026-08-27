@@ -1,6 +1,6 @@
 # RasComp — Etapas Pós-Projeto
 
-Última atualização: **26/08/2026**
+Última atualização: **27/08/2026**
 
 Este documento é o roteiro de evolução do RasComp após a aprovação da versão atual. A ideia é trabalhar **uma etapa por vez**, corrigindo a base antes de ampliar o sistema e preservando tudo que já foi validado.
 
@@ -165,6 +165,38 @@ types/
 ├─ football
 ├─ notices
 └─ media
+```
+
+---
+
+# CHECKPOINT PÓS-ETAPA 2 — README e apresentação visual do projeto
+
+Este checkpoint **não é uma nova etapa do roadmap**. Ele acontece depois da ETAPA 2, quando a revisão lógica e a limpeza técnica já estiverem concluídas, antes de iniciar a mudança estrutural de permissões da ETAPA 3.
+
+Objetivo:
+
+```text
+registrar visualmente a versão estabilizada
++
+finalizar a apresentação do projeto no GitHub
+```
+
+O que fazer:
+
+- gerar capturas de tela atualizadas do RasComp já revisado e limpo;
+- priorizar telas que representem o sistema real, como Dashboard/Central, inscrições, Follow Line, Sumô/chaves e Portal do Participante;
+- selecionar imagens limpas, legíveis e sem dados sensíveis;
+- organizar os arquivos em local adequado do repositório para documentação;
+- adicionar as capturas ao `README.md` do frontend para apresentar visualmente o sistema;
+- revisar o README como página de apresentação do projeto após inserir as imagens;
+- não alterar funcionalidades apenas para produzir screenshots.
+
+Resultado esperado:
+
+```text
+README do GitHub finalizado visualmente
++
+versão estabilizada documentada com imagens reais do sistema
 ```
 
 ---
@@ -355,7 +387,7 @@ Multi-tenancy fica fora deste ciclo.
 
 # ETAPA 7 — Gestor de Mídia / CMS
 
-**Descrição:** permitir que MIDIA/DEV administrem a Landing sem alterar arquivos Vue ou realizar commits para cada notícia/foto.
+**Descrição:** permitir que MIDIA/DEV administrem a Landing sem alterar arquivos Vue ou realizar commits para cada notícia/foto e, ao final da etapa, deixar a Landing operacional com identidade e imagens reais.
 
 Criar dentro de `gestao/`:
 
@@ -367,6 +399,16 @@ Criar dentro de `gestao/`:
 - associação da mídia a uma janela lógica;
 - galeria;
 - conteúdo institucional permitido.
+
+Também faz parte da conclusão desta etapa:
+
+- subir as logos institucionais reais necessárias à Landing;
+- subir fotos reais da RAS UFRB/RRC que serão usadas nas áreas públicas;
+- substituir placeholders e imagens provisórias pelos assets definitivos disponíveis;
+- cadastrar/associar essas imagens pelo fluxo de mídia/CMS sempre que o módulo já suportar o caso;
+- validar Hero, áreas institucionais, equipes/robôs/premiações, eventos e galeria com conteúdo visual real;
+- confirmar responsividade e carregamento dos assets;
+- deixar a Landing utilizável e apresentável com logos e fotos reais, mesmo que a consolidação arquitetural completa da Landing/Galeria continue reservada para a ETAPA 11.
 
 Modelo de referência:
 
@@ -395,6 +437,18 @@ COMPETITION_HIGHLIGHT
 ```
 
 Reaproveitar `ObjectStorageService` + Cloudflare R2. Não criar terceiro mecanismo de upload.
+
+Resultado visual mínimo da etapa:
+
+```text
+Landing operacional
++
+logos reais
++
+fotos reais
++
+conteúdo visual administrável pelo fluxo de mídia quando aplicável
+```
 
 ---
 
@@ -649,6 +703,8 @@ ETAPA 1  Correções de lógica
     ↓
 ETAPA 2  Limpeza técnica
     ↓
+CHECKPOINT README + screenshots da versão estabilizada
+    ↓
 ETAPA 3  Permissões
     ↓
 ETAPA 4  Avisos
@@ -657,7 +713,7 @@ ETAPA 5  Ajustes Gerais + auditoria
     ↓
 ETAPA 6  Portabilidade institucional
     ↓
-ETAPA 7  Gestor de Mídia / CMS
+ETAPA 7  Gestor de Mídia / CMS + Landing com logos/fotos reais
     ↓
 ETAPA 8  Regras
     ↓
