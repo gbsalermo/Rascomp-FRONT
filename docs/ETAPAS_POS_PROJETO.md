@@ -534,6 +534,46 @@ Completar:
 - responsividade;
 - feedback das ações.
 
+## Identificação competitiva da inscrição
+
+Adicionar um identificador curto e único para cada **inscrição competitiva** aprovada, funcionando como número de inscrição/número de corrida para conferência operacional do participante ou robô.
+
+A referência deve pertencer à `Registration`, e não diretamente ao `Robot`, porque o mesmo robô pode participar de categorias ou edições diferentes e modalidades futuras podem não exigir robô próprio.
+
+Fluxo pretendido:
+
+```text
+inscrição aprovada
+→ backend gera código/número competitivo único
+→ participante visualiza o identificador no portal
+→ GESTAO visualiza o mesmo identificador nas telas operacionais
+→ conferência física pode usar nome/foto do robô + código da inscrição
+```
+
+Objetivo:
+
+```text
+cadastro no RasComp
++
+identificador competitivo apresentado no evento
+=
+dupla conferência da inscrição correta
+```
+
+Na implementação, definir:
+
+- formato legível e curto do código;
+- unicidade e escopo do identificador;
+- momento exato da geração;
+- comportamento em cancelamento, reativação e correções administrativas;
+- exibição no Portal do Participante;
+- exibição nas telas de GESTAO de inscrição, inspeção, Follow e Sumô quando aplicável;
+- possibilidade futura de representar o mesmo identificador em QR Code, sem tornar QR obrigatório nesta primeira versão;
+- migration V8+ se o identificador precisar ser persistido em `Registration`;
+- testes automatizados de geração, unicidade e preservação do código.
+
+O código é uma camada adicional de conferência e **não substitui** as validações de inscrição, ownership, categoria, elegibilidade ou inspeção feitas pelo backend.
+
 Ownership continua obrigatório no backend.
 
 ---
@@ -719,7 +759,7 @@ ETAPA 8  Regras
     ↓
 ETAPA 9  Futebol de Robôs
     ↓
-ETAPA 10 Participante completo
+ETAPA 10 Participante completo + identificação competitiva
     ↓
 ETAPA 11 Landing + Galeria
     ↓
