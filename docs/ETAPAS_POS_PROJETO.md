@@ -2,81 +2,63 @@
 
 Última atualização: **26/08/2026**
 
-Este documento reúne o ciclo de evolução do RasComp após a aprovação da versão atual. Ele é o roteiro de trabalho para corrigir, endurecer, generalizar e expandir o sistema sem perder as regras que já foram validadas.
-
-O objetivo deste ciclo não é reescrever o projeto. A base atual será preservada e evoluída por etapas pequenas, testáveis e reversíveis.
+Este documento é o roteiro de evolução do RasComp após a aprovação da versão atual. A ideia é trabalhar **uma etapa por vez**, corrigindo a base antes de ampliar o sistema e preservando tudo que já foi validado.
 
 Documentos complementares:
 
 ```text
 docs/DOSSIE_PROJETO_RASCOMP.md
-→ mapa técnico: onde está cada coisa e o que alterar
+→ mapa técnico: onde está cada coisa, regras, riscos e arquivos a alterar
 
 docs/CONTINUIDADE_FRONTEND.md
 → estado funcional do frontend
+
+docs/DEPLOY_CLOUDFLARE.md
+→ guia detalhado de publicação em nuvem
 
 backend: rascomp/docs/CONTINUIDADE.md
 → estado funcional do backend
 ```
 
----
-
-# 1. Direção pós-aprovação
-
-O RasComp passa a ter cinco frentes principais:
+Regra geral do ciclo:
 
 ```text
-1. estabilização e correção da base atual
-2. segurança e administração por permissões
-3. expansão funcional
-4. gestão de conteúdo e comunicação
-5. portabilidade para outras instituições
+não reescrever o projeto
+não quebrar o modo local
+backend continua sendo fonte de verdade
+mudanças pequenas, testáveis e reversíveis
 ```
 
-O backend continua sendo a fonte de verdade para regras competitivas, permissões, elegibilidade, resultados, ranking e progressão.
-
-O frontend não deve ganhar atalhos que permitam contornar essas regras apenas escondendo ou exibindo botões.
-
 ---
 
-# 2. Escopo de aplicações
+# Direção pós-aprovação
 
-Hoje o projeto possui:
+O RasComp passa a ter estas frentes:
 
 ```text
-BACKEND
-Rascomp/rascomp/
-→ Spring Boot + MySQL + Flyway + JWT
-
-FRONTEND AUTENTICADO
-gestao/
-→ DEV + GESTAO + MIDIA + PARTICIPANTE
-
-SITE PÚBLICO
-landing-page/
-→ site institucional + acompanhamento do RRC
-
-GALERIA
-photo-gallery/
-→ protótipo público separado, a ser consolidado futuramente
+1. estabilização da versão aprovada
+2. correção de regras e riscos
+3. organização técnica
+4. segurança por permissões
+5. comunicação com participantes
+6. administração avançada
+7. portabilidade institucional
+8. conteúdo/mídia
+9. novas modalidades
+10. conclusão do participante e site público
+11. hardening
+12. testes manuais completos
+13. deploy em nuvem
 ```
 
 Objetivo de portabilidade desta rodada:
 
 ```text
 backend + gestao
-→ utilizáveis por outras instituições
+→ reutilizáveis por outras instituições
 ```
 
-A Landing pode continuar sendo uma experiência institucional personalizada, mas deve consumir dados e conteúdo por contratos que não dependam de regras exclusivas da RAS UFRB.
-
----
-
-# 3. Estratégia de portabilidade institucional
-
-A primeira meta NÃO é transformar o RasComp em um SaaS multi-tenant.
-
-Estratégia inicial:
+A primeira meta **não é multi-tenant**. A estratégia inicial é:
 
 ```text
 1 instalação do RasComp
@@ -84,53 +66,25 @@ Estratégia inicial:
 1 instituição organizadora
 ```
 
-A instituição hospedeira deve poder configurar a instância sem alterar código-fonte.
-
-Informações que devem deixar de ficar hardcoded onde forem relevantes para backend/gestão:
-
-```text
-nome da instituição organizadora
-sigla
-nome público da plataforma/evento quando configurável
-logos
-contatos
-links institucionais
-identidade visual permitida
-informações administrativas
-parâmetros operacionais gerais
-```
-
-Não confundir essa configuração com `Institution`, que hoje representa instituições associadas às equipes participantes.
-
-Criar no futuro um conceito separado, por exemplo:
-
-```text
-SystemOrganizationConfig
-ou
-PlatformInstanceConfig
-```
-
-O nome definitivo deve ser decidido na implementação.
-
-Multi-tenancy compartilhando o mesmo banco pode ser estudado no futuro, mas fica explicitamente fora deste ciclo.
-
 ---
 
 # ETAPA 0 — Baseline e congelamento da versão aprovada
 
-Objetivo: manter uma referência confiável antes das mudanças pós-projeto.
+**Descrição:** criar uma referência confiável do sistema que foi aprovado antes de iniciar as mudanças pós-projeto.
 
-- preservar o comportamento atualmente aprovado;
-- manter CI de backend e frontend obrigatória;
-- manter migrations já aplicadas imutáveis;
-- usar o Dossiê Mestre como mapa técnico;
-- qualquer nova migration entra após a versão atual;
-- não misturar correção estrutural com nova funcionalidade no mesmo commit quando puder ser separado.
+O que fazer:
+
+- preservar comportamento atual;
+- manter CI backend/frontend verde;
+- não alterar migrations já aplicadas;
+- registrar estado atual em continuidade/dossiê;
+- separar correções de novas funcionalidades sempre que possível;
+- criar checkpoints/commits claros antes das mudanças estruturais.
 
 Resultado esperado:
 
 ```text
-uma base conhecida
+base conhecida
 +
 roadmap congelado
 +
@@ -139,144 +93,87 @@ mudanças rastreáveis
 
 ---
 
-# ETAPA 1 — Correções de lógica e riscos encontrados na revisão
+# ETAPA 1 — Correções de lógica e riscos da revisão
 
-Resolver antes das grandes funcionalidades novas.
+**Descrição:** corrigir inconsistências que podem comprometer competição, histórico ou integridade antes de ampliar permissões e funcionalidades.
 
-## 1.1 Reativação de inscrição
+O que fazer:
 
-Revisar `RegistrationService.reativar()`.
+- revisar reativação de inscrição fora da janela;
+- definir cancelamento de inscrição em cada estado competitivo;
+- definir estados permitidos para gerar/regenerar chave;
+- proteger correção de resultado que já avançou participante;
+- formalizar estados válidos de tentativa Follow;
+- impedir que futuras operações administrativas deixem o sistema em estado inválido;
+- adicionar testes automatizados para cada correção.
 
-Hoje é possível reativar uma inscrição e devolvê-la para `PENDENTE` sem a mesma validação completa da janela de inscrições usada na criação.
-
-Definir e implementar a regra correta.
-
-## 1.2 Cancelamento de inscrição pelo participante
-
-Fechar comportamento para:
-
-```text
-PENDENTE
-APROVADA
-CHAVE GERADA
-COMPETIÇÃO EM ANDAMENTO
-COMPETIÇÃO FINALIZADA
-```
-
-Uma inscrição que já interfere em chave, partida ou resultado não pode simplesmente desaparecer do fluxo competitivo.
-
-## 1.3 Estados permitidos para geração/regeneração de chave
-
-Definir em quais estados da competição é permitido:
+Pontos principais a revisar no dossiê:
 
 ```text
-gerar chave
-regenerar chave
-operar chave
+RegistrationService.reativar()
+cancelamento após chave
+BracketGenerationService
+MatchResult + progressão
+TentativaSeguidorLinha
+proteção do último DEV ativo
 ```
-
-Não depender apenas de `ativo=true`.
-
-## 1.4 Correção de resultado após progressão
-
-Criar uma regra segura para resultado que já alimentou a próxima fase.
-
-Não permitir que a simples edição de um vencedor deixe a próxima partida com participante incorreto.
-
-Possíveis caminhos:
-
-```text
-bloquear edição após progressão
-ou
-operação DEV explícita de correção + reprocessamento
-```
-
-## 1.5 Estados de tentativa Follow
-
-Formalizar combinações válidas de:
-
-```text
-concluida
-valida
-tempoSegundos
-checkpoints
-penalidade
-```
-
-Exemplos que precisam de regra explícita:
-
-```text
-concluida=true + tempo=null
-valida=true + concluida=false
-valida=true + tempo=null
-```
-
-## 1.6 Proteções administrativas futuras
-
-Quando DEV existir:
-
-- impedir que a instância fique sem nenhum DEV ativo;
-- impedir desativação acidental do último DEV;
-- validar operações estruturais no backend, não só na interface.
 
 ---
 
 # ETAPA 2 — Limpeza técnica e organização de código
 
-Objetivo: reduzir dívida antes de o sistema crescer.
+**Descrição:** reduzir dívida técnica e código confuso antes de o sistema ganhar novos módulos.
 
-## Backend
+Backend:
 
-- remover artefatos de build/legado já rastreados no Git, incluindo `rascomp/bin/`;
-- revisar comentários/TODOs antigos que contradizem implementação atual;
+- remover artefatos antigos de build, especialmente `rascomp/bin/` rastreado;
+- eliminar TODOs/comentários obsoletos;
 - revisar código morto e classes não utilizadas;
-- revisar queries repetidas e fluxos redundantes;
-- manter services como responsáveis por regra de negócio;
-- não introduzir acesso direto a repository a partir de controllers para acelerar features.
+- revisar consultas e fluxos repetidos;
+- manter regras nos services;
+- revisar organização de packages quando necessário.
 
-## Frontend gestão
+Frontend gestão:
 
-Refatoração gradual, sem big-bang.
-
-Hoje `api.ts`, `types.ts` e algumas views concentram responsabilidades demais.
+- dividir gradualmente `api.ts` e `types.ts` por domínio;
+- quebrar views grandes quando houver ganho real;
+- revisar código morto;
+- reduzir duplicação entre páginas operacionais;
+- revisar folhas CSS corretivas e dependência da ordem de importação.
 
 Direção sugerida:
 
 ```text
 api/
-├─ auth.ts
-├─ competition.ts
-├─ registration.ts
-├─ participant.ts
-├─ follow.ts
-├─ sumo.ts
-├─ football.ts
-├─ notices.ts
-├─ media.ts
-└─ dev.ts
+├─ auth
+├─ competition
+├─ registration
+├─ participant
+├─ follow
+├─ sumo
+├─ football
+├─ notices
+├─ media
+└─ dev
 
 types/
-├─ auth.ts
-├─ competition.ts
-├─ participant.ts
-├─ follow.ts
-├─ sumo.ts
-├─ football.ts
-├─ notices.ts
-└─ media.ts
+├─ auth
+├─ competition
+├─ participant
+├─ follow
+├─ sumo
+├─ football
+├─ notices
+└─ media
 ```
-
-Views grandes devem ser quebradas somente quando a separação trouxer ganho real de manutenção.
-
-## CSS
-
-Revisar sobreposição entre folhas globais/corretivas e reduzir dependência de regras que sobrescrevem outras por ordem de importação.
 
 ---
 
 # ETAPA 3 — Nova matriz de permissões
 
-Substituir o modelo atual de duas roles pela matriz aprovada.
+**Descrição:** substituir o modelo atual de `ORGANIZACAO/PARTICIPANTE` pela divisão real de responsabilidades aprovada pela equipe.
+
+Roles:
 
 ```text
 DEV
@@ -287,87 +184,90 @@ PARTICIPANTE
 
 ## DEV
 
-Pode:
-
-- acessar todas as áreas;
-- criar, editar, desativar e corrigir competições;
-- alterar permissões de usuários;
-- editar/desativar inscrições conforme regras estruturais;
-- transferir competidor entre equipes;
-- trocar responsável da equipe;
-- transferir robô entre equipes;
-- acessar Ajustes Gerais;
-- executar operações de manutenção;
-- acessar ferramentas de Mídia e Gestão.
+- acesso total;
+- cria/edita/desativa competição;
+- altera permissões;
+- executa manutenção estrutural;
+- corrige inscrições;
+- transfere competidor/robô/responsabilidade;
+- acessa Gestão, Mídia e Ajustes Gerais.
 
 ## GESTAO
 
-Foco operacional do evento.
-
-Pode, conforme regra do módulo:
-
-- operar Follow Line;
-- lançar tomadas/tentativas;
-- operar Sumô;
+- opera competição;
+- Follow;
+- Sumô;
 - inspeções;
-- lançar rounds/batalhas;
-- acompanhar chave/resultados;
-- revisar informações operacionais permitidas;
-- publicar avisos operacionais quando autorizado.
-
-Não pode:
-
-- criar competição;
-- conceder DEV;
-- executar manutenção estrutural reservada a DEV.
+- tomadas/tentativas;
+- rounds/batalhas;
+- chaves/resultados permitidos;
+- avisos operacionais quando autorizado;
+- **não cria competição**;
+- não executa manutenção estrutural DEV.
 
 ## MIDIA
 
-Foco editorial.
-
-Pode:
-
-- acessar Gestor de Mídia;
-- criar/editar tópicos e conteúdo público;
-- subir mídia;
-- associar mídia a janelas/slots;
-- gerir galeria e conteúdo institucional permitido.
-
-Não ganha automaticamente acesso à operação competitiva.
+- gestor editorial;
+- conteúdo da Landing;
+- mídia/galeria;
+- tópicos e slots;
+- sem acesso automático às operações competitivas.
 
 ## PARTICIPANTE
 
-Pode somente os fluxos próprios:
-
-- equipe sob sua responsabilidade;
+- própria equipe;
 - integrantes permitidos;
-- robôs;
-- fotos;
+- robôs/fotos;
 - inscrições;
 - desempenho;
-- avisos direcionados ao participante.
+- avisos destinados ao participante.
 
-## Implementação
-
-Segurança deve existir em duas camadas:
+Implementar segurança em duas camadas:
 
 ```text
-backend
-→ autorização real
-
-frontend
-→ navegação/UX compatível
+backend → autorização real
+frontend → navegação e UX compatíveis
 ```
 
-Nunca considerar esconder um menu como segurança.
+Nunca considerar menu oculto como segurança.
 
 ---
 
-# ETAPA 4 — Ajustes Gerais DEV + auditoria
+# ETAPA 4 — Avisos ao participante
 
-Criar uma área exclusiva de DEV para operações que hoje exigiriam acesso direto ao banco.
+**Descrição:** criar comunicação operacional rápida entre organização e participantes, inicialmente dentro do próprio RasComp e futuramente com Telegram.
 
-Exemplos:
+Nesta etapa, manter o roadmap enxuto e **buscar os detalhes técnicos/regras no Dossiê Mestre**:
+
+```text
+docs/DOSSIE_PROJETO_RASCOMP.md
+```
+
+Objetivo mínimo:
+
+```text
+GESTAO/DEV publica aviso
+→ participante visualiza no sistema
+→ histórico fica preservado
+```
+
+Futuro previsto:
+
+```text
+Aviso
+├─ IN_APP
+└─ TELEGRAM opcional
+```
+
+Telegram deve ser somente canal complementar; o aviso persistido no RasComp continua sendo a fonte de verdade.
+
+---
+
+# ETAPA 5 — Ajustes Gerais DEV + auditoria
+
+**Descrição:** substituir intervenções diretas no banco por operações administrativas seguras e auditáveis, exclusivas de DEV.
+
+Criar ações específicas, por exemplo:
 
 ```text
 alterar role
@@ -380,43 +280,53 @@ reativar entidade
 corrigir associação administrativa
 ```
 
-Não criar uma interface genérica do tipo:
+Não criar editor genérico de tabela/SQL.
+
+Cada ação deve possuir:
 
 ```text
-editar tabela
-editar coluna
-executar SQL
+endpoint específico
+service específico
+validação de domínio
+autorização DEV
+auditoria
 ```
 
-Cada ação deve ter endpoint/service específico com validações de domínio.
-
-## Auditoria
-
-Toda operação estrutural DEV relevante deve registrar, quando aplicável:
+Auditoria deve registrar, quando aplicável:
 
 ```text
 quem executou
-o que foi alterado
-entidade afetada
-valor anterior
-valor novo
+ação
+entidade
+antes
+depois
 data/hora
 motivo/observação
 ```
 
-Criar uma trilha consultável para manutenção e responsabilização técnica.
-
 ---
 
-# ETAPA 5 — Portabilidade do backend + gestão para outras instituições
+# ETAPA 6 — Portabilidade para outras instituições
 
-Objetivo: permitir reutilização sem fork estrutural.
+**Descrição:** permitir que outra universidade/instituição instale backend + gestão sem precisar editar Java/Vue para trocar identidade básica.
 
-## 5.1 Perfil da instância
+Estratégia:
 
-Criar configuração da instituição que hospeda o RasComp sem reutilizar `Institution` das equipes.
+```text
+uma instalação
+=
+uma instituição organizadora
+```
 
-Avaliar:
+Não confundir configuração da instituição hospedeira com `Institution`, que representa a instituição de uma equipe participante.
+
+Criar conceito próprio, por exemplo:
+
+```text
+PlatformInstanceConfig
+```
+
+Avaliar configurações:
 
 ```text
 nome
@@ -427,183 +337,48 @@ links
 identidade visual
 nome do evento padrão
 textos administrativos
+parâmetros operacionais
 ```
 
-## 5.2 Remover hardcodes institucionais do núcleo
+O que fazer:
 
-Revisar backend e `gestao/` procurando textos, imagens, regras e defaults específicos da RAS UFRB que deveriam ser configuração.
+- remover hardcodes institucionais do núcleo de backend/gestão;
+- criar configuração da instância;
+- criar fluxo de primeiro DEV;
+- documentar instalação limpa;
+- documentar variáveis de ambiente;
+- validar uma instalação com identidade fictícia de outra instituição.
 
-Não é necessário remover identidade RAS da Landing institucional atual quando ela fizer parte do conteúdo público daquela instalação.
-
-## 5.3 Configuração inicial
-
-Planejar uma instalação nova com fluxo claro:
-
-```text
-subir backend
-configurar banco
-configurar JWT/storage
-criar primeiro DEV
-configurar instituição hospedeira
-subir gestão
-```
-
-## 5.4 Documentação de instalação
-
-Criar documentação suficientemente clara para uma equipe de outra instituição instalar e operar sem editar código Java/Vue para mudar nome e identidade básica.
+Multi-tenancy fica fora deste ciclo.
 
 ---
 
-# ETAPA 6 — Avisos ao participante
+# ETAPA 7 — Gestor de Mídia / CMS
 
-Novo módulo de comunicação operacional.
+**Descrição:** permitir que MIDIA/DEV administrem a Landing sem alterar arquivos Vue ou realizar commits para cada notícia/foto.
 
-Objetivo inicial:
+Criar dentro de `gestao/`:
 
-```text
-GESTAO/DEV publica aviso
-↓
-participante visualiza em /minha-equipe ou área Avisos
-```
+- tópicos;
+- publicação/despublicação;
+- ordenação;
+- títulos/textos/CTA;
+- upload de mídia;
+- associação da mídia a uma janela lógica;
+- galeria;
+- conteúdo institucional permitido.
 
-Exemplos de uso:
-
-- atraso de partida;
-- mudança de arena;
-- pausa técnica;
-- alteração temporária de cronograma;
-- chamada de equipe;
-- problema de equipamento/infraestrutura;
-- aviso geral da organização.
-
-## 6.1 Versão inicial — in-app
-
-Criar domínio próprio, sem depender do Telegram.
-
-Modelo inicial sugerido:
-
-```text
-Notice / Aviso
-├─ id
-├─ titulo
-├─ mensagem
-├─ prioridade/tipo
-├─ escopo
-├─ competitionId? 
-├─ categoryId?
-├─ ativo/publicado
-├─ publicadoPor
-├─ publicadoEm
-├─ expiraEm?
-└─ dataCadastro
-```
-
-Escopos que podem ser úteis:
-
-```text
-GLOBAL
-COMPETICAO
-CATEGORIA
-```
-
-Escopo por equipe/participante pode ser adicionado depois somente se houver necessidade real.
-
-Interface participante:
-
-```text
-Avisos
-├─ não lidos/destaques
-├─ avisos atuais
-└─ histórico recente
-```
-
-A primeira versão não precisa de WebSocket. Pode usar atualização ao abrir a página e polling moderado durante competição em andamento.
-
-## 6.2 Futuro — Telegram
-
-A arquitetura do aviso não deve nascer acoplada ao Telegram.
-
-Fluxo futuro recomendado:
-
-```text
-Aviso publicado
-↓
-NoticeDispatchService
-├─ canal IN_APP
-└─ canal TELEGRAM
-```
-
-Duas alternativas de Telegram:
-
-### Canal/grupo institucional
-
-Mais simples para broadcast geral.
-
-### Bot associado à conta do participante
-
-Permite mensagens direcionadas.
-
-Fluxo possível:
-
-```text
-participante solicita vinculação
-↓
-sistema gera token temporário
-↓
-usuário inicia bot Telegram
-↓
-bot recebe token
-↓
-chatId fica associado ao UserAccount
-```
-
-Cuidados futuros:
-
-- opt-in do participante;
-- possibilidade de desvincular Telegram;
-- não armazenar token do bot no frontend;
-- segredo somente no backend/ambiente;
-- log de falha de envio;
-- retry controlado;
-- rate limit;
-- Telegram é canal complementar, nunca fonte de verdade do aviso.
-
----
-
-# ETAPA 7 — Gestor de Mídia / CMS da Landing
-
-Criar uma área autenticada dentro de `gestao/`, acessível a MIDIA e DEV.
-
-Objetivo:
-
-```text
-editar a Landing sem alterar arquivo Vue
-```
-
-## Conteúdo
-
-O usuário de mídia poderá:
-
-- criar/editar tópico;
-- publicar/despublicar;
-- ordenar conteúdo;
-- subir imagem/mídia;
-- escolher onde a mídia será exibida;
-- editar título/texto/CTA;
-- gerir galeria;
-- gerir conteúdos institucionais permitidos.
-
-## Modelo sugerido
+Modelo de referência:
 
 ```text
 MediaAsset
-→ arquivo físico / ObjectStorageService / R2
+→ arquivo / R2
 
 ContentSlot
 → janela lógica da Landing
 
 ContentItem
-→ conteúdo editorial associado ao slot
+→ conteúdo associado ao slot
 ```
 
 Exemplos de slots:
@@ -619,216 +394,270 @@ EVENTS
 COMPETITION_HIGHLIGHT
 ```
 
-Não armazenar posição como seletor CSS ou nome de componente Vue.
-
-A Landing consulta a API pública e renderiza conteúdo publicado.
-
-## Storage
-
-A infraestrutura de `ObjectStorageService` + Cloudflare R2 já existente deve ser reaproveitada.
-
-Evitar criar um terceiro mecanismo de upload.
+Reaproveitar `ObjectStorageService` + Cloudflare R2. Não criar terceiro mecanismo de upload.
 
 ---
 
 # ETAPA 8 — Módulo de Regras
 
-Criar área pública de regras com cards/quadrados expansíveis.
+**Descrição:** criar área pública com regras organizadas em cards expansíveis, mantendo conteúdo editorial separado das regras executadas pelo backend.
 
 Estrutura inicial:
 
 ```text
-REGRAS
-├─ Follow Line
-├─ Sumô
-│  ├─ geral
-│  ├─ RC
-│  ├─ penalidades
-│  └─ desclassificação/WO
-├─ Futebol de Robôs
-└─ Ambiente / Vestimenta
+Follow Line
+Sumô
+├─ geral
+├─ RC
+├─ penalidades
+└─ desclassificação/WO
+Futebol de Robôs
+Ambiente / Vestimenta
 ```
 
-Conteúdos esperados incluem:
+O que fazer:
 
-- funcionamento;
-- condições de vitória;
-- penalidades;
-- desqualificação;
-- regras específicas RC;
-- regras de segurança e ambiente.
-
-Regras ambientais relatadas para futura redação oficial:
-
-```text
-não consumir alimentos na área de competição
-não entrar com líquidos quando proibido pela área
-regras de vestimenta compatíveis com ambiente técnico/laboratorial
-restrições de sandália/short quando definidas oficialmente
-cuidados para não danificar robôs/equipamentos
-não interferir na operação de outras equipes
-```
-
-Importante: antes da publicação final, o texto deve ser validado pela organização. O software não deve inventar sanções ou redação oficial.
-
-A gestão editorial dessas regras pode ficar sob MIDIA/DEV, mas mudanças de regras competitivas que afetam lógica do sistema devem passar também por revisão técnica do backend.
+- validar texto oficial com a organização;
+- criar visual público expansível;
+- permitir edição editorial por MIDIA/DEV quando adequado;
+- deixar claro quando uma regra textual também exige implementação técnica no backend;
+- não inventar sanções não aprovadas.
 
 ---
 
 # ETAPA 9 — Futebol de Robôs
 
-Adicionar nova modalidade:
-
-```text
-FUTEBOL
-```
+**Descrição:** adicionar a nova modalidade em que o participante pode competir usando robôs disponibilizados pela organização, sem exigir robô próprio cadastrado.
 
 Conceito:
 
 ```text
 participante A × participante B
-robô fornecido pela organização A × robô fornecido pela organização B
+robô fornecido A × robô fornecido B
 ```
 
-A inscrição não deve exigir que o participante possua robô próprio.
-
-## Impacto no domínio atual
-
-Hoje a inscrição exige `Robot`.
-
-Portanto será necessário alterar schema e regra de negócio, não criar robôs fictícios apenas para satisfazer FK.
-
-Direção:
+Impacto principal:
 
 ```text
 Registration.robot
-→ opcional quando a modalidade permitir
-
-regra de duplicidade
-→ varia por modalidade
+→ hoje obrigatório
+→ precisa se tornar opcional conforme modalidade
 ```
 
-Equipe:
+O que fazer:
 
-- idealmente o participante continua associado a uma equipe;
-- confirmar se equipe será obrigatória ou apenas recomendada antes da migration.
+- adicionar `FUTEBOL` em modalidade;
+- definir regras oficiais antes da migration;
+- adaptar Registration/DTO/request/validações;
+- definir duplicidade por modalidade;
+- decidir se equipe é obrigatória;
+- decidir placar/duração/empate/desempate/penalidades;
+- avaliar reaproveitamento de `Match`/`MatchResult`/chaves;
+- criar interface operacional;
+- integrar participante e landing;
+- adicionar testes automatizados.
 
-## Pontos ainda a decidir antes da implementação
-
-```text
-equipe obrigatória?
-quantidade de participantes por inscrição?
-robô A/B atribuído antecipadamente ou na arena?
-formato de placar?
-duração da partida?
-empate/desempate?
-penalidades?
-chave eliminatória?
-inspeção do participante/equipamento?
-```
-
-Reaproveitar `Match`/`MatchResult` onde fizer sentido, mas somente depois de corrigir a edição segura de resultados que já avançaram chave.
+Não criar robôs fictícios apenas para satisfazer FK.
 
 ---
 
 # ETAPA 10 — Completar Portal do Participante
 
-Depois da nova segurança e das mudanças de domínio.
+**Descrição:** transformar a primeira versão demonstrável em um portal realmente utilizável do cadastro à competição.
 
 Completar:
 
-- convite/aceite real para equipe;
-- gestão de integrantes;
-- gestão de robôs;
-- inscrição em categorias;
-- adaptação da inscrição para Futebol;
-- gestão de fotos;
+- convite/aceite para equipe;
+- integrantes;
+- robôs;
+- fotos;
+- criação de inscrições;
+- adaptação para Futebol;
 - avisos;
 - histórico competitivo;
+- acompanhamento de competição;
+- estados vazios/loading/erro;
 - responsividade;
-- estados vazios/erros/feedback de ações.
+- feedback das ações.
 
-Manter ownership validado no backend.
+Ownership continua obrigatório no backend.
 
 ---
 
 # ETAPA 11 — Consolidar Landing + Galeria + conteúdo público
 
-Integrar o que hoje está separado entre:
+**Descrição:** terminar a experiência pública conectando resultados competitivos, CMS, regras e galeria em uma arquitetura única e fácil de manter.
+
+Hoje:
 
 ```text
 landing-page/
 photo-gallery/
 ```
 
-Decidir formalmente:
+Decidir:
 
 ```text
-A. manter Galeria como aplicação pública separada
+A. manter galeria separada
 ou
-B. absorver Galeria na Landing
+B. absorver galeria na Landing
 ```
 
-Direção preferencial para manutenção: absorver na Landing, salvo necessidade real de deploy/URL independentes.
+Direção preferencial: **B**, salvo motivo real para deploy/URL independente.
 
-A Landing passa a consumir:
+A Landing deverá consumir:
 
 ```text
 API pública competitiva
 +
-API pública de conteúdo/CMS
+API pública CMS
 +
-API pública de regras
+API pública regras
 +
 mídias publicadas
 ```
 
-Nenhum conteúdo editorial comum deveria exigir commit no frontend depois da consolidação do CMS.
+Conteúdo editorial comum não deve exigir commit depois do CMS.
 
 ---
 
-# ETAPA 12 — Hardening, manutenção e preparação para uso externo
+# ETAPA 12 — Hardening e preparação para uso externo
 
-Antes de entregar o backend + gestão para outra instituição:
+**Descrição:** revisar segurança, operação, recuperação e documentação antes de considerar o RasComp pronto para uso real por outras instituições.
 
-- revisar autorização endpoint por endpoint;
-- revisar mensagens de erro;
-- revisar logs;
-- revisar CORS e configurações de ambiente;
-- revisar upload/storage;
-- revisar migrations do zero em banco limpo;
-- revisar migrations em banco existente;
-- revisar backup/restore;
-- revisar configuração do primeiro DEV;
-- revisar documentação de instalação;
-- revisar documentação de atualização de versão;
-- revisar seed/testdata para garantir que nunca rode em produção;
-- revisar dados institucionais hardcoded;
-- revisar acessibilidade e responsividade básica;
-- revisar tratamento de indisponibilidade da API;
-- revisar política de auditoria;
-- revisar comportamento quando Telegram/R2 estiverem indisponíveis.
+Revisar:
+
+- autorização endpoint por endpoint;
+- mensagens de erro;
+- logs e auditoria;
+- CORS;
+- segredos/configurações;
+- upload/storage;
+- migrations do zero;
+- migrations sobre banco existente;
+- backup/restore;
+- primeiro DEV;
+- instalação/upgrade;
+- `testdata` bloqueado em produção;
+- hardcodes institucionais;
+- acessibilidade/responsividade básica;
+- indisponibilidade da API;
+- indisponibilidade de Telegram/R2;
+- concorrência em operações críticas;
+- rollback de mudanças administrativas.
 
 ---
 
-# 4. Ordem recomendada de execução
+# ETAPA 13 — Bateria final de testes manuais
+
+**Descrição:** simular o uso real do sistema inteiro antes do deploy, indo além dos testes automatizados e das telas isoladas.
+
+Não detalhar cada caso ainda. Manter como requisito obrigatório de encerramento.
+
+A bateria deverá envolver, entre outras áreas:
 
 ```text
-ETAPA 0  baseline
+instalação/configuração
+cadastros
+logins
+perfis/permissões
+equipes
+participantes
+robôs
+fotos
+inscrições
+aprovação/rejeição/cancelamento
+competições em vários estados
+Follow Line
+Sumô
+Futebol de Robôs
+chaves/BYEs/progressão
+resultados/histórico
+Avisos
+Telegram quando implementado
+Ajustes Gerais
+auditoria
+mídias/uploads
+CMS
+Landing
+galeria
+regras
+ativação/desativação/reativação
+simulações de falhas/contratempos
+uso concorrente
+competição completa
+fluxo completo de participante
+fluxos DEV/GESTAO/MIDIA
+instalação com identidade de outra instituição
+```
+
+Objetivo:
+
+```text
+validar o RasComp como produto operacional
+```
+
+---
+
+# ETAPA 14 — Deploy em nuvem / Cloudflare
+
+**Descrição:** criar uma segunda forma de execução, em produção na nuvem, sem remover nem alterar o modo local que já funciona.
+
+Regra desta etapa:
+
+```text
+LOCAL continua funcionando como hoje
++
+CLOUD passa a existir como configuração/deploy separado
+```
+
+Arquitetura recomendada e passos detalhados estão em:
+
+```text
+docs/DEPLOY_CLOUDFLARE.md
+```
+
+Escopo planejado:
+
+```text
+Cloudflare DNS/TLS
+Cloudflare Workers Static Assets → gestao + landing
+Cloudflare Containers + Docker → backend Spring Boot
+Cloudflare R2 → mídias e uploads persistentes
+segredos → Worker Secrets/Secrets Store
+MySQL persistente → provedor gerenciado externo inicialmente
+CI/CD → GitHub Actions/Cloudflare
+custom domains
+backup/restore
+observabilidade
+smoke tests pós-deploy
+rollback
+```
+
+Importante: Cloudflare D1 usa semântica SQLite, enquanto o RasComp atual usa MySQL + JPA/Hibernate + Flyway. Migrar para D1 é uma frente separada e não será requisito do primeiro deploy.
+
+O deploy só começa **depois da bateria manual final passar**.
+
+---
+
+# Ordem congelada de execução
+
+```text
+ETAPA 0  Baseline
     ↓
-ETAPA 1  bugs/riscos de regra
+ETAPA 1  Correções de lógica
     ↓
-ETAPA 2  limpeza técnica
+ETAPA 2  Limpeza técnica
     ↓
-ETAPA 3  DEV / GESTAO / MIDIA / PARTICIPANTE
+ETAPA 3  Permissões
     ↓
-ETAPA 4  Ajustes Gerais + auditoria
+ETAPA 4  Avisos
     ↓
-ETAPA 5  portabilidade institucional
+ETAPA 5  Ajustes Gerais + auditoria
     ↓
-ETAPA 6  Avisos
+ETAPA 6  Portabilidade institucional
     ↓
-ETAPA 7  Gestor de Mídia
+ETAPA 7  Gestor de Mídia / CMS
     ↓
 ETAPA 8  Regras
     ↓
@@ -836,20 +665,22 @@ ETAPA 9  Futebol de Robôs
     ↓
 ETAPA 10 Participante completo
     ↓
-ETAPA 11 Landing/Galeria/CMS
+ETAPA 11 Landing + Galeria
     ↓
-ETAPA 12 hardening para uso externo
+ETAPA 12 Hardening
     ↓
-BATERIA MANUAL FINAL
+ETAPA 13 Bateria manual completa
+    ↓
+ETAPA 14 Deploy Cloudflare
 ```
 
-A ordem pode receber pequenos ajustes conforme dependências descobertas, mas a nova matriz de permissões deve entrar antes das áreas MIDIA/DEV definitivas.
+Pequenos ajustes de ordem podem ocorrer quando uma dependência real for descoberta, mas não pular etapas estruturais para chegar mais rápido às telas novas.
 
 ---
 
-# 5. Critério para concluir cada etapa
+# Critério para concluir qualquer etapa
 
-Uma etapa só deve ser marcada como concluída quando tiver, conforme aplicável:
+Uma etapa só pode ser marcada como concluída quando tiver, conforme aplicável:
 
 ```text
 regra definida
@@ -857,8 +688,8 @@ backend implementado
 migration aplicada quando necessária
 testes automatizados relevantes
 frontend integrado
-tratamento de erro
 permissão correta
+tratamento de erro
 documentação atualizada
 validação local
 CI verde
@@ -868,63 +699,18 @@ Evitar marcar funcionalidade como concluída apenas porque a tela apareceu.
 
 ---
 
-# 6. Bateria final de testes manuais — OBRIGATÓRIA
-
-Após concluir as etapas pós-projeto, executar uma bateria manual ampla simulando o uso real do sistema.
-
-Não detalhar os casos neste momento; apenas manter como requisito obrigatório de encerramento.
-
-A bateria deverá incluir, entre outras áreas:
-
-```text
-instalação/configuração de uma instância
-cadastros
-logins
-perfis e permissões
-equipes
-participantes
-robôs
-inscrições
-aprovações/rejeições/cancelamentos
-competições em diferentes estados
-Follow Line
-Sumô
-Futebol de Robôs
-chaves e progressões
-resultados
-históricos
-Ajustes Gerais
-avisos in-app
-Telegram quando implementado
-mídias/uploads
-CMS/Landing
-galeria
-regras
-ativação/desativação/reativação
-simulações de erros e contratempos
-uso concorrente em operações importantes
-cenários completos de competição
-cenários completos de participante
-cenários de DEV/GESTAO/MIDIA
-instalação com identidade de outra instituição
-```
-
-O objetivo final é validar o RasComp como **produto operacional**, não apenas como conjunto de endpoints/telas isoladas.
-
----
-
-# 7. Regra de continuidade
-
-A partir deste documento, trabalhar uma etapa por vez.
+# Regra de continuidade
 
 Quando uma etapa for iniciada:
 
-1. revisar a regra no Dossiê;
-2. confirmar decisões ainda abertas;
-3. implementar backend primeiro quando houver regra de negócio;
-4. adicionar/ajustar testes;
-5. integrar frontend;
-6. validar localmente;
-7. atualizar este documento e a continuidade correspondente.
+1. revisar a etapa neste documento;
+2. consultar o Dossiê Mestre;
+3. confirmar decisões ainda abertas;
+4. implementar backend primeiro quando houver regra de negócio;
+5. adicionar/ajustar testes;
+6. integrar frontend;
+7. validar localmente;
+8. atualizar documentação/continuidade;
+9. marcar a etapa como concluída somente após validação.
 
-Não avançar silenciosamente para a próxima etapa deixando decisões de domínio pendentes na anterior.
+Não avançar silenciosamente deixando decisões de domínio pendentes na etapa anterior.
