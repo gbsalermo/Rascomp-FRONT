@@ -12,4 +12,5 @@ import './events.css'
 import './active-competition.css'
 import './footer.css'
 import './footer-ruby.css'
+import './not-found.css'
 createApp(App).mount('#app')
