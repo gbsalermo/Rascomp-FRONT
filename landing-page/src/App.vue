@@ -9,6 +9,7 @@ import InstitutionalGallery from './components/InstitutionalGallery.vue'
 import InstitutionalEvents from './components/InstitutionalEvents.vue'
 import ActiveCompetition from './components/ActiveCompetition.vue'
 import InstitutionalFooter from './components/InstitutionalFooter.vue'
+import PublicNotFound from './components/PublicNotFound.vue'
 
 const loading = ref(true)
 const error = ref('')
@@ -24,6 +25,8 @@ const followCategoryId = ref<number>()
 const bracketId = ref<number>()
 let timer: number | undefined
 const managementUrl = import.meta.env.VITE_GESTAO_URL || 'http://localhost:5173'
+const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
+const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html'
 
 const currentCompetition = computed(() => competitions.value.find((item) => item.id === competitionId.value))
 
@@ -131,6 +134,8 @@ async function updateBracket(value: number) {
 }
 
 onMounted(async () => {
+  if (isNotFound) return
+
   await bootstrap()
   const refreshMs = Number(import.meta.env.VITE_REFRESH_MS || 20000)
 
@@ -147,7 +152,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="public-app">
+  <PublicNotFound v-if="isNotFound" />
+
+  <div v-else class="public-app">
     <InstitutionalHeader :competition="currentCompetition" :management-url="managementUrl" />
 
     <main id="top">
