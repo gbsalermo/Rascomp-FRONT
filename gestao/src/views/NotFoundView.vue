@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store'
 
@@ -7,14 +7,10 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const homeLabel = computed(() => auth.isAuthenticated ? 'Voltar ao início' : 'Ir para o login')
-const notFoundRobotUrl = '/rascomp-404-robot.gif'
 
-function handleRobotError(event: Event) {
-  const image = event.currentTarget as HTMLImageElement
-  if (image.dataset.fallbackApplied === 'true') return
-  image.dataset.fallbackApplied = 'true'
-  image.src = '/rascomp-logo.webp'
-}
+onMounted(() => {
+  document.title = '404 | RasComp'
+})
 
 function goHome() {
   if (!auth.isAuthenticated || !auth.user) {
@@ -27,24 +23,29 @@ function goHome() {
 </script>
 
 <template>
-  <main class="not-found-page">
-    <section class="not-found-content" aria-labelledby="not-found-title">
-      <img
-        class="not-found-robot"
-        :src="notFoundRobotUrl"
-        alt="Robô do RASCOMP acenando"
-        @error="handleRobotError"
-      />
+  <main class="not-found-page" aria-labelledby="not-found-title">
+    <section class="not-found-shell">
+      <div class="not-found-visual">
+        <img src="/404-error.jpg" alt="Ilustração da página de erro 404" />
+      </div>
 
-      <p class="error-code">404</p>
-      <h1 id="not-found-title">Página não encontrada</h1>
-      <p class="error-message">
-        Parece que nosso robô se perdeu no caminho. A página que você tentou acessar não existe ou foi movida.
-      </p>
+      <div class="not-found-content">
+        <img class="not-found-logo" src="/rascomp-logo.webp" alt="RasComp" />
+        <span class="not-found-eyebrow">Erro 404</span>
+        <h1 id="not-found-title">Essa rota saiu da pista.</h1>
+        <p>
+          A página que você tentou acessar não existe, foi movida ou não está mais disponível.
+          Retorne ao sistema e continue de onde parou.
+        </p>
 
-      <button class="back-button" type="button" @click="goHome">
-        {{ homeLabel }}
-      </button>
+        <button class="not-found-home" type="button" @click="goHome">
+          {{ homeLabel }}
+        </button>
+
+        <small class="not-found-credit">
+          <a href="https://www.freepik.com" target="_blank" rel="noreferrer noopener">Designed by Freepik</a>
+        </small>
+      </div>
     </section>
   </main>
 </template>
@@ -54,87 +55,176 @@ function goHome() {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 32px 20px;
-  background: #050505;
-  color: #f7f7f7;
+  padding: clamp(24px, 5vw, 72px);
+  background:
+    radial-gradient(circle at 14% 16%, rgba(79, 25, 103, .12), transparent 32%),
+    radial-gradient(circle at 86% 84%, rgba(159, 15, 59, .10), transparent 30%),
+    linear-gradient(135deg, #f7f4f8 0%, #ffffff 55%, #f8f2f5 100%);
+  color: #17141c;
+}
+
+.not-found-shell {
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+  align-items: center;
+  gap: clamp(30px, 5vw, 72px);
+  padding: clamp(22px, 3vw, 42px);
+  border: 1px solid #e7e3e9;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 30px 80px rgba(36, 20, 44, .12);
+  overflow: hidden;
+}
+
+.not-found-visual {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+}
+
+.not-found-visual img {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  border-radius: 20px;
+  animation: not-found-float 5s ease-in-out infinite;
 }
 
 .not-found-content {
-  width: min(100%, 760px);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
 }
 
-.not-found-robot {
-  display: block;
-  width: min(100%, 620px);
+.not-found-logo {
+  width: 120px;
   height: auto;
   object-fit: contain;
-  margin-bottom: 4px;
+  margin-bottom: 28px;
 }
 
-.error-code {
+.not-found-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(79, 25, 103, .09);
+  color: #4f1967;
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.not-found-content h1 {
+  margin: 18px 0 16px;
+  max-width: 520px;
+  font-size: clamp(2.4rem, 5vw, 4.6rem);
+  line-height: .98;
+  letter-spacing: -.055em;
+  color: #17141c;
+}
+
+.not-found-content p {
   margin: 0;
-  color: #5eead4;
-  font-size: clamp(3rem, 8vw, 5.5rem);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.06em;
-}
-
-h1 {
-  margin: 14px 0 8px;
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
-  font-weight: 700;
-}
-
-.error-message {
-  max-width: 540px;
-  margin: 0;
-  color: #a9b0b8;
+  max-width: 560px;
+  color: #6d6874;
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.75;
 }
 
-.back-button {
-  margin-top: 28px;
-  min-height: 44px;
-  padding: 0 22px;
-  border: 1px solid rgba(94, 234, 212, 0.42);
-  border-radius: 10px;
-  background: rgba(94, 234, 212, 0.08);
-  color: #f7f7f7;
+.not-found-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+  padding: 13px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: #4f1967;
+  color: #fff;
   font: inherit;
-  font-weight: 650;
+  font-weight: 850;
   cursor: pointer;
-  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  box-shadow: 0 12px 28px rgba(79, 25, 103, .2);
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
 }
 
-.back-button:hover {
-  background: rgba(94, 234, 212, 0.14);
-  border-color: #5eead4;
-  transform: translateY(-1px);
+.not-found-home:hover,
+.not-found-home:focus-visible {
+  transform: translateY(-2px);
+  background: #641f7f;
+  box-shadow: 0 16px 34px rgba(79, 25, 103, .28);
 }
 
-.back-button:focus-visible {
-  outline: 2px solid #5eead4;
-  outline-offset: 4px;
+.not-found-home:focus-visible {
+  outline: 3px solid rgba(159, 15, 59, .25);
+  outline-offset: 3px;
 }
 
-@media (max-width: 600px) {
-  .not-found-page {
-    padding: 24px 16px;
+.not-found-credit {
+  margin-top: 22px;
+  color: #9b94a0;
+  font-size: .72rem;
+}
+
+.not-found-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes not-found-float {
+  0%, 100% { transform: translateY(0) rotate(-.3deg); }
+  50% { transform: translateY(-8px) rotate(.3deg); }
+}
+
+@media (max-width: 860px) {
+  .not-found-shell {
+    grid-template-columns: 1fr;
+    text-align: center;
   }
 
-  .not-found-robot {
-    width: min(100%, 480px);
+  .not-found-content {
+    align-items: center;
+  }
+
+  .not-found-visual img {
+    max-width: 500px;
+  }
+
+  .not-found-logo {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .not-found-page {
+    padding: 14px;
+  }
+
+  .not-found-shell {
+    padding: 18px;
+    border-radius: 20px;
+    gap: 20px;
+  }
+
+  .not-found-visual img {
+    border-radius: 14px;
+  }
+
+  .not-found-content h1 {
+    font-size: clamp(2.2rem, 13vw, 3.2rem);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .back-button {
+  .not-found-visual img,
+  .not-found-home {
+    animation: none;
     transition: none;
   }
 }
