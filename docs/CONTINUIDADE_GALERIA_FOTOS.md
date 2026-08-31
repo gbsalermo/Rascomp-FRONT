@@ -1,8 +1,32 @@
 # Continuidade — Galeria de Fotos RAS UFRB
 
-## Decisão arquitetural
+Última revisão: **31/08/2026**
 
-A Janela 5 da Landing institucional permanece como vitrine leve dos álbuns. O álbum completo passa a ser aberto em um terceiro frontend dedicado:
+Este arquivo registra o estado específico de `photo-gallery/` e as decisões técnicas de mídia já tomadas.
+
+Ele **não define a próxima etapa global**.
+
+Roadmap canônico:
+
+```text
+docs/ETAPAS_POS_PROJETO.md
+```
+
+Estado global atual:
+
+```text
+ETAPA 0  ✅ concluída / validada
+ETAPA 1  🚧 atual
+ETAPA 2+ ⏳ não iniciadas
+```
+
+Portanto, não iniciar agora o backend de álbuns/CMS apenas porque ele aparece neste documento como evolução futura.
+
+---
+
+# 1. Estado arquitetural atual
+
+Existem hoje três aplicações frontend:
 
 ```text
 gestao/        → localhost:5173
@@ -10,29 +34,40 @@ landing-page/  → localhost:5174
 photo-gallery/ → localhost:5175
 ```
 
-A experiência pública pode futuramente ser publicada no mesmo domínio, por exemplo:
+No estado implementado:
+
+- a Janela 5 da Landing funciona como vitrine leve;
+- `photo-gallery/` é uma aplicação pública separada;
+- o catálogo ainda é estático/demonstrativo.
+
+## Importante: isso não é mais uma decisão definitiva de arquitetura futura
+
+A ETAPA 11 deverá fechar entre:
 
 ```text
-rasufrb.com.br
-rasufrb.com.br/fotos
-rasufrb.com.br/fotos/albuns/rrc-2026
+A. manter photo-gallery como app separado, alimentado pela API
+ou
+B. absorver a experiência de galeria na landing-page
 ```
 
-Mesmo que a implementação continue separada internamente.
+Direção preferencial atual: **B — absorver na Landing**, salvo necessidade real de deploy/URL independente.
 
-## Storage definido
+Logo, outra IA não deve assumir que a terceira aplicação precisa existir para sempre só porque ela existe hoje.
 
-Decisão atual:
+---
+
+# 2. Storage decidido
+
+A estratégia de mídia futura já possui uma decisão técnica válida:
 
 ```text
 Cloudflare R2
-→ API compatível com S3
-→ backend Spring Boot controla credenciais e object keys
-→ MySQL guardará apenas metadados dos álbuns/fotos
-→ Landing e Photo Gallery nunca recebem Access Key/Secret Key
+→ backend Spring Boot controla credenciais/object keys
+→ MySQL guarda metadados
+→ frontend nunca recebe Access Key/Secret Key
 ```
 
-O backend já possui a infraestrutura R2 opt-in:
+Infraestrutura já existente no backend:
 
 ```text
 R2StorageProperties
@@ -41,27 +76,39 @@ ObjectStorageService
 R2ObjectStorageService
 ```
 
-O R2 permanece `R2_ENABLED=false` por padrão. Portanto essa preparação não altera o armazenamento local das fotos de robô nem qualquer outro fluxo atual.
-
-A integração dispõe de upload pelo backend e geração de URL pré-assinada para a futura tela administrativa.
-
-Documentação de configuração no backend:
+Configuração permanece opt-in:
 
 ```text
-Rascomp/rascomp/docs/CLOUDFLARE_R2.md
+R2_ENABLED=false
 ```
 
-## Estado atual
+Isso não altera o armazenamento local atual das fotos dos robôs.
 
-### Landing
+Documentação:
 
-- cards de álbum continuam exibidos na Home;
-- clique na capa mantém uma prévia rápida;
-- `Ver álbum` abre o site dedicado;
-- URL externa configurável por `VITE_GALERIA_URL`;
-- fallback local: `http://localhost:5175`.
+```text
+gbsalermo/Rascomp
+rascomp/docs/CLOUDFLARE_R2.md
+```
 
-### Photo Gallery
+Regra: o futuro CMS deve **reaproveitar `ObjectStorageService`/R2** e não criar um terceiro mecanismo de upload.
+
+---
+
+# 3. Estado atual da Landing
+
+A Landing:
+
+- exibe cards/preview de galeria;
+- possui janela institucional de galeria;
+- pode apontar para a aplicação separada via configuração;
+- ainda depende de placeholders/dados demonstrativos em partes do conteúdo.
+
+A consolidação com conteúdo real pertence às ETAPAS 7 e 11, não à ETAPA 1 atual.
+
+---
+
+# 4. Estado atual de `photo-gallery/`
 
 Implementado:
 
@@ -73,85 +120,80 @@ Implementado:
 - rota `/albuns/:slug`;
 - página de álbum;
 - grade responsiva;
-- lightbox com anterior/próxima;
-- placeholders prontos para serem trocados por imagens reais;
-- botão para voltar ao site institucional;
+- lightbox anterior/próxima;
+- placeholders;
+- retorno ao site institucional;
 - CI dedicado com typecheck + build.
 
-## Catálogo temporário
-
-Arquivo central:
+Catálogo temporário:
 
 ```text
 photo-gallery/src/data/albums.ts
 ```
 
-Modelo atual:
+Modelo demonstrativo:
 
 ```text
 Album
-├── slug
-├── title
-├── category
-├── description
-├── date
-├── count
-├── cover
-└── photos[]
-    ├── id
-    ├── src
-    └── alt
+├─ slug
+├─ title
+├─ category
+├─ description
+├─ date
+├─ count
+├─ cover
+└─ photos[]
+   ├─ id
+   ├─ src
+   └─ alt
 ```
 
-Esse catálogo permanece como fallback/demonstração até a API real de álbuns ser criada.
+Esse arquivo não deve se tornar a fonte definitiva de conteúdo.
 
-## Primeiro teste com imagens reais
+---
 
-A próxima validação será feita já pensando no R2:
+# 5. Evolução futura de mídia
+
+A implementação real pertence principalmente à **ETAPA 7 — CMS/Mídia**.
+
+Modelo de referência canônico:
 
 ```text
-Cloudflare R2
-→ criar bucket ras-ufrb-media
-→ configurar credenciais apenas no backend
-→ enviar pequeno álbum de teste
-→ obter URLs públicas
-→ validar Photo Gallery
-→ validar prévias na Landing
+MediaAsset
+ContentSlot
+ContentItem
 ```
 
-Até esse teste, os placeholders atuais permanecem funcionando normalmente.
+Para álbuns, a implementação pode adicionar entidades/conceitos específicos se houver necessidade real de domínio, mas não deve duplicar o CMS sem necessidade.
 
-## Próxima etapa de desenvolvimento
+Fluxo esperado em alto nível:
 
 ```text
-Gestão
-→ criar/editar álbum
-→ backend gera object key
-→ backend gera URL pré-assinada
-→ navegador envia imagem ao R2
-→ backend salva metadados no MySQL
-→ API pública publica metadados
-→ Landing consome capas/previews
-→ Photo Gallery consome álbum completo
+MIDIA/DEV
+→ gestao
+→ backend
+→ R2 para arquivo
+→ MySQL para metadados
+→ API pública
+→ Landing / galeria
 ```
 
-Implementar nessa etapa:
+Requisitos a considerar na etapa apropriada:
 
-- entidades `Album` e `Photo`;
-- migration do banco;
-- DTOs e repositories;
-- endpoints administrativos;
-- endpoints públicos;
-- limite e formatos;
-- compressão/WebP;
-- thumbnails;
+- formatos e limites;
+- thumbnails/otimização;
+- WebP quando aplicável;
 - ordenação;
-- exclusão segura;
-- capa do álbum;
+- capa;
 - créditos/legendas;
-- política de privacidade e direito de imagem.
+- exclusão/arquivamento seguro;
+- privacidade/direito de imagem;
+- URLs de leitura ou pré-assinadas;
+- responsividade/performance.
 
-## Regra de segurança
+---
+
+# 6. Segurança
 
 Nunca versionar ou expor no frontend:
 
@@ -160,4 +202,33 @@ R2_ACCESS_KEY_ID
 R2_SECRET_ACCESS_KEY
 ```
 
-O frontend recebe somente URLs de leitura ou URLs pré-assinadas temporárias.
+O navegador recebe somente dados públicos e/ou URLs temporárias necessárias para a operação autorizada.
+
+---
+
+# 7. Como outra IA deve usar este documento
+
+Use para entender:
+
+```text
+como a galeria funciona hoje
+por que existe photo-gallery/
+como o R2 foi preparado
+quais requisitos de mídia já foram levantados
+```
+
+Não use para decidir:
+
+```text
+qual é a etapa atual
+quando implementar o CMS
+se photo-gallery deve permanecer separado definitivamente
+```
+
+Para essas decisões:
+
+```text
+etapa/ordem → docs/ETAPAS_POS_PROJETO.md
+arquitetura cross-repo → docs/DOSSIE_PROJETO_RASCOMP.md
+índice → docs/README.md
+```
