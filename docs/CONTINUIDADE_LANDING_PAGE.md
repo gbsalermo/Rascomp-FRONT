@@ -1,25 +1,42 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
-> Documento principal para continuar o desenvolvimento da aplicação pública em `landing-page/`.
-> Estado sincronizado após a revisão para demonstração de 26/08/2026.
+Última revisão: **31/08/2026**
+
+Este documento é um **checkpoint específico da aplicação `landing-page/`**. Ele preserva decisões visuais/funcionais da Landing, mas não define a etapa global do RasComp.
+
+Roadmap canônico:
+
+```text
+docs/ETAPAS_POS_PROJETO.md
+```
+
+Estado global:
+
+```text
+ETAPA 0  ✅ concluída / validada
+ETAPA 1  🚧 atual
+ETAPA 2+ ⏳ não iniciadas
+```
+
+A maior parte da Landing abaixo foi consolidada para a demonstração de **26/08/2026**. Depois disso, a página 404 pública foi adicionada em **30/08/2026**.
 
 ---
 
-## 1. Identidade — não alterar
+# 1. Identidade — decisão preservada
 
 ```text
 RAS UFRB = site/identidade institucional
 RRC      = evento/competição
-RASCOMP  = software/plataforma de gestão
+RasComp  = software/plataforma de gestão
 ```
 
-A Home é da **IEEE RAS UFRB**. O RRC aparece com força apenas quando houver contexto competitivo. RasComp é citado como plataforma/fonte dos dados competitivos, não como nome do evento.
+A Home representa a **IEEE RAS UFRB**. O RRC recebe destaque quando há contexto competitivo; RasComp é a plataforma que fornece os dados.
 
 Camunda não faz parte do projeto.
 
 ---
 
-## 2. Direção visual congelada
+# 2. Direção visual congelada
 
 ```text
 Rubro principal        #D20F39
@@ -34,258 +51,110 @@ Fundo principal        #FFFFFF
 
 Regras:
 
-- fundo branco dominante nas janelas de conteúdo;
+- fundo branco dominante;
 - rubro para títulos, competição, alertas e CTA principal;
 - roxo para estrutura, hover, sublinhados e CTA secundário;
 - visual institucional, leve e tecnológico;
-- evitar cyberpunk/dashboard pesado;
-- fotografias reais entram depois;
-- Footer é exceção: **bloco principal rubro + faixa final roxo profundo**.
+- evitar estética cyberpunk/dashboard pesado;
+- Footer: bloco principal rubro + faixa final roxo profundo;
+- conteúdo real substituirá placeholders via CMS.
 
-Referência de ritmo/arquitetura: ERBASE, sem copiar código, textos ou assets.
-
----
-
-## 3. Método de desenvolvimento
-
-A Home foi construída janela por janela.
-
-Regra mantida:
-
-```text
-Demo aprovada
-      ↓
-Implementação o mais fiel possível
-      ↓
-Validação integrada no navegador
-      ↓
-Conteúdo/assets definitivos
-```
-
-A fase de criação isolada das janelas está encerrada. A fase atual é **REVISÃO INTEGRADA**.
+Referência visual histórica: ERBASE como inspiração de ritmo/arquitetura, sem copiar código, textos ou assets.
 
 ---
 
-## 4. Ordem final da Home
+# 3. Ordem aprovada da Home
 
 ```text
-HEADER
-│
-├── HERO / PAINEL DE DESTAQUES
-│
-├── SOBRE IEEE + RAS
-│
-├── EQUIPE / DIRETORIA / ROBÔS / PREMIAÇÕES
-│
-├── GALERIA
-│
-├── EVENTOS DA RAS
-│
-├── [CONDICIONAL] COMPETIÇÃO ATUAL + ACOMPANHAMENTO
-│
-└── FOOTER INSTITUCIONAL
+1. Header
+2. Hero / Painel de Destaques
+3. Sobre IEEE + RAS UFRB
+4. Equipe / Diretoria / Robôs / Premiações
+5. Galeria
+6. Eventos da RAS
+7. Competição atual + acompanhamento [CONDICIONAL]
+8. Footer institucional
 ```
 
-`Edições anteriores` foi removido da Home.
+`Edições anteriores` não faz parte da Home.
 
----
-
-# 5. Janelas concluídas
-
-## Janela 1 — Header ✅
-
-Arquivos:
-
-```text
-landing-page/src/components/InstitutionalHeader.vue
-landing-page/src/header.css
-landing-page/src/header-identity.css
-```
-
-Implementado:
-
-- identidade IEEE RAS UFRB;
-- Início;
-- Sobre;
-- Competição com dropdown;
-- Calendário;
-- Eventos;
-- Contato;
-- Inscrições quando abertas;
-- aviso rubro de competição em andamento;
-- mobile.
-
-Correção final: o bloco textual `RAS` foi substituído pelo asset IEEE RAS já existente no projeto.
-
-## Janela 2 — Hero / Destaques ✅
-
-Arquivos:
-
-```text
-landing-page/src/components/HighlightsHero.vue
-landing-page/src/highlights-hero.css
-```
-
-Estrutura:
-
-```text
-[ slide visual principal ] [ últimas novidades ]
-[ preview ] [ preview ] [ preview ] [ preview ]
-```
-
-Inclui autoplay, setas, dots e competição quando aplicável.
-
-## Janela 3 — Sobre IEEE + RAS ✅
-
-Arquivos:
-
-```text
-landing-page/src/components/InstitutionalAbout.vue
-landing-page/src/about.css
-```
-
-Estrutura:
-
-```text
-[ galeria/collage ] [ IEEE | RAS UFRB ]
-[ indicadores ]
-```
-
-## Janela 4 — Equipe / Diretoria / Robôs / Premiações ✅
-
-Arquivos:
-
-```text
-landing-page/src/components/TeamRobotsAwards.vue
-landing-page/src/team-robots-awards.css
-```
-
-Demo 1 aprovada:
-
-- Equipe em lista;
-- Diretoria em mosaico;
-- Robôs em cards;
-- Premiações;
-- indicadores.
-
-## Janela 5 — Galeria ✅
-
-Arquivos:
-
-```text
-landing-page/src/components/InstitutionalGallery.vue
-landing-page/src/gallery.css
-```
-
-Álbuns por categoria com preview flutuante.
-
-## Janela 6 — Eventos ✅
-
-Arquivos:
-
-```text
-landing-page/src/components/InstitutionalEvents.vue
-landing-page/src/events.css
-```
-
-Estrutura final:
-
-```text
-[ filtros ]
-[ próximos eventos ] [ agenda ]
-[ eventos anteriores ] [ fique por dentro ]
-[ indicadores ]
-```
-
-Correção de revisão: o evento Arduino foi reposicionado para data futura no conteúdo demonstrativo.
-
-## Janela 7 — Competição atual + acompanhamento ✅
-
-Arquivos:
-
-```text
-landing-page/src/components/ActiveCompetition.vue
-landing-page/src/active-competition.css
-```
-
-Regra crítica:
+A janela competitiva só aparece quando:
 
 ```text
 competition.status === 'EM_ANDAMENTO'
 ```
 
-Se não houver competição ativa, esta janela não renderiza e não deixa espaço vazio.
-
-Estrutura aprovada:
+Sem competição ativa:
 
 ```text
-COMPETIÇÃO ATUAL
-
-[ PANORAMA GERAL ] [ FOLLOW LINE ] [ SUMÔ ]
-
-PRÓXIMOS DESTAQUES
-[ próxima partida ] [ último resultado ] [ ranking Follow ]
+Eventos → Footer
 ```
-
-Follow Line usa `tempoFinalSegundos` oficial.
-
-Sumô apenas representa dados do backend; não gera chave nem avança vencedor.
-
-Correções finais:
-
-- inscrições do panorama = inscrições aprovadas;
-- `#chaveamento` existe no card de Sumô mesmo antes da expansão;
-- Header consegue navegar até a área correta.
-
-## Janela 8 — Footer ✅
-
-Arquivos:
-
-```text
-landing-page/src/components/InstitutionalFooter.vue
-landing-page/src/footer.css
-landing-page/src/footer-ruby.css
-```
-
-Versão final aprovada:
-
-```text
-BLOCO PRINCIPAL RUBRO
-IEEE RAS UFRB | Navegação | Links úteis | Apoio/Parceiros | Fale conosco
-
-FAIXA ROXO PROFUNDO
-identidade | missão | copyright | ♥ | privacidade | termos | ↑
-```
-
-O fundo branco da versão anterior foi rejeitado.
-
-A implementação atual preserva a base responsiva de `footer.css` e aplica o tema final em `footer-ruby.css`.
 
 ---
 
-## 6. Integração pública
+# 4. Janelas implementadas
+
+```text
+Janela 1 — Header                           ✅
+Janela 2 — Hero / Destaques                ✅
+Janela 3 — Sobre IEEE + RAS                ✅
+Janela 4 — Equipe/Diretoria/Robôs/Prêmios  ✅
+Janela 5 — Galeria                         ✅
+Janela 6 — Eventos                         ✅
+Janela 7 — Competição/Acompanhamento       ✅
+Janela 8 — Footer                          ✅
+404 pública                                ✅ 30/08/2026
+```
+
+Componentes principais:
+
+```text
+InstitutionalHeader.vue
+HighlightsHero.vue
+InstitutionalAbout.vue
+TeamRobotsAwards.vue
+InstitutionalGallery.vue
+InstitutionalEvents.vue
+ActiveCompetition.vue
+InstitutionalFooter.vue
+PublicNotFound.vue
+```
+
+---
+
+# 5. Competição pública
 
 Fluxo:
 
 ```text
-Gestão → Backend Spring Boot → /api/v1/public/** → Landing
+Gestão
+→ Backend Spring Boot
+→ /api/v1/public/**
+→ Landing
 ```
 
-Endpoints usados pela Home competitiva:
+A Home competitiva consome endpoints públicos para:
 
-```http
-GET /api/v1/public/competicoes
-GET /api/v1/public/categorias
-GET /api/v1/public/inscricoes?competitionId=
-GET /api/v1/public/ranking/seguidor-linha?competitionId=&categoryId=
-GET /api/v1/public/chaveamentos?competitionId=
-GET /api/v1/public/partidas?bracketId=
-GET /api/v1/public/resultados?bracketId=
+```text
+competições
+categorias
+inscrições aprovadas
+ranking Follow
+chaves
+partidas
+resultados
 ```
 
-O `App.vue` não depende mais de `/equipes` e `/robos` no bootstrap porque esses dados não eram usados na Home e aumentavam o risco de falha desnecessária.
+Regras importantes:
 
-Refresh competitivo:
+- Follow usa `tempoFinalSegundos` oficial do backend;
+- Sumô somente representa estado do backend;
+- Landing não gera chave;
+- Landing não avança vencedor;
+- contadores competitivos devem usar dados públicos oficiais;
+- backend permanece fonte de verdade.
+
+Refresh configurável:
 
 ```text
 VITE_REFRESH_MS=20000
@@ -293,153 +162,191 @@ VITE_REFRESH_MS=20000
 
 ---
 
-## 7. Correção TypeScript preventiva
+# 6. Execução local
 
-`vite.config.ts` usa `node:url`.
+Portas padrão:
 
-Para evitar `TS2307`, foi adicionado:
-
-```json
-"@types/node": "^24.3.0"
+```text
+Gestão   http://localhost:5173
+Landing  http://localhost:5174
+Backend  http://localhost:8080
 ```
 
-E:
+Variáveis:
 
-```json
-"types": ["vite/client", "node"]
+```text
+VITE_API_URL=http://localhost:8080
+VITE_GESTAO_URL=http://localhost:5173
+VITE_REFRESH_MS=20000
 ```
 
-Depois de puxar a `main`, é obrigatório executar `npm install` novamente.
+Scripts:
+
+```bash
+npm install
+npm run dev
+npm run typecheck
+npm run build
+npm run preview
+```
+
+`vite.config.ts` utiliza `node:url`, portanto o projeto possui tipagem Node configurada para evitar erro `TS2307`.
 
 ---
 
-## 8. Cenário de demonstração
+# 7. Página 404
 
-O backend possui profile:
+Implementada em 30/08/2026.
 
-```text
-SPRING_PROFILES_ACTIVE=testdata
-```
-
-Ele habilita um cenário idempotente com:
-
-- competição ao vivo;
-- Follow Line;
-- Sumô;
-- BYEs;
-- resultados;
-- histórico;
-- usuários demonstrativos.
-
-Subir no PowerShell:
-
-```powershell
-cd Rascomp\rascomp
-$env:SPRING_PROFILES_ACTIVE="testdata"
-.\run-local.ps1
-```
-
-Credenciais:
+Arquivos principais:
 
 ```text
-PARTICIPANTE
-lider.demo@rascomp.local
-Rascomp@2026
-
-ORGANIZAÇÃO
-organizacao.demo@rascomp.local
-Rascomp@2026
+landing-page/src/components/PublicNotFound.vue
+landing-page/src/not-found.css
+landing-page/src/App.vue
 ```
+
+A aplicação detecta pathname público desconhecido e renderiza a experiência 404 em vez de inicializar o conteúdo normal da Home.
+
+Essa entrega não representa avanço do roadmap pós-projeto.
 
 ---
 
-## 9. Pendências
+# 8. Conteúdo ainda provisório
 
-### Antes da demonstração
+A estrutura visual está aprovada, mas parte de conteúdo institucional continua demonstrativo/hardcoded, como:
 
-```text
-[ ] git pull origin main
-[ ] npm install em landing-page/
-[ ] npm run typecheck
-[ ] npm run build
-[ ] backend com profile testdata
-[ ] npm run dev
-[ ] conferir desktop no navegador
-[ ] confirmar Janela 7
-[ ] confirmar Footer rubro
-```
-
-### Antes da publicação oficial
-
-- fotos oficiais;
-- integrantes reais;
-- diretoria real;
-- robôs/projetos reais;
-- premiações reais;
+- fotografias;
+- integrantes/diretoria;
+- parte de robôs/projetos;
+- premiações;
 - números institucionais;
-- agenda oficial;
-- contatos e redes;
-- parceiros oficiais;
-- newsletter real ou remoção;
-- Privacidade e Termos;
-- asset IEEE RAS copiado para `landing-page/public/`;
-- mobile/tablet;
+- agenda/eventos;
+- parceiros;
+- textos/notícias;
+- alguns links/contatos.
+
+Não continuar resolvendo isso com crescimento indefinido de hardcode Vue.
+
+A solução planejada é a **ETAPA 7 — CMS/Mídia**:
+
+```text
+MIDIA/DEV
+→ gestao
+→ API CMS
+→ MediaAsset / ContentSlot / ContentItem
+→ Landing
+```
+
+---
+
+# 9. Galeria
+
+A Janela 5 da Landing existe e `photo-gallery/` também existe como app separado.
+
+Essa separação é o estado implementado, não uma obrigação arquitetural permanente.
+
+Na ETAPA 11 decidir:
+
+```text
+A. manter photo-gallery separado
+B. absorver na Landing
+```
+
+Direção preferencial atual: **B**, salvo necessidade real de deploy/URL independente.
+
+Consultar:
+
+```text
+docs/CONTINUIDADE_GALERIA_FOTOS.md
+```
+
+---
+
+# 10. Pendências futuras da Landing
+
+Não são tarefas da ETAPA 1 atual. Devem ser tratadas nas etapas apropriadas:
+
+## ETAPA 7 — CMS/Mídia
+
+- conteúdo real;
+- fotos/logos oficiais;
+- publicação editorial;
+- R2;
+- remoção de hardcodes editoriais.
+
+## ETAPA 8 — Regras
+
+- área pública com regras oficiais validadas.
+
+## ETAPA 9/10
+
+- exibição pública/participante de Futebol conforme domínio implementado.
+
+## ETAPA 11 — consolidação pública
+
+- decidir galeria;
+- remover placeholders remanescentes;
+- tipar contratos públicos;
 - acessibilidade;
-- SEO/Open Graph/favicon/sitemap;
-- lazy loading/performance;
-- página 404 pública.
+- responsividade;
+- performance.
 
-### Limpeza pós-demo
+## ETAPA 12–14
 
-- remover CSS legado de `styles.css` sem uso;
-- consolidar `header-identity.css` e `footer-ruby.css` nos CSS principais;
-- substituir `any` por tipos públicos;
-- decidir fonte/CMS para conteúdo editorial.
+- hardening;
+- testes manuais;
+- deploy cloud.
 
 ---
 
-## 10. Estado atual
+# 11. Snapshot detalhado da demonstração
 
-```text
-JANELA 1 — Header                           ✅
-JANELA 2 — Hero/Destaques                  ✅
-JANELA 3 — Sobre IEEE/RAS                   ✅
-JANELA 4 — Equipe/Diretoria/Robôs/Prêmios  ✅
-JANELA 5 — Galeria                          ✅
-JANELA 6 — Eventos                          ✅
-JANELA 7 — Competição/Acompanhamento        ✅
-JANELA 8 — Footer rubro                     ✅
-
-Revisão estrutural para demo               ✅
-Typecheck local após últimas alterações     ⬜
-Build local após últimas alterações         ⬜
-Validação visual integrada no navegador     ⬜
-Conteúdo institucional definitivo           ⬜
-```
-
----
-
-## 11. Próxima ação
-
-Não criar novas janelas agora.
-
-Sequência:
-
-```text
-VALIDAR LOCALMENTE
-      ↓
-CORRIGIR EVENTUAIS ERROS
-      ↓
-AJUSTES VISUAIS FINOS
-      ↓
-SUBSTITUIR PLACEHOLDERS
-      ↓
-PUBLICAÇÃO
-```
-
-Documentos auxiliares:
+Para detalhes janela a janela do estado consolidado em 26/08/2026:
 
 ```text
 docs/STATUS_LANDING_PAGE.md
-landing-page/README.md
+```
+
+Esse arquivo deve ser tratado como snapshot histórico útil, não como planejamento global.
+
+---
+
+# 12. Como outra IA deve usar este arquivo
+
+Use para:
+
+```text
+entender identidade e direção visual da Landing
+entender a ordem das janelas
+entender integração pública
+localizar componentes centrais
+saber quais conteúdos ainda são provisórios
+```
+
+Não use para:
+
+```text
+decidir qual etapa executar
+iniciar CMS antecipadamente
+iniciar deploy
+assumir que photo-gallery continuará separado para sempre
+```
+
+Para etapa/ordem:
+
+```text
+docs/ETAPAS_POS_PROJETO.md
+```
+
+Para arquitetura cross-repo:
+
+```text
+docs/DOSSIE_PROJETO_RASCOMP.md
+```
+
+Para índice completo:
+
+```text
+docs/README.md
 ```
