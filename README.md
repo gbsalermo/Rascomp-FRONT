@@ -1,4 +1,4 @@
-# RASCOMP Frontend
+# RasComp Frontend
 
 Frontend da plataforma **RasComp**.
 
@@ -8,22 +8,52 @@ RRC      = evento / competição
 RasComp  = plataforma de software
 ```
 
+---
+
+## Estado atual — 31/08/2026
+
+O projeto foi apresentado e aprovado. O trabalho atual é o ciclo pós-projeto de estabilização e evolução controlada.
+
+```text
+ETAPA 0 — baseline/congelamento       ✅ concluída / validada
+ETAPA 1 — correções de lógica         🚧 etapa atual
+ETAPA 2+                              ⏳ não iniciadas
+```
+
+O roadmap oficial não é mantido neste README. Consulte:
+
+```text
+docs/ETAPAS_POS_PROJETO.md
+```
+
+**Não avançar para a etapa seguinte sem validação explícita.**
+
+Para outra pessoa/IA começando o projeto, o ponto de entrada é:
+
+```text
+docs/README.md
+```
+
+---
+
 ## Aplicações do repositório
 
-O repositório possui hoje **três aplicações**:
+O repositório possui **três aplicações**:
 
 ```text
 gestao/
 ├─ interface autenticada da organização
 ├─ portal do participante
-└─ futuro gestor de mídia + ferramentas DEV
+└─ futuras áreas DEV/MIDIA
 
 landing-page/
 └─ site institucional público RAS UFRB + RRC
 
 photo-gallery/
-└─ protótipo público separado da galeria de fotos
+└─ protótipo público separado da galeria
 ```
+
+---
 
 ## Stack
 
@@ -43,9 +73,18 @@ photo-gallery/
 - TypeScript
 - Vite
 
-## Estado funcional atual
+Backend relacionado:
 
-### Organização / operação
+```text
+gbsalermo/Rascomp
+→ Java 21 + Spring Boot + MySQL + Flyway
+```
+
+---
+
+## Estado funcional conhecido
+
+### Gestão / operação
 
 ```text
 Dashboard + Sidebar                    ✅
@@ -64,11 +103,12 @@ Arena da partida                       ✅
 Suicídio/WO                            ✅
 Histórico de chaves                    ✅
 Fotos de robôs                         ✅
+Página 404 personalizada               ✅ 30/08/2026
 ```
 
 ### Participante
 
-A primeira versão funcional existe em:
+A primeira versão funcional está em:
 
 ```text
 /minha-equipe
@@ -79,77 +119,126 @@ Inclui:
 - equipe;
 - competidores;
 - robôs;
-- foto principal/upload;
+- fotos;
 - inscrições;
 - acompanhamento Follow;
 - histórico de tomadas;
 - acompanhamento de Sumô.
 
-### Landing pública
+O portal ainda não está finalizado; sua conclusão está planejada para a **ETAPA 10**.
 
-A Landing **já existe** em `landing-page/` e consome a API pública competitiva.
+### Landing
 
-Hoje parte do conteúdo institucional ainda está hardcoded nos componentes. Isso será substituído pelo futuro módulo de **MÍDIA/CMS**.
+A Landing já existe em `landing-page/` e consome a API pública competitiva.
+
+```text
+Home institucional inicial             ✅
+Competição ativa                       ✅
+Follow público                          ✅
+Sumô/chaves públicos                    ✅
+Página 404 pública                     ✅ 30/08/2026
+CMS/Mídia                              ⏳ ETAPA 7
+Assets institucionais finais           ⏳ ETAPA 7
+Consolidação Landing/Galeria           ⏳ ETAPA 11
+```
+
+Parte do conteúdo institucional ainda está hardcoded/placeholder. Isso será substituído pelo futuro módulo de MÍDIA/CMS.
 
 ### Galeria
 
-`photo-gallery/` ainda usa álbuns/placeholders estáticos em `src/data/albums.ts`. Na implementação do CMS será decidido se ela continua como aplicação separada ou se será absorvida pela Landing.
+`photo-gallery/` ainda usa álbuns/placeholders estáticos. Na ETAPA 11 será fechada a decisão de mantê-la separada ou incorporá-la à Landing; a direção preferencial atual é incorporar, salvo motivo real para app/deploy independente.
 
-## Arquitetura atual de acesso
+---
 
-O sistema ainda está no modelo legado:
+## Segurança atual
+
+O frontend ainda reflete o modelo legado:
 
 ```text
 ORGANIZACAO
 PARTICIPANTE
 ```
 
-Essa arquitetura será substituída pelo modelo aprovado pós-apresentação:
+A nova matriz aprovada para a **ETAPA 3** é:
 
 ```text
 DEV
-├─ acesso total e manutenção estrutural
-
 GESTAO
-├─ operação competitiva
-└─ sem criação de competição/manutenção estrutural
-
 MIDIA
-└─ gestão editorial da Landing
-
 PARTICIPANTE
-└─ portal da própria equipe/inscrições
 ```
 
-A mudança será feita também no backend; esconder itens de menu não é considerado controle de acesso.
+Essa mudança ainda não está implementada.
 
-## Próximas frentes aprovadas
+A autorização real precisa existir no backend. Esconder botão/menu nunca é considerado segurança.
 
-O roteiro completo, com ordem, descrição e critério de conclusão de cada etapa, está em:
+---
+
+## Qualidade — último checkpoint documentado
+
+Gestão possui workflow de:
 
 ```text
-docs/ETAPAS_POS_PROJETO.md
+npm ci
+npm run typecheck
+npm run build
 ```
 
-Resumo:
+Último checkpoint documentado do backend:
 
 ```text
-0  Baseline da versão aprovada
-1  Correções de lógica
-2  Limpeza técnica
-3  DEV / GESTAO / MIDIA / PARTICIPANTE
-4  Avisos ao participante + Telegram futuro
-5  Ajustes Gerais DEV + auditoria
-6  Portabilidade institucional
-7  Gestor de Mídia / CMS
-8  Regras
-9  Futebol de Robôs
-10 Participante completo
-11 Landing + Galeria
-12 Hardening
-13 Bateria manual completa
-14 Deploy em nuvem / Cloudflare
+48 testes
+0 falhas
+0 erros
+MySQL + Flyway + testdata ✅
 ```
+
+A contagem de testes é um snapshot conhecido e só deve ser atualizada depois de nova execução real.
+
+---
+
+## Executar Gestão localmente
+
+```powershell
+cd gestao
+npm install
+npm run dev
+```
+
+Validação:
+
+```powershell
+npm run typecheck
+npm run build
+```
+
+API padrão:
+
+```text
+VITE_API_URL=http://localhost:8080
+```
+
+---
+
+## Executar Landing localmente
+
+```powershell
+cd landing-page
+npm install
+npm run dev
+```
+
+Variáveis principais:
+
+```text
+VITE_API_URL=http://localhost:8080
+VITE_GESTAO_URL=http://localhost:5173
+VITE_REFRESH_MS=20000
+```
+
+O modo local deverá continuar funcionando mesmo quando existir deploy cloud.
+
+---
 
 ## Rotas autenticadas atuais
 
@@ -176,7 +265,7 @@ Resumo:
 /minha-equipe
 ```
 
-Novas rotas previstas:
+Rotas futuras podem incluir:
 
 ```text
 /avisos
@@ -186,54 +275,13 @@ Novas rotas previstas:
 /futebol
 ```
 
-Os nomes finais podem mudar na implementação.
+Os nomes finais serão definidos na implementação da etapa correspondente.
 
-## Qualidade
-
-Gestão possui workflow:
-
-```text
-Frontend Checks
-→ npm ci
-→ npm run typecheck
-→ npm run build
-```
-
-Backend no último checkpoint revisado:
-
-```text
-48 testes
-0 falhas
-0 erros
-Demo profile com MySQL/Flyway ✅
-```
-
-## Executar Gestão localmente
-
-```powershell
-cd gestao
-npm install
-npm run dev
-```
-
-Validação:
-
-```powershell
-npm run typecheck
-npm run build
-```
-
-API padrão:
-
-```text
-VITE_API_URL=http://localhost:8080
-```
-
-O modo local será preservado mesmo depois de existir a implantação em nuvem.
+---
 
 ## Fonte de verdade
 
-O frontend não decide oficialmente:
+O frontend **não decide oficialmente**:
 
 - elegibilidade;
 - ranking;
@@ -245,15 +293,67 @@ O frontend não decide oficialmente:
 - resultado competitivo;
 - autorização real.
 
-Essas regras precisam existir no backend.
+Essas regras pertencem ao backend.
 
-## Documentação principal
+---
 
-- `docs/DOSSIE_PROJETO_RASCOMP.md` — **mapa mestre de arquitetura, manutenção e riscos**
-- `docs/ETAPAS_POS_PROJETO.md` — **roteiro pós-projeto, etapa por etapa**
-- `docs/DEPLOY_CLOUDFLARE.md` — **guia passo a passo para manter local + publicar versão cloud**
-- `docs/CONTINUIDADE_FRONTEND.md` — checkpoint de continuidade
-- `docs/SYSTEM_DESIGN_GESTAO.md` — desenho histórico da gestão
-- `docs/STATUS_LANDING_PAGE.md` — acompanhamento específico da Landing
+## Documentação — ordem para começar
 
-Para descobrir **qual arquivo alterar quando uma regra muda**, comece pelo dossiê mestre. Para saber **qual é a próxima etapa**, use `ETAPAS_POS_PROJETO.md`.
+```text
+1. docs/README.md
+   → índice, autoridade dos documentos e protocolo de handoff
+
+2. docs/ETAPAS_POS_PROJETO.md
+   → único roadmap canônico + etapa atual
+
+3. docs/DOSSIE_PROJETO_RASCOMP.md
+   → arquitetura, domínio, decisões, riscos e "onde mexer"
+
+4. docs/CONTINUIDADE_FRONTEND.md
+   → checkpoint vivo deste repositório
+
+5. documentos específicos do domínio necessário
+```
+
+Documentos importantes adicionais:
+
+```text
+docs/DECISAO_DEPLOY_CLOUD.md
+→ decisão congelada do modelo local + cloud
+
+docs/DEPLOY_CLOUDFLARE.md
+→ guia futuro da ETAPA 14
+
+docs/STATUS_LANDING_PAGE.md
+→ snapshot detalhado da Landing em 26/08/2026
+
+docs/CONTINUIDADE_LANDING_PAGE.md
+→ continuidade específica da Landing
+
+docs/CONTINUIDADE_GALERIA_FOTOS.md
+→ continuidade específica da galeria
+
+docs/SYSTEM_DESIGN_GESTAO.md
+→ referência de design/arquitetura histórica da gestão
+```
+
+Arquivos datados de revisão/demonstração devem ser tratados como snapshots históricos, não como roadmap atual.
+
+---
+
+## Regra de continuidade
+
+Outra IA deve:
+
+```text
+ler docs/README.md
+confirmar a ETAPA atual
+ler o Dossiê Mestre
+verificar o código real
+trabalhar somente na etapa atual
+manter backend como fonte de verdade
+atualizar testes/documentação quando necessário
+parar no checkpoint e aguardar validação
+```
+
+No estado atual, isso significa: **continuar a ETAPA 1 e não iniciar ETAPA 2 ou novas funcionalidades antecipadamente**.
