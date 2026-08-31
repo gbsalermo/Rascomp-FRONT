@@ -1,10 +1,32 @@
-# Continuidade — RASCOMP Frontend
+# Continuidade — RasComp Frontend
 
-Última atualização: **26/08/2026 — pós-aprovação da apresentação**
+Última atualização: **31/08/2026**
 
-## 1. Situação atual
+Este arquivo registra o **checkpoint funcional do frontend**. Ele não possui roadmap próprio.
 
-O projeto foi apresentado à equipe e **aprovado**. O foco agora deixa de ser preparar uma demo e passa a ser estabilizar o sistema e iniciar as novas frentes acordadas.
+Para ordem de execução e etapa atual:
+
+```text
+docs/ETAPAS_POS_PROJETO.md
+```
+
+Para arquitetura e decisões cross-repo:
+
+```text
+docs/DOSSIE_PROJETO_RASCOMP.md
+```
+
+Para entender a hierarquia de toda a documentação:
+
+```text
+docs/README.md
+```
+
+---
+
+# 1. Situação atual
+
+O RasComp foi apresentado à equipe e aprovado. O ciclo atual é de estabilização e evolução controlada.
 
 ```text
 RAS UFRB = organização
@@ -12,18 +34,44 @@ RRC      = evento/competição
 RasComp  = plataforma
 ```
 
-O repositório possui:
+Estado oficial do ciclo:
 
 ```text
-gestao/        → autenticado: operação, participante e futuras áreas DEV/MIDIA
-landing-page/  → site público RAS UFRB + RRC
-photo-gallery/ → protótipo separado de galeria pública
+ETAPA 0  ✅ concluída / validada
+ETAPA 1  🚧 atual — correções de lógica e riscos
+ETAPA 2+ ⏳ não iniciadas
 ```
 
-## 2. Checkpoint entregue
+**Não iniciar ETAPA 2 sem validação explícita da ETAPA 1.**
+
+---
+
+# 2. Aplicações neste repositório
 
 ```text
-Autenticação                           ✅
+gestao/
+→ aplicação autenticada
+→ operação da organização
+→ portal do participante
+→ futuras áreas DEV e MIDIA
+
+landing-page/
+→ site público institucional RAS UFRB + RRC
+→ consome API pública competitiva
+
+photo-gallery/
+→ protótipo público separado de galeria
+→ ainda usa dados estáticos
+```
+
+---
+
+# 3. Checkpoint funcional conhecido
+
+## Gestão / organização
+
+```text
+Autenticação JWT                       ✅
 Dashboard / shell                      ✅
 Central da competição                  ✅
 Inscrições                             ✅
@@ -40,101 +88,204 @@ Arena da partida                       ✅
 Suicídio/WO                            ✅
 Histórico de chaves                    ✅
 Fotos dos robôs                        ✅
-Portal participante inicial            ✅
-Landing pública inicial                ✅
-Galeria pública protótipo              ✅
+Página 404 personalizada               ✅ 30/08/2026
 ```
 
-Último checkpoint conhecido:
+## Participante
+
+Primeira versão funcional em:
 
 ```text
-Frontend Checks ✅
-Backend         ✅ 48 testes / 0 falhas / 0 erros
-Demo profile    ✅ MySQL + Flyway + testdata
+/minha-equipe
 ```
 
-## 3. Mudança de roadmap aprovada
+Inclui atualmente:
 
-O modelo antigo `ADMIN → PARTICIPANTE → LANDING` não é mais suficiente.
+- equipe;
+- competidores;
+- robôs;
+- foto principal/upload;
+- inscrições;
+- acompanhamento Follow;
+- histórico de tomadas;
+- acompanhamento de Sumô.
 
-Novo roadmap:
+O portal ainda **não é considerado completo**. Sua finalização é ETAPA 10.
+
+## Landing
 
 ```text
-0. REVISÃO / ESTABILIZAÇÃO
-   ↓
-1. PERMISSÕES
-   DEV | GESTAO | MIDIA | PARTICIPANTE
-   ↓
-2. AJUSTES GERAIS DEV
-   ↓
-3. GESTOR DE MÍDIA / CMS
-   ↓
-4. REGRAS
-   ↓
-5. FUTEBOL DE ROBÔS
-   ↓
-6. PARTICIPANTE COMPLETO
-   ↓
-7. CONSOLIDAÇÃO LANDING / GALERIA
+Landing institucional inicial          ✅
+API pública competitiva                ✅ integrada
+Competição ativa                       ✅
+Follow público                          ✅
+Sumô/chave público                      ✅
+Página 404 personalizada               ✅ 30/08/2026
+Conteúdo institucional via CMS         ⏳ ETAPA 7
+Fotos/logos reais completos            ⏳ ETAPA 7
+Consolidação final Landing/Galeria     ⏳ ETAPA 11
 ```
 
-## 4. Novas permissões
+## Galeria
 
-### DEV
+`photo-gallery/` continua como protótipo separado com conteúdo estático. A decisão final de incorporá-la à Landing ou mantê-la separada fica para ETAPA 11.
 
-Acesso integral. Deve ser o único perfil com poderes estruturais como:
+---
 
-- criar competição;
-- alterar permissões;
-- alterar/desativar inscrições livremente dentro das regras DEV;
-- transferir competidor de equipe;
-- transferir robô de equipe;
-- trocar responsável de equipe;
-- usar Ajustes Gerais.
-
-### GESTAO
-
-Perfil operacional equivalente à parte de operação que a organização usa hoje:
-
-- Follow;
-- Sumô;
-- inspeção;
-- partidas;
-- lançamento de resultados/rounds/tentativas;
-- acompanhamento do evento.
-
-Não cria competição e não recebe ferramentas estruturais de DEV.
-
-### MIDIA
-
-Acesso ao futuro gestor editorial:
-
-- upload de mídia;
-- edição de tópicos/textos;
-- associação de mídia a slots/janelas;
-- conteúdo da Landing;
-- galeria.
-
-### PARTICIPANTE
-
-Permanece restrito ao portal e ao ownership da própria equipe.
-
-## 5. Gestor de Mídia
-
-Será implementado dentro de `gestao/`.
-
-Primeiros alvos públicos que hoje estão hardcoded:
+# 4. Qualidade — último checkpoint documentado
 
 ```text
-landing-page/src/components/HighlightsHero.vue
-landing-page/src/components/InstitutionalAbout.vue
-landing-page/src/components/InstitutionalEvents.vue
-landing-page/src/components/InstitutionalGallery.vue
-landing-page/src/components/TeamRobotsAwards.vue
-photo-gallery/src/data/albums.ts
+Frontend Checks  ✅ typecheck + build
+Backend          ✅ 48 testes / 0 falhas / 0 erros
+Demo profile     ✅ MySQL + Flyway + testdata
 ```
 
-A arquitetura prevista está detalhada no dossiê mestre. Conceitos sugeridos:
+Os 48 testes representam o **último checkpoint registrado**. Não atualizar o número por inferência; registrar nova contagem somente após execução real.
+
+---
+
+# 5. Segurança atual
+
+O frontend ainda foi construído sobre o modelo legado:
+
+```text
+ORGANIZACAO
+PARTICIPANTE
+```
+
+Helpers/fluxos atuais ainda refletem principalmente:
+
+```text
+isOrganization
+isParticipant
+```
+
+A nova matriz:
+
+```text
+DEV
+GESTAO
+MIDIA
+PARTICIPANTE
+```
+
+é **planejada para a ETAPA 3**, não implementada ainda.
+
+Quando chegar a ETAPA 3, preferir também capacidades semânticas de UI, por exemplo:
+
+```text
+canManageCompetition
+canOperateCompetition
+canManageMedia
+canUseDevTools
+```
+
+A autorização real continuará sendo responsabilidade do backend.
+
+---
+
+# 6. Arquivos-base da gestão
+
+```text
+gestao/src/main.ts
+→ bootstrap + imports globais/CSS
+
+gestao/src/router.ts
+→ rotas e guards
+
+gestao/src/store.ts
+→ sessão + competição em foco
+
+gestao/src/api.ts
+→ cliente HTTP central atual
+
+gestao/src/types.ts
+→ contratos TypeScript centrais atuais
+```
+
+Telas principais:
+
+```text
+DashboardView.vue
+CompetitionsView.vue
+RegistrationsView.vue
+AdminCatalogView.vue
+FollowView.vue
+FollowRunView.vue
+SumoView.vue
+SumoMatchView.vue
+BracketHistoryView.vue
+MatchesView.vue
+ResultsView.vue
+UsersView.vue
+SettingsView.vue
+ParticipantView.vue
+NotFoundView.vue
+```
+
+---
+
+# 7. Dívida técnica reservada para ETAPA 2
+
+Não antecipar como refatoração ampla durante ETAPA 1, salvo correção mínima necessária.
+
+Pontos já mapeados:
+
+- `api.ts` e `types.ts` cresceram e devem ser separados por domínio gradualmente;
+- `ParticipantView`, `SumoMatchView`, `FollowView`, `FollowRunView` e `CompetitionsView` são grandes;
+- CSS acumulou folhas corretivas em sequência;
+- existe duplicação e espaço para extração de componentes/composables;
+- `photo-gallery` ainda duplica responsabilidade potencial da Landing.
+
+Direção de organização está registrada no roadmap/dossiê.
+
+---
+
+# 8. Estado da Landing
+
+Referência detalhada de layout e snapshot da apresentação:
+
+```text
+docs/STATUS_LANDING_PAGE.md
+```
+
+Importante: esse documento é um snapshot consolidado em 26/08/2026, não o roadmap global.
+
+A Landing atual possui, entre outros:
+
+```text
+InstitutionalHeader.vue
+HighlightsHero.vue
+InstitutionalAbout.vue
+TeamRobotsAwards.vue
+InstitutionalGallery.vue
+InstitutionalEvents.vue
+ActiveCompetition.vue
+InstitutionalFooter.vue
+PublicNotFound.vue
+```
+
+Parte de textos, fotos e dados institucionais continua hardcoded/placeholder e será tratada na ETAPA 7 pelo CMS.
+
+---
+
+# 9. Decisões futuras que afetam o frontend
+
+## ETAPA 3 — permissões
+
+Frontend deve refletir `DEV | GESTAO | MIDIA | PARTICIPANTE`, mas não substituir segurança do backend.
+
+## ETAPA 4 — avisos
+
+Criar UX para publicação/leitura conforme role. Aviso IN_APP será fonte de verdade; Telegram é futuro canal complementar.
+
+## ETAPA 5 — Ajustes Gerais
+
+Área DEV-only com operações explícitas; não criar editor genérico de banco.
+
+## ETAPA 7 — CMS/Mídia
+
+Painel em `gestao/` para administrar:
 
 ```text
 MediaAsset
@@ -142,105 +293,56 @@ ContentSlot
 ContentItem
 ```
 
-O backend já possui uma abstração de Cloudflare R2 reservada para mídia futura.
+A Landing deverá consumir conteúdo publicado em vez de exigir commits para atualizações editoriais.
 
-## 6. Futebol de Robôs
+## ETAPA 8 — Regras
 
-Nova modalidade planejada.
+Cards/sections públicas, com edição conforme política que ainda será definida.
 
-Conceito recebido:
+## ETAPA 9 — Futebol
 
-```text
-competidor A + robô fornecido pela RAS
-             ×
-competidor B + robô fornecido pela RAS
-```
+Frontend só deve ser implementado depois da alteração de domínio no backend, pois `Registration.robot` é obrigatório hoje.
 
-A inscrição não exigirá robô próprio. Equipe continua no desenho por enquanto, sujeito à confirmação final.
+## ETAPA 10 — participante completo
 
-Isso exige alteração do backend antes do frontend, porque hoje `Registration.robot` e `ParticipantRegistrationRequest.robotId` são obrigatórios.
+Completar fluxo de equipe, integrantes, robôs, inscrições, avisos, histórico e identificação competitiva da `Registration`.
 
-## 7. Regras
+## ETAPA 11 — Landing/Galeria
 
-Criar área de cards expansíveis para:
+Direção preferencial atual: absorver a galeria na Landing, salvo motivo real para manter app/deploy separado.
 
-```text
-Follow Line
-Sumô geral
-Sumô RC / textos específicos
-Futebol de Robôs
-Ambiente / Vestimenta
-```
+---
 
-Regras ambientais indicadas inicialmente incluem proibição de alimentos/líquidos na área, sandálias e shorts, além das normas de segurança equivalentes ao laboratório. A redação/sanção deve ser confirmada antes de ser publicada como regulamento oficial.
+# 10. Página 404 — último ajuste visual relevante
 
-## 8. Ajustes Gerais DEV
-
-Nova área DEV-only para substituir intervenções manuais no banco.
-
-Não deve ser um editor de tabela genérico. Cada ação será uma operação validada, por exemplo:
+Em **30/08/2026** foi adicionada uma experiência 404 personalizada em:
 
 ```text
-alterarRole
-transferirCompetidor
-transferirRobo
-transferirResponsabilidade
-corrigirInscricao
-ativar/desativar
+gestao/src/views/NotFoundView.vue
+landing-page/src/components/PublicNotFound.vue
+landing-page/src/not-found.css
 ```
 
-Ações críticas devem possuir auditoria.
+A Landing detecta rotas públicas desconhecidas e apresenta a tela 404; a gestão mantém o comportamento de retorno conforme autenticação.
 
-## 9. Achados prioritários da revisão
+Essa entrega é um ajuste de UX independente e **não significa que a ETAPA 1 foi concluída**.
 
-### P0 / manutenção
+---
 
-- backend possui `rascomp/bin/` antigo rastreado com artefatos de build/código duplicado;
-- documentação antiga divergia da estrutura real;
-- comentários TODO antigos em ConfigFollow/ConfigSumo descreviam módulos já implementados;
-- CSS da gestão está fragmentado em muitas folhas corretivas.
+# 11. Regras de continuidade
 
-### P1 / lógica
-
-- reativação de Registration não revalida período de inscrições;
-- cancelamento do participante precisa regra explícita depois de aprovação/chave/início;
-- geração/regeneração de chave precisa estados de competição formalmente permitidos;
-- edição futura de MatchResult após progressão precisa ser bloqueada ou ter rollback de chave;
-- segurança atual ORGANIZACAO é ampla demais para o novo modelo de roles.
-
-### P2 / arquitetura
-
-- `api.ts` e `types.ts` precisam ser quebrados por domínio conforme novas features entrarem;
-- `ParticipantView`, `SumoMatchView`, `FollowView` e `FollowRunView` já são grandes;
-- decidir se `photo-gallery` continua aplicação própria;
-- alinhar storage local de RobotImage com a estratégia R2 do CMS.
-
-## 10. Regras ainda pendentes
-
-- impacto oficial dos checkpoints no Follow;
-- combinações válidas de concluída/válida/tempo no Follow;
-- regras completas e sanções do Futebol;
-- regras oficiais de ambiente/vestimenta;
-- quem pode editar/publicar Regras: DEV, MIDIA ou ambos;
-- se conteúdo MIDIA publica imediatamente ou requer aprovação;
-- política de cancelamento de inscrição após aprovação/chave.
-
-## 11. Próxima etapa efetiva
-
-Antes de implementar novas features:
-
-1. fechar os bugs P1 da revisão;
-2. fazer um commit isolado removendo `rascomp/bin/` do backend;
-3. manter CI verde;
-4. implementar a nova matriz de permissões;
-5. somente então iniciar Ajustes Gerais/Mídia/Futebol.
-
-## 12. Documento canônico
-
-O mapa detalhado de arquivos, fluxos, riscos e o guia “quero alterar X, onde mexo?” está em:
+Quando outra IA assumir o frontend:
 
 ```text
-docs/DOSSIE_PROJETO_RASCOMP.md
+1. ler docs/README.md
+2. conferir a etapa atual em ETAPAS_POS_PROJETO.md
+3. ler o Dossiê Mestre
+4. usar este arquivo como checkpoint do frontend
+5. conferir o código real antes de editar
+6. não criar roadmap paralelo
+7. não avançar de etapa sem validação
 ```
 
-Esse dossiê deve ser atualizado sempre que uma mudança alterar responsabilidades arquiteturais.
+Se a tarefa alterar regra de negócio, implementar/validar a regra no backend antes de tratar o frontend como fonte oficial.
+
+Ao concluir um checkpoint relevante, atualizar este arquivo sem duplicar a ordem do roadmap.
