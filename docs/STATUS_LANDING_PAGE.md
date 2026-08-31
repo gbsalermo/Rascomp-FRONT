@@ -1,25 +1,41 @@
 # Status consolidado — Landing Page / Site Público RAS UFRB
 
-> Snapshot atualizado para a demonstração de 26/08/2026.
-> Fonte de verdade de estado atual da Landing. Complementa `CONTINUIDADE_LANDING_PAGE.md`.
+**Snapshot principal da demonstração: 26/08/2026**  
+**Revisão documental: 31/08/2026**
+
+Este arquivo preserva o estado detalhado da Landing no marco da demonstração aprovada. Ele é uma **fotografia histórica de subsistema**, não a fonte da etapa atual do projeto.
+
+Para estado global/roadmap:
+
+```text
+docs/ETAPAS_POS_PROJETO.md
+```
+
+Para continuidade viva da Landing:
+
+```text
+docs/CONTINUIDADE_LANDING_PAGE.md
+```
+
+Mudança posterior ao snapshot: a página 404 pública foi implementada em **30/08/2026**.
 
 ---
 
-## 1. Identidade do projeto
+## 1. Identidade
 
 ```text
 RAS UFRB = identidade institucional pública
 RRC      = evento/competição de robótica
-RASCOMP  = plataforma/software de gestão
+RasComp  = plataforma/software de gestão
 ```
 
-A Landing é o site institucional da **IEEE RAS UFRB**. O RRC aparece como conteúdo de destaque quando houver competição, mas não domina a Home durante todo o ano.
+A Landing é o site institucional da **IEEE RAS UFRB**. O RRC aparece como conteúdo de destaque quando houver competição, sem dominar a Home durante o ano inteiro.
 
 Camunda está fora do projeto.
 
 ---
 
-## 2. Stack e execução
+## 2. Stack e execução do snapshot
 
 ```text
 Vue 3
@@ -28,16 +44,7 @@ Vite 7
 Axios
 ```
 
-Scripts:
-
-```bash
-npm run dev
-npm run typecheck
-npm run build
-npm run preview
-```
-
-Portas padrão:
+Portas locais:
 
 ```text
 Gestão   http://localhost:5173
@@ -47,7 +54,7 @@ Backend  http://localhost:8080
 
 Variáveis:
 
-```env
+```text
 VITE_API_URL=http://localhost:8080
 VITE_GESTAO_URL=http://localhost:5173
 VITE_REFRESH_MS=20000
@@ -55,7 +62,7 @@ VITE_REFRESH_MS=20000
 
 ---
 
-## 3. Paleta oficial congelada
+## 3. Paleta oficial
 
 ```text
 Rubro principal        #D20F39
@@ -72,13 +79,12 @@ Regra:
 
 - rubro = títulos, competição, alertas e CTA principal;
 - roxo = estrutura, hover, sublinhados, CTA secundário e fechamento institucional;
-- não transformar a Home em uma interface monocromática.
-
-Exceção aprovada: **Footer com bloco principal rubro e faixa final roxo profundo**.
+- Home não deve ficar monocromática;
+- Footer aprovado: bloco principal rubro + faixa final roxo profundo.
 
 ---
 
-## 4. Ordem oficial da Home
+## 4. Ordem aprovada da Home
 
 ```text
 1. Header
@@ -93,123 +99,96 @@ Exceção aprovada: **Footer com bloco principal rubro e faixa final roxo profun
 
 `Edições anteriores` não faz parte da Home.
 
-A Janela 7 só existe quando:
+A Janela 7 só aparece quando:
 
 ```text
 competition.status === 'EM_ANDAMENTO'
 ```
 
-Sem competição ativa:
-
-```text
-Eventos → Footer
-```
-
 ---
 
-## 5. Estado por janela
+## 5. Estado por janela no snapshot de 26/08
 
-### Janela 1 — Header ✅
+```text
+Janela 1 — Header                           ✅
+Janela 2 — Hero / Destaques                ✅
+Janela 3 — Sobre IEEE + RAS                ✅
+Janela 4 — Equipe/Diretoria/Robôs/Prêmios  ✅
+Janela 5 — Galeria                         ✅
+Janela 6 — Eventos                         ✅
+Janela 7 — Competição/Acompanhamento       ✅
+Janela 8 — Footer                          ✅
+```
+
+### Header
 
 - identidade IEEE RAS UFRB;
-- Início, Sobre, Competição, Calendário, Eventos e Contato;
-- CTA Inscrições quando inscrições estiverem abertas;
-- faixa rubra quando houver competição em andamento;
+- navegação institucional;
+- CTA de inscrições quando aplicável;
+- aviso de competição em andamento;
 - dropdown competitivo;
-- versão mobile;
-- marca visual corrigida para usar a identidade IEEE RAS em vez do bloco textual `RAS`.
+- mobile.
 
-### Janela 2 — Hero / Destaques ✅
+### Hero
 
 - slide visual principal;
-- painel lateral de novidades;
-- previews inferiores;
-- autoplay;
-- setas e dots;
-- destaque de competição quando aplicável.
+- novidades laterais;
+- previews;
+- autoplay/setas/dots;
+- conteúdo competitivo quando aplicável.
 
-Fotos continuam como placeholders até o acervo oficial.
+### Sobre
 
-### Janela 3 — Sobre IEEE + RAS ✅
-
-- slider de mídia;
-- tabs IEEE / RAS UFRB;
-- explicação institucional;
+- mídia/collage;
+- tabs IEEE/RAS UFRB;
+- texto institucional;
 - indicadores.
 
-Fotos e números ainda são temporários.
+### Equipe/Diretoria/Robôs/Premiações
 
-### Janela 4 — Equipe / Diretoria / Robôs / Premiações ✅
+- equipe em lista;
+- diretoria em mosaico;
+- robôs em cards;
+- premiações;
+- indicadores.
 
-- Equipe em lista com busca/filtro;
-- Diretoria em mosaico;
-- Robôs em cards expansíveis;
-- Premiações em cards;
-- indicadores institucionais.
+Parte dos dados ainda era demonstrativa.
 
-Membros, diretoria, parte dos robôs e premiações ainda precisam ser substituídos pelos dados reais.
+### Galeria
 
-### Janela 5 — Galeria ✅
-
-- filtros por categoria;
+- filtros;
 - álbuns;
-- foto principal + miniaturas;
-- metadados;
-- preview flutuante.
+- capa/miniaturas;
+- preview.
 
-Ainda falta o acervo real e navegação real das fotos.
+O acervo real ainda não estava integrado.
 
-### Janela 6 — Eventos ✅
+### Eventos
 
 - filtros;
 - próximos eventos;
-- agenda lateral;
-- eventos anteriores;
+- agenda;
+- anteriores;
 - newsletter demonstrativa;
-- redes;
-- indicadores.
+- redes/indicadores.
 
-Na revisão de 26/08 foi corrigida uma data que já estava no passado dentro de `Próximos Eventos`.
+### Competição atual
 
-### Janela 7 — Competição atual + acompanhamento ✅
-
-Versão simplificada aprovada:
+Estrutura aprovada:
 
 ```text
 [ Panorama geral ] [ Follow Line ] [ Sumô ]
 [ Próxima partida ] [ Último resultado ] [ Ranking Follow ]
 ```
 
-Panorama:
+Correções do snapshot:
 
-- equipes;
-- robôs;
-- modalidades;
-- inscrições aprovadas;
-- progresso visual.
+- panorama usa inscrições aprovadas;
+- Follow usa `tempoFinalSegundos` oficial;
+- `#chaveamento` existe no card de Sumô mesmo recolhido;
+- Header navega corretamente ao bloco competitivo.
 
-Follow Line:
-
-- ranking oficial;
-- `tempoFinalSegundos`;
-- seletor de categoria;
-- expansão da classificação.
-
-Sumô:
-
-- próximos confrontos;
-- seletor de chave;
-- expansão do chaveamento.
-
-Correções da revisão:
-
-- contador passou a mostrar inscrições **aprovadas**;
-- `#chaveamento` agora existe mesmo antes de expandir a chave;
-- Header consegue navegar corretamente para o bloco de Sumô.
-
-### Janela 8 — Footer ✅
-
-Versão final aprovada:
+### Footer
 
 ```text
 BLOCO PRINCIPAL RUBRO
@@ -219,256 +198,77 @@ FAIXA ROXO PROFUNDO
 identidade | missão | copyright | feito com ♥ | privacidade | termos | ↑
 ```
 
-Características:
+---
 
-- fundo rubro em gradiente suave;
-- textos principais brancos;
-- roxo preservado em detalhes, hover e CTA secundário;
-- cards claros de parceiros/contato para contraste;
-- faixa final roxo profundo;
-- tipografia forte e legível;
-- responsivo.
+## 6. Integração competitiva pública
+
+Fluxo:
+
+```text
+Gestão
+→ Backend Spring Boot
+→ /api/v1/public/**
+→ Landing
+```
+
+A Landing representa os resultados do backend. Não calcula oficialmente ranking, BYE, vencedor ou progressão.
 
 ---
 
-## 6. Integração competitiva
+## 7. Conteúdo que ainda era provisório
 
-Arquivo:
+No marco da demonstração ainda existiam placeholders/hardcodes para itens como:
 
-```text
-landing-page/src/api.ts
-```
+- fotos;
+- integrantes/diretoria;
+- robôs/projetos;
+- premiações;
+- números institucionais;
+- eventos;
+- parceiros;
+- textos/editorial.
 
-Endpoints consumidos:
-
-```http
-GET /api/v1/public/competicoes
-GET /api/v1/public/categorias
-GET /api/v1/public/inscricoes?competitionId=
-GET /api/v1/public/ranking/seguidor-linha?competitionId=&categoryId=
-GET /api/v1/public/chaveamentos?competitionId=
-GET /api/v1/public/partidas?bracketId=
-GET /api/v1/public/resultados?bracketId=
-```
-
-Na revisão de demo, o bootstrap deixou de depender de `/equipes` e `/robos`, pois esses dados não eram usados no `App.vue`. Isso reduz o risco de um endpoint secundário impedir a Landing inteira de carregar.
-
-Fonte de verdade:
-
-```text
-Gestão → Spring Boot → /api/v1/public/** → Landing
-```
-
-A Landing não:
-
-- gera chave;
-- avança vencedor;
-- decide resultado;
-- recalcula ranking;
-- altera inscrições;
-- registra rounds/partidas.
+Esses itens serão substituídos pelo CMS/Mídia na **ETAPA 7** do roadmap canônico.
 
 ---
 
-## 7. Correções técnicas feitas para a demo
+## 8. Alteração posterior: página 404
 
-### TypeScript / Vite
+Em **30/08/2026**, depois deste snapshot de demonstração, a Landing recebeu página 404 personalizada.
 
-O `vite.config.ts` usa:
-
-```ts
-import { fileURLToPath, URL } from 'node:url'
-```
-
-Foi adicionado:
+Arquivos principais:
 
 ```text
-@types/node
+landing-page/src/components/PublicNotFound.vue
+landing-page/src/not-found.css
+landing-page/src/App.vue
 ```
 
-E o `tsconfig.json` agora inclui:
-
-```json
-"types": ["vite/client", "node"]
-```
-
-Isso evita o mesmo erro `TS2307: Cannot find module 'node:url'` encontrado anteriormente no outro front.
-
-### Identidade HTML
-
-O `index.html` foi corrigido de `RASCOMP` para:
-
-```text
-IEEE RAS UFRB · Robotics & Automation Society
-```
-
-### Header
-
-A marca deixou de ser um bloco textual genérico e passou a usar o asset IEEE RAS já existente no projeto.
-
-### Footer
-
-Foi criado `footer-ruby.css`, importado após `footer.css`, contendo a versão rubra aprovada sem destruir a base responsiva anterior.
+Portanto, listas antigas deste documento que tratavam 404 como pendência devem ser consideradas superadas.
 
 ---
 
-## 8. Cenário oficial de demonstração
+## 9. Como usar este documento
 
-O backend já possui profile local opt-in:
+Use como referência para:
 
-```text
-SPRING_PROFILES_ACTIVE=testdata
-```
+- identidade visual aprovada;
+- ordem da Home;
+- comportamento das janelas;
+- estado apresentado em 26/08/2026.
 
-Arquivo:
+Não use para:
 
-```text
-rascomp/src/main/resources/application-testdata.properties
-```
+- determinar a etapa atual;
+- decidir a próxima implementação;
+- afirmar que placeholders continuam iguais sem verificar o código;
+- decidir a arquitetura final da galeria.
 
-Ele habilita:
-
-```text
-rascomp.test-data.bracket-history-enabled=true
-rascomp.test-data.follow-line-enabled=true
-rascomp.test-data.demo-showcase-enabled=true
-```
-
-O inicializador `DemoShowcaseDataInitializer` cria:
-
-- competição `EM_ANDAMENTO` com datas relativas ao dia atual;
-- Follow Line com ranking e histórico;
-- Sumô parcialmente executado;
-- BYEs;
-- resultados;
-- competição histórica;
-- contas de demonstração.
-
-Credenciais:
+Para continuidade atual:
 
 ```text
-PARTICIPANTE
-lider.demo@rascomp.local
-Rascomp@2026
-
-ORGANIZAÇÃO
-organizacao.demo@rascomp.local
-Rascomp@2026
+docs/README.md
+docs/ETAPAS_POS_PROJETO.md
+docs/DOSSIE_PROJETO_RASCOMP.md
+docs/CONTINUIDADE_LANDING_PAGE.md
 ```
-
----
-
-## 9. Roteiro para a demonstração de hoje
-
-### Backend
-
-```powershell
-cd Rascomp\rascomp
-$env:SPRING_PROFILES_ACTIVE="testdata"
-.\run-local.ps1
-```
-
-Aguardar no terminal a mensagem de cenário de demonstração pronto.
-
-### Gestão
-
-```powershell
-cd Rascomp-FRONT\gestao
-npm install
-npm run dev
-```
-
-### Landing
-
-```powershell
-cd Rascomp-FRONT\landing-page
-Copy-Item .env.example .env
-npm install
-npm run typecheck
-npm run build
-npm run dev
-```
-
-Abrir:
-
-```text
-http://localhost:5174
-```
-
-Percurso sugerido:
-
-```text
-Header
-→ Hero
-→ Sobre
-→ Equipe/Diretoria/Robôs/Premiações
-→ Galeria
-→ Eventos
-→ Janela 7
-   → Panorama
-   → Follow Line
-   → Sumô
-   → Ver ranking
-   → Ver chave
-→ Footer
-```
-
----
-
-## 10. Pendências
-
-### P0 — antes da demo
-
-- [ ] executar `npm install` após a inclusão de `@types/node`;
-- [ ] executar `npm run typecheck`;
-- [ ] executar `npm run build`;
-- [ ] subir backend com profile `testdata`;
-- [ ] abrir a Landing e conferir visualmente Header → Footer;
-- [ ] confirmar que a Janela 7 aparece;
-- [ ] conferir o Footer rubro em desktop.
-
-### P1 — antes da publicação oficial
-
-- [ ] fotos oficiais;
-- [ ] membros reais;
-- [ ] diretoria real;
-- [ ] robôs/projetos reais;
-- [ ] premiações oficiais;
-- [ ] números institucionais confirmados;
-- [ ] agenda real;
-- [ ] contatos e URLs sociais;
-- [ ] parceiros confirmados;
-- [ ] newsletter real ou remoção do formulário;
-- [ ] páginas de Privacidade e Termos;
-- [ ] asset IEEE RAS copiado fisicamente para `landing-page/public/`;
-- [ ] alt texts definitivos;
-- [ ] revisão mobile/tablet completa;
-- [ ] acessibilidade e teclado;
-- [ ] SEO/Open Graph/favicon/sitemap;
-- [ ] performance/lazy loading de imagens;
-- [ ] 404 pública.
-
-### P2 — limpeza técnica
-
-- [ ] remover CSS legado de `styles.css` que não é mais usado;
-- [ ] consolidar arquivos de override (`header-identity.css`, `footer-ruby.css`) depois da validação visual;
-- [ ] substituir `any` por tipos públicos do domínio;
-- [ ] decidir fonte editorial futura para eventos, galeria, equipe e premiações.
-
----
-
-## 11. Conclusão atual
-
-```text
-Arquitetura visual das 8 janelas       ✅
-Fluxo institucional                    ✅
-Janela competitiva condicional         ✅
-Follow Line + Sumô públicos            ✅
-Footer rubro + faixa roxa               ✅
-Cenário de demonstração no backend     ✅
-Correção preventiva de node:url        ✅
-Typecheck/build executados localmente  ⬜
-Conteúdo institucional definitivo      ⬜
-```
-
-A Landing está **estruturalmente pronta para demonstração**, mas só deve ser chamada de tecnicamente validada depois de `npm run typecheck` + `npm run build` no computador local e uma passagem visual pelo navegador.
