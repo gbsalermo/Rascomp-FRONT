@@ -1,47 +1,36 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **31/08/2026**
+Última revisão estrutural: **04/09/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
-Ele responde:
+> A ordem das etapas não é definida aqui. A única fonte de verdade para planejamento é `docs/ETAPAS_POS_PROJETO.md`.
 
-1. o que é o RasComp;
-2. onde está cada parte do sistema;
-3. qual camada é responsável por cada regra;
-4. quais decisões já foram tomadas;
-5. quais riscos e decisões continuam abertas;
-6. onde mexer quando uma funcionalidade muda.
-
-> **Este documento não define a ordem do roadmap.** A única fonte de verdade para etapa atual e sequência de execução é `docs/ETAPAS_POS_PROJETO.md`.
-
-Para uma IA começando do zero, ler primeiro `docs/README.md`.
+Para começar do zero, ler primeiro `docs/README.md`.
 
 ---
 
-# 1. Estado global em 31/08/2026
+# 1. Estado global
 
 ```text
-Projeto apresentado à equipe                  ✅ aprovado
-ETAPA 0 — baseline/congelamento               ✅ concluída e validada
-ETAPA 1 — correções de lógica                 🚧 etapa atual
+Projeto apresentado/aprovado                  ✅
+ETAPA 0 — baseline                            ✅ concluída / validada
+ETAPA 1 — lógica e integridade                🚧 etapa atual
 ETAPA 2+                                       ⏳ não iniciadas
 Backend — último checkpoint documentado       48 testes / 0 falhas / 0 erros
+Banco ativo                                   MySQL
 Migrations                                    V1–V7
 Próxima migration estrutural                  V8+
-Roles implementadas                           ORGANIZACAO | PARTICIPANTE
-Roles futuras aprovadas                       DEV | GESTAO | MIDIA | PARTICIPANTE
-Página 404 gestão + landing                    ✅ implementada em 30/08/2026
-Deploy cloud                                   ⏳ ETAPA 14
+Roles atuais                                  ORGANIZACAO | PARTICIPANTE
+Roles futuras                                 DEV | GESTAO | MIDIA | PARTICIPANTE
+Deploy cloud                                  ⏳ ETAPA 14
 ```
 
-A página 404 é um ajuste isolado pós-aprovação e **não alterou a etapa atual**.
-
-Não considerar uma etapa concluída por inferência a partir de commits. O roadmap só deve ser atualizado após o checkpoint ser efetivamente validado.
+Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, sem mudança de etapa. Limpeza técnica de código/artefatos continua reservada à ETAPA 2.
 
 ---
 
-# 2. Identidade do projeto
+# 2. Identidade e escopo
 
 ```text
 RAS UFRB = organização / capítulo estudantil
@@ -49,7 +38,7 @@ RRC      = evento / competição de robótica
 RasComp  = plataforma de software
 ```
 
-O RasComp não é apenas a Landing nem apenas o sistema de competição. Ele conecta:
+O RasComp conecta:
 
 ```text
 operação administrativa
@@ -63,7 +52,7 @@ publicação pública
 conteúdo institucional
 ```
 
-Camunda não faz parte do RasComp.
+**Camunda não faz parte da arquitetura atual.** Referências antigas a Camunda pertenciam a documentação histórica removida/obsoleta e não representam o código atual.
 
 ---
 
@@ -74,7 +63,7 @@ Camunda não faz parte do RasComp.
 ```text
 gbsalermo/Rascomp
 └─ rascomp/
-   └─ Spring Boot + MySQL + Flyway
+   └─ Java 21 + Spring Boot + MySQL + Flyway
 ```
 
 Código principal:
@@ -88,37 +77,38 @@ rascomp/src/main/java/br/edu/ufrb/rascomp/
 ```text
 gbsalermo/Rascomp-FRONT
 ├─ gestao/        → aplicação autenticada + portal participante
-├─ landing-page/  → site público RAS UFRB + RRC
+├─ landing-page/  → site público institucional/competitivo
 └─ photo-gallery/ → protótipo público separado de galeria
 ```
 
-A existência de **três aplicações frontend** é o estado atual. Documentos antigos que descrevem somente duas estão desatualizados.
+A existência de três aplicações frontend é o estado atual. A ETAPA 11 decidirá se `photo-gallery/` permanece independente ou é absorvida pela Landing.
 
 ---
 
-# 4. Hierarquia de responsabilidade
+# 4. Fluxo técnico e fonte de verdade
 
 Fluxo predominante:
 
 ```text
 Frontend
-   ↓ HTTP
+   ↓ HTTP/JSON
 Controller
    ↓ DTO
 Service
-   ↓ regra de negócio
+   ↓ regra de negócio / transação
 Repository
-   ↓
+   ↓ JPA/Hibernate
 MySQL
 ```
 
-## Regra central
+O frontend **nunca acessa o banco diretamente**.
 
-O **backend é fonte de verdade** para:
+O backend é fonte de verdade para:
 
 - autorização real;
 - ownership;
 - elegibilidade;
+- estado de inscrições;
 - ranking;
 - inspeção;
 - BYE;
@@ -127,36 +117,30 @@ O **backend é fonte de verdade** para:
 - campeão;
 - resultados competitivos.
 
-O frontend pode antecipar uma regra por UX, mas nunca substituí-la.
-
-Exemplo já consolidado:
-
-```text
-2 penalidades no Sumô
-frontend → mostra derrota do round
-backend  → força a regra e define o adversário como vencedor
-```
+O frontend pode antecipar regras para UX, mas nunca substituí-las.
 
 ---
 
 # PARTE A — BACKEND
 
-# 5. Estrutura principal
+# 5. Estrutura
 
 ```text
-config/      configuração Spring, segurança e R2
+config/      Spring, segurança e R2
 controller/  endpoints HTTP
 dto/         contratos de entrada/saída
-exception/   tradução global de erros HTTP
+exception/   tradução de erros HTTP
 model/       entidades JPA e enums
-repository/  acesso ao MySQL
+repository/  persistência Spring Data
 security/    JWT/autenticação
 service/     regras de negócio
 storage/     abstração de object storage/R2
-teste/       initializers opt-in para demonstração/testes
+teste/       initializers opt-in de demonstração/teste
 ```
 
-Banco:
+## Banco e migrations
+
+Banco ativo: **MySQL**.
 
 ```text
 src/main/resources/db/migration/
@@ -166,23 +150,25 @@ V1 ... V7
 Regra congelada:
 
 ```text
-migration já aplicada → nunca reescrever
-próxima mudança estrutural → V8+
+V1–V7 nunca são reescritas
+próxima mudança estrutural = V8+
 ```
+
+PostgreSQL não faz parte da configuração ativa. Referências antigas dentro de artefatos legados não definem a arquitetura atual.
 
 ---
 
-# 6. Segurança atual e modelo futuro
+# 6. Segurança
 
-## Estado implementado hoje
+## Estado atual
 
 ```text
 UserRole
-├─ PARTICIPANTE
-└─ ORGANIZACAO
+├─ ORGANIZACAO
+└─ PARTICIPANTE
 ```
 
-Política ampla atual:
+Política predominante:
 
 ```text
 /api/v1/public/**       → público
@@ -190,21 +176,9 @@ Política ampla atual:
 /api/v1/**              → ORGANIZACAO
 ```
 
-Arquivos centrais:
+Conta desativada invalida autenticação nas requisições seguintes porque a validação JWT depende também de `usuario.isEnabled()`.
 
-```text
-model/Enum/UserRole.java
-model/UserAccount.java
-config/SecurityConfig.java
-security/JwtAuthenticationFilter.java
-security/JwtService.java
-service/UserAccountService.java
-controller/UserAccountController.java
-```
-
-Conta desativada já invalida autenticação nas requisições seguintes porque `JwtService.tokenValido()` depende de `usuario.isEnabled()`.
-
-## Modelo aprovado para a ETAPA 3
+## ETAPA 3 — matriz futura
 
 ```text
 DEV
@@ -213,46 +187,18 @@ MIDIA
 PARTICIPANTE
 ```
 
-### DEV
+Direção de responsabilidades:
 
-- acesso integral;
-- criação/alteração estrutural de competição;
-- roles/permissões;
-- manutenção excepcional;
-- futuros Ajustes Gerais.
+- **DEV:** acesso integral, estrutura, roles, manutenção excepcional e Ajustes Gerais;
+- **GESTAO:** operação competitiva;
+- **MIDIA:** conteúdo institucional, mídia e publicação;
+- **PARTICIPANTE:** própria equipe, robôs, inscrições, acompanhamento e avisos.
 
-### GESTAO
-
-- operação competitiva;
-- Follow;
-- Sumô;
-- inspeções;
-- tentativas/tomadas;
-- rounds/batalhas;
-- chaves/resultados permitidos;
-- sem manutenção estrutural DEV.
-
-### MIDIA
-
-- conteúdo institucional;
-- mídia;
-- slots/tópicos da Landing;
-- galeria;
-- sem operação competitiva automática.
-
-### PARTICIPANTE
-
-- própria equipe;
-- competidores autorizados;
-- robôs/fotos;
-- inscrições;
-- acompanhamento.
-
-O frontend também deve refletir permissões, mas esconder menu nunca será considerado segurança.
+O frontend deve refletir capacidades, mas menu oculto nunca será segurança.
 
 ---
 
-# 7. UserAccount, Competitor e responsável da Team são conceitos diferentes
+# 7. Identidades de domínio que não devem ser confundidas
 
 ```text
 UserAccount
@@ -267,94 +213,47 @@ Team.responsibleUser
 → usuário responsável pela equipe no portal
 ```
 
-Arquivos:
+Consequência para Ajustes Gerais:
 
 ```text
-model/UserAccount.java
-model/Competitor.java
-model/Team.java
-service/AccessPolicyService.java
-service/ParticipantPortalService.java
+transferirCompetidor
+≠ transferirResponsabilidade
+≠ transferirRobo
+≠ alterarRole
 ```
 
-Consequência para futuros Ajustes Gerais:
-
-```text
-mover Competitor
-≠ trocar responsável da Team
-≠ mover Robot
-≠ trocar role de UserAccount
-```
-
-Essas operações devem permanecer explícitas e separadas.
+Operações administrativas devem permanecer explícitas e auditáveis.
 
 ---
 
-# 8. Competition e CompetitionCategory
+# 8. Competition / Category / Registration
 
 ## Competition
-
-Arquivos principais:
-
-```text
-model/Competition.java
-controller/CompetitionController.java
-service/CompetitionService.java
-repository/CompetitionRepository.java
-dto/CompetitionDTO.java
-```
 
 Regras atuais relevantes:
 
 - nome único;
 - janela de inscrições consistente;
-- fim das inscrições até o início da competição;
+- fim das inscrições até início da competição;
 - exclusão lógica via `ativo=false`.
-
-No futuro, criação/alteração estrutural será DEV-only.
 
 ## CompetitionCategory
 
-```text
-model/CompetitionCategory.java
-controller/CompetitionCategoryController.java
-service/CompetitionCategoryService.java
-model/Enum/Modalidade.java
-```
-
-A categoria é catálogo global. A participação em uma edição acontece via `Registration`.
-
-Modalidades atuais:
+Catálogo global. Modalidades atuais:
 
 ```text
 SUMO
 FOLLOW_LINE
 ```
 
-Configurações:
+Configuração:
 
 ```text
 CompetitionCategory 1:1 ConfigSumo
 CompetitionCategory 1:1 ConfigFollow
 ```
 
----
-
-# 9. Registration — núcleo de inscrição competitiva
-
-Arquivos:
-
-```text
-model/Registration.java
-dto/RegistrationDTO.java
-dto/ParticipantRegistrationRequest.java
-controller/RegistrationController.java
-service/RegistrationService.java
-repository/RegistrationRepository.java
-service/ParticipantPortalService.java
-```
-
-Modelo atual:
+## Registration
 
 ```text
 Registration
@@ -375,40 +274,29 @@ Unicidade atual:
 competition + category + robot
 ```
 
-## Riscos atuais da ETAPA 1
+Arquivos centrais:
 
-### Reativação fora da janela
+```text
+model/Registration.java
+dto/RegistrationDTO.java
+dto/ParticipantRegistrationRequest.java
+controller/RegistrationController.java
+service/RegistrationService.java
+repository/RegistrationRepository.java
+service/ParticipantPortalService.java
+```
 
-`RegistrationService.reativar()` reativa como `PENDENTE`, mas não revalida a janela de inscrições.
+### Riscos atuais da ETAPA 1
 
-### Cancelamento
-
-Ownership do participante existe, porém ainda precisa existir política explícita para cancelamento depois de:
-
-- aprovação;
-- geração de chave;
-- início da competição;
-- criação de histórico competitivo.
-
-Essas regras não devem ser inventadas pelo frontend.
+1. `RegistrationService.reativar()` não revalida a janela de inscrições.
+2. Cancelamento ainda precisa política por estado competitivo.
+3. Geração/regeneração de chave precisa estados de `Competition` explicitamente permitidos.
+4. Correção de `MatchResult` após progressão precisa bloqueio ou rollback/reprocessamento.
+5. Estados válidos de tentativa Follow precisam formalização.
 
 ---
 
-# 10. Follow Line
-
-Arquivos principais:
-
-```text
-model/ConfigFollow.java
-model/TentativaSeguidorLinha.java
-controller/ConfigFollowController.java
-controller/TentativaSeguidorLinhaController.java
-controller/RankingFollowController.java
-service/ConfigFollowService.java
-service/TentativaSeguidorLinhaService.java
-service/RankingFollowService.java
-repository/TentativaSeguidorLinhaRepository.java
-```
+# 9. Follow Line
 
 Estrutura:
 
@@ -431,32 +319,17 @@ tentativa válida + concluída + com tempo
 tempoFinal = tempoSegundos + penalidadeSegundos
 ```
 
-## Decisões ainda abertas
+`checkpointsAlcancados` é persistido/exibido, mas **não altera ranking atualmente**.
 
-- efeito oficial de `checkpointsAlcancados`;
-- combinações válidas de `concluida`, `valida` e `tempoSegundos=null`;
-- demais critérios oficiais de invalidação/desclassificação.
+Decisões abertas:
 
-`checkpointsAlcancados` é armazenado/exibido, mas atualmente **não altera ranking**.
+- combinações válidas de `concluida`, `valida` e `tempoSegundos`;
+- efeito oficial dos checkpoints;
+- critérios adicionais oficiais de invalidação/desclassificação.
 
 ---
 
-# 11. Sumô, chaves e resultados
-
-Arquivos principais:
-
-```text
-model/ConfigSumo.java
-model/InspecaoSumo.java
-model/RoundSumo.java
-model/Match.java
-model/MatchResult.java
-service/InspecaoSumoService.java
-service/BracketGenerationService.java
-service/BracketProgressionService.java
-service/RoundSumoService.java
-service/MatchResultService.java
-```
+# 10. Sumô, chave e progressão
 
 Fluxo:
 
@@ -470,7 +343,7 @@ Registration APROVADA
 → progressão
 ```
 
-Categorias Mini/3 kg e RC/Autônomo usam o mesmo motor e ficam isoladas por:
+Categorias compartilham o motor e ficam isoladas por:
 
 ```text
 competitionId + categoryId
@@ -482,178 +355,101 @@ Regras consolidadas:
 0 penalidade → normal
 1 penalidade → normal
 2 penalidades → derrota automática do round
-SUICIDIO_WO  → adversário vence o round
+SUICIDIO_WO  → adversário vence
 BYE          → avanço automático
 ```
 
-Motivos estruturados atuais:
-
-```text
-DISPUTA
-SUICIDIO_WO
-PENALIDADES
-```
-
-## Histórico de chaves
+Histórico de chaves:
 
 ```text
 nova chave → atual=true
 anterior   → atual=false
 ```
 
-`ativo` e `atual` são conceitos diferentes. Chave histórica é read-only para resultados/rounds e não é publicada como chave vigente.
-
-## Riscos da ETAPA 1
-
-- geração/regeneração ainda precisa estados de `Competition` explicitamente permitidos;
-- alterar `MatchResult` depois de progressão pode deixar a fase seguinte inconsistente.
-
-A estratégia de correção de resultado deve ser bloqueio ou rollback/reprocessamento explícito; nunca alteração silenciosa.
+`ativo` e `atual` são conceitos distintos. Chave histórica é read-only para operação competitiva.
 
 ---
 
-# 12. Fotos de robôs e storage
+# 11. Fotos e storage
 
-Fluxo atual:
+Fotos de robôs hoje:
 
 ```text
 RobotImageService
 → RobotImageStorageService
-→ filesystem local ./uploads/robots
+→ ./uploads/robots
 ```
 
-Suporta:
-
-- JPEG/PNG/WEBP validados por assinatura;
-- limite de 5 MB;
-- múltiplas fotos;
-- uma principal;
-- ownership;
-- leitura pública.
-
-Em paralelo existe a abstração preparada para R2:
+Em paralelo existe a abstração para mídia futura:
 
 ```text
-storage/ObjectStorageService.java
-storage/R2ObjectStorageService.java
-config/R2StorageConfiguration.java
-config/R2StorageProperties.java
+ObjectStorageService
+R2ObjectStorageService
+R2StorageConfiguration
+R2StorageProperties
 ```
 
-Decisão para o futuro CMS:
+Decisão:
 
 ```text
 CMS/Mídia → ObjectStorageService/R2
 ```
 
-RobotImage pode permanecer local inicialmente ou ser migrado depois de forma explícita. **Não criar terceiro mecanismo de upload.**
+Não criar um terceiro mecanismo de upload.
 
 ---
 
-# PARTE B — FRONTEND AUTENTICADO (`gestao`)
+# PARTE B — FRONTEND
 
-# 13. Arquivos-base
+# 12. Gestão autenticada
+
+Arquivos-base:
 
 ```text
-gestao/src/main.ts     → bootstrap/CSS
-gestao/src/router.ts   → rotas/guards
-gestao/src/store.ts    → sessão + competição em foco
-gestao/src/api.ts      → cliente HTTP central atual
-gestao/src/types.ts    → contratos TS centrais atuais
+gestao/src/main.ts
+gestao/src/router.ts
+gestao/src/store.ts
+gestao/src/api.ts
+gestao/src/types.ts
 ```
 
-A ETAPA 2 prevê quebra gradual de `api.ts` e `types.ts` por domínio, sem refatoração big-bang.
+Telas principais atuais:
+
+```text
+DashboardView.vue
+CompetitionsView.vue
+RegistrationsView.vue
+AdminCatalogView.vue
+FollowView.vue
+FollowRunView.vue
+SumoView.vue
+SumoMatchView.vue
+BracketHistoryView.vue
+MatchesView.vue
+ResultsView.vue
+UsersView.vue
+SettingsView.vue
+ParticipantView.vue
+NotFoundView.vue
+```
+
+A gestão ainda usa `isOrganization`/`isParticipant`. A ETAPA 3 migrará para a nova matriz de permissões e deve preferir capacidades semânticas (`canManageCompetition`, `canOperateCompetition`, etc.).
+
+Dívida de `api.ts`, `types.ts`, views grandes e CSS sobreposto fica reservada à ETAPA 2.
 
 ---
 
-# 14. Navegação e permissões
+# 13. Landing pública
 
-Hoje o frontend trabalha com a distinção legada:
-
-```text
-isOrganization
-isParticipant
-```
-
-Na ETAPA 3 a direção é:
-
-```text
-isDev
-isGestao
-isMidia
-isParticipant
-```
-
-Preferir capacidades semânticas quando a refatoração ocorrer:
-
-```text
-canManageCompetition
-canOperateCompetition
-canManageMedia
-canUseDevTools
-```
-
-Isso evita espalhar condicionais de role pelo sistema inteiro.
-
----
-
-# 15. Telas principais atuais
-
-```text
-DashboardView.vue       → visão geral
-CompetitionsView.vue    → competição
-RegistrationsView.vue   → revisão de inscrições
-AdminCatalogView.vue    → equipes/robôs/modalidades
-FollowView.vue          → ranking/histórico
-FollowRunView.vue       → operação da tomada
-SumoView.vue            → inspeção/chave
-SumoMatchView.vue       → batalha
-BracketHistoryView.vue  → histórico de chaves
-MatchesView.vue         → partidas
-ResultsView.vue         → resultados
-UsersView.vue           → usuários
-SettingsView.vue        → configurações
-ParticipantView.vue     → portal participante
-NotFoundView.vue        → 404 da gestão
-```
-
-Views grandes devem ser decompostas gradualmente durante a ETAPA 2/ao tocar no domínio.
-
----
-
-# 16. Dívida de CSS
-
-A gestão acumulou folhas corretivas em sequência histórica. Isso já causou regressão visual.
-
-Direção da ETAPA 2:
-
-```text
-styles/
-├─ tokens.css
-├─ shell.css
-├─ auth.css
-├─ competition.css
-├─ sumo.css
-├─ follow.css
-├─ participant.css
-└─ utilities.css
-```
-
-Ao consolidar, remover regras substituídas; não adicionar uma nova camada apenas para corrigir a anterior.
-
----
-
-# PARTE C — LANDING PÚBLICA
-
-# 17. Estado atual
-
-A Landing já existe em:
+Aplicação:
 
 ```text
 landing-page/
 ```
 
-Componentes principais:
+Consome `/api/v1/public/**` para dados competitivos.
+
+Componentes principais incluem:
 
 ```text
 InstitutionalHeader.vue
@@ -667,25 +463,84 @@ InstitutionalFooter.vue
 PublicNotFound.vue
 ```
 
-`App.vue` consome a API pública competitiva e atualiza dados da competição ativa.
-
-A página 404 pública foi implementada em 30/08/2026.
-
-Conteúdo institucional ainda possui hardcodes/placeholders. Isso é alvo da ETAPA 7, não motivo para editar Vue manualmente indefinidamente.
+Conteúdo institucional ainda possui hardcodes/placeholders. A ETAPA 7 criará CMS/Mídia para remover a necessidade de commits em atualizações editoriais comuns.
 
 ---
 
-# 18. CMS / Mídia
+# 14. Galeria
 
-Objetivo futuro:
+`photo-gallery/` continua protótipo separado e utiliza catálogo estático.
+
+ETAPA 11 decidirá:
 
 ```text
-MIDIA/DEV
-→ gestao
-→ API CMS
-→ conteúdo publicado
-→ Landing
+A. manter aplicação separada
+B. absorver na Landing
 ```
+
+Direção preferencial atual: **B**, salvo necessidade real de URL/deploy independente.
+
+---
+
+# PARTE C — EVOLUÇÕES APROVADAS
+
+# 15. ETAPA 4 — Avisos IN_APP + Telegram
+
+Avisos e Telegram serão tratados **na mesma etapa**.
+
+Fluxo conceitual:
+
+```text
+GESTAO/DEV
+→ seção Avisos
+→ seleciona Competition
+→ escreve/publica
+→ backend persiste Aviso IN_APP
+→ participante consulta no RasComp
+→ se Telegram habilitado, backend também distribui a comunicação
+```
+
+Regras congeladas:
+
+- `IN_APP` é a fonte de verdade e histórico oficial;
+- Telegram é canal complementar;
+- frontend não chama a Telegram Bot API diretamente;
+- falha do Telegram não invalida o aviso persistido;
+- token do bot nunca é versionado;
+- integração deve poder ser desligada por configuração;
+- distribuição precisa respeitar a competição selecionada.
+
+## Identificação Telegram
+
+Na primeira versão **não é obrigatório vincular UserAccount à conta Telegram**.
+
+Uma opção futura/inicialmente opcional é solicitar no bot o **identificador competitivo da Registration aprovada**, planejado para a ETAPA 10, apenas para identificar quem está recebendo avisos.
+
+Consequências:
+
+- ETAPA 4 não pode depender do código da ETAPA 10 para funcionar;
+- não criar identificador Telegram paralelo se o código competitivo puder ser reutilizado depois;
+- `@username` do Telegram não deve virar identidade oficial do domínio.
+
+A política exata de distribuição (canal/grupo/bot, destinatários e estados de inscrição elegíveis) será fechada na implementação da ETAPA 4.
+
+---
+
+# 16. Ajustes Gerais / portabilidade / CMS
+
+## ETAPA 5 — Ajustes Gerais DEV
+
+Operações específicas, não editor bruto de SQL/tabelas. Ações críticas exigem auditoria.
+
+## ETAPA 6 — Portabilidade
+
+```text
+1 instalação = 1 instituição organizadora
+```
+
+Não reutilizar `Institution` das equipes para representar a instituição hospedeira. Criar conceito próprio de configuração da instância.
+
+## ETAPA 7 — CMS/Mídia
 
 Modelo de referência:
 
@@ -695,189 +550,61 @@ ContentSlot
 ContentItem
 ```
 
-`ContentSlot` representa uma janela lógica estável, não coordenada CSS.
-
-Exemplos:
-
-```text
-HERO_MAIN
-HERO_NEWS
-ABOUT
-TEAM
-AWARDS
-GALLERY
-EVENTS
-COMPETITION_HIGHLIGHT
-```
-
-A Landing deve deixar de exigir commit para atualização editorial comum.
+Conteúdo institucional deve deixar de depender de commit Vue.
 
 ---
 
-# 19. `photo-gallery/`
+# 17. Regras e Futebol
 
-Estado atual:
+## ETAPA 8 — Regras
 
-```text
-photo-gallery/src/data/albums.ts
-→ álbuns/placeholders estáticos
-```
+Publicação de regulamentos oficiais de Follow, Sumô, Futebol e ambiente/vestimenta. Textos atuais são requisitos preliminares até validação da organização.
 
-Na ETAPA 11 decidir definitivamente:
-
-```text
-A. manter aplicação separada alimentada pela API
-B. absorver galeria na Landing
-```
-
-Direção preferencial atual: **B**, salvo necessidade real de deploy/URL independente.
-
----
-
-# PARTE D — EVOLUÇÕES JÁ APROVADAS
-
-# 20. Avisos
-
-ETAPA 4:
-
-```text
-Aviso persistido IN_APP = fonte de verdade
-Telegram = canal complementar opcional futuro
-```
-
-Não depender exclusivamente de Telegram para comunicação operacional.
-
----
-
-# 21. Ajustes Gerais DEV
-
-ETAPA 5.
-
-Rota futura prevista:
-
-```text
-/ajustes-gerais
-```
-
-Operações devem ser específicas:
-
-```text
-alterarRole
-transferirCompetidor
-transferirRobo
-transferirResponsabilidade
-corrigirInscricao
-ativar/desativar
-```
-
-Nunca transformar em editor bruto de tabelas/SQL.
-
-Ações críticas exigem auditoria:
-
-```text
-quem
-quando
-ação
-entidade
-antes/depois
-motivo quando aplicável
-```
-
----
-
-# 22. Portabilidade institucional
-
-ETAPA 6.
-
-Estratégia aprovada:
-
-```text
-1 instalação = 1 instituição organizadora
-```
-
-Não é multi-tenant.
-
-Não reutilizar `Institution` das equipes participantes para representar a organização hospedeira. Criar conceito próprio, por exemplo `PlatformInstanceConfig`.
-
----
-
-# 23. Regras públicas
-
-ETAPA 8.
-
-Grupos iniciais:
-
-```text
-Follow Line
-Sumô geral/RC/penalidades/WO
-Futebol de Robôs
-Ambiente/Vestimenta
-```
-
-Os textos atuais em documentação são requisitos preliminares, **não transcrição de regulamento oficial**. Redação e sanções precisam ser validadas antes da publicação.
-
----
-
-# 24. Futebol de Robôs
-
-ETAPA 9.
+## ETAPA 9 — Futebol de Robôs
 
 Requisito:
 
 ```text
 competidor A × competidor B
 robôs fornecidos pela organização
-participante não precisa de robô próprio
 ```
 
 Incompatibilidade atual:
 
 ```text
-Registration.robot                    obrigatório
+Registration.robot obrigatório
 ParticipantRegistrationRequest.robotId obrigatório
-unicidade                              baseada em robot
+unicidade baseada em robot
 ```
 
-Logo, exige alteração real de domínio/migration.
+A solução deve permitir inscrição legítima sem robô próprio conforme modalidade.
 
 **Não criar robô fake para satisfazer FK.**
 
-Ainda decidir:
+---
 
-- Team obrigatória ou não;
-- atribuição dos robôs;
-- tempo/placar;
-- empate/desempate;
-- formato competitivo;
-- inspeção/penalidades.
+# 18. Portal participante e identificação competitiva
+
+ETAPA 10 completa equipe, integrantes, robôs, inscrições, avisos, desempenho e acompanhamento.
+
+Decisão aprovada: cada **Registration aprovada** terá identificador competitivo curto.
+
+Esse código pertence à `Registration`, não ao `Robot`, porque o mesmo robô pode aparecer em categorias/edições diferentes e modalidades futuras podem não exigir robô próprio.
+
+O código poderá ser reutilizado por conferência física e, opcionalmente, para identificação no Telegram.
 
 ---
 
-# 25. Portal do Participante completo + identificação competitiva
+# 19. Deploy
 
-ETAPA 10.
-
-Além de completar convites, integrantes, robôs, inscrições, avisos e acompanhamento, existe decisão aprovada de criar um identificador competitivo curto para cada **Registration aprovada**.
-
-Esse código pertence à `Registration`, não ao `Robot`, porque:
-
-- o mesmo robô pode aparecer em categorias/edições diferentes;
-- modalidades futuras podem não usar robô próprio.
-
-QR Code pode ser representação futura, mas não é obrigatório na primeira versão.
-
----
-
-# 26. Deploy
-
-Deploy é ETAPA 14.
+Deploy permanece ETAPA 14.
 
 Decisão congelada:
 
 ```text
-modo local continua funcionando
+LOCAL continua funcionando
 +
-modo cloud é adicionado
+CLOUD é adicionado
 ```
 
 Arquitetura planejada:
@@ -885,86 +612,55 @@ Arquitetura planejada:
 ```text
 Cloudflare DNS/TLS
 Workers Static Assets → frontend
-Containers + Docker → Spring Boot
+Containers/Docker → Spring Boot
 R2 → mídia/uploads
-MySQL gerenciado externo → banco inicial
+MySQL gerenciado externo → banco
 GitHub Actions/Cloudflare → CI/CD
 ```
 
 D1 não é requisito do primeiro deploy.
 
-Consultar:
-
-```text
-docs/DECISAO_DEPLOY_CLOUD.md
-docs/DEPLOY_CLOUDFLARE.md
-```
-
 ---
 
-# PARTE E — RISCOS E PENDÊNCIAS
+# PARTE D — RISCOS E DECISÕES ABERTAS
 
-# 27. P0/P1/P2 conhecidos
+# 20. Pendências atuais
 
-## ETAPA 1 — lógica/integridade
+## ETAPA 1
 
-1. `RegistrationService.reativar()` não revalida inscrições abertas.
-2. Cancelamento precisa política por estado competitivo.
-3. Geração/regeneração de chave precisa estados de Competition permitidos.
-4. MatchResult após progressão precisa bloqueio ou rollback/reprocessamento.
-5. Combinações válidas de tentativa Follow precisam formalização.
-
-## ETAPA 2 — manutenção
-
-1. `rascomp/bin/` ainda está rastreado no backend.
-2. `.classpath/.project/.gitkeep` legados devem ser avaliados.
-3. `api.ts` e `types.ts` estão centralizados demais para os módulos futuros.
-4. views grandes precisam decomposição gradual.
-5. CSS corretivo sobreposto precisa consolidação.
-6. `AccessPolicyService` não deve virar depósito de toda autorização futura apenas por ter nome genérico.
-7. storage local de RobotImage e R2 são estratégias paralelas e precisam continuar conscientemente separadas até decisão de migração.
-
----
-
-# 28. Decisões abertas
-
-Não inventar resposta sem validação da regra.
+- reativação fora da janela;
+- política de cancelamento;
+- estados válidos para chave;
+- alteração de resultado após progressão;
+- estados de tentativa Follow.
 
 ## Follow
 
 - impacto oficial de checkpoints;
 - estados válidos de tentativa;
-- desclassificações oficiais adicionais.
-
-## Sumô
-
-- redação oficial das infrações/regras públicas;
-- regras específicas de RC a publicar;
-- necessidade de motivos estruturados adicionais.
-
-## Inscrição
-
-- cancelamento após aprovação/chave/início;
-- reativação administrativa em cenários excepcionais futuros.
+- desclassificações adicionais oficiais.
 
 ## Futebol
 
-- equipe;
-- robôs A/B;
+- equipe obrigatória;
+- atribuição dos robôs;
 - placar/tempo/desempate;
 - formato;
-- inspeção.
+- inspeção/penalidades.
 
-## Mídia
+## Mídia/Regras
 
-- publicação direta por MIDIA ou aprovação DEV;
+- política de publicação MIDIA vs DEV;
 - arquivamento vs exclusão física;
-- slots da primeira versão.
+- slots iniciais;
+- responsáveis por editar/publicar Regras.
 
-## Regras
+## Telegram
 
-- DEV, MIDIA ou ambos;
-- global ou por edição.
+- formato inicial de distribuição (canal/grupo/bot);
+- estados de inscrição que recebem comunicação;
+- identificação individual opcional ou não na primeira versão;
+- estratégia de rastreabilidade/reenvio necessária.
 
 ## Galeria
 
@@ -972,205 +668,76 @@ Não inventar resposta sem validação da regra.
 
 ---
 
-# PARTE F — QUERO ALTERAR X: ONDE MEXO?
+# PARTE E — QUERO ALTERAR X: ONDE MEXO?
 
-# 29. Cookbook
+# 21. Mapa rápido
 
 ## Login/JWT/roles
 
 ```text
-Backend:
-UserRole.java
-UserAccount.java
-SecurityConfig.java
-JwtService.java
-UserAccountService.java
-
-Frontend:
-types.ts
-store.ts
-router.ts
-ShellLayout.vue
+Backend: UserRole, UserAccount, SecurityConfig, JwtService, UserAccountService
+Frontend: types.ts, store.ts, router.ts, ShellLayout.vue
 ```
 
 ## Competition
 
 ```text
-Backend:
-Competition.java / CompetitionDTO.java
-CompetitionController.java
-CompetitionService.java
-CompetitionRepository.java
-
-Frontend:
-CompetitionsView.vue
-api.ts
-types.ts
-competition-hub.css
+Backend: Competition*, CompetitionService, CompetitionRepository
+Frontend: CompetitionsView.vue, api.ts, types.ts
 ```
 
 ## Registration
 
 ```text
-Backend:
-Registration.java
-RegistrationDTO.java
-ParticipantRegistrationRequest.java
-RegistrationController.java
-RegistrationService.java
-ParticipantPortalService.java
-
-Frontend:
-RegistrationsView.vue
-ParticipantView.vue
-api.ts
-types.ts
+Backend: Registration*, RegistrationService, ParticipantPortalService
+Frontend: RegistrationsView.vue, ParticipantView.vue, api.ts, types.ts
 ```
 
 ## Team / Competitor / Robot
 
 ```text
-Backend:
-Team*
-Competitor*
-Robot*
-AccessPolicyService.java
-ParticipantPortalService.java
-
-Frontend:
-AdminCatalogView.vue
-ParticipantView.vue
-RobotPhoto.vue
-```
-
-## Foto de Robot
-
-```text
-Backend:
-RobotImage.java
-RobotImageService.java
-RobotImageStorageService.java
-RobotImageController.java
-
-Frontend:
-RobotPhoto.vue
-ParticipantView.vue
-FollowRunView.vue
-SumoMatchView.vue
+Backend: Team*, Competitor*, Robot*, AccessPolicyService, ParticipantPortalService
+Frontend: AdminCatalogView.vue, ParticipantView.vue, RobotPhoto.vue
 ```
 
 ## Follow
 
 ```text
-Backend:
-ConfigFollow*
-TentativaSeguidorLinha*
-RankingFollowService.java
-
-Frontend:
-FollowView.vue
-FollowRunView.vue
-FollowTakeHistory.vue
+Backend: ConfigFollow*, TentativaSeguidorLinha*, RankingFollowService
+Frontend: FollowView.vue, FollowRunView.vue, FollowTakeHistory.vue
 ```
 
-## Sumô / penalidades / WO
+## Sumô / chave / resultados
 
 ```text
-Backend:
-ConfigSumo*
-RoundSumo*
-InspecaoSumo*
-RoundSumoService.java
-MatchResultService.java
-
-Frontend:
-SumoView.vue
-SumoMatchView.vue
-TournamentBracket.vue
+Backend: ConfigSumo*, InspecaoSumo*, RoundSumo*, Bracket*, Match*, MatchResult*
+Frontend: SumoView.vue, SumoMatchView.vue, TournamentBracket.vue, BracketHistoryView.vue
 ```
 
-## Chave / BYE / progressão
+## Landing pública
 
 ```text
-Backend:
-BracketGenerationService.java
-BracketProgressionService.java
-BracketService.java
-MatchService.java
-MatchResultService.java
-
-Frontend:
-TournamentBracket.vue
-BracketHistoryView.vue
-MatchesView.vue
-ResultsView.vue
+Backend: PublicController, PublicQueryService, Public* DTOs
+Frontend: landing-page/src/api.ts, App.vue, ActiveCompetition.vue
 ```
 
-## Landing competitiva pública
+## Avisos / Telegram (futuro)
 
 ```text
-Backend:
-PublicController.java
-PublicQueryService.java
-DTOs Public*
-
-Frontend:
-landing-page/src/App.vue
-landing-page/src/api.ts
-ActiveCompetition.vue
-```
-
-## Conteúdo institucional da Landing
-
-Hoje:
-
-```text
-HighlightsHero.vue
-InstitutionalAbout.vue
-InstitutionalEvents.vue
-InstitutionalGallery.vue
-TeamRobotsAwards.vue
-```
-
-Futuro:
-
-```text
-MIDIA/DEV
-→ API CMS
-→ MediaAsset/ContentSlot/ContentItem
-→ API pública
-→ Landing
-```
-
-## Galeria
-
-Hoje:
-
-```text
-photo-gallery/src/data/albums.ts
-```
-
-Depois do CMS não deve continuar como fonte manual dos álbuns.
-
-## 404
-
-```text
-gestao/src/views/NotFoundView.vue
-landing-page/src/components/PublicNotFound.vue
-landing-page/src/not-found.css
-assets públicos relacionados
+Backend: novo domínio de Aviso + serviço de comunicação + adapter Telegram
+Frontend: futura seção Avisos em gestao/
 ```
 
 ---
 
-# 30. Regras de manutenção para qualquer IA
+# 22. Regras de manutenção para qualquer IA
 
-Antes de uma regra competitiva:
+Antes de regra competitiva:
 
 ```text
 1. localizar entidade/DTO
 2. localizar Service fonte de verdade
-3. entender estado competitivo envolvido
+3. entender estado competitivo
 4. criar/alterar teste
 5. alterar endpoint se necessário
 6. refletir no frontend
@@ -1187,14 +754,14 @@ Antes de schema:
 5. validar MySQL/Flyway/testdata
 ```
 
-Antes de começar uma etapa:
+Antes de uma etapa:
 
 ```text
 1. ler docs/README.md
-2. ler docs/ETAPAS_POS_PROJETO.md
-3. permanecer na etapa marcada como atual
-4. não criar novo roadmap
-5. não avançar sem validação
+2. conferir docs/ETAPAS_POS_PROJETO.md
+3. permanecer na etapa atual
+4. não criar roadmap paralelo
+5. não avançar sem validação explícita
 ```
 
-O RasComp já tem uma base aprovada. A prioridade do ciclo atual é evoluir sem perder integridade, rastreabilidade e previsibilidade.
+O RasComp já possui base aprovada. A prioridade é evoluir sem perder integridade, rastreabilidade e previsibilidade.
