@@ -1,46 +1,68 @@
-# RASCOMP Gestão
+# RasComp Gestão
 
-Sistema operacional da competição em **Vue 3 + TypeScript + Vite**.
+Aplicação autenticada de operação do RasComp, construída em **Vue 3 + TypeScript + Vite**.
 
-## Perfis
+## Responsabilidades atuais
 
-- `ORGANIZACAO`: competições, inscrições, Follow Line e Sumô;
-- `PARTICIPANTE`: acesso às próprias equipes, competidores, robôs e inscrições conforme ownership do backend.
+```text
+ORGANIZACAO
+→ competições
+→ revisão de inscrições
+→ equipes/robôs/modalidades
+→ Follow Line
+→ Sumô
+→ chaves/resultados
+→ usuários
 
-## Integrações
+PARTICIPANTE
+→ /minha-equipe
+→ própria equipe/competidores/robôs
+→ fotos e inscrições
+→ acompanhamento competitivo
+```
 
-- JWT via `/api/v1/auth/**`;
-- API administrativa `/api/v1/**`;
-- portal `/api/v1/participante/**`.
+A nova matriz `DEV | GESTAO | MIDIA | PARTICIPANTE` pertence à ETAPA 3 e ainda não está implementada.
 
-## Decisão atual
+## Integração com backend
 
-O frontend e o fluxo do MVP seguem **sem Camunda**.
+```text
+VITE_API_URL
+→ Spring Boot
+→ /api/v1/auth/**
+→ /api/v1/**
+→ /api/v1/participante/**
+→ /api/v1/public/**
+```
 
-As regras competitivas permanecem no backend Spring Boot. Para o Sumô, a interface usa diretamente os endpoints de inspeção, geração de chave, partidas, rounds e resultados.
+JWT é enviado pelo cliente HTTP central. A autorização oficial pertence ao backend.
+
+## Arquivos centrais
+
+```text
+src/main.ts
+src/router.ts
+src/store.ts
+src/api.ts
+src/types.ts
+```
+
+A divisão de `api.ts`/`types.ts` e decomposição de views pertence à ETAPA 2 e deve ser gradual.
 
 ## Chaveamento
 
-O objetivo visual aprovado é um bracket em árvore como o protótipo de demonstração:
+O bracket é renderizado a partir do estado retornado pela API. O frontend pode organizar e destacar a árvore visual, mas **não calcula progressão oficial**.
 
 ```text
-Oitavas / Quartas → Semifinal → Final
+backend avança vencedor
+→ frontend faz refetch
+→ UI apresenta estado atualizado
 ```
 
-Cada partida é renderizada a partir do estado oficial retornado pela API. O frontend pode:
+## Avisos futuros
 
-- agrupar partidas por `rodada`;
-- ordenar por `ordem`;
-- desenhar conectores entre rodadas;
-- destacar vencedor confirmado;
-- mostrar BYE;
-- mostrar status;
-- abrir detalhes da partida;
-- listar rounds e placar.
+Na ETAPA 4 a gestão ganhará seção de Avisos por competição. O backend persistirá o aviso IN_APP e, quando configurado, fará a entrega complementar via Telegram. A UI não chamará a Telegram Bot API diretamente.
 
-A progressão não é calculada no Vue: o backend avança o vencedor e a interface faz refetch.
-
-## Rodar
+## Rodar localmente
 
 ```bash
 cp .env.example .env
@@ -48,4 +70,11 @@ npm install
 npm run dev
 ```
 
-A interface usa o backend como fonte oficial para ranking, resultados e progressão de chave.
+Validação:
+
+```bash
+npm run typecheck
+npm run build
+```
+
+Documentação global: `../docs/README.md`.
