@@ -1,6 +1,6 @@
 # RasComp — Etapas Pós-Projeto
 
-Última revisão: **31/08/2026**
+Última revisão: **04/09/2026**
 
 Este é o **único documento canônico para a ordem de execução** do ciclo pós-projeto do RasComp.
 
@@ -25,12 +25,12 @@ docs/DECISAO_DEPLOY_CLOUD.md
 → decisão arquitetural congelada de deploy
 
 docs/DEPLOY_CLOUDFLARE.md
-→ guia detalhado da ETAPA 14
+→ guia detalhado da ETAPA 15
 ```
 
 ---
 
-# 1. Estado de execução em 31/08/2026
+# 1. Estado de execução em 04/09/2026
 
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
@@ -49,6 +49,7 @@ ETAPA 11  ⏳ NÃO INICIADA
 ETAPA 12  ⏳ NÃO INICIADA
 ETAPA 13  ⏳ NÃO INICIADA
 ETAPA 14  ⏳ NÃO INICIADA
+ETAPA 15  ⏳ NÃO INICIADA
 ```
 
 A implementação da página **404** em `gestao/` e `landing-page/`, concluída em 30/08/2026, é um ajuste isolado do frontend e **não representa avanço de etapa**.
@@ -371,13 +372,15 @@ GESTAO/DEV publica aviso
 → histórico permanece no sistema
 ```
 
-Futuro:
+Modelo de canais:
 
 ```text
 Aviso
 ├─ IN_APP — fonte de verdade
-└─ TELEGRAM — canal complementar opcional
+└─ TELEGRAM — canal complementar planejado para a ETAPA 11
 ```
+
+Nesta etapa o aviso deve existir e funcionar integralmente dentro do RasComp. A integração de entrega automática pelo bot do Telegram será adicionada somente na ETAPA 11, após o Portal do Participante estar completo.
 
 Telegram nunca deve ser a única cópia do aviso.
 
@@ -626,7 +629,171 @@ O código não substitui ownership, elegibilidade, categoria, inspeção ou outr
 
 ---
 
-# ETAPA 11 — Consolidar Landing + Galeria + conteúdo público
+# ETAPA 11 — Integração Telegram para avisos e anúncios da competição
+
+**Objetivo:** transformar o Telegram em canal complementar de entrega dos avisos já persistidos no RasComp, permitindo que GESTAO/DEV envie comunicações relacionadas a uma competição específica diretamente aos participantes vinculados a ela.
+
+A fonte de verdade continua sendo o aviso IN_APP criado na ETAPA 4.
+
+Fluxo desejado na gestão:
+
+```text
+GESTAO/DEV
+→ seção Avisos
+→ seleciona a competição
+→ escreve aviso/anúncio
+→ publica
+→ backend persiste o Aviso IN_APP
+→ resolve participantes destinatários da competição
+→ envia a mesma comunicação pelo bot do Telegram
+→ registra resultado das entregas
+```
+
+O frontend **não deve chamar a API do Telegram diretamente**. O fluxo deve ser:
+
+```text
+gestao
+→ API RasComp
+→ AvisoService / serviço de comunicação
+→ persistência do aviso
+→ integração Telegram no backend
+→ Telegram Bot API
+→ participantes
+```
+
+## 11.1 Vínculo do participante com o Telegram
+
+O participante precisa vincular sua conta RasComp ao Telegram antes de receber mensagens privadas do bot.
+
+Direção preferencial:
+
+```text
+Portal do Participante
+→ gerar vínculo/token temporário
+→ abrir/iniciar bot
+→ bot confirma vínculo
+→ backend associa Telegram ao UserAccount
+```
+
+Não usar nome de usuário do Telegram como identidade confiável do participante.
+
+Armazenar somente os identificadores necessários para a entrega, com possibilidade de:
+
+- vincular;
+- desvincular;
+- refazer vínculo;
+- desativar recebimento quando aplicável.
+
+## 11.2 Segmentação por competição
+
+Um aviso de competição não deve ser disparado indiscriminadamente para todos os usuários do sistema.
+
+O backend deve determinar os destinatários a partir do domínio RasComp, considerando a competição selecionada e as inscrições/equipes/participantes elegíveis conforme a regra definida na implementação.
+
+Exemplo conceitual:
+
+```text
+Competition
+→ Registrations relevantes
+→ participantes/usuários associados
+→ vínculos Telegram ativos
+→ entregas
+```
+
+Definir antes da implementação como tratar, entre outros:
+
+- inscrição PENDENTE;
+- inscrição APROVADA;
+- inscrição REJEITADA/CANCELADA/DESCLASSIFICADA;
+- responsável da equipe;
+- múltiplos competidores da mesma equipe;
+- usuário sem Telegram vinculado.
+
+## 11.3 Persistência e rastreabilidade
+
+O envio ao Telegram deve possuir rastreabilidade suficiente para operação e suporte.
+
+Modelo conceitual:
+
+```text
+Aviso
+└─ Entregas
+   ├─ IN_APP
+   └─ TELEGRAM
+      ├─ destinatário
+      ├─ status
+      ├─ data/hora
+      └─ erro resumido quando houver
+```
+
+Estados candidatos de entrega:
+
+```text
+PENDENTE
+ENVIADO
+FALHA
+```
+
+A modelagem definitiva deve ser decidida na etapa antes da migration.
+
+## 11.4 Falhas e disponibilidade
+
+Falha do Telegram **não pode apagar, cancelar ou invalidar o aviso IN_APP**.
+
+Fluxo obrigatório:
+
+```text
+Aviso persistido no RasComp ✅
+Telegram disponível          → tenta entregar
+Telegram indisponível        → registra falha
+RasComp continua operacional ✅
+```
+
+Prever:
+
+- timeout;
+- erros da Bot API;
+- bot bloqueado pelo usuário;
+- chat/vínculo inválido;
+- rate limit;
+- tentativa de reenvio controlada quando apropriado;
+- prevenção de envio duplicado acidental.
+
+## 11.5 Segurança e configuração
+
+O token do bot é segredo e nunca deve ser versionado.
+
+Configuração esperada por ambiente, por exemplo:
+
+```text
+TELEGRAM_ENABLED
+TELEGRAM_BOT_TOKEN
+TELEGRAM_BOT_USERNAME
+```
+
+A integração deve permanecer desligável para preservar execução local e instalações que não desejem usar Telegram.
+
+Somente roles autorizadas podem publicar/disparar avisos. O backend continua responsável pela autorização real.
+
+## 11.6 Critério de saída da ETAPA 11
+
+- vínculo participante ↔ Telegram funcional;
+- aviso continua persistido IN_APP;
+- seleção/segmentação por competição validada;
+- envio pelo bot funcional;
+- entregas e falhas rastreáveis;
+- segredo fora do repositório;
+- integração desligável por configuração;
+- testes automatizados dos serviços relevantes;
+- tratamento de indisponibilidade do Telegram;
+- frontend integrado na seção Avisos;
+- CI verde;
+- documentação atualizada;
+- validação explícita antes da ETAPA 12.
+
+---
+
+# ETAPA 12 — Consolidar Landing + Galeria + conteúdo público
 
 Hoje:
 
@@ -661,7 +828,7 @@ Conteúdo editorial comum não deve exigir commit de Vue após o CMS.
 
 ---
 
-# ETAPA 12 — Hardening e preparação para uso externo
+# ETAPA 13 — Hardening e preparação para uso externo
 
 Revisar sistematicamente:
 
@@ -684,7 +851,7 @@ Revisar sistematicamente:
 
 ---
 
-# ETAPA 13 — Bateria final de testes manuais
+# ETAPA 14 — Bateria final de testes manuais
 
 Simular uso real de ponta a ponta, incluindo:
 
@@ -699,7 +866,9 @@ Sumô
 Futebol
 chaves/BYEs/progressão
 resultados/histórico
-Avisos/Telegram se implementado
+Avisos IN_APP + Telegram
+vínculo/desvínculo Telegram
+falha e recuperação da entrega Telegram
 Ajustes Gerais/auditoria
 mídia/CMS
 Landing/galeria/regras
@@ -715,7 +884,7 @@ Objetivo: validar o RasComp como produto operacional, não apenas como conjunto 
 
 ---
 
-# ETAPA 14 — Deploy em nuvem / Cloudflare
+# ETAPA 15 — Deploy em nuvem / Cloudflare
 
 Criar uma segunda forma de execução sem remover o modo local.
 
@@ -751,7 +920,7 @@ rollback
 
 Cloudflare D1 não é requisito do primeiro deploy porque o RasComp atual usa MySQL + JPA/Hibernate + Flyway e D1 possui semântica SQLite.
 
-**Deploy só começa depois da ETAPA 13 passar.**
+**Deploy só começa depois da ETAPA 14 passar.**
 
 ---
 
@@ -768,7 +937,7 @@ CHECKPOINT README + screenshots
     ↓
 ETAPA 3  Permissões
     ↓
-ETAPA 4  Avisos
+ETAPA 4  Avisos IN_APP
     ↓
 ETAPA 5  Ajustes Gerais + auditoria
     ↓
@@ -782,13 +951,15 @@ ETAPA 9  Futebol de Robôs
     ↓
 ETAPA 10 Participante completo + identificação competitiva
     ↓
-ETAPA 11 Landing + Galeria
+ETAPA 11 Integração Telegram — avisos/anúncios por competição
     ↓
-ETAPA 12 Hardening
+ETAPA 12 Landing + Galeria
     ↓
-ETAPA 13 Testes manuais completos
+ETAPA 13 Hardening
     ↓
-ETAPA 14 Deploy Cloudflare
+ETAPA 14 Testes manuais completos
+    ↓
+ETAPA 15 Deploy Cloudflare
 ```
 
 Pequenos ajustes internos de uma etapa podem ocorrer por dependência real, mas **não reordenar etapas estruturais sem decisão explícita**.
