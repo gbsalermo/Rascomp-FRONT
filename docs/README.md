@@ -1,121 +1,74 @@
 # RasComp — Índice da Documentação
 
-Última revisão: **31/08/2026**
+Última revisão: **04/09/2026**
 
-Este arquivo é o ponto de entrada para qualquer pessoa ou IA que precise entender ou continuar o RasComp.
+Este é o ponto de entrada para qualquer pessoa ou IA que precise entender ou continuar o RasComp.
 
-O objetivo é evitar um problema que já ocorreu na documentação histórica: diferentes arquivos registravam roadmaps de momentos diferentes do projeto. A partir desta revisão, cada documento possui uma responsabilidade clara.
+A documentação foi revisada para evitar roadmaps paralelos, snapshots de demonstração tratados como estado atual e referências históricas que já não correspondem ao código.
 
 ---
 
-# 1. Leia nesta ordem
-
-## 1 — Planejamento e etapa atual
+# 1. Ordem obrigatória de leitura
 
 ```text
-docs/ETAPAS_POS_PROJETO.md
+1. docs/ETAPAS_POS_PROJETO.md
+   → única fonte de verdade para ordem, etapa atual e critérios de saída
+
+2. docs/DOSSIE_PROJETO_RASCOMP.md
+   → arquitetura, domínio, decisões, riscos e mapa de alteração cross-repo
+
+3. docs/CONTINUIDADE_FRONTEND.md
+   → checkpoint vivo de gestao, landing-page e photo-gallery
+
+4. gbsalermo/Rascomp/rascomp/docs/CONTINUIDADE.md
+   → checkpoint vivo do backend
 ```
 
-É a **única fonte canônica para ordem de execução, etapa atual e critério de conclusão**.
-
-Estado em 31/08/2026:
+Estado oficial em 04/09/2026:
 
 ```text
 ETAPA 0  ✅ concluída / validada
-ETAPA 1  🚧 atual — correções de lógica e riscos
+ETAPA 1  🚧 atual — lógica e integridade
 ETAPA 2+ ⏳ não iniciadas
 ```
 
-Não avançar para a etapa seguinte sem validação explícita.
-
----
-
-## 2 — Arquitetura, decisões e mapa do sistema
-
-```text
-docs/DOSSIE_PROJETO_RASCOMP.md
-```
-
-É a referência cross-repo para:
-
-- visão do produto;
-- backend, gestão, participante, Landing e galeria;
-- responsabilidades de domínio;
-- entidades e fluxos críticos;
-- segurança atual e matriz futura;
-- decisões já tomadas;
-- riscos P0/P1/P2;
-- decisões ainda abertas;
-- guia "quero alterar X: onde mexo?".
-
-O dossiê **não define uma segunda ordem de etapas**. Para sequência de trabalho, sempre voltar a `ETAPAS_POS_PROJETO.md`.
-
----
-
-## 3 — Checkpoint do frontend
-
-```text
-docs/CONTINUIDADE_FRONTEND.md
-```
-
-Use para saber o que já existe em:
-
-```text
-gestao/
-landing-page/
-photo-gallery/
-```
-
-Este arquivo registra estado, não cria roadmap próprio.
-
----
-
-## 4 — Checkpoint do backend
-
-No repositório:
-
-```text
-gbsalermo/Rascomp
-rascomp/docs/CONTINUIDADE.md
-```
-
-Use para verificar implementação, migrations, testes e pendências específicas do backend.
+O checkpoint documental de 04/09/2026 não altera a etapa atual.
 
 ---
 
 # 2. Hierarquia de autoridade
 
-Quando documentos divergirem, aplicar esta ordem:
+Quando houver divergência:
 
 ```text
-ORDEM/ETAPA ATUAL
-→ docs/ETAPAS_POS_PROJETO.md
+ORDEM / ETAPA ATUAL
+→ ETAPAS_POS_PROJETO.md
 
-ARQUITETURA/RESPONSABILIDADES/DECISÕES CROSS-REPO
-→ docs/DOSSIE_PROJETO_RASCOMP.md
+ARQUITETURA / DOMÍNIO / DECISÕES CROSS-REPO
+→ DOSSIE_PROJETO_RASCOMP.md
 
-ESTADO REAL IMPLEMENTADO
-→ código atual + testes + migrations + commits
+ESTADO IMPLEMENTADO
+→ código atual + migrations + testes
 
-CHECKPOINT DE UM SUBSISTEMA
-→ arquivo CONTINUIDADE/STATUS correspondente
+CHECKPOINT DE REPOSITÓRIO/SUBSISTEMA
+→ CONTINUIDADE correspondente
 
-DECISÃO CONGELADA DE UM TEMA
-→ arquivo DECISAO_*.md daquele tema
+DECISÃO ARQUITETURAL ESPECÍFICA
+→ DECISAO_*.md
 
-DOCUMENTOS DATADOS/HISTÓRICOS
-→ contexto do momento em que foram escritos, nunca roadmap atual
+SNAPSHOT HISTÓRICO
+→ serve apenas como contexto do momento em que foi escrito
 ```
 
-Uma IA deve verificar o código antes de concluir que uma funcionalidade existe apenas porque um documento antigo a descreve.
+O código atual prevalece sobre documentação histórica para afirmar o que realmente está implementado.
 
 ---
 
-# 3. Repositórios e aplicações
+# 3. Repositórios
 
 ```text
 gbsalermo/Rascomp
-└─ backend Java / Spring Boot / MySQL / Flyway
+└─ backend Java 21 / Spring Boot / MySQL / Flyway
 
 gbsalermo/Rascomp-FRONT
 ├─ gestao/        → aplicação autenticada + portal participante
@@ -126,303 +79,118 @@ gbsalermo/Rascomp-FRONT
 Identidade:
 
 ```text
-RAS UFRB = organização / capítulo estudantil
-RRC      = evento / competição
+RAS UFRB = organização
+RRC      = evento/competição
 RasComp  = plataforma de software
 ```
 
-O backend é a fonte de verdade para autorização real, ownership e resultados competitivos.
+O backend é fonte de verdade de autorização, ownership e regras/resultados competitivos.
 
 ---
 
-# 4. Documentos canônicos e ativos
+# 4. Documentos canônicos e vivos
 
 ## `ETAPAS_POS_PROJETO.md`
 
-**Tipo:** canônico / planejamento.
-
-Define:
-
-- ETAPAS 0–14;
-- etapa atual;
-- ordem congelada;
-- critérios de saída;
-- protocolo de continuidade.
-
-Não duplicar esse roadmap em outros arquivos.
+Planejamento único do ciclo. Define ETAPAS 0–14 e marca a ETAPA 1 como atual.
 
 ## `DOSSIE_PROJETO_RASCOMP.md`
 
-**Tipo:** canônico / arquitetura e decisões.
-
-Atualizar quando mudar:
-
-- responsabilidade de domínio;
-- arquitetura cross-repo;
-- modelo de segurança;
-- fluxo importante;
-- regra estrutural;
-- localização de código relevante.
+Arquitetura e decisões cross-repo. Deve ser atualizado quando mudar uma responsabilidade, fluxo estrutural ou decisão de domínio.
 
 ## `CONTINUIDADE_FRONTEND.md`
 
-**Tipo:** checkpoint vivo do frontend.
-
-Atualizar após mudanças relevantes no frontend ou conclusão de checkpoint.
+Checkpoint vivo deste repositório.
 
 ## Backend `rascomp/docs/CONTINUIDADE.md`
 
-**Tipo:** checkpoint vivo do backend.
+Checkpoint vivo do backend.
 
-Atualizar junto com alterações relevantes no backend.
-
-## `DECISAO_DEPLOY_CLOUD.md`
-
-**Tipo:** decisão arquitetural congelada.
-
-Registra a decisão de manter:
+## Deploy
 
 ```text
-LOCAL funcionando
-+
-CLOUD como configuração adicional
+DECISAO_DEPLOY_CLOUD.md
+DEPLOY_CLOUDFLARE.md
 ```
 
-Não significa que o deploy já começou.
-
-## `DEPLOY_CLOUDFLARE.md`
-
-**Tipo:** guia futuro da ETAPA 14.
-
-Só executar depois da bateria manual da ETAPA 13.
+Referências da ETAPA 14. Não significam que o deploy já começou.
 
 ---
 
-# 5. Documentação específica da Landing e galeria
+# 5. Referências específicas que permanecem úteis
 
-## `STATUS_LANDING_PAGE.md`
+## Landing/Galeria
 
-**Tipo:** snapshot/checkpoint de subsistema.
+```text
+STATUS_LANDING_PAGE.md
+→ snapshot visual da apresentação de 26/08/2026
 
-Foi consolidado para a demonstração de **26/08/2026**. É útil para entender layout, paleta, janelas e estado da Landing naquele marco.
+CONTINUIDADE_LANDING_PAGE.md
+→ histórico específico da Landing
 
-Não usar sua data como indicador do estado global do projeto.
+CONTINUIDADE_GALERIA_FOTOS.md
+→ histórico específico da galeria
+```
 
-## `CONTINUIDADE_LANDING_PAGE.md`
+Esses arquivos não definem roadmap.
 
-**Tipo:** histórico e continuidade específica da Landing.
+## Gestão/Participante
 
-Consultar quando uma etapa tocar a experiência pública.
+```text
+SYSTEM_DESIGN_GESTAO.md
+→ referência arquitetural/UX; conferir contra código atual
 
-## `CONTINUIDADE_GALERIA_FOTOS.md`
-
-**Tipo:** histórico e continuidade específica da galeria.
-
-A decisão futura de manter ou absorver `photo-gallery/` está na ETAPA 11 do roadmap canônico.
-
-## `REVISAO_DEMO_LANDING_PAGE.md`
-
-**Tipo:** revisão datada/histórica.
-
-Serve para recuperar decisões tomadas durante a preparação da demonstração; não substitui o dossiê atual.
+ONBOARDING_PARTICIPANTE.md
+EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
+→ referências para evolução do Portal do Participante
+```
 
 ---
 
-# 6. Documentação específica da Gestão e participante
+# 6. Decisões consolidadas em 04/09/2026
 
-## `SYSTEM_DESIGN_GESTAO.md`
+```text
+Banco ativo                           MySQL
+Migrations                            V1–V7 imutáveis
+Próxima migration                     V8+
+Roles atuais                          ORGANIZACAO | PARTICIPANTE
+Roles futuras                         DEV | GESTAO | MIDIA | PARTICIPANTE
+Avisos + Telegram                     juntos na ETAPA 4
+Telegram                              canal complementar ao IN_APP
+Vínculo RasComp ↔ Telegram            não obrigatório inicialmente
+Código de Registration no Telegram    opção futura/inicialmente opcional
+Landing + Galeria                     decisão final na ETAPA 11
+Deploy                                ETAPA 14
+```
 
-**Tipo:** referência de design/arquitetura histórica da gestão.
-
-Útil para compreender intenção de UX e estrutura. Confirmar sempre contra o código atual antes de implementar.
-
-## `REVISAO_ADMIN_2026-08-25.md`
-
-**Tipo:** snapshot datado.
-
-Registra a revisão administrativa feita antes da apresentação.
-
-## `ONBOARDING_PARTICIPANTE.md`
-
-**Tipo:** referência de fluxo do participante.
-
-Consultar principalmente na ETAPA 10.
-
-## `EXPERIENCIA_PARTICIPANTE_COMPETICAO.md`
-
-**Tipo:** referência de experiência/UX de competição.
-
-Ajuda a manter coerência na evolução do Portal do Participante.
-
-## `IMPLEMENTACAO_VUE_MVP.md`
-
-**Tipo:** referência histórica de implementação.
-
-Não assumir que seu estado representa a arquitetura atual sem conferir `gestao/`.
+Camunda não faz parte da arquitetura atual.
 
 ---
 
-# 7. Documentação de apresentação
+# 7. O que foi removido na revisão documental
 
-## `ORIENTACAO_DEMONSTRACAO_2026-08-26.md`
+Foram classificados como obsoletos documentos de preparação da demonstração, prompts auxiliares e referências antigas do backend que já conflitavam com a arquitetura/código atuais.
 
-**Tipo:** histórico da apresentação aprovada.
+A intenção não é apagar decisões válidas: o estado consolidado foi preservado no roadmap, Dossiê Mestre e continuidades.
 
-Preservar como registro do que foi demonstrado e de como a apresentação foi conduzida.
-
-## `EXEMPLO_PROMPT_DOSSIE_MESTRE.md`
-
-**Tipo:** apoio/documentação de processo.
-
-Não contém decisões de domínio com autoridade superior ao dossiê real.
+A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS e estrutura de packages **não faz parte deste checkpoint documental**; permanece na ETAPA 2.
 
 ---
 
-# 8. Documentos do backend
-
-No repositório `gbsalermo/Rascomp`, os documentos abaixo continuam úteis, mas possuem escopos diferentes.
-
-## Vivos / integração
+# 8. Protocolo para continuidade
 
 ```text
-README.md
-rascomp/docs/CONTINUIDADE.md
-rascomp/docs/ETAPAS_POS_PROJETO.md   → ponteiro para roadmap canônico
-rascomp/docs/DOSSIE_PROJETO.md       → ponteiro para dossiê canônico
-rascomp/docs/DECISAO_DEPLOY_CLOUD.md
-rascomp/docs/DEPLOY_CLOUDFLARE.md
-rascomp/docs/CLOUDFLARE_R2.md
+1. identificar a etapa atual no roadmap
+2. ler o Dossiê Mestre
+3. ler a continuidade do repositório afetado
+4. conferir código real
+5. trabalhar somente na etapa atual
+6. regra de negócio → backend primeiro
+7. atualizar testes
+8. integrar frontend
+9. validar
+10. atualizar documentação se necessário
+11. parar no checkpoint e aguardar validação
 ```
 
-## Referência técnica/histórica
-
-```text
-rascomp/docs/CONGELAMENTO_API.md
-rascomp/docs/ENDPOINTS_INTERNOS.md
-rascomp/docs/ENTIDADES_E_CRUDS.md
-rascomp/docs/FLUXO_DO_SISTEMA.md
-rascomp/docs/JSON_EXEMPLOS.md
-rascomp/docs/POS_SWAGGER_MODALIDADES_E_CATEGORIAS.md
-rascomp/docs/POS_SWAGGER_USUARIOS_EQUIPES_INSCRICAO.md
-rascomp/docs/TESTES_POSTMAN.md
-rascomp/docs/diagrama-uml-completo.puml
-```
-
-Esses arquivos registram decisões e contratos de fases anteriores. São úteis para contexto, mas uma IA deve comparar com:
-
-```text
-código atual
-migrations atuais
-testes atuais
-Dossiê Mestre
-```
-
-antes de reutilizar um endpoint, entidade ou fluxo descrito neles.
-
----
-
-# 9. Estado conhecido importante em 31/08/2026
-
-```text
-Projeto apresentado/aprovado                  ✅
-ETAPA 0 — baseline                            ✅ validada
-ETAPA 1 — correções de lógica                 🚧 atual
-ETAPA 2 — limpeza técnica                     ⏳ não iniciada
-Roles atuais no backend                       ORGANIZACAO | PARTICIPANTE
-Roles futuras                                 DEV | GESTAO | MIDIA | PARTICIPANTE
-Migrations atuais                             V1–V7
-Próxima migration estrutural                  V8+
-Backend — último checkpoint documentado       48 testes / 0 falhas / 0 erros
-rascomp/bin/ ainda rastreado                   ⚠️ sim
-Página 404 gestao + landing                    ✅ implementada em 30/08/2026
-Deploy cloud                                   ⏳ planejado para ETAPA 14
-Modo local                                     ✅ deve ser preservado
-```
-
-O número de testes é o **último checkpoint documentado**; não afirmar que continua igual após alterações futuras sem nova execução.
-
----
-
-# 10. Decisões já congeladas que não devem ser rediscutidas sem motivo novo
-
-- backend é fonte de verdade para regras competitivas e autorização;
-- migration aplicada nunca é reescrita;
-- nova migration estrutural começa em V8+;
-- nova matriz futura é `DEV | GESTAO | MIDIA | PARTICIPANTE`;
-- Ajustes Gerais DEV será baseado em operações de domínio específicas, não CRUD bruto/SQL;
-- CMS deve reaproveitar `ObjectStorageService`/R2, sem terceiro mecanismo de upload;
-- Futebol de Robôs não será implementado com robô fake para satisfazer FK;
-- portabilidade inicial é uma instalação por instituição, não multi-tenant;
-- local continuará funcional após o deploy cloud;
-- Cloudflare D1 não é requisito do primeiro deploy;
-- deploy é ETAPA 14, depois da bateria manual da ETAPA 13.
-
----
-
-# 11. Decisões ainda abertas
-
-Não inventar respostas para estas questões. Resolver na etapa apropriada:
-
-## ETAPA 1 / competição
-
-- política exata de cancelamento de Registration após aprovação/chave/início;
-- estratégia final para correção de resultado que já gerou progressão;
-- combinações válidas de tentativa Follow;
-- impacto oficial dos checkpoints do Follow.
-
-## Mídia/Regras
-
-- política de publicação MIDIA vs DEV;
-- exclusão física vs arquivamento de mídia;
-- quem edita/publica Regras;
-- escopo global ou por edição das Regras.
-
-## Futebol
-
-- equipe obrigatória ou não;
-- atribuição dos robôs da organização;
-- placar/tempo/empate/desempate;
-- formato competitivo;
-- inspeção e penalidades.
-
-## Galeria
-
-- aplicação independente ou incorporação definitiva à Landing; direção preferencial atual é incorporar, salvo necessidade real.
-
----
-
-# 12. Protocolo de handoff para outra IA
-
-Antes de alterar código:
-
-```text
-1. identificar a ETAPA atual em ETAPAS_POS_PROJETO.md
-2. ler a seção correspondente no Dossiê Mestre
-3. ler CONTINUIDADE do repositório afetado
-4. consultar somente os documentos específicos relevantes
-5. verificar o código real
-6. verificar testes/migrations afetados
-7. não avançar para outra etapa
-```
-
-Durante a implementação:
-
-```text
-regra de negócio → backend primeiro
-backend → testes
-contrato → frontend
-frontend → typecheck/build
-mudança estrutural → documentação
-```
-
-Ao encerrar:
-
-```text
-validar localmente
-manter CI verde
-atualizar continuidade/dossiê se necessário
-registrar exatamente o que foi concluído
-parar no checkpoint e aguardar validação
-```
-
-Nunca criar um novo roadmap apenas porque outro modelo de organização parece melhor. O planejamento oficial já existe.
+No estado atual, após esta revisão documental, o próximo trabalho é **retomar a ETAPA 1**.
