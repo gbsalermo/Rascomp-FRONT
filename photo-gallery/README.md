@@ -1,19 +1,39 @@
 # Galeria de Fotos — IEEE RAS UFRB
 
-Frontend dedicado aos álbuns de fotos da RAS UFRB.
+Protótipo público separado para álbuns de fotos da RAS UFRB, construído em Vue 3 + TypeScript + Vite.
 
-## Objetivo
+## Estado atual
 
-A Landing institucional continua leve e exibe apenas capas, miniaturas e metadados dos álbuns. O conteúdo completo das fotos fica nesta aplicação.
+A aplicação ainda utiliza catálogo estático em:
 
-Fluxo:
+```text
+src/data/albums.ts
+```
+
+Ela **não é a fonte editorial definitiva** da plataforma. O CMS/Mídia da ETAPA 7 deverá fornecer conteúdo publicável e a ETAPA 11 decidirá a arquitetura final:
+
+```text
+A. manter photo-gallery como aplicação independente
+ou
+B. absorver a galeria na Landing
+```
+
+Direção preferencial atual: **B**, salvo necessidade real de URL/deploy independente.
+
+## Fluxo atual
 
 ```text
 Landing (5174)
-  ↓ Ver álbum
-Galeria (5175)
-  ↓
-/albuns/:slug
+→ Ver álbum
+→ Galeria (5175)
+→ /albuns/:slug
+```
+
+## Variáveis
+
+```text
+VITE_SITE_URL=http://localhost:5174
+VITE_API_URL=http://localhost:8080
 ```
 
 ## Rodar localmente
@@ -27,66 +47,10 @@ npm run build
 npm run dev
 ```
 
-Abrir:
+Porta padrão: `http://localhost:5175`.
 
-```text
-http://localhost:5175
-```
+## Regra de evolução
 
-Exemplo:
+Evitar ampliar o catálogo manual como solução definitiva. Upload, armazenamento, créditos, ordenação e publicação devem convergir para o modelo de mídia/CMS do RasComp.
 
-```text
-http://localhost:5175/albuns/rrc-2026
-```
-
-## Variável de ambiente
-
-```env
-VITE_SITE_URL=http://localhost:5174
-```
-
-Essa URL aponta de volta para a Landing institucional.
-
-## Adicionando fotos reais
-
-O catálogo está em:
-
-```text
-src/data/albums.ts
-```
-
-Cada álbum possui `cover` e `photos`. Nesta primeira versão eles podem ficar sem `src`, gerando placeholders visuais.
-
-Exemplo futuro:
-
-```ts
-{
-  id: 'rrc-2026-1',
-  src: '/albums/rrc-2026/001.webp',
-  alt: 'Robôs alinhados antes de uma partida do RRC 2026'
-}
-```
-
-Arquivos podem ser organizados inicialmente em:
-
-```text
-public/
-└── albums/
-    └── rrc-2026/
-        ├── cover.webp
-        ├── 001.webp
-        ├── 002.webp
-        └── ...
-```
-
-## Próximas evoluções
-
-- fotos reais e capas oficiais;
-- upload pela Gestão;
-- storage externo/objeto para publicação;
-- compressão e geração de thumbnails;
-- ordenação de fotos;
-- metadados e créditos;
-- download opcional;
-- compartilhamento de álbum;
-- SEO/Open Graph por álbum.
+Documentação global: `../docs/README.md`.
