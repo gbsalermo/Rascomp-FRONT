@@ -330,7 +330,7 @@ onMounted(load)
     </template>
 
     <article v-else class="empty-state-card competition-hub-no-edition">
-      <span class="eyrow">Primeira edição</span>
+      <span class="eyebrow">Primeira edição</span>
       <h2>Nenhuma competição cadastrada</h2>
       <p class="muted">Crie a primeira edição do RRC para iniciar inscrições e operação competitiva.</p>
       <el-button class="brand-button" @click="openCreate">Criar competição</el-button>
