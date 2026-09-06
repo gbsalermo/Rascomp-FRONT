@@ -1,0 +1,1117 @@
+# RasComp — Contrato de Regras Competitivas
+
+Última revisão: **06/09/2026**
+
+Este documento consolida as **regras competitivas e invariantes de domínio aprovadas durante a ETAPA 1** do RasComp.
+
+Ele possui dois objetivos simultâneos:
+
+1. servir como contrato para backend, frontend e testes automatizados;
+2. preservar uma redação explícita o suficiente para futuramente gerar o regulamento público entregue aos competidores na ETAPA 8.
+
+> Este documento é a referência de regras competitivas já decididas. O roadmap continua sendo `docs/ETAPAS_POS_PROJETO.md` e a arquitetura geral continua sendo `docs/DOSSIE_PROJETO_RASCOMP.md`.
+
+---
+
+# 1. Fontes e princípio de adaptação
+
+As regras da RoboCore são usadas como **base técnica e competitiva**, principalmente para Seguidor de Linha e Sumô.
+
+Referências consultadas em 06/09/2026:
+
+```text
+RoboCore Event Manager — Rules
+https://events.robocore.net/rules
+
+RoboCore — Regras Seguidor de Linha
+https://www.robocore.net/upload/attachments/robocore__regras_seguidor_de_linha_108.pdf
+
+RoboCore — Regras Sumô
+https://www.robocore.net/upload/attachments/robocore__regras_sumo_165.pdf
+
+RoboCore Event Manager — RSM 2026 / inscrições
+https://events.robocore.net/rsm-2026/registration_info
+```
+
+Essas fontes **não substituem as decisões do RRC/RasComp**.
+
+Quando este documento definir uma adaptação própria, vale a regra explicitamente registrada aqui para implementação do sistema.
+
+Exemplos de adaptações próprias já aprovadas:
+
+- Follow com 3 tomadas e 3 tentativas por tomada;
+- alterações físicas/de código proibidas durante uma tomada, mas permitidas entre tomadas;
+- penalidade temporal configurável no Follow;
+- inspeção de Sumô decidida por pessoa da organização, não calculada automaticamente pelo sistema;
+- robôs híbridos podem competir em mais de um modo compatível;
+- rounds extras de Sumô somente em situações justificadas;
+- prorrogação/reabertura de inscrições como operação explícita;
+- edição operacional da agenda de partidas separada da estrutura lógica da chave.
+
+---
+
+# 2. Categorias competitivas
+
+## 2.1 Modalidades técnicas do backend
+
+O backend pode continuar trabalhando com as modalidades técnicas:
+
+```text
+FOLLOW_LINE
+SUMO
+```
+
+Mini/3 kg e Auto/R/C são **categorias competitivas distintas**, mas compartilham o mesmo motor de Sumô.
+
+## 2.2 Categorias de Sumô previstas
+
+```text
+Mini Sumô 500 g — Autônomo
+Mini Sumô 500 g — R/C
+Sumô 3 kg — Autônomo
+Sumô 3 kg — R/C
+```
+
+O sistema não precisa validar dimensões físicas. O enquadramento físico ocorre presencialmente em gabarito fixo durante a inspeção.
+
+---
+
+# 3. Classe física e robôs híbridos
+
+Um `Robot` representa o mesmo robô físico da equipe.
+
+O sistema deve separar:
+
+```text
+robô físico
+≠
+modo de funcionamento
+```
+
+Modos de funcionamento podem variar sem duplicar o robô cadastrado.
+
+Exemplo permitido:
+
+```text
+TITÃ
+├─ Mini Sumô Auto   ✅
+├─ Mini Sumô R/C    ✅
+└─ Follow Line      ✅
+```
+
+Outro exemplo permitido:
+
+```text
+ATLAS
+├─ Sumô 3 kg Auto   ✅
+├─ Sumô 3 kg R/C    ✅
+└─ Follow Line      ✅
+```
+
+Incompatibilidade física na mesma edição:
+
+```text
+mesmo Robot
+├─ Mini 500 g
+└─ 3 kg
+   ❌ não permitido
+```
+
+A trava deve ocorrer pela **classe física de Sumô**, não pelo modo Auto/R/C e não por dimensões armazenadas no software.
+
+Conceito de domínio candidato:
+
+```text
+classeFisicaSumo
+├─ MINI_500G
+├─ SUMO_3KG
+└─ null
+```
+
+`null` significa apenas que aquele robô não está classificado para Sumô naquele contexto.
+
+---
+
+# 4. Inscrições
+
+## 4.1 Regra geral
+
+Inscrições comuns só podem ser criadas enquanto a competição estiver com inscrições abertas e dentro da janela de datas vigente.
+
+Fluxo normal:
+
+```text
+Competition
+PLANEJADA
+   ↓
+INSCRICOES_ABERTAS
+   ↓
+Registration PENDENTE
+   ↓
+Organização analisa
+   ├─ APROVADA
+   └─ REJEITADA
+```
+
+## 4.2 Permissões e transições
+
+### Participante
+
+Pode, dentro da janela válida:
+
+- criar inscrição;
+- editar inscrição `PENDENTE` nos campos permitidos;
+- cancelar inscrição `PENDENTE`;
+- reativar inscrição cancelada quando a janela ainda estiver aberta, retornando para `PENDENTE`;
+- solicitar cancelamento de uma inscrição `APROVADA`.
+
+Não pode:
+
+- aprovar/rejeitar inscrição;
+- reabrir uma inscrição `REJEITADA`;
+- cancelar diretamente uma inscrição `APROVADA`;
+- alterar histórico competitivo já consumido.
+
+### Organização
+
+Pode:
+
+- aprovar/rejeitar inscrições;
+- reabrir uma inscrição `REJEITADA` para correção;
+- analisar solicitação de cancelamento de inscrição `APROVADA`;
+- executar correções administrativas permitidas pelo estado competitivo.
+
+## 4.3 Cancelamento de inscrição aprovada
+
+Uma inscrição `APROVADA` **não é cancelada diretamente pelo participante**.
+
+Fluxo:
+
+```text
+PARTICIPANTE
+→ solicita cancelamento
+→ Registration permanece APROVADA enquanto a solicitação está pendente
+→ ORGANIZAÇÃO analisa
+   ├─ aceita
+   └─ rejeita
+```
+
+A solicitação deve ser representada separadamente do status competitivo principal da inscrição.
+
+Conceito candidato:
+
+```text
+RegistrationCancellationRequest
+├─ registration
+├─ requestedBy
+├─ requestedAt
+├─ motivo
+├─ status
+├─ reviewedBy
+├─ reviewedAt
+└─ observacao
+```
+
+## 4.4 CANCELADA x DESISTENTE
+
+```text
+CANCELADA
+→ retirada antes de comprometimento competitivo relevante
+
+DESISTENTE
+→ inscrição que já entrou no contexto competitivo e não seguirá na competição
+```
+
+Depois de existir histórico competitivo relevante, o sistema não deve apagar nem simplesmente cancelar a inscrição como se ela nunca tivesse participado.
+
+Histórico relevante inclui, conforme modalidade:
+
+```text
+Follow
+→ tentativa registrada
+
+Sumô
+→ inspeção utilizada como elegibilidade
+→ inclusão em chave
+→ partida
+→ round
+→ resultado
+```
+
+Uma desistência depois da entrada em chave deve preservar a árvore e usar WO/resultado administrativo quando necessário.
+
+## 4.5 Reativação
+
+Reativação comum só pode ocorrer quando:
+
+- a competição está ativa;
+- a janela de inscrições está aberta;
+- a data atual está dentro da janela;
+- as demais entidades necessárias continuam ativas/compatíveis.
+
+Ao reativar:
+
+```text
+status → PENDENTE
+revisão anterior → limpa
+```
+
+Fora da janela, a operação normal é bloqueada. Exceções administrativas futuras pertencem às ferramentas DEV/Ajustes Gerais e devem ser auditadas.
+
+## 4.6 Pagamento — invariante futuro
+
+O sistema ainda não implementa pagamento, mas a regra já deve ser preservada no desenho da aprovação.
+
+Quando pagamento estiver habilitado para a competição:
+
+```text
+Registration só pode virar APROVADA
+se a cobrança exigida estiver regular
+```
+
+A cobrança poderá consolidar valores como:
+
+- inscrição do participante/equipe;
+- inscrição do robô/categoria;
+- combinação dos valores em uma cobrança única quando essa for a política do evento.
+
+Estados candidatos futuros:
+
+```text
+PENDENTE
+CONFIRMADO
+ISENTO
+CANCELADO
+ESTORNADO
+```
+
+A ETAPA 1 não precisa implementar pagamento, mas nenhuma regra nova deve impedir essa integração futura.
+
+---
+
+# 5. Estado da competição e prorrogação
+
+Fluxo normal:
+
+```text
+PLANEJADA
+   ↓
+INSCRICOES_ABERTAS
+   ↓
+INSCRICOES_ENCERRADAS
+   ↓
+EM_ANDAMENTO
+   ↓
+FINALIZADA
+```
+
+`CANCELADA` é uma saída administrativa possível antes da finalização conforme política da organização.
+
+Mudanças arbitrárias de enum não são consideradas operação segura.
+
+Exemplos bloqueados no fluxo comum:
+
+```text
+FINALIZADA → INSCRICOES_ABERTAS  ❌
+FINALIZADA → EM_ANDAMENTO        ❌
+EM_ANDAMENTO → PLANEJADA         ❌
+```
+
+## 5.1 Prorrogação antes do fechamento
+
+Enquanto ainda estiver em `INSCRICOES_ABERTAS`, a organização pode prorrogar a data final.
+
+Operação conceitual:
+
+```text
+prorrogarInscricoes(novaData, motivo)
+```
+
+A nova data deve continuar consistente com o início da competição.
+
+## 5.2 Reabertura após fechamento
+
+`INSCRICOES_ENCERRADAS → INSCRICOES_ABERTAS` só pode ocorrer por operação explícita de prorrogação/reabertura, com:
+
+- nova data final;
+- motivo obrigatório;
+- autorização da organização;
+- preservação futura de auditoria.
+
+Reabertura normal é bloqueada depois de `EM_ANDAMENTO`.
+
+Se já existir chave de Sumô:
+
+- sem atividade competitiva: a reabertura pode exigir invalidar a chave atual e gerar uma nova depois do novo fechamento;
+- com partida/round/resultado já iniciado: reabertura comum deve ser bloqueada.
+
+---
+
+# 6. Seguidor de Linha — regra competitiva
+
+## 6.1 Estrutura
+
+Cada inscrição possui:
+
+```text
+3 TOMADAS
+
+cada TOMADA possui exatamente
+3 TENTATIVAS
+```
+
+Não existe janela total obrigatória para a tomada. O limite de tempo é aplicado individualmente a cada tentativa.
+
+Parâmetros padrão recomendados:
+
+```text
+numeroTomadas = 3
+tentativasPorTomada = 3
+maxTempoTentativa = 120 segundos
+```
+
+O limite de tentativa deve continuar configurável pela organização.
+
+## 6.2 Alterações no robô
+
+Durante uma mesma tomada, entre o início da primeira tentativa e o encerramento da terceira:
+
+```text
+alteração física      ❌
+alteração de código   ❌
+```
+
+Entre tomadas:
+
+```text
+alteração física      ✅ permitida
+alteração de código   ✅ permitida
+```
+
+Essa é uma regra própria do RRC/RasComp.
+
+## 6.3 Cronometragem
+
+Cada tentativa pode ser cronometrada pela interface da organização.
+
+Fluxo operacional desejado:
+
+```text
+[ INICIAR ]
+→ cronômetro roda
+→ [ PARAR ]
+→ tempo é preenchido
+→ organização confirma/ajusta antes de salvar
+```
+
+O cronômetro do frontend é ferramenta operacional; o backend continua validando e persistindo o resultado oficial.
+
+Entrada manual de tempo também deve permanecer possível para correção operacional autorizada.
+
+## 6.4 Penalidades de tempo
+
+Fórmula oficial:
+
+```text
+tempoFinalTentativa
+=
+tempoCronometrado
++
+somaDasPenalidades
+```
+
+Penalidades são registradas em segundos.
+
+Valor comum de referência:
+
+```text
++10 s
+```
+
+O valor não deve ser rigidamente fixado no código. A organização pode digitar/ajustar a penalidade conforme ocorrência e regulamento da edição.
+
+### Falha em parar corretamente
+
+Se o robô completar o percurso mas não parar corretamente na área definida entre chegada/partida, a tentativa não precisa ser invalidada automaticamente.
+
+Regra do RRC:
+
+```text
+percurso concluído
++
+não parou corretamente
+→ tentativa pode continuar válida
+→ aplica penalidade temporal
+```
+
+A UI pode possuir ação específica `NÃO PAROU`, preenchendo a penalidade padrão configurada, com confirmação da organização.
+
+## 6.5 Estados válidos de tentativa
+
+### Classificável
+
+```text
+concluida = true
+valida = true
+tempoSegundos != null
+```
+
+### Concluiu, mas foi invalidada
+
+```text
+concluida = true
+valida = false
+tempoSegundos != null
+```
+
+### Não concluiu
+
+```text
+concluida = false
+valida = false
+tempoSegundos = null
+```
+
+Combinações proibidas:
+
+```text
+concluida = false + valida = true       ❌
+valida = true + tempoSegundos = null    ❌
+concluida = true + tempoSegundos = null ❌
+```
+
+`checkpointsAlcancados` é informativo/operacional e não altera o ranking enquanto não houver regra competitiva específica aprovada.
+
+## 6.6 Ranking
+
+Para cada tomada:
+
+```text
+melhorTentativaDaTomada
+=
+menor tempoFinal entre as tentativas classificáveis
+```
+
+Para o robô:
+
+```text
+resultadoDoRobo
+=
+menor tempoFinal entre as 3 melhores tomadas
+```
+
+Classificação final:
+
+```text
+menor tempoFinal
+→ melhor posição
+```
+
+Em empate, o sistema pode manter os critérios técnicos atuais de desempate até que um regulamento específico determine outra regra, desde que sejam documentados no regulamento publicado.
+
+## 6.7 Ausência na chamada
+
+Quando o competidor/robô é chamado para uma tomada:
+
+```text
+cronômetro de apresentação inicia
+```
+
+Tempo padrão recomendado:
+
+```text
+60 segundos
+```
+
+Esse valor deve ser configurável.
+
+Se o competidor não comparecer dentro do limite:
+
+```text
+TOMADA → PERDIDA_POR_AUSENCIA
+```
+
+A perda é da tomada, não da inscrição inteira.
+
+Não criar três tentativas fictícias apenas para representar a ausência.
+
+## 6.8 Inspeção
+
+Seguidor de Linha **não entra na inspeção de Sumô** descrita neste documento.
+
+---
+
+# 7. UX operacional futura do Follow
+
+Ao selecionar o robô que realizará a tomada, a gestão deve abrir uma tela/modal focada exclusivamente naquele competidor/robô.
+
+Informações desejadas:
+
+```text
+foto do robô
+equipe
+competidores
+categoria
+tomada atual
+3 tentativas da tomada
+cronômetro
+penalidades
+tempo bruto
+tempo final
+histórico das tomadas anteriores
+observações
+```
+
+A operação deve permitir, de forma clara:
+
+```text
+INICIAR CRONÔMETRO
+PARAR
+SALVAR TEMPO
+APLICAR PENALIDADE
+MARCAR NÃO PAROU
+INVALIDAR TENTATIVA
+MARCAR NÃO CONCLUIU
+ENCERRAR TOMADA
+```
+
+Essa orientação é de UX; a fonte de verdade continua sendo o backend.
+
+---
+
+# 8. Sumô — inspeção
+
+## 8.1 Escopo
+
+A inspeção se aplica às categorias de Sumô.
+
+Follow não usa esse fluxo.
+
+## 8.2 Decisão humana
+
+As medidas físicas são verificadas presencialmente com gabarito fixo e demais instrumentos da organização.
+
+O RasComp não deve decidir automaticamente aprovação por dimensão ou peso.
+
+Fluxo:
+
+```text
+organização realiza inspeção física
+→ informa APTO ou INAPTO
+→ RasComp registra resultado
+```
+
+Dados possíveis apenas para informação/auditoria:
+
+- peso medido;
+- número da tentativa de inspeção;
+- observação;
+- responsável pela inspeção;
+- data/hora.
+
+`pesoMedido` não determina sozinho o resultado.
+
+Reinspeções podem existir conforme decisão da organização.
+
+A elegibilidade para chave depende de existir inspeção considerada `APTA` quando a categoria exigir inspeção.
+
+---
+
+# 9. Sumô — partida e rounds
+
+## 9.1 Regra base
+
+```text
+2 robôs por partida
+3 rounds regulares
+2 vitórias necessárias para vencer a partida
+```
+
+Um round `FINALIZADO` deve possuir vencedor.
+
+Rounds `ANULADO` ou `CANCELADO` não concedem vitória.
+
+## 9.2 Penalidades
+
+Regra operacional consolidada do RasComp/RRC:
+
+```text
+0 penalidades → disputa normal
+1 penalidade  → disputa normal
+2 penalidades → derrota automática do round para o robô penalizado
+```
+
+As penalidades devem continuar registradas para auditoria do resultado.
+
+## 9.3 Suicídio / WO
+
+```text
+SUICIDIO_WO
+→ adversário vence o round
+```
+
+Quando a desistência ocorrer antes da disputa de uma partida já comprometida na chave, o resultado administrativo deve preservar o histórico da chave.
+
+## 9.4 BYE
+
+```text
+BYE
+→ único participante avança automaticamente
+```
+
+BYE não recebe resultado manual comum.
+
+---
+
+# 10. Sumô — Autônomo x R/C
+
+## 10.1 Autônomo
+
+Após autorização do juiz e ativação pelo competidor, existe atraso regulamentar antes da movimentação.
+
+Referência adotada:
+
+```text
+5 segundos
+```
+
+Esse atraso não é uma falha.
+
+Após o período regulamentar, o robô deve entrar em funcionamento conforme o julgamento operacional da partida.
+
+Se não iniciar adequadamente, a organização/juiz pode registrar:
+
+```text
+FALHA_INICIALIZACAO
+```
+
+A consequência pode ser, conforme decisão do juiz/regulamento da edição:
+
+- penalidade;
+- perda do round.
+
+O backend não deve escolher automaticamente entre essas consequências.
+
+Se existir um tempo de tolerância adicional para considerar a falha definitiva, ele deve ser configurável/documentado pela competição.
+
+## 10.2 R/C
+
+Robôs R/C iniciam ao comando do juiz.
+
+Não existe o atraso regulamentar de 5 segundos aplicado aos autônomos.
+
+Falhas de partida/inicialização continuam podendo ser registradas pelo juiz conforme a situação competitiva.
+
+---
+
+# 11. Rounds extras
+
+A partida não é um "melhor de cinco" por padrão.
+
+Existem:
+
+```text
+3 rounds regulares
++
+rounds extras somente se necessários
+```
+
+Exemplo:
+
+```text
+Round 1 → A venceu
+Round 2 → B venceu
+Round 3 → ANULADO
+
+placar = 1 x 1
+→ Round 4 pode ser autorizado
+```
+
+Um round extra só pode ser criado quando:
+
+- a partida ainda não possui vencedor;
+- um ou mais rounds não produziram vitória suficiente para atingir 2 vitórias;
+- o juiz/organização autoriza;
+- existe justificativa registrada.
+
+Configuração inicial recomendada:
+
+```text
+numeroRoundsRegulares = 3
+roundsParaVencer = 2
+maxRoundsExtras = 2
+```
+
+Se um participante já alcançou 2 vitórias:
+
+```text
+round extra ❌
+```
+
+Se o limite de rounds extras for atingido e ainda não houver vencedor, a partida deve ser decidida por decisão dos juízes.
+
+---
+
+# 12. Decisão dos juízes
+
+O sistema deve suportar resultado por decisão do juiz quando necessário.
+
+Motivo competitivo candidato:
+
+```text
+DECISAO_JUIZ
+```
+
+Registro mínimo:
+
+```text
+partida
+winnerRegistrationId
+judgeId
+justificativa obrigatória
+data/hora
+```
+
+A decisão não pode existir sem vencedor e justificativa.
+
+## 12.1 Cadastro de juiz
+
+Um juiz pode ser cadastrado no contexto da competição.
+
+Conceito candidato:
+
+```text
+CompetitionJudge
+├─ nome
+├─ competition
+├─ ativo
+└─ userAccount opcional
+```
+
+O juiz pode ser:
+
+- integrante da organização com conta no RasComp;
+- pessoa cadastrada apenas como juiz, sem login próprio.
+
+A organização deve conseguir identificar quem tomou a decisão registrada.
+
+---
+
+# 13. Motivos de resultado do Sumô
+
+A implementação deve conseguir representar de forma auditável motivos como:
+
+```text
+DISPUTA
+SUICIDIO_WO
+PENALIDADES
+FALHA_INICIALIZACAO
+DECISAO_JUIZ
+```
+
+Não usar um motivo genérico quando a causa real tiver impacto na compreensão do resultado.
+
+---
+
+# 14. Geração e regeneração de chave
+
+## 14.1 Geração normal
+
+Regra recomendada:
+
+```text
+PLANEJADA              ❌
+INSCRICOES_ABERTAS     ❌
+INSCRICOES_ENCERRADAS  ✅
+EM_ANDAMENTO           ❌ geração comum
+FINALIZADA             ❌
+CANCELADA              ❌
+```
+
+Somente inscrições:
+
+- ativas;
+- aprovadas;
+- da categoria correta;
+- aptas na inspeção quando exigida;
+
+podem entrar na chave.
+
+## 14.2 Regeneração
+
+Permitida somente enquanto nenhuma atividade competitiva dependente tiver começado.
+
+```text
+chave atual
++
+nenhuma partida/round/resultado iniciado
+→ pode regenerar
+```
+
+Depois do início competitivo:
+
+```text
+regeneração comum ❌
+```
+
+Correções excepcionais devem usar operação específica e auditável, não gerar uma nova chave aleatória por cima do histórico.
+
+---
+
+# 15. Estrutura da chave x agenda de execução
+
+A posição lógica de uma partida na chave não é a mesma coisa que a ordem real em que ela será disputada.
+
+Separar:
+
+```text
+ESTRUTURA LÓGICA
+rodada
+ordem na árvore
+origem dos participantes
+próxima partida
+```
+
+De:
+
+```text
+AGENDA OPERACIONAL
+pista
+ordem de execução
+horário previsto
+status de convocação
+```
+
+Isso permite situações reais como:
+
+```text
+Partida lógica 1 adiada por força maior
+Partida lógica 2 acontece primeiro
+outra pista executa Partida 3 em paralelo
+```
+
+sem alterar a árvore competitiva.
+
+## 15.1 Permissões futuras
+
+Direção aprovada para a matriz de roles futura:
+
+```text
+GESTAO
+→ pode reorganizar agenda/pista/horário dentro das regras permitidas
+
+DEV
+→ pode realizar correção estrutural excepcional quando necessária e segura
+```
+
+Uma permissão específica poderá ser concedida a GESTAO para determinados ajustes estruturais, mas nunca como edição irrestrita da árvore.
+
+---
+
+# 16. Correção de resultado após progressão
+
+## 16.1 Próxima partida ainda não começou
+
+Se o resultado anterior foi corrigido e a próxima partida ainda não iniciou:
+
+```text
+corrigir resultado
+→ remover vencedor anterior do slot dependente
+→ inserir vencedor correto
+→ recalcular status da próxima partida
+```
+
+A operação deve ocorrer em **uma única transação**, sem deixar a chave em estado intermediário.
+
+## 16.2 Próxima partida já começou
+
+Se a partida dependente já está `EM_ANDAMENTO`, `FINALIZADA` ou possui rounds/resultados:
+
+```text
+correção comum do resultado anterior ❌ bloqueada
+```
+
+Não executar rollback automático silencioso em cadeia.
+
+Uma futura operação DEV de rollback competitivo poderá existir nos Ajustes Gerais, com:
+
+- cadeia afetada explícita;
+- motivo obrigatório;
+- auditoria;
+- confirmação administrativa;
+- reconstrução consistente dos estados dependentes.
+
+Até essa ferramenta existir, bloquear é a regra de integridade.
+
+---
+
+# 17. Matriz de implementação da ETAPA 1
+
+Legenda:
+
+```text
+✅ comportamento alinhado ou aproveitável
+⚠️ alteração necessária
+🆕 capacidade nova necessária
+```
+
+| Regra | Estado atual conhecido | Ação |
+|---|---|---|
+| Reativação só com inscrições abertas | não revalida janela | ⚠️ corrigir |
+| Cancelamento PENDENTE | existe cancelamento genérico | ⚠️ restringir por estado |
+| Cancelamento APROVADA por solicitação | não existe solicitação separada | 🆕 modelar |
+| CANCELADA x DESISTENTE | não formalizado | 🆕 formalizar |
+| Pagamento antes de aprovação quando habilitado | não existe | futuro, preservar invariante |
+| Prorrogação/reabertura explícita | status pode ser alterado genericamente | 🆕 criar operação de domínio |
+| Follow 3 tomadas × 3 tentativas | configurável | ✅ fixar perfil/regra RRC |
+| Tempo máximo por tentativa | existe `maxTempoSegundos` | ✅ alinhar sem janela total |
+| Penalidade temporal | já existe | ✅ manter entrada configurável |
+| Estados válidos Follow | combinações inconsistentes ainda possíveis | ⚠️ corrigir |
+| Perda de tomada por ausência | não existe | 🆕 modelar |
+| Cronômetro operacional frontend | parcialmente manual | 🆕/UX |
+| Inspeção Sumô humana APTO/INAPTO | backend decide pelo peso | ⚠️ corrigir |
+| Peso apenas informativo | hoje decide aprovação | ⚠️ corrigir |
+| Mini/3kg Auto/R/C no mesmo motor | arquitetura suporta categorias | ✅ |
+| Robô híbrido na mesma classe física | unicidade atual é por categoria | ⚠️ validar compatibilidade física |
+| Mini + 3kg no mesmo robô/edição | hoje pode ser possível | ⚠️ bloquear |
+| 3 rounds / 2 vitórias | configurável e suportado | ✅ |
+| Round anulado sem vitória | suportado | ✅ |
+| Rounds extras justificados | há round extra simples | ⚠️ exigir condição + justificativa |
+| Decisão do juiz | não formalizada | 🆕 modelar |
+| Juiz identificado | não formalizado | 🆕 modelar |
+| Falha de inicialização | não formalizada | 🆕 modelar |
+| Geração só com inscrições encerradas | status não é validado | ⚠️ corrigir |
+| Regeneração só antes da atividade | incompleto | ⚠️ proteger |
+| Agenda separada da árvore | não formalizado | 🆕 estruturar quando aplicável |
+| Correção segura antes da próxima partida | progressão protege slots, mas não desfaz avanço | ⚠️ implementar transacionalmente |
+| Correção depois de dependência iniciada | risco atual | ⚠️ bloquear |
+
+---
+
+# 18. Testes automatizados derivados deste contrato
+
+A ETAPA 1 deve transformar as regras acima em testes automatizados de fluxo.
+
+## 18.1 Fluxo de inscrição/Competition
+
+Cobrir:
+
+- abertura de inscrições;
+- criação PENDENTE;
+- aprovação/rejeição;
+- reativação dentro/fora da janela;
+- solicitação de cancelamento de APROVADA;
+- desistência com histórico;
+- prorrogação antes do fechamento;
+- reabertura após fechamento sem atividade;
+- bloqueio após início competitivo.
+
+## 18.2 Fluxo Follow
+
+Simular:
+
+```text
+3 tomadas
+×
+3 tentativas
+```
+
+Incluindo:
+
+- tempo válido;
+- penalidade;
+- não parou corretamente;
+- tentativa inválida;
+- não concluiu;
+- tempo acima do limite;
+- perda de tomada por ausência;
+- ranking pela melhor tentativa e melhor tomada.
+
+## 18.3 Fluxo Sumô
+
+Simular:
+
+- inspeção humana APTO/INAPTO;
+- geração de chave;
+- BYE;
+- disputa normal;
+- 2 penalidades;
+- SUICIDIO_WO;
+- falha de inicialização;
+- round anulado;
+- round extra justificado;
+- decisão do juiz;
+- progressão;
+- campeão.
+
+## 18.4 Integridade
+
+Testar tentativas de quebra:
+
+- gerar chave em estado inválido;
+- incluir inscrição inapta;
+- regenerar após competição iniciada;
+- alterar resultado cujo vencedor já alimentou partida iniciada;
+- registrar combinações impossíveis de Follow;
+- cadastrar o mesmo robô em classes físicas Mini e 3 kg na mesma edição;
+- reabrir inscrições após atividade competitiva.
+
+Para cada operação rejeitada, verificar:
+
+```text
+erro esperado
++
+estado anterior preservado
++
+nenhuma persistência parcial
+```
+
+---
+
+# 19. Base para o futuro regulamento dos competidores
+
+Na ETAPA 8, este contrato deve ser transformado em um documento público mais simples, sem detalhes de implementação.
+
+O regulamento público deverá possuir pelo menos:
+
+```text
+1. inscrições, pagamento, cancelamento e desistência
+2. identificação de equipe/robô
+3. Seguidor de Linha
+   - 3 tomadas
+   - 3 tentativas
+   - limite por tentativa
+   - penalidades
+   - alterações permitidas/proibidas
+   - ausência
+   - ranking
+4. Mini Sumô Auto
+5. Mini Sumô R/C
+6. Sumô 3 kg Auto
+7. Sumô 3 kg R/C
+8. inspeção
+9. rounds, penalidades e WO
+10. rounds anulados/extras
+11. decisão dos juízes
+12. convocação, agenda e pistas
+13. chaveamento e progressão
+14. conduta e regras adicionais da edição
+```
+
+O texto público deve informar claramente o que o competidor pode esperar da organização, enquanto este contrato continua sendo a referência técnica do sistema.
+
+---
+
+# 20. Regra de manutenção
+
+Ao alterar uma regra competitiva:
+
+```text
+1. alterar este contrato
+2. revisar impacto no backend
+3. revisar testes automatizados
+4. revisar frontend operacional
+5. revisar futuro texto público quando aplicável
+```
+
+Não manter regra competitiva importante somente em código, somente em interface ou somente em conversa.
