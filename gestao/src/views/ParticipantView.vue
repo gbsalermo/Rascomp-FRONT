@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { assetUrl, http, participantApi, publicApi } from '../api'
 import type {
   Competitor,
@@ -42,6 +42,7 @@ interface SumoOverview {
 const loading = ref(false)
 const creatingTeam = ref(false)
 const uploadRobotId = ref<number>()
+const registrationActionId = ref<number>()
 const loadingAvailableTeams = ref(false)
 const teamDialog = ref(false)
 const joinDialog = ref(false)
@@ -50,6 +51,7 @@ const teamId = ref<number>()
 const competitors = ref<Competitor[]>([])
 const robots = ref<Robot[]>([])
 const registrations = ref<Registration[]>([])
+const cancellationPendingIds = ref<Set<number>>(new Set())
 const institutions = ref<Array<{ id: number; nome: string; sigla?: string }>>([])
 const availableTeams = ref<PublicTeamOption[]>([])
 const teamSearch = ref('')
@@ -123,6 +125,7 @@ async function loadTeam() {
   competitors.value = []
   robots.value = []
   registrations.value = []
+  cancellationPendingIds.value = new Set()
   photoMap.value = {}
   followMap.value = {}
   sumoMap.value = {}
@@ -140,6 +143,18 @@ async function loadTeam() {
       robots.value.map(async (robot) => [robot.id, await participantApi.robotPhotos(robot.id).catch(() => [])] as const)
     )
     photoMap.value = Object.fromEntries(photoEntries)
+
+    const cancellationEntries = await Promise.all(
+      approvedRegistrations.value.map(async (registration) => [
+        registration.id,
+        await participantApi.registrationCancellationRequests(registration.id).catch(() => [])
+      ] as const)
+    )
+    cancellationPendingIds.value = new Set(
+      cancellationEntries
+        .filter(([, requests]) => requests.some((request) => request.status === 'PENDENTE'))
+        .map(([registrationId]) => registrationId)
+    )
 
     await Promise.all(approvedRegistrations.value.map(loadRegistrationOverview))
   } catch (error: any) {
@@ -234,6 +249,68 @@ async function onPhotoSelected(robot: Robot, event: Event) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível enviar a foto do robô.')
   } finally {
     uploadRobotId.value = undefined
+  }
+}
+
+async function cancelPendingRegistration(registration: Registration) {
+  try {
+    await ElMessageBox.confirm(
+      `Cancelar a inscrição de ${registration.robotNome} em ${registration.categoryNome}?`,
+      'Cancelar inscrição pendente',
+      { type: 'warning', confirmButtonText: 'Cancelar inscrição', cancelButtonText: 'Voltar' }
+    )
+    registrationActionId.value = registration.id
+    await participantApi.cancelRegistration(registration.id)
+    ElMessage.success('Inscrição cancelada.')
+    await loadTeam()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível cancelar a inscrição.')
+  } finally {
+    registrationActionId.value = undefined
+  }
+}
+
+async function reactivateRegistration(registration: Registration) {
+  registrationActionId.value = registration.id
+  try {
+    await participantApi.reactivateRegistration(registration.id)
+    ElMessage.success('Inscrição reativada e devolvida para análise.')
+    await loadTeam()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível reativar a inscrição.')
+  } finally {
+    registrationActionId.value = undefined
+  }
+}
+
+async function requestApprovedCancellation(registration: Registration) {
+  if (cancellationPendingIds.value.has(registration.id)) {
+    ElMessage.info('Já existe uma solicitação de cancelamento pendente para esta inscrição.')
+    return
+  }
+
+  try {
+    const result = await ElMessageBox.prompt(
+      `Explique o motivo para solicitar o cancelamento de ${registration.robotNome}. A organização analisará o pedido.`,
+      'Solicitar cancelamento',
+      {
+        inputType: 'textarea',
+        inputPlaceholder: 'Motivo do cancelamento',
+        inputValidator: (value) => Boolean(value?.trim()) || 'Informe o motivo.',
+        confirmButtonText: 'Enviar solicitação',
+        cancelButtonText: 'Voltar'
+      }
+    )
+    registrationActionId.value = registration.id
+    await participantApi.requestRegistrationCancellation(registration.id, result.value.trim())
+    cancellationPendingIds.value = new Set([...cancellationPendingIds.value, registration.id])
+    ElMessage.success('Solicitação enviada para a organização.')
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível solicitar o cancelamento.')
+  } finally {
+    registrationActionId.value = undefined
   }
 }
 
@@ -409,6 +486,34 @@ onMounted(loadTeams)
             <el-table-column prop="categoryNome" label="Categoria" min-width="160" />
             <el-table-column prop="robotNome" label="Robô" min-width="120" />
             <el-table-column label="Status" width="130"><template #default="{ row }"><StatusBadge :value="row.status" /></template></el-table-column>
+            <el-table-column label="Ação" min-width="190" align="right">
+              <template #default="{ row }">
+                <el-button
+                  v-if="row.status === 'PENDENTE'"
+                  size="small"
+                  type="danger"
+                  plain
+                  :loading="registrationActionId === row.id"
+                  @click="cancelPendingRegistration(row)"
+                >Cancelar</el-button>
+                <el-button
+                  v-else-if="row.status === 'APROVADA'"
+                  size="small"
+                  :type="cancellationPendingIds.has(row.id) ? 'warning' : 'danger'"
+                  plain
+                  :disabled="cancellationPendingIds.has(row.id)"
+                  :loading="registrationActionId === row.id"
+                  @click="requestApprovedCancellation(row)"
+                >{{ cancellationPendingIds.has(row.id) ? 'Cancelamento solicitado' : 'Solicitar cancelamento' }}</el-button>
+                <el-button
+                  v-else-if="row.status === 'CANCELADA'"
+                  size="small"
+                  plain
+                  :loading="registrationActionId === row.id"
+                  @click="reactivateRegistration(row)"
+                >Reativar</el-button>
+              </template>
+            </el-table-column>
           </el-table>
         </article>
         <article class="table-card">
