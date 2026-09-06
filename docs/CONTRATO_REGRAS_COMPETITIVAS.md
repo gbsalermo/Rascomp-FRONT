@@ -80,12 +80,14 @@ O sistema não precisa validar dimensões físicas. O enquadramento físico ocor
 
 Um `Robot` representa o mesmo robô físico da equipe.
 
-O sistema deve separar:
+O sistema separa:
 
 ```text
 robô físico
 ≠
 modo de funcionamento
+≠
+classe física da categoria de Sumô
 ```
 
 Modos de funcionamento podem variar sem duplicar o robô cadastrado.
@@ -117,18 +119,33 @@ mesmo Robot
    ❌ não permitido
 ```
 
-A trava deve ocorrer pela **classe física de Sumô**, não pelo modo Auto/R/C e não por dimensões armazenadas no software.
+A trava ocorre pela **classe física de Sumô**, não pelo modo Auto/R/C e não por dimensões armazenadas no software.
 
-Conceito de domínio candidato:
+Modelo implementado na ETAPA 1:
 
 ```text
-classeFisicaSumo
+CompetitionCategory.sumoPhysicalClass
 ├─ MINI_500G
 ├─ SUMO_3KG
-└─ null
+└─ null para categorias não-SUMO
 ```
 
-`null` significa apenas que aquele robô não está classificado para Sumô naquele contexto.
+A classe física pertence à `CompetitionCategory`, e não ao `Robot`. Dessa forma, um único robô físico pode ser inscrito em mais de uma categoria compatível sem ser duplicado no cadastro.
+
+Regras de integridade implementadas no `RegistrationService`:
+
+```text
+mesmo Robot + mesma Competition
+├─ Follow + Mini                         ✅
+├─ Follow + 3 kg                         ✅
+├─ Mini Auto + Mini R/C                  ✅
+├─ 3 kg Auto + 3 kg R/C                  ✅
+└─ Mini + 3 kg                           ❌
+```
+
+A comparação considera inscrições `PENDENTE` e `APROVADA`, inclusive ao reativar uma inscrição antiga. Categoria `SUMO` sem classe física não aceita nova inscrição pelo fluxo normal.
+
+A migration V9 introduziu a coluna `sumo_physical_class` e fez o backfill das categorias Sumô existentes a partir do `peso_max` já armazenado em `ConfigSumo`. Esse uso de peso é apenas uma estratégia de migração de dados legados; **o runtime não infere a classe pelo nome da categoria nem pelo peso medido na inspeção**.
 
 ---
 
@@ -257,7 +274,8 @@ Reativação comum só pode ocorrer quando:
 - a competição está ativa;
 - a janela de inscrições está aberta;
 - a data atual está dentro da janela;
-- as demais entidades necessárias continuam ativas/compatíveis.
+- as demais entidades necessárias continuam ativas/compatíveis;
+- a reativação não cria conflito de classe física para robô híbrido.
 
 Ao reativar:
 
@@ -982,7 +1000,7 @@ Legenda:
 
 | Regra | Estado atual conhecido | Ação |
 |---|---|---|
-| Reativação só com inscrições abertas | janela e estado revalidados | ✅ implementado |
+| Reativação só com inscrições abertas | janela, estado e compatibilidade física revalidados | ✅ implementado |
 | Cancelamento PENDENTE | participante restrito a PENDENTE | ✅ implementado |
 | Cancelamento APROVADA por solicitação | solicitação persistida + análise da organização | ✅ implementado |
 | CANCELADA x DESISTENTE | distinção aplicada conforme atividade competitiva | ✅ implementado |
@@ -990,6 +1008,10 @@ Legenda:
 | Prorrogação/reabertura explícita | operação auditável + histórico persistido | ✅ implementado |
 | Reabertura depois de atividade competitiva | bloqueada por verificações de atividade | ✅ implementado |
 | Chave atual ao reabrir sem disputa | preservada historicamente e invalidada como atual | ✅ implementado |
+| Classe física explícita das categorias Sumô | `CompetitionCategory.sumoPhysicalClass` + Flyway V9 | ✅ implementado |
+| Robô híbrido na mesma classe física | Auto/R/C compatíveis compartilham o mesmo Robot | ✅ implementado |
+| Mini + 3kg no mesmo robô/edição | conflito detectado em criação/edição/reativação | ✅ bloqueado |
+| Follow coexistindo com Sumô no mesmo Robot | Follow ignorado na trava de classe física | ✅ implementado |
 | Follow 3 tomadas × 3 tentativas | configurável | ✅ base aproveitável; fixar regra RRC |
 | Tempo máximo por tentativa | existe `maxTempoSegundos` | ✅ alinhar sem janela total |
 | Penalidade temporal | já existe | ✅ manter entrada configurável |
@@ -999,8 +1021,6 @@ Legenda:
 | Inspeção Sumô humana APTO/INAPTO | backend decide pelo peso | ⚠️ corrigir |
 | Peso apenas informativo | hoje decide aprovação | ⚠️ corrigir |
 | Mini/3kg Auto/R/C no mesmo motor | arquitetura suporta categorias | ✅ |
-| Robô híbrido na mesma classe física | unicidade atual é por categoria | ⚠️ validar compatibilidade física |
-| Mini + 3kg no mesmo robô/edição | hoje pode ser possível | ⚠️ bloquear |
 | 3 rounds / 2 vitórias | configurável e suportado | ✅ |
 | Round anulado sem vitória | suportado | ✅ |
 | Rounds extras justificados | há round extra simples | ⚠️ exigir condição + justificativa |
@@ -1013,14 +1033,14 @@ Legenda:
 | Correção segura antes da próxima partida | progressão protege slots, mas não desfaz avanço | ⚠️ implementar transacionalmente |
 | Correção depois de dependência iniciada | risco atual | ⚠️ bloquear |
 
-Checkpoint automatizado após as implementações de `Competition + Registration`:
+Checkpoint automatizado após a conclusão do bloco `Competition + Registration`:
 
 ```text
-67 testes
+73 testes
 0 falhas
 0 erros
 0 skipped
-MySQL + Flyway V8 + testdata ✅
+MySQL + Flyway V9 + testdata ✅
 Frontend Gestão typecheck + build ✅
 ```
 
@@ -1042,7 +1062,10 @@ Cobrir:
 - desistência com histórico;
 - prorrogação antes do fechamento;
 - reabertura após fechamento sem atividade;
-- bloqueio após início competitivo.
+- bloqueio após início competitivo;
+- robô híbrido em duas categorias da mesma classe física;
+- coexistência Follow + Sumô no mesmo robô;
+- bloqueio Mini + 3 kg na mesma edição.
 
 Os cenários unitários principais dessas regras já existem; a simulação integrada com repositories reais permanece como camada adicional da ETAPA 1.
 
