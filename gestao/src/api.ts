@@ -2,8 +2,10 @@ import axios from 'axios'
 import type {
   AuthResponse,
   Bracket,
+  CancellationRequestStatus,
   Category,
   Competition,
+  CompetitionRegistrationWindowChange,
   ConfigFollow,
   ConfigSumo,
   FollowAttempt,
@@ -11,6 +13,7 @@ import type {
   MatchResult,
   RankingItem,
   Registration,
+  RegistrationCancellationRequest,
   RobotImage,
   RoundSumo,
   RoundSumoOutcomeReason,
@@ -95,6 +98,10 @@ export const adminApi = {
     }).then((r) => r.data),
   createCompetition: (payload: Competition) => http.post<Competition>('/api/v1/competicoes', payload).then((r) => r.data),
   updateCompetition: (id: number, payload: Competition) => http.put<Competition>(`/api/v1/competicoes/${id}`, payload).then((r) => r.data),
+  extendCompetitionRegistrationWindow: (id: number, payload: { novaDataFim: string; motivo: string }) =>
+    http.post<CompetitionRegistrationWindowChange>(`/api/v1/competicoes/${id}/prorrogar-inscricoes`, payload).then((r) => r.data),
+  competitionRegistrationWindowHistory: (id: number) =>
+    http.get<CompetitionRegistrationWindowChange[]>(`/api/v1/competicoes/${id}/historico-inscricoes`).then((r) => r.data),
   categories: (modalidade?: string) =>
     http.get<Category[]>(modalidade ? '/api/v1/categorias/por-modalidade' : '/api/v1/categorias', {
       params: modalidade ? { modalidade } : undefined
@@ -105,6 +112,12 @@ export const adminApi = {
     return http.get<Registration[]>('/api/v1/inscricoes').then((r) => r.data)
   },
   updateRegistration: (id: number, payload: Registration) => http.put<Registration>(`/api/v1/inscricoes/${id}`, payload).then((r) => r.data),
+  cancellationRequests: (params?: { competitionId?: number; status?: CancellationRequestStatus }) =>
+    http.get<RegistrationCancellationRequest[]>('/api/v1/solicitacoes-cancelamento-inscricao', { params }).then((r) => r.data),
+  approveCancellationRequest: (id: number, resposta?: string) =>
+    http.patch<RegistrationCancellationRequest>(`/api/v1/solicitacoes-cancelamento-inscricao/${id}/aprovar`, resposta ? { resposta } : {}).then((r) => r.data),
+  rejectCancellationRequest: (id: number, resposta?: string) =>
+    http.patch<RegistrationCancellationRequest>(`/api/v1/solicitacoes-cancelamento-inscricao/${id}/rejeitar`, resposta ? { resposta } : {}).then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/equipes').then((r) => r.data),
   setTeamActive: (id: number, ativo: boolean) =>
     ativo
@@ -169,6 +182,13 @@ export const participantApi = {
     http.patch<RobotImage>(`/api/v1/participante/robos/${robotId}/fotos/${imageId}/principal`).then((r) => r.data),
   deleteRobotPhoto: (robotId: number, imageId: number) => http.delete(`/api/v1/participante/robos/${robotId}/fotos/${imageId}`),
   registrations: (teamId: number) => http.get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`).then((r) => r.data),
+  cancelRegistration: (registrationId: number) => http.delete(`/api/v1/participante/inscricoes/${registrationId}`),
+  reactivateRegistration: (registrationId: number) =>
+    http.patch<Registration>(`/api/v1/participante/inscricoes/${registrationId}/reativar`).then((r) => r.data),
+  requestRegistrationCancellation: (registrationId: number, motivo: string) =>
+    http.post<RegistrationCancellationRequest>(`/api/v1/participante/inscricoes/${registrationId}/solicitacoes-cancelamento`, { motivo }).then((r) => r.data),
+  registrationCancellationRequests: (registrationId: number) =>
+    http.get<RegistrationCancellationRequest[]>(`/api/v1/participante/inscricoes/${registrationId}/solicitacoes-cancelamento`).then((r) => r.data),
   followAttempts: (registrationId: number) =>
     http.get<FollowAttempt[]>(`/api/v1/participante/inscricoes/${registrationId}/tentativas-follow`).then((r) => r.data),
   followConfig: (registrationId: number) =>
