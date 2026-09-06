@@ -7,7 +7,7 @@ Este documento consolida as **regras competitivas e invariantes de domínio apro
 Ele possui dois objetivos simultâneos:
 
 1. servir como contrato para backend, frontend e testes automatizados;
-2. preservar uma redação explícita o suficiente para futuramente gerar o regulamento público entregue aos competidores na ETAPA 8.
+2. preservar uma redação explícita o suficiente para futuramente gerar o regulamento público entregue aos competidores na etapa de Regras.
 
 > Este documento é a referência de regras competitivas já decididas. O roadmap continua sendo `docs/ETAPAS_POS_PROJETO.md` e a arquitetura geral continua sendo `docs/DOSSIE_PROJETO_RASCOMP.md`.
 
@@ -196,21 +196,31 @@ PARTICIPANTE
    └─ rejeita
 ```
 
-A solicitação deve ser representada separadamente do status competitivo principal da inscrição.
+A solicitação é representada separadamente do status competitivo principal da inscrição.
 
-Conceito candidato:
+Modelo implementado na ETAPA 1:
 
 ```text
 RegistrationCancellationRequest
 ├─ registration
-├─ requestedBy
-├─ requestedAt
+├─ requestedByUser
+├─ dataCadastro
 ├─ motivo
-├─ status
-├─ reviewedBy
+├─ status: PENDENTE | APROVADA | REJEITADA
+├─ reviewedByUser
 ├─ reviewedAt
-└─ observacao
+└─ resposta
 ```
+
+Invariantes implementadas:
+
+- somente inscrição ativa e `APROVADA` pode receber solicitação;
+- a inscrição continua `APROVADA` enquanto a solicitação está `PENDENTE`;
+- não pode existir uma segunda solicitação pendente para a mesma inscrição;
+- competição `FINALIZADA` ou `CANCELADA` não aceita nova solicitação;
+- somente a organização conclui a análise;
+- aprovação executa o cancelamento dentro do fluxo de domínio;
+- rejeição preserva a inscrição `APROVADA`.
 
 ## 4.4 CANCELADA x DESISTENTE
 
@@ -321,13 +331,13 @@ EM_ANDAMENTO → PLANEJADA         ❌
 
 Enquanto ainda estiver em `INSCRICOES_ABERTAS`, a organização pode prorrogar a data final.
 
-Operação conceitual:
+Operação de domínio implementada:
 
 ```text
 prorrogarInscricoes(novaData, motivo)
 ```
 
-A nova data deve continuar consistente com o início da competição.
+A nova data deve ser posterior à data final atual, não pode estar no passado e deve continuar consistente com o início da competição.
 
 ## 5.2 Reabertura após fechamento
 
@@ -336,14 +346,29 @@ A nova data deve continuar consistente com o início da competição.
 - nova data final;
 - motivo obrigatório;
 - autorização da organização;
-- preservação futura de auditoria.
+- histórico persistido com responsável e data/hora.
 
-Reabertura normal é bloqueada depois de `EM_ANDAMENTO`.
+Reabertura normal é bloqueada depois de atividade competitiva.
 
 Se já existir chave de Sumô:
 
-- sem atividade competitiva: a reabertura pode exigir invalidar a chave atual e gerar uma nova depois do novo fechamento;
-- com partida/round/resultado já iniciado: reabertura comum deve ser bloqueada.
+- sem atividade competitiva: a chave atual é preservada historicamente, deixa de ser `atual` e recebe estado `CANCELADO`; uma nova chave deverá ser gerada após o novo fechamento;
+- com partida/round/resultado já iniciado: reabertura comum é bloqueada.
+
+A verificação de atividade competitiva considera atualmente tentativas Follow, rounds de Sumô, resultados e partidas `EM_ANDAMENTO/FINALIZADA`.
+
+Histórico implementado:
+
+```text
+CompetitionRegistrationWindowChange
+├─ competition
+├─ tipo: PRORROGACAO | REABERTURA
+├─ dataFimAnterior
+├─ novaDataFim
+├─ motivo
+├─ realizadoPor
+└─ dataCadastro
+```
 
 ---
 
@@ -950,20 +975,22 @@ Até essa ferramenta existir, bloquear é a regra de integridade.
 Legenda:
 
 ```text
-✅ comportamento alinhado ou aproveitável
+✅ implementado/alinhado
 ⚠️ alteração necessária
 🆕 capacidade nova necessária
 ```
 
 | Regra | Estado atual conhecido | Ação |
 |---|---|---|
-| Reativação só com inscrições abertas | não revalida janela | ⚠️ corrigir |
-| Cancelamento PENDENTE | existe cancelamento genérico | ⚠️ restringir por estado |
-| Cancelamento APROVADA por solicitação | não existe solicitação separada | 🆕 modelar |
-| CANCELADA x DESISTENTE | não formalizado | 🆕 formalizar |
+| Reativação só com inscrições abertas | janela e estado revalidados | ✅ implementado |
+| Cancelamento PENDENTE | participante restrito a PENDENTE | ✅ implementado |
+| Cancelamento APROVADA por solicitação | solicitação persistida + análise da organização | ✅ implementado |
+| CANCELADA x DESISTENTE | distinção aplicada conforme atividade competitiva | ✅ implementado |
 | Pagamento antes de aprovação quando habilitado | não existe | futuro, preservar invariante |
-| Prorrogação/reabertura explícita | status pode ser alterado genericamente | 🆕 criar operação de domínio |
-| Follow 3 tomadas × 3 tentativas | configurável | ✅ fixar perfil/regra RRC |
+| Prorrogação/reabertura explícita | operação auditável + histórico persistido | ✅ implementado |
+| Reabertura depois de atividade competitiva | bloqueada por verificações de atividade | ✅ implementado |
+| Chave atual ao reabrir sem disputa | preservada historicamente e invalidada como atual | ✅ implementado |
+| Follow 3 tomadas × 3 tentativas | configurável | ✅ base aproveitável; fixar regra RRC |
 | Tempo máximo por tentativa | existe `maxTempoSegundos` | ✅ alinhar sem janela total |
 | Penalidade temporal | já existe | ✅ manter entrada configurável |
 | Estados válidos Follow | combinações inconsistentes ainda possíveis | ⚠️ corrigir |
@@ -986,6 +1013,17 @@ Legenda:
 | Correção segura antes da próxima partida | progressão protege slots, mas não desfaz avanço | ⚠️ implementar transacionalmente |
 | Correção depois de dependência iniciada | risco atual | ⚠️ bloquear |
 
+Checkpoint automatizado após as implementações de `Competition + Registration`:
+
+```text
+67 testes
+0 falhas
+0 erros
+0 skipped
+MySQL + Flyway V8 + testdata ✅
+Frontend Gestão typecheck + build ✅
+```
+
 ---
 
 # 18. Testes automatizados derivados deste contrato
@@ -1005,6 +1043,8 @@ Cobrir:
 - prorrogação antes do fechamento;
 - reabertura após fechamento sem atividade;
 - bloqueio após início competitivo.
+
+Os cenários unitários principais dessas regras já existem; a simulação integrada com repositories reais permanece como camada adicional da ETAPA 1.
 
 ## 18.2 Fluxo Follow
 
@@ -1070,7 +1110,7 @@ nenhuma persistência parcial
 
 # 19. Base para o futuro regulamento dos competidores
 
-Na ETAPA 8, este contrato deve ser transformado em um documento público mais simples, sem detalhes de implementação.
+Na etapa de Regras, este contrato deve ser transformado em um documento público mais simples, sem detalhes de implementação.
 
 O regulamento público deverá possuir pelo menos:
 
