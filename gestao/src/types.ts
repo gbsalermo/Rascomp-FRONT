@@ -91,6 +91,8 @@ export interface ConfigFollow {
   tentativasPorTomada: number
   maxTempoSegundos: number
   numeroCheckpoints: number
+  penalidadePadraoSegundos: number
+  tempoApresentacaoSegundos: number
 }
 
 export interface Registration {
@@ -162,6 +164,20 @@ export interface FollowAttempt {
   concluida: boolean
   valida: boolean
   observacao?: string
+  dataCadastro?: string
+}
+
+export interface FollowTakeAbsence {
+  id: number
+  registrationId: number
+  competitionId?: number
+  categoryId?: number
+  teamNome?: string
+  robotNome?: string
+  tomada: number
+  observacao?: string
+  registradoPorId?: number
+  registradoPorNome?: string
   dataCadastro?: string
 }
 
