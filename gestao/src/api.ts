@@ -9,6 +9,7 @@ import type {
   ConfigFollow,
   ConfigSumo,
   FollowAttempt,
+  FollowTakeAbsence,
   Match,
   MatchResult,
   RankingItem,
@@ -141,6 +142,10 @@ export const adminApi = {
     http.get<FollowAttempt[]>('/api/v1/tentativas-seguidor-linha/por-contexto', { params: { competitionId, categoryId } }).then((r) => r.data),
   createFollowAttempt: (payload: Omit<FollowAttempt, 'id' | 'competitionId' | 'categoryId' | 'teamNome' | 'robotNome' | 'tempoFinalSegundos' | 'dataCadastro'>) =>
     http.post<FollowAttempt>('/api/v1/tentativas-seguidor-linha', payload).then((r) => r.data),
+  followTakeAbsences: (competitionId: number, categoryId: number) =>
+    http.get<FollowTakeAbsence[]>('/api/v1/ausencias-tomada-seguidor-linha/por-contexto', { params: { competitionId, categoryId } }).then((r) => r.data),
+  markFollowTakeAbsence: (payload: { registrationId: number; tomada: number; observacao?: string }) =>
+    http.post<FollowTakeAbsence>('/api/v1/ausencias-tomada-seguidor-linha', payload).then((r) => r.data),
   inspectSumo: (payload: Record<string, unknown>) => http.post('/api/v1/inspecoes-sumo', payload).then((r) => r.data),
   sumoConfig: (categoryId: number) => http.get<ConfigSumo>(`/api/v1/categorias/${categoryId}/config-sumo`).then((r) => r.data),
   brackets: (competitionId: number) => http.get<Bracket[]>('/api/v1/chaveamentos/por-competicao', { params: { competitionId } }).then((r) => r.data),
