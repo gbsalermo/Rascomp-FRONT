@@ -3,18 +3,28 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
 import { useCompetitionStore } from '../store'
-import type { Category, Competition, CompetitionStatus, Registration } from '../types'
+import type {
+  Category,
+  Competition,
+  CompetitionRegistrationWindowChange,
+  CompetitionStatus,
+  Registration
+} from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
 const competition = useCompetitionStore()
 const loading = ref(false)
 const focusLoading = ref(false)
 const dialog = ref(false)
+const windowDialog = ref(false)
+const windowSaving = ref(false)
 const editionsOpen = ref(false)
 const registrations = ref<Registration[]>([])
+const windowHistory = ref<CompetitionRegistrationWindowChange[]>([])
 const categoryCatalog = ref<Category[]>([])
 const editingId = ref<number | null>(null)
 const originalStatus = ref<CompetitionStatus>('PLANEJADA')
+const windowForm = reactive({ novaDataFim: '', motivo: '' })
 
 const emptyForm = (): Competition => ({
   nome: '',
@@ -47,6 +57,13 @@ const nextStatuses: Record<CompetitionStatus, CompetitionStatus[]> = {
 
 const form = reactive<Competition>(emptyForm())
 const activeCompetition = computed(() => competition.selectedCompetition)
+const canChangeRegistrationWindow = computed(() =>
+  activeCompetition.value?.status === 'INSCRICOES_ABERTAS'
+    || activeCompetition.value?.status === 'INSCRICOES_ENCERRADAS'
+)
+const registrationWindowActionLabel = computed(() =>
+  activeCompetition.value?.status === 'INSCRICOES_ENCERRADAS' ? 'Reabrir inscrições' : 'Prorrogar inscrições'
+)
 const allowedStatusOptions = computed<CompetitionStatus[]>(() => {
   if (!editingId.value) return ['PLANEJADA']
   return [originalStatus.value, ...nextStatuses[originalStatus.value]]
@@ -109,6 +126,19 @@ function formatDate(value?: string) {
   }).format(date)
 }
 
+function formatDateTime(value?: string) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date)
+}
+
 function modalityLabel(value: string) {
   if (value === 'FOLLOW_LINE') return 'Follow Line'
   if (value === 'SUMO') return 'Sumô'
@@ -119,14 +149,21 @@ async function loadFocus() {
   const competitionId = competition.selectedId
   if (!competitionId) {
     registrations.value = []
+    windowHistory.value = []
     return
   }
 
   focusLoading.value = true
   try {
-    registrations.value = await adminApi.registrations({ competitionId })
+    const [registrationRows, historyRows] = await Promise.all([
+      adminApi.registrations({ competitionId }),
+      adminApi.competitionRegistrationWindowHistory(competitionId).catch(() => [])
+    ])
+    registrations.value = registrationRows
+    windowHistory.value = historyRows
   } catch (error: any) {
     registrations.value = []
+    windowHistory.value = []
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da edição.')
   } finally {
     focusLoading.value = false
@@ -162,6 +199,13 @@ function openEdit(row?: Competition) {
   originalStatus.value = target.status || 'PLANEJADA'
   editionsOpen.value = false
   dialog.value = true
+}
+
+function openRegistrationWindowDialog() {
+  if (!activeCompetition.value || !canChangeRegistrationWindow.value) return
+  windowForm.novaDataFim = ''
+  windowForm.motivo = ''
+  windowDialog.value = true
 }
 
 function selectEdition(row: Competition) {
@@ -204,6 +248,31 @@ async function save() {
   }
 }
 
+async function saveRegistrationWindow() {
+  const active = activeCompetition.value
+  if (!active?.id) return
+  if (!windowForm.novaDataFim || !windowForm.motivo.trim()) {
+    ElMessage.warning('Informe a nova data final e o motivo.')
+    return
+  }
+
+  windowSaving.value = true
+  try {
+    const result = await adminApi.extendCompetitionRegistrationWindow(active.id, {
+      novaDataFim: windowForm.novaDataFim,
+      motivo: windowForm.motivo.trim()
+    })
+    ElMessage.success(result.tipo === 'REABERTURA' ? 'Inscrições reabertas.' : 'Inscrições prorrogadas.')
+    windowDialog.value = false
+    await competition.load(true)
+    await loadFocus()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível alterar a janela de inscrições.')
+  } finally {
+    windowSaving.value = false
+  }
+}
+
 watch(() => competition.selectedId, loadFocus)
 onMounted(load)
 </script>
@@ -218,6 +287,9 @@ onMounted(load)
       </div>
       <div class="heading-actions">
         <el-button @click="editionsOpen = true">Gerenciar / trocar edições</el-button>
+        <el-button v-if="activeCompetition && canChangeRegistrationWindow" @click="openRegistrationWindowDialog">
+          {{ registrationWindowActionLabel }}
+        </el-button>
         <el-button v-if="activeCompetition" class="brand-button" @click="openEdit()">Editar competição</el-button>
         <el-button v-else class="brand-button" @click="openCreate">Nova competição</el-button>
       </div>
@@ -385,6 +457,46 @@ onMounted(load)
       <template #footer>
         <el-button @click="dialog = false">Cancelar</el-button>
         <el-button class="brand-button" @click="save">Salvar</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="windowDialog" :title="registrationWindowActionLabel" width="min(620px, 92vw)">
+      <div class="form-grid">
+        <label class="span-2">Nova data final
+          <el-date-picker v-model="windowForm.novaDataFim" value-format="YYYY-MM-DD" type="date" style="width:100%" />
+        </label>
+        <label class="span-2">Motivo
+          <el-input v-model="windowForm.motivo" type="textarea" :rows="3" maxlength="500" show-word-limit />
+        </label>
+      </div>
+      <el-alert
+        v-if="activeCompetition?.status === 'INSCRICOES_ENCERRADAS'"
+        type="warning"
+        :closable="false"
+        title="A reabertura só é aceita se ainda não houver atividade competitiva. Chaves atuais ainda não utilizadas serão preservadas no histórico e invalidadas como atuais."
+        show-icon
+        style="margin-top:16px"
+      />
+      <div v-if="windowHistory.length" style="margin-top:18px">
+        <strong>Histórico desta edição</strong>
+        <el-table :data="windowHistory" size="small" style="margin-top:8px">
+          <el-table-column label="Tipo" width="120">
+            <template #default="{ row }">{{ row.tipo === 'REABERTURA' ? 'Reabertura' : 'Prorrogação' }}</template>
+          </el-table-column>
+          <el-table-column label="Período" min-width="190">
+            <template #default="{ row }">{{ formatDate(row.dataFimAnterior) }} → {{ formatDate(row.novaDataFim) }}</template>
+          </el-table-column>
+          <el-table-column label="Responsável" min-width="140" prop="realizadoPorNome" />
+          <el-table-column label="Data" width="150">
+            <template #default="{ row }">{{ formatDateTime(row.dataCadastro) }}</template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <template #footer>
+        <el-button @click="windowDialog = false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="windowSaving" @click="saveRegistrationWindow">
+          Confirmar
+        </el-button>
       </template>
     </el-dialog>
   </div>
