@@ -333,14 +333,14 @@ onMounted(initialize)
       <div class="card-heading follow-history-heading">
         <div>
           <span class="eyebrow">Auditoria</span>
-          <h2>Histórico de tentativas</h2>
-          <p class="muted">As tentativas continuam agrupadas por tomada; ausências são registradas separadamente e entram no progresso da prova.</p>
+          <h2>Histórico de tomadas</h2>
+          <p class="muted">Tentativas e tomadas perdidas por ausência permanecem separadas e auditáveis.</p>
         </div>
         <el-input v-model="historySearch" clearable placeholder="Buscar robô ou equipe" class="follow-history-search" />
       </div>
 
       <div class="follow-history-content">
-        <FollowTakeHistory :attempts="history" :config="config" :search="historySearch" />
+        <FollowTakeHistory :attempts="history" :absences="absences" :config="config" :search="historySearch" />
       </div>
     </article>
 
