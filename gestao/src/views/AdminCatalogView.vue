@@ -44,6 +44,13 @@ function markChanging(id: number, changing: boolean) {
   changingIds.value = changingIds.value.filter((item) => item !== id)
 }
 
+function physicalClassLabel(row: Category) {
+  if (row.modalidade !== 'SUMO') return '—'
+  if (row.sumoPhysicalClass === 'MINI_500G') return 'Mini 500 g'
+  if (row.sumoPhysicalClass === 'SUMO_3KG') return 'Sumô 3 kg'
+  return 'Não configurada'
+}
+
 async function load() {
   loading.value = true
   try {
@@ -191,8 +198,11 @@ onMounted(load)
       </div>
       <el-table :data="filteredCategories" empty-text="Nenhuma modalidade configurada">
         <el-table-column prop="nome" label="Categoria" min-width="220" />
-        <el-table-column label="Modalidade" width="170">
+        <el-table-column label="Modalidade" width="160">
           <template #default="{ row }">{{ row.modalidade === 'FOLLOW_LINE' ? 'Follow Line' : 'Sumô' }}</template>
+        </el-table-column>
+        <el-table-column label="Classe física" width="150">
+          <template #default="{ row }">{{ physicalClassLabel(row) }}</template>
         </el-table-column>
         <el-table-column label="Situação" width="120">
           <template #default="{ row }">{{ row.ativo === false ? 'Inativa' : 'Ativa' }}</template>
