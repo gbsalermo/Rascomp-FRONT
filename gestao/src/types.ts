@@ -16,6 +16,7 @@ export type RegistrationStatus =
 export type CancellationRequestStatus = 'PENDENTE' | 'APROVADA' | 'REJEITADA'
 export type RegistrationWindowChangeType = 'PRORROGACAO' | 'REABERTURA'
 export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
+export type SumoPhysicalClass = 'MINI_500G' | 'SUMO_3KG'
 export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
 export type RoundSumoOutcomeReason = 'DISPUTA' | 'SUICIDIO_WO' | 'PENALIDADES'
 
@@ -66,6 +67,7 @@ export interface Category {
   id: number
   nome: string
   modalidade: Modalidade
+  sumoPhysicalClass?: SumoPhysicalClass
   competitionId?: number
   ativo?: boolean
   [key: string]: unknown
