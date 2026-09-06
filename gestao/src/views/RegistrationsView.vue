@@ -2,13 +2,20 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
-import type { Competition, Registration, RegistrationStatus } from '../types'
+import type {
+  Competition,
+  Registration,
+  RegistrationCancellationRequest,
+  RegistrationStatus
+} from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
 const loading = ref(false)
 const reviewingId = ref<number>()
+const cancellationReviewingId = ref<number>()
 const competitions = ref<Competition[]>([])
 const rows = ref<Registration[]>([])
+const cancellationRequests = ref<RegistrationCancellationRequest[]>([])
 const competitionId = ref<number>()
 const status = ref<string>('PENDENTE')
 const search = ref('')
@@ -92,9 +99,17 @@ async function loadBase() {
 async function load() {
   loading.value = true
   try {
-    rows.value = competitionId.value
-      ? await adminApi.registrations({ competitionId: competitionId.value })
-      : await adminApi.registrations()
+    const [registrationRows, cancellationRows] = await Promise.all([
+      competitionId.value
+        ? adminApi.registrations({ competitionId: competitionId.value })
+        : adminApi.registrations(),
+      adminApi.cancellationRequests({
+        competitionId: competitionId.value,
+        status: 'PENDENTE'
+      })
+    ])
+    rows.value = registrationRows
+    cancellationRequests.value = cancellationRows
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar as inscrições.')
   } finally {
@@ -139,6 +154,50 @@ async function review(row: Registration, next: RegistrationStatus) {
   }
 }
 
+async function decideCancellation(request: RegistrationCancellationRequest, approve: boolean) {
+  try {
+    let resposta = ''
+    if (approve) {
+      await ElMessageBox.confirm(
+        `Aprovar o cancelamento da inscrição de ${request.robotNome || 'este robô'}? O sistema preservará o histórico e usará DESISTENTE se já houver atividade competitiva.`,
+        'Aprovar cancelamento',
+        {
+          type: 'warning',
+          confirmButtonText: 'Aprovar cancelamento',
+          cancelButtonText: 'Voltar'
+        }
+      )
+    } else {
+      const result = await ElMessageBox.prompt(
+        'Informe, se desejar, a justificativa que ficará registrada para o participante.',
+        'Rejeitar cancelamento',
+        {
+          inputType: 'textarea',
+          inputPlaceholder: 'Justificativa da organização',
+          confirmButtonText: 'Rejeitar solicitação',
+          cancelButtonText: 'Voltar'
+        }
+      )
+      resposta = result.value?.trim() || ''
+    }
+
+    cancellationReviewingId.value = request.id
+    if (approve) {
+      await adminApi.approveCancellationRequest(request.id)
+      ElMessage.success('Cancelamento aprovado.')
+    } else {
+      await adminApi.rejectCancellationRequest(request.id, resposta)
+      ElMessage.success('Solicitação de cancelamento rejeitada.')
+    }
+    await load()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a solicitação de cancelamento.')
+  } finally {
+    cancellationReviewingId.value = undefined
+  }
+}
+
 onMounted(loadBase)
 </script>
 
@@ -163,6 +222,37 @@ onMounted(loadBase)
         <strong>{{ activeCompetition.nome }}</strong>
       </div>
       <StatusBadge :value="activeCompetition.status || 'PLANEJADA'" />
+    </article>
+
+    <article v-if="cancellationRequests.length" class="table-card registrations-table-card" v-loading="loading">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Cancelamentos</span>
+          <h2>Solicitações pendentes</h2>
+        </div>
+        <el-tag type="warning" effect="light">{{ cancellationRequests.length }} pendente(s)</el-tag>
+      </div>
+      <el-table :data="cancellationRequests" empty-text="Nenhuma solicitação pendente">
+        <el-table-column label="Equipe / Robô" min-width="190">
+          <template #default="{ row }">
+            <div class="registration-main-cell"><strong>{{ row.teamNome }}</strong><span>{{ row.robotNome }}</span></div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="motivo" label="Motivo" min-width="260" show-overflow-tooltip />
+        <el-table-column label="Solicitado por" min-width="170">
+          <template #default="{ row }">
+            <div class="registration-request-cell"><strong>{{ row.requestedByUserNome }}</strong><span>{{ formatDateTime(row.dataCadastro) }}</span></div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Ações" width="235" fixed="right">
+          <template #default="{ row }">
+            <div class="registration-actions">
+              <el-button size="small" type="success" plain :loading="cancellationReviewingId === row.id" @click="decideCancellation(row, true)">Aprovar</el-button>
+              <el-button size="small" type="danger" plain :loading="cancellationReviewingId === row.id" @click="decideCancellation(row, false)">Rejeitar</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
     </article>
 
     <div class="registrations-metrics">
