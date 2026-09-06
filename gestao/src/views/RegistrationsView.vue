@@ -20,6 +20,7 @@ const statusOptions: RegistrationStatus[] = [
   'APROVADA',
   'REJEITADA',
   'CANCELADA',
+  'DESISTENTE',
   'DESCLASSIFICADA'
 ]
 
