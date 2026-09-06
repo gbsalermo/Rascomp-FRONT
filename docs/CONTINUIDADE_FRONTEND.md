@@ -34,9 +34,15 @@ Em 04/09/2026 foi feito um checkpoint documental para remover material obsoleto,
 
 Em 06/09/2026 foi criado `docs/CONTRATO_REGRAS_COMPETITIVAS.md`, consolidando as regras aprovadas de inscrições, Competition, Follow, Sumô, inspeção, rounds, juízes, chaves e integridade.
 
-Também em 06/09/2026 a primeira parte funcional de `Competition + Registration` passou a refletir o contrato no frontend, incluindo transições protegidas, `DESISTENTE`, cancelamento solicitado de inscrição aprovada e prorrogação/reabertura auditável.
+Também em 06/09/2026 o bloco **`Competition + Registration`** foi concluído no backend e refletido no frontend, incluindo:
 
-**A ETAPA 1 continua aberta.** Follow, Sumô, robôs híbridos, chaves e testes integrados ainda têm trabalho pendente.
+- transições protegidas de Competition;
+- `DESISTENTE`;
+- cancelamento solicitado de inscrição aprovada;
+- prorrogação/reabertura auditável;
+- suporte ao conceito de robô híbrido por classe física de Sumô.
+
+**A ETAPA 1 continua aberta.** O próximo bloco é Follow; depois permanecem Sumô, chaves e testes integrados.
 
 ---
 
@@ -74,6 +80,7 @@ Histórico da janela de inscrições           ✅
 Inscrições                                  ✅
 Solicitações de cancelamento APROVADA       ✅
 Equipes / robôs / modalidades               ✅
+Classe física das categorias de Sumô        ✅
 Ativo/inativo                               ✅
 Usuários                                    ✅
 Follow Line                                 ✅ base atual
@@ -89,7 +96,7 @@ Fotos dos robôs                             ✅
 404 personalizada                           ✅
 ```
 
-Na tela de competição, a organização agora possui uma operação explícita para:
+Na tela de competição, a organização possui uma operação explícita para:
 
 ```text
 INSCRICOES_ABERTAS
@@ -110,13 +117,29 @@ solicitante/data
 → REJEITAR
 ```
 
-A ETAPA 1 ainda possui requisitos não implementados integralmente:
+## Robôs híbridos
+
+O frontend não classifica o próprio `Robot` como Mini ou 3 kg. A nova metadata vem da categoria:
 
 ```text
-Robôs híbridos
-→ Auto + R/C da mesma classe física permitido
-→ Mini + 3 kg no mesmo Robot/edição bloqueado
+Category.sumoPhysicalClass
+├─ MINI_500G
+└─ SUMO_3KG
+```
 
+`gestao/src/types.ts` expõe `SumoPhysicalClass` e `AdminCatalogView.vue` mostra a coluna **Classe física**:
+
+```text
+MINI_500G → Mini 500 g
+SUMO_3KG  → Sumô 3 kg
+FOLLOW    → —
+```
+
+A regra de compatibilidade é validada pelo backend; a UI apenas representa o contrato.
+
+Ainda pendente na ETAPA 1:
+
+```text
 Follow
 → 3 tomadas × 3 tentativas como regra RRC
 → cronômetro operacional por tentativa
@@ -187,8 +210,8 @@ Checkpoint atual confirmado em 06/09/2026:
 
 ```text
 Frontend Gestão     ✅ typecheck + build
-Backend             ✅ 67 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V8   ✅
+Backend             ✅ 73 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V9   ✅
 Profile testdata    ✅
 ```
 
@@ -252,11 +275,11 @@ ParticipantView.vue
 NotFoundView.vue
 ```
 
-Arquivos alterados no checkpoint atual:
+Arquivos relevantes alterados no bloco `Competition + Registration`:
 
 ```text
 gestao/src/types.ts
-→ tipos das solicitações e histórico da janela
+→ cancelamentos, histórico da janela e SumoPhysicalClass
 
 gestao/src/api.ts
 → contratos HTTP de cancelamento, reativação e prorrogação
@@ -269,6 +292,9 @@ gestao/src/views/RegistrationsView.vue
 
 gestao/src/views/ParticipantView.vue
 → cancelar PENDENTE / solicitar APROVADA / reativar CANCELADA
+
+gestao/src/views/AdminCatalogView.vue
+→ exibe classe física das categorias Sumô
 ```
 
 ---
@@ -400,12 +426,11 @@ Documentos de demonstração/MVP redundantes foram removidos no checkpoint docum
 # 11. Próximo passo
 
 ```text
-Competition + Registration — núcleo       ✅
-Cancelamento solicitado + prorrogação     ✅
+Competition + Registration              ✅ CONCLUÍDO
+├─ cancelamento/prorrogação             ✅
+└─ robôs híbridos / classe física       ✅
         ↓
-compatibilidade física de robôs híbridos  ← PRÓXIMO
-        ↓
-Follow
+Follow                                  ← PRÓXIMO
         ↓
 Sumô
         ↓
