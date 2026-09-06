@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ConfigFollow, FollowAttempt } from '../types'
+import type { ConfigFollow, FollowAttempt, FollowTakeAbsence } from '../types'
 
 const props = defineProps<{
   attempts: FollowAttempt[]
+  absences?: FollowTakeAbsence[]
   config?: ConfigFollow
   search?: string
 }>()
@@ -15,26 +16,35 @@ interface TakeGroup {
   teamNome: string
   tomada: number
   attempts: FollowAttempt[]
+  absence?: FollowTakeAbsence
   best?: FollowAttempt
   latest?: string
   complete: boolean
 }
 
 const groups = computed<TakeGroup[]>(() => {
-  const map = new Map<string, FollowAttempt[]>()
+  const attemptMap = new Map<string, FollowAttempt[]>()
+  const absenceMap = new Map<string, FollowTakeAbsence>()
 
   for (const attempt of props.attempts) {
     const key = `${attempt.registrationId}:${attempt.tomada}`
-    const list = map.get(key) || []
+    const list = attemptMap.get(key) || []
     list.push(attempt)
-    map.set(key, list)
+    attemptMap.set(key, list)
   }
 
+  for (const absence of props.absences || []) {
+    absenceMap.set(`${absence.registrationId}:${absence.tomada}`, absence)
+  }
+
+  const keys = new Set([...attemptMap.keys(), ...absenceMap.keys()])
   const term = props.search?.trim().toLocaleLowerCase('pt-BR') || ''
 
-  return [...map.entries()]
-    .map(([key, items]) => {
-      const attempts = [...items].sort((a, b) => a.numeroTentativa - b.numeroTentativa)
+  return [...keys]
+    .map((key) => {
+      const attempts = [...(attemptMap.get(key) || [])]
+        .sort((a, b) => a.numeroTentativa - b.numeroTentativa)
+      const absence = absenceMap.get(key)
       const first = attempts[0]
       const best = attempts
         .filter((item) => item.valida && item.concluida && item.tempoFinalSegundos != null)
@@ -43,21 +53,25 @@ const groups = computed<TakeGroup[]>(() => {
           if (finalDiff !== 0) return finalDiff
           return Number(a.tempoSegundos || 0) - Number(b.tempoSegundos || 0)
         })[0]
-      const latest = attempts
+      const latestAttempt = attempts
         .map((item) => item.dataCadastro)
+        .filter((value): value is string => Boolean(value))
+        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0]
+      const latest = [latestAttempt, absence?.dataCadastro]
         .filter((value): value is string => Boolean(value))
         .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0]
 
       return {
         key,
-        registrationId: first?.registrationId || 0,
-        robotNome: first?.robotNome || `Inscrição #${first?.registrationId || '—'}`,
-        teamNome: first?.teamNome || '—',
-        tomada: first?.tomada || 0,
+        registrationId: first?.registrationId || absence?.registrationId || 0,
+        robotNome: first?.robotNome || absence?.robotNome || `Inscrição #${absence?.registrationId || '—'}`,
+        teamNome: first?.teamNome || absence?.teamNome || '—',
+        tomada: first?.tomada || absence?.tomada || 0,
         attempts,
+        absence,
         best,
         latest,
-        complete: Boolean(props.config && attempts.length >= props.config.tentativasPorTomada)
+        complete: Boolean(absence || (props.config && attempts.length >= props.config.tentativasPorTomada))
       }
     })
     .filter((group) => {
@@ -107,25 +121,41 @@ function formatDate(value?: string) {
             </div>
 
             <div class="take-progress">
-              <span>Tentativas</span>
-              <strong>{{ group.attempts.length }} / {{ config?.tentativasPorTomada ?? '—' }}</strong>
+              <span>{{ group.absence ? 'Situação' : 'Tentativas' }}</span>
+              <strong v-if="group.absence">Ausência</strong>
+              <strong v-else>{{ group.attempts.length }} / {{ config?.tentativasPorTomada ?? '—' }}</strong>
             </div>
 
             <div class="take-best">
-              <span>Melhor tentativa da tomada</span>
-              <strong v-if="group.best">
+              <span>{{ group.absence ? 'Resultado da tomada' : 'Melhor tentativa da tomada' }}</span>
+              <strong v-if="group.absence">Perdida por ausência</strong>
+              <strong v-else-if="group.best">
                 #{{ group.best.numeroTentativa }} · {{ formatSeconds(group.best.tempoFinalSegundos) }}
               </strong>
               <strong v-else>Sem tentativa classificável</strong>
             </div>
 
-            <el-tag :type="group.complete ? 'success' : 'warning'" effect="light" size="small">
+            <el-tag v-if="group.absence" type="danger" effect="light" size="small">Ausência</el-tag>
+            <el-tag v-else :type="group.complete ? 'success' : 'warning'" effect="light" size="small">
               {{ group.complete ? 'Completa' : 'Em andamento' }}
             </el-tag>
           </div>
         </template>
 
-        <div class="take-attempts">
+        <div v-if="group.absence" class="take-absence-detail">
+          <div>
+            <span class="eyebrow">Tomada {{ group.tomada }}</span>
+            <h3>Perdida por ausência</h3>
+            <p>{{ group.absence.observacao || 'Participante não compareceu dentro do tempo de apresentação.' }}</p>
+          </div>
+          <div class="take-absence-audit">
+            <span>Registrado por</span>
+            <strong>{{ group.absence.registradoPorNome || 'Organização' }}</strong>
+            <small>{{ formatDate(group.absence.dataCadastro) }}</small>
+          </div>
+        </div>
+
+        <div v-else class="take-attempts">
           <div class="take-attempts-heading">
             <div>
               <span class="eyebrow">Detalhes da tomada {{ group.tomada }}</span>
@@ -181,109 +211,26 @@ function formatDate(value?: string) {
 </template>
 
 <style scoped>
-.take-history-list :deep(.el-collapse) {
-  border: 0;
-}
-
-.take-history-list :deep(.el-collapse-item) {
-  margin-bottom: 10px;
-  overflow: hidden;
-  border: 1px solid #eadfe5;
-  border-radius: 14px;
-  background: #fff;
-}
-
-.take-history-list :deep(.el-collapse-item__header) {
-  min-height: 72px;
-  height: auto;
-  padding: 10px 14px;
-  border: 0;
-}
-
-.take-history-list :deep(.el-collapse-item__wrap) {
-  border: 0;
-}
-
-.take-history-list :deep(.el-collapse-item__content) {
-  padding: 0;
-}
-
-.take-history-title {
-  display: grid;
-  width: 100%;
-  grid-template-columns: minmax(150px, 1.2fr) 78px 105px minmax(190px, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-  padding-right: 10px;
-}
-
-.take-identity,
-.take-number,
-.take-progress,
-.take-best {
-  display: grid;
-  gap: 2px;
-}
-
-.take-identity small,
-.take-number span,
-.take-progress span,
-.take-best span {
-  color: #8a7c84;
-  font-size: 10px;
-}
-
-.take-number strong,
-.take-progress strong {
-  color: #9f0f3b;
-  font-size: 17px;
-}
-
-.take-best strong {
-  color: #4f3d46;
-  font-size: 11px;
-}
-
-.take-attempts {
-  padding: 14px;
-  border-top: 1px solid #f0e7eb;
-  background: #fcfafb;
-}
-
-.take-attempts-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 12px;
-}
-
-.take-attempts-heading h3 {
-  margin: 2px 0 0;
-}
-
-.take-attempts-heading > small {
-  color: #8a7c84;
-  font-size: 10px;
-}
-
-.best-attempt {
-  color: #9f0f3b;
-}
-
-.take-history-empty {
-  padding: 34px 18px;
-  text-align: center;
-  color: #84757d;
-}
-
-@media (max-width: 900px) {
-  .take-history-title {
-    grid-template-columns: minmax(150px, 1fr) 70px 95px;
-  }
-
-  .take-best {
-    grid-column: 1 / 3;
-  }
-}
+.take-history-list :deep(.el-collapse) { border: 0; }
+.take-history-list :deep(.el-collapse-item) { margin-bottom: 10px; overflow: hidden; border: 1px solid #eadfe5; border-radius: 14px; background: #fff; }
+.take-history-list :deep(.el-collapse-item__header) { min-height: 72px; height: auto; padding: 10px 14px; border: 0; }
+.take-history-list :deep(.el-collapse-item__wrap) { border: 0; }
+.take-history-list :deep(.el-collapse-item__content) { padding: 0; }
+.take-history-title { display: grid; width: 100%; grid-template-columns: minmax(150px, 1.2fr) 78px 105px minmax(190px, 1fr) auto; align-items: center; gap: 14px; padding-right: 10px; }
+.take-identity,.take-number,.take-progress,.take-best { display: grid; gap: 2px; }
+.take-identity small,.take-number span,.take-progress span,.take-best span { color: #8a7c84; font-size: 10px; }
+.take-number strong,.take-progress strong { color: #9f0f3b; font-size: 17px; }
+.take-best strong { color: #4f3d46; font-size: 11px; }
+.take-attempts { padding: 14px; border-top: 1px solid #f0e7eb; background: #fcfafb; }
+.take-attempts-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+.take-attempts-heading h3,.take-absence-detail h3 { margin: 2px 0 0; }
+.take-attempts-heading > small { color: #8a7c84; font-size: 10px; }
+.take-absence-detail { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:18px; padding:16px; border-top:1px solid #f0e7eb; background:#fff8f8; }
+.take-absence-detail p { margin:6px 0 0; color:#715e64; font-size:11px; }
+.take-absence-audit { display:grid; align-content:center; gap:2px; min-width:150px; }
+.take-absence-audit span,.take-absence-audit small { color:#8f7777; font-size:10px; }
+.take-absence-audit strong { color:#8d2929; font-size:12px; }
+.best-attempt { color: #9f0f3b; }
+.take-history-empty { padding: 34px 18px; text-align: center; color: #84757d; }
+@media (max-width: 900px) { .take-history-title { grid-template-columns: minmax(150px, 1fr) 70px 95px; } .take-best { grid-column: 1 / 3; } .take-absence-detail { grid-template-columns:1fr; } }
 </style>
