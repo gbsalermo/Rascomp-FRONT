@@ -11,6 +11,7 @@ export type RegistrationStatus =
   | 'APROVADA'
   | 'REJEITADA'
   | 'CANCELADA'
+  | 'DESISTENTE'
   | 'DESCLASSIFICADA'
 export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
 export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
