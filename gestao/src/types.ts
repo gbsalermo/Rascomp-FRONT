@@ -13,6 +13,8 @@ export type RegistrationStatus =
   | 'CANCELADA'
   | 'DESISTENTE'
   | 'DESCLASSIFICADA'
+export type CancellationRequestStatus = 'PENDENTE' | 'APROVADA' | 'REJEITADA'
+export type RegistrationWindowChangeType = 'PRORROGACAO' | 'REABERTURA'
 export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
 export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
 export type RoundSumoOutcomeReason = 'DISPUTA' | 'SUICIDIO_WO' | 'PENALIDADES'
@@ -44,6 +46,19 @@ export interface Competition {
   dataFim: string
   status?: CompetitionStatus
   ativo?: boolean
+  dataCadastro?: string
+}
+
+export interface CompetitionRegistrationWindowChange {
+  id?: number
+  competitionId: number
+  competitionNome?: string
+  tipo: RegistrationWindowChangeType
+  dataFimAnterior: string
+  novaDataFim: string
+  motivo: string
+  realizadoPorId?: number
+  realizadoPorNome?: string
   dataCadastro?: string
 }
 
@@ -94,6 +109,24 @@ export interface Registration {
   status: RegistrationStatus
   observacao?: string
   ativo?: boolean
+  dataCadastro?: string
+}
+
+export interface RegistrationCancellationRequest {
+  id: number
+  registrationId: number
+  competitionId: number
+  competitionNome?: string
+  teamNome?: string
+  robotNome?: string
+  requestedByUserId?: number
+  requestedByUserNome?: string
+  status: CancellationRequestStatus
+  motivo: string
+  reviewedByUserId?: number
+  reviewedByUserNome?: string
+  reviewedAt?: string
+  resposta?: string
   dataCadastro?: string
 }
 
