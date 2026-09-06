@@ -1,6 +1,6 @@
 # RasComp — Índice da Documentação
 
-Última revisão: **04/09/2026**
+Última revisão: **06/09/2026**
 
 Este é o ponto de entrada para qualquer pessoa ou IA que precise entender ou continuar o RasComp.
 
@@ -17,14 +17,17 @@ A documentação foi revisada para evitar roadmaps paralelos, snapshots de demon
 2. docs/DOSSIE_PROJETO_RASCOMP.md
    → arquitetura, domínio, decisões, riscos e mapa de alteração cross-repo
 
-3. docs/CONTINUIDADE_FRONTEND.md
+3. docs/CONTRATO_REGRAS_COMPETITIVAS.md
+   → regras competitivas aprovadas, invariantes e base dos testes da ETAPA 1
+
+4. docs/CONTINUIDADE_FRONTEND.md
    → checkpoint vivo de gestao, landing-page e photo-gallery
 
-4. gbsalermo/Rascomp/rascomp/docs/CONTINUIDADE.md
+5. gbsalermo/Rascomp/rascomp/docs/CONTINUIDADE.md
    → checkpoint vivo do backend
 ```
 
-Estado oficial em 04/09/2026:
+Estado oficial em 06/09/2026:
 
 ```text
 ETAPA 0  ✅ concluída / validada
@@ -32,7 +35,7 @@ ETAPA 1  🚧 atual — lógica e integridade
 ETAPA 2+ ⏳ não iniciadas
 ```
 
-O checkpoint documental de 04/09/2026 não altera a etapa atual.
+O checkpoint documental de 04/09/2026 não alterou a etapa atual. Em 06/09/2026 a ETAPA 1 passou a possuir um contrato explícito de regras competitivas para orientar implementação e testes de fluxo.
 
 ---
 
@@ -47,6 +50,9 @@ ORDEM / ETAPA ATUAL
 ARQUITETURA / DOMÍNIO / DECISÕES CROSS-REPO
 → DOSSIE_PROJETO_RASCOMP.md
 
+REGRA COMPETITIVA APROVADA / INVARIANTE DE FLUXO
+→ CONTRATO_REGRAS_COMPETITIVAS.md
+
 ESTADO IMPLEMENTADO
 → código atual + migrations + testes
 
@@ -60,7 +66,7 @@ SNAPSHOT HISTÓRICO
 → serve apenas como contexto do momento em que foi escrito
 ```
 
-O código atual prevalece sobre documentação histórica para afirmar o que realmente está implementado.
+O código atual prevalece sobre documentação histórica para afirmar o que realmente está implementado. Quando o código divergir de uma regra competitiva já aprovada no contrato, isso representa uma pendência de implementação da etapa atual, não uma mudança automática da regra.
 
 ---
 
@@ -97,6 +103,20 @@ Planejamento único do ciclo. Define ETAPAS 0–14 e marca a ETAPA 1 como atual.
 ## `DOSSIE_PROJETO_RASCOMP.md`
 
 Arquitetura e decisões cross-repo. Deve ser atualizado quando mudar uma responsabilidade, fluxo estrutural ou decisão de domínio.
+
+## `CONTRATO_REGRAS_COMPETITIVAS.md`
+
+Contrato funcional das regras competitivas aprovadas.
+
+Serve para:
+
+- guiar alterações do backend;
+- orientar UX operacional do frontend;
+- definir invariantes dos testes automatizados de fluxo;
+- separar regra RoboCore de adaptação própria do RRC;
+- servir de fonte para o futuro regulamento público da ETAPA 8.
+
+Não é um segundo roadmap.
 
 ## `CONTINUIDADE_FRONTEND.md`
 
@@ -147,7 +167,7 @@ EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
 
 ---
 
-# 6. Decisões consolidadas em 04/09/2026
+# 6. Decisões consolidadas
 
 ```text
 Banco ativo                           MySQL
@@ -155,6 +175,16 @@ Migrations                            V1–V7 imutáveis
 Próxima migration                     V8+
 Roles atuais                          ORGANIZACAO | PARTICIPANTE
 Roles futuras                         DEV | GESTAO | MIDIA | PARTICIPANTE
+ETAPA 1                               contrato competitivo + correções + testes de fluxo
+Follow                                3 tomadas × 3 tentativas
+Ranking Follow                        menor (tempo + penalidades)
+Inspeção Sumô                         decisão humana APTO/INAPTO
+Robôs híbridos                        Auto/R/C e Follow compatíveis conforme classe física
+Mini + 3 kg no mesmo robô/edição      bloqueado
+Rounds Sumô                           3 regulares / 2 vitórias + extras justificados
+Decisão do juiz                       vencedora + juiz + justificativa
+Prorrogação inscrições                operação explícita
+Cancelamento APROVADA                 solicitação analisada pela organização
 Avisos + Telegram                     juntos na ETAPA 4
 Telegram                              canal complementar ao IN_APP
 Vínculo RasComp ↔ Telegram            não obrigatório inicialmente
@@ -182,15 +212,16 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 ```text
 1. identificar a etapa atual no roadmap
 2. ler o Dossiê Mestre
-3. ler a continuidade do repositório afetado
-4. conferir código real
-5. trabalhar somente na etapa atual
-6. regra de negócio → backend primeiro
-7. atualizar testes
-8. integrar frontend
-9. validar
-10. atualizar documentação se necessário
-11. parar no checkpoint e aguardar validação
+3. se a tarefa tocar competição, ler CONTRATO_REGRAS_COMPETITIVAS.md
+4. ler a continuidade do repositório afetado
+5. conferir código real
+6. trabalhar somente na etapa atual
+7. regra de negócio → backend primeiro
+8. atualizar testes
+9. integrar frontend
+10. validar
+11. atualizar documentação se necessário
+12. parar no checkpoint e aguardar validação
 ```
 
-No estado atual, após esta revisão documental, o próximo trabalho é **retomar a ETAPA 1**.
+No estado atual, o próximo trabalho é **implementar as correções da ETAPA 1 e transformá-las em testes automatizados de fluxo**, usando o contrato competitivo como referência.
