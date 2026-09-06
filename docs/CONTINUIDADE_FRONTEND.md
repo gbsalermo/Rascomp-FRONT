@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **04/09/2026**
+Última atualização: **06/09/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -13,6 +13,9 @@ docs/ETAPAS_POS_PROJETO.md
 docs/DOSSIE_PROJETO_RASCOMP.md
 → arquitetura, domínio e decisões cross-repo
 
+docs/CONTRATO_REGRAS_COMPETITIVAS.md
+→ regras competitivas aprovadas e base dos testes da ETAPA 1
+
 docs/README.md
 → índice e hierarquia documental
 ```
@@ -23,11 +26,13 @@ docs/README.md
 
 ```text
 ETAPA 0  ✅ concluída / validada
-ETAPA 1  🚧 atual — lógica e integridade
+ETAPA 1  🚧 atual — lógica, integridade e testes de fluxo
 ETAPA 2+ ⏳ não iniciadas
 ```
 
-Em 04/09/2026 foi feito um checkpoint documental para remover material obsoleto, corrigir divergências e atualizar os documentos vivos. **Não houve avanço de etapa nem alteração funcional do frontend.**
+Em 04/09/2026 foi feito um checkpoint documental para remover material obsoleto, corrigir divergências e atualizar os documentos vivos.
+
+Em 06/09/2026 foi criado `docs/CONTRATO_REGRAS_COMPETITIVAS.md`, consolidando as regras aprovadas de inscrições, Competition, Follow, Sumô, inspeção, rounds, juízes, chaves e integridade. **A criação do contrato não significa que o frontend já implementa todas essas regras.**
 
 ---
 
@@ -63,10 +68,10 @@ Inscrições                             ✅
 Equipes / robôs / modalidades          ✅
 Ativo/inativo                          ✅
 Usuários                               ✅
-Follow Line                            ✅
+Follow Line                            ✅ base atual
 Histórico por tomadas                  ✅
-Operação da tomada                     ✅
-Sumô                                   ✅
+Operação da tomada                     ✅ base atual
+Sumô                                   ✅ base atual
 Chave visual                           ✅
 Arena da partida                       ✅
 2 penalidades = derrota automática     ✅
@@ -74,6 +79,28 @@ Suicídio/WO                            ✅
 Histórico de chaves                    ✅
 Fotos dos robôs                        ✅
 404 personalizada                      ✅
+```
+
+A ETAPA 1 agora possui requisitos adicionais ainda não implementados integralmente, principalmente:
+
+```text
+Follow
+→ 3 tomadas × 3 tentativas como regra RRC
+→ cronômetro operacional por tentativa
+→ penalidades temporais claras
+→ estado de tomada perdida por ausência
+→ UX focada no robô/tomada
+
+Sumô
+→ inspeção humana APTO/INAPTO
+→ rounds extras justificados
+→ decisão/identificação de juiz
+→ falha de inicialização
+
+Chaves
+→ agenda/pistas separadas da estrutura lógica
+→ correção segura de resultado antes da dependência iniciar
+→ bloqueio após dependência competitiva iniciada
 ```
 
 ## Participante
@@ -114,11 +141,13 @@ Consolidação Landing/Galeria           ⏳ ETAPA 11
 
 ```text
 Frontend checks  ✅ typecheck + build
-Backend          ✅ 48 testes / 0 falhas / 0 erros
+Backend          ✅ 48 testes / 0 falhas / 0 erros — checkpoint anterior às novas regras
 Testdata         ✅ MySQL + Flyway
 ```
 
 Não atualizar a contagem de testes por inferência.
+
+A ETAPA 1 deverá adicionar testes automatizados de fluxo que simulem competições completas, além dos testes unitários existentes.
 
 ---
 
@@ -178,7 +207,60 @@ NotFoundView.vue
 
 ---
 
-# 7. Dívida técnica reservada à ETAPA 2
+# 7. Regras de UX competitiva já aprovadas
+
+Consultar o contrato para a regra completa. Direções de frontend já registradas:
+
+## Follow
+
+Ao escolher o robô que fará a tomada, abrir experiência focada naquele robô com:
+
+```text
+foto
+equipe/categoria
+tomada atual
+3 tentativas
+cronômetro
+penalidades
+tempo bruto/final
+histórico
+observações
+```
+
+Ações previstas:
+
+```text
+INICIAR
+PARAR
+SALVAR TEMPO
+APLICAR PENALIDADE
+MARCAR NÃO PAROU
+INVALIDAR
+MARCAR NÃO CONCLUIU
+ENCERRAR TOMADA
+```
+
+## Sumô
+
+A UI não calcula inspeção física. A organização informa `APTO/INAPTO`.
+
+Rounds extras só aparecem quando o backend permitir e devem exigir justificativa. Decisão do juiz deve mostrar claramente vencedor, juiz e justificativa.
+
+## Chaveamento
+
+A UI deve distinguir:
+
+```text
+estrutura lógica da chave
+≠
+agenda real de execução/pista/horário
+```
+
+Assim uma partida pode ser adiada/adiantada operacionalmente sem reescrever a árvore.
+
+---
+
+# 8. Dívida técnica reservada à ETAPA 2
 
 - `api.ts` e `types.ts` centralizados;
 - views grandes;
@@ -190,7 +272,7 @@ Não antecipar refatoração ampla durante a ETAPA 1.
 
 ---
 
-# 8. Decisões futuras relevantes
+# 9. Decisões futuras relevantes
 
 ## ETAPA 3 — permissões
 
@@ -219,7 +301,7 @@ Decisões consolidadas:
 
 ## ETAPA 5 — Ajustes Gerais
 
-Área DEV-only com operações explícitas e auditáveis; não editor genérico de banco.
+Área DEV-only com operações explícitas e auditáveis; inclui futura possibilidade de rollback competitivo excepcional, não editor genérico de banco.
 
 ## ETAPA 7 — CMS/Mídia
 
@@ -227,7 +309,7 @@ Painel para `MediaAsset`, `ContentSlot` e `ContentItem`; Landing deixa de depend
 
 ## ETAPA 8 — Regras
 
-Publicação de regras oficiais validadas.
+O futuro regulamento público deve ser derivado de `CONTRATO_REGRAS_COMPETITIVAS.md`, removendo detalhes internos de implementação e preservando as regras que os competidores precisam conhecer.
 
 ## ETAPA 9 — Futebol
 
@@ -243,7 +325,7 @@ Fechar consolidação pública.
 
 ---
 
-# 9. Landing e referências históricas
+# 10. Landing e referências históricas
 
 `docs/STATUS_LANDING_PAGE.md` permanece como snapshot visual de 26/08/2026, não como estado global.
 
@@ -253,24 +335,27 @@ Documentos de demonstração/MVP redundantes foram removidos no checkpoint docum
 
 ---
 
-# 10. Próximo passo
-
-Depois desta revisão documental:
+# 11. Próximo passo
 
 ```text
-retomar ETAPA 1
-→ corrigir riscos de Registration
-→ estados de chave
-→ integridade de MatchResult
-→ regras válidas do Follow
-→ testar e validar
+CONTRATO DE REGRAS ✅
+        ↓
+comparar regra aprovada × código atual
+        ↓
+implementar correções da ETAPA 1 no backend
+        ↓
+criar testes automatizados de fluxo
+        ↓
+ajustar frontend quando contrato/API exigir
+        ↓
+validar competição simulada
 ```
 
 Não iniciar ETAPA 2 sem confirmação explícita.
 
 ---
 
-# 11. Handoff
+# 12. Handoff
 
 Outra IA deve:
 
@@ -278,10 +363,11 @@ Outra IA deve:
 1. ler docs/README.md
 2. conferir a etapa atual no roadmap
 3. ler o Dossiê Mestre
-4. ler esta continuidade
-5. conferir código real
-6. permanecer na etapa atual
-7. atualizar documentação somente quando o estado realmente mudar
+4. ler CONTRATO_REGRAS_COMPETITIVAS.md antes de alterar competição
+5. ler esta continuidade
+6. conferir código real
+7. permanecer na etapa atual
+8. regra de negócio → backend primeiro
+9. transformar regra em teste
+10. atualizar documentação quando o estado realmente mudar
 ```
-
-Se a tarefa alterar regra de negócio, backend primeiro.
