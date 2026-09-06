@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
 import { useCompetitionStore } from '../store'
-import type { Category, Competition, Registration } from '../types'
+import type { Category, Competition, CompetitionStatus, Registration } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
 const competition = useCompetitionStore()
@@ -14,6 +14,7 @@ const editionsOpen = ref(false)
 const registrations = ref<Registration[]>([])
 const categoryCatalog = ref<Category[]>([])
 const editingId = ref<number | null>(null)
+const originalStatus = ref<CompetitionStatus>('PLANEJADA')
 
 const emptyForm = (): Competition => ({
   nome: '',
@@ -26,8 +27,30 @@ const emptyForm = (): Competition => ({
   ativo: true
 })
 
+const statusLabels: Record<CompetitionStatus, string> = {
+  PLANEJADA: 'Planejada',
+  INSCRICOES_ABERTAS: 'Inscrições abertas',
+  INSCRICOES_ENCERRADAS: 'Inscrições encerradas',
+  EM_ANDAMENTO: 'Em andamento',
+  FINALIZADA: 'Finalizada',
+  CANCELADA: 'Cancelada'
+}
+
+const nextStatuses: Record<CompetitionStatus, CompetitionStatus[]> = {
+  PLANEJADA: ['INSCRICOES_ABERTAS', 'CANCELADA'],
+  INSCRICOES_ABERTAS: ['INSCRICOES_ENCERRADAS', 'CANCELADA'],
+  INSCRICOES_ENCERRADAS: ['EM_ANDAMENTO', 'CANCELADA'],
+  EM_ANDAMENTO: ['FINALIZADA', 'CANCELADA'],
+  FINALIZADA: [],
+  CANCELADA: []
+}
+
 const form = reactive<Competition>(emptyForm())
 const activeCompetition = computed(() => competition.selectedCompetition)
+const allowedStatusOptions = computed<CompetitionStatus[]>(() => {
+  if (!editingId.value) return ['PLANEJADA']
+  return [originalStatus.value, ...nextStatuses[originalStatus.value]]
+})
 const approvedRegistrations = computed(() =>
   registrations.value.filter((item) => item.status === 'APROVADA')
 )
@@ -126,6 +149,7 @@ async function load() {
 function openCreate() {
   Object.assign(form, emptyForm())
   editingId.value = null
+  originalStatus.value = 'PLANEJADA'
   editionsOpen.value = false
   dialog.value = true
 }
@@ -135,6 +159,7 @@ function openEdit(row?: Competition) {
   if (!target) return
   Object.assign(form, JSON.parse(JSON.stringify(target)))
   editingId.value = target.id || null
+  originalStatus.value = target.status || 'PLANEJADA'
   editionsOpen.value = false
   dialog.value = true
 }
@@ -305,7 +330,7 @@ onMounted(load)
     </template>
 
     <article v-else class="empty-state-card competition-hub-no-edition">
-      <span class="eyebrow">Primeira edição</span>
+      <span class="eyrow">Primeira edição</span>
       <h2>Nenhuma competição cadastrada</h2>
       <p class="muted">Crie a primeira edição do RRC para iniciar inscrições e operação competitiva.</p>
       <el-button class="brand-button" @click="openCreate">Criar competição</el-button>
@@ -348,12 +373,12 @@ onMounted(load)
         <label>Data final<el-date-picker v-model="form.dataFim" value-format="YYYY-MM-DD" type="date" /></label>
         <label class="span-2">Status
           <el-select v-model="form.status" style="width:100%">
-            <el-option label="Planejada" value="PLANEJADA" />
-            <el-option label="Inscrições abertas" value="INSCRICOES_ABERTAS" />
-            <el-option label="Inscrições encerradas" value="INSCRICOES_ENCERRADAS" />
-            <el-option label="Em andamento" value="EM_ANDAMENTO" />
-            <el-option label="Finalizada" value="FINALIZADA" />
-            <el-option label="Cancelada" value="CANCELADA" />
+            <el-option
+              v-for="item in allowedStatusOptions"
+              :key="item"
+              :label="statusLabels[item]"
+              :value="item"
+            />
           </el-select>
         </label>
       </div>
