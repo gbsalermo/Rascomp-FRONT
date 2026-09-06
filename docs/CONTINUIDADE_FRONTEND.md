@@ -32,7 +32,11 @@ ETAPA 2+ ⏳ não iniciadas
 
 Em 04/09/2026 foi feito um checkpoint documental para remover material obsoleto, corrigir divergências e atualizar os documentos vivos.
 
-Em 06/09/2026 foi criado `docs/CONTRATO_REGRAS_COMPETITIVAS.md`, consolidando as regras aprovadas de inscrições, Competition, Follow, Sumô, inspeção, rounds, juízes, chaves e integridade. **A criação do contrato não significa que o frontend já implementa todas essas regras.**
+Em 06/09/2026 foi criado `docs/CONTRATO_REGRAS_COMPETITIVAS.md`, consolidando as regras aprovadas de inscrições, Competition, Follow, Sumô, inspeção, rounds, juízes, chaves e integridade.
+
+Também em 06/09/2026 a primeira parte funcional de `Competition + Registration` passou a refletir o contrato no frontend, incluindo transições protegidas, `DESISTENTE`, cancelamento solicitado de inscrição aprovada e prorrogação/reabertura auditável.
+
+**A ETAPA 1 continua aberta.** Follow, Sumô, robôs híbridos, chaves e testes integrados ainda têm trabalho pendente.
 
 ---
 
@@ -61,29 +65,58 @@ photo-gallery/
 ## Gestão
 
 ```text
-Autenticação JWT                       ✅
-Dashboard / shell                      ✅
-Central da competição                  ✅
-Inscrições                             ✅
-Equipes / robôs / modalidades          ✅
-Ativo/inativo                          ✅
-Usuários                               ✅
-Follow Line                            ✅ base atual
-Histórico por tomadas                  ✅
-Operação da tomada                     ✅ base atual
-Sumô                                   ✅ base atual
-Chave visual                           ✅
-Arena da partida                       ✅
-2 penalidades = derrota automática     ✅
-Suicídio/WO                            ✅
-Histórico de chaves                    ✅
-Fotos dos robôs                        ✅
-404 personalizada                      ✅
+Autenticação JWT                            ✅
+Dashboard / shell                           ✅
+Central da competição                       ✅
+Transições de Competition protegidas        ✅
+Prorrogação/reabertura de inscrições        ✅
+Histórico da janela de inscrições           ✅
+Inscrições                                  ✅
+Solicitações de cancelamento APROVADA       ✅
+Equipes / robôs / modalidades               ✅
+Ativo/inativo                               ✅
+Usuários                                    ✅
+Follow Line                                 ✅ base atual
+Histórico por tomadas                       ✅
+Operação da tomada                          ✅ base atual
+Sumô                                        ✅ base atual
+Chave visual                                ✅
+Arena da partida                            ✅
+2 penalidades = derrota automática          ✅
+Suicídio/WO                                 ✅
+Histórico de chaves                         ✅
+Fotos dos robôs                             ✅
+404 personalizada                           ✅
 ```
 
-A ETAPA 1 agora possui requisitos adicionais ainda não implementados integralmente, principalmente:
+Na tela de competição, a organização agora possui uma operação explícita para:
 
 ```text
+INSCRICOES_ABERTAS
+→ Prorrogar inscrições
+
+INSCRICOES_ENCERRADAS
+→ Reabrir inscrições
+```
+
+O formulário exige nova data final e motivo. O histórico de alterações é exibido na própria operação. Em reabertura, a UI informa que o backend bloqueará a ação se já houver atividade competitiva e que uma chave atual ainda não utilizada será preservada no histórico e invalidada como atual.
+
+Na tela de inscrições, solicitações de cancelamento aprovadas pelo participante aparecem em uma fila própria para a organização:
+
+```text
+motivo
+solicitante/data
+→ APROVAR
+→ REJEITAR
+```
+
+A ETAPA 1 ainda possui requisitos não implementados integralmente:
+
+```text
+Robôs híbridos
+→ Auto + R/C da mesma classe física permitido
+→ Mini + 3 kg no mesmo Robot/edição bloqueado
+
 Follow
 → 3 tomadas × 3 tentativas como regra RRC
 → cronômetro operacional por tentativa
@@ -105,16 +138,29 @@ Chaves
 
 ## Participante
 
-Primeira versão em `/minha-equipe`:
+Primeira versão em `/minha-equipe` agora inclui:
 
 - equipe;
 - competidores;
 - robôs/fotos;
 - inscrições;
 - Follow/histórico;
-- acompanhamento de Sumô.
+- acompanhamento de Sumô;
+- cancelamento direto de inscrição `PENDENTE`;
+- solicitação de cancelamento para inscrição `APROVADA` com motivo obrigatório;
+- indicação de solicitação de cancelamento já pendente;
+- reativação de inscrição `CANCELADA` quando o backend permitir.
 
-O portal ainda não é completo; conclusão na ETAPA 10.
+Fluxo de cancelamento aprovado:
+
+```text
+APROVADA
+→ participante solicita cancelamento
+→ continua APROVADA enquanto aguarda
+→ organização aprova/rejeita
+```
+
+O portal ainda não é completo; conclusão geral permanece na etapa prevista pelo roadmap.
 
 ## Landing
 
@@ -125,29 +171,30 @@ Competição ativa                       ✅
 Follow público                          ✅
 Sumô/chave público                      ✅
 404 personalizada                      ✅
-CMS/Mídia                              ⏳ ETAPA 7
-Consolidação Landing/Galeria           ⏳ ETAPA 11
+CMS/Mídia                              ⏳ etapa futura
+Consolidação Landing/Galeria           ⏳ etapa futura
 ```
 
 ## Galeria
 
-`photo-gallery/` continua protótipo separado. A ETAPA 11 decide manutenção separada ou incorporação à Landing; direção preferencial atual é incorporar salvo necessidade real de deploy/URL independente.
+`photo-gallery/` continua protótipo separado. Consultar o roadmap canônico para a etapa atual de consolidação Landing/Galeria.
 
 ---
 
 # 4. Qualidade conhecida
 
-Último checkpoint registrado:
+Checkpoint atual confirmado em 06/09/2026:
 
 ```text
-Frontend checks  ✅ typecheck + build
-Backend          ✅ 48 testes / 0 falhas / 0 erros — checkpoint anterior às novas regras
-Testdata         ✅ MySQL + Flyway
+Frontend Gestão     ✅ typecheck + build
+Backend             ✅ 67 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V8   ✅
+Profile testdata    ✅
 ```
 
-Não atualizar a contagem de testes por inferência.
+A contagem acima vem do CI real; não atualizar por inferência em checkpoints futuros.
 
-A ETAPA 1 deverá adicionar testes automatizados de fluxo que simulem competições completas, além dos testes unitários existentes.
+A ETAPA 1 ainda deverá adicionar testes automatizados de fluxo que simulem competições completas, além dos testes unitários existentes.
 
 ---
 
@@ -203,6 +250,25 @@ UsersView.vue
 SettingsView.vue
 ParticipantView.vue
 NotFoundView.vue
+```
+
+Arquivos alterados no checkpoint atual:
+
+```text
+gestao/src/types.ts
+→ tipos das solicitações e histórico da janela
+
+gestao/src/api.ts
+→ contratos HTTP de cancelamento, reativação e prorrogação
+
+gestao/src/views/CompetitionsView.vue
+→ prorrogação/reabertura + histórico
+
+gestao/src/views/RegistrationsView.vue
+→ fila de análise de cancelamentos
+
+gestao/src/views/ParticipantView.vue
+→ cancelar PENDENTE / solicitar APROVADA / reativar CANCELADA
 ```
 
 ---
@@ -299,29 +365,25 @@ Decisões consolidadas:
 - vínculo entre `UserAccount` e Telegram **não é obrigatório inicialmente**;
 - futuro código competitivo da `Registration` pode identificar opcionalmente quem recebe avisos, sem bloquear a primeira versão.
 
-## ETAPA 5 — Ajustes Gerais
+## Ajustes Gerais futuros
 
 Área DEV-only com operações explícitas e auditáveis; inclui futura possibilidade de rollback competitivo excepcional, não editor genérico de banco.
 
-## ETAPA 7 — CMS/Mídia
+## CMS/Mídia futuro
 
 Painel para `MediaAsset`, `ContentSlot` e `ContentItem`; Landing deixa de depender de commits para conteúdo comum.
 
-## ETAPA 8 — Regras
+## Regras públicas
 
 O futuro regulamento público deve ser derivado de `CONTRATO_REGRAS_COMPETITIVAS.md`, removendo detalhes internos de implementação e preservando as regras que os competidores precisam conhecer.
 
-## ETAPA 9 — Futebol
+## Futebol
 
 Frontend vem após alteração real do domínio no backend, porque `Registration.robot` é obrigatório hoje.
 
-## ETAPA 10 — participante completo
+## Participante completo
 
-Completar fluxos e criar identificador competitivo por `Registration` aprovada.
-
-## ETAPA 11 — Landing/Galeria
-
-Fechar consolidação pública.
+Completar fluxos e criar identificador competitivo por `Registration` aprovada na etapa prevista pelo roadmap.
 
 ---
 
@@ -338,17 +400,18 @@ Documentos de demonstração/MVP redundantes foram removidos no checkpoint docum
 # 11. Próximo passo
 
 ```text
-CONTRATO DE REGRAS ✅
+Competition + Registration — núcleo       ✅
+Cancelamento solicitado + prorrogação     ✅
         ↓
-comparar regra aprovada × código atual
+compatibilidade física de robôs híbridos  ← PRÓXIMO
         ↓
-implementar correções da ETAPA 1 no backend
+Follow
         ↓
-criar testes automatizados de fluxo
+Sumô
         ↓
-ajustar frontend quando contrato/API exigir
+Chaves
         ↓
-validar competição simulada
+testes automatizados de fluxo completo
 ```
 
 Não iniciar ETAPA 2 sem confirmação explícita.
