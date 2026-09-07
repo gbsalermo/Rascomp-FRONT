@@ -1,6 +1,6 @@
 # RasComp — Contrato de Regras Competitivas
 
-Última revisão: **06/09/2026**
+Última revisão: **07/09/2026**
 
 Este documento consolida as **regras competitivas e invariantes de domínio aprovadas durante a ETAPA 1** do RasComp.
 
@@ -256,6 +256,8 @@ Histórico relevante inclui, conforme modalidade:
 ```text
 Follow
 → tentativa registrada
+ou
+→ tomada perdida por ausência
 
 Sumô
 → inspeção utilizada como elegibilidade
@@ -373,7 +375,13 @@ Se já existir chave de Sumô:
 - sem atividade competitiva: a chave atual é preservada historicamente, deixa de ser `atual` e recebe estado `CANCELADO`; uma nova chave deverá ser gerada após o novo fechamento;
 - com partida/round/resultado já iniciado: reabertura comum é bloqueada.
 
-A verificação de atividade competitiva considera atualmente tentativas Follow, rounds de Sumô, resultados e partidas `EM_ANDAMENTO/FINALIZADA`.
+A verificação de atividade competitiva considera atualmente:
+
+- tentativas Follow;
+- tomadas Follow perdidas por ausência;
+- rounds de Sumô;
+- resultados;
+- partidas `EM_ANDAMENTO/FINALIZADA`.
 
 Histórico implementado:
 
@@ -437,7 +445,7 @@ Essa é uma regra própria do RRC/RasComp.
 
 Cada tentativa pode ser cronometrada pela interface da organização.
 
-Fluxo operacional desejado:
+Fluxo operacional:
 
 ```text
 [ INICIAR ]
@@ -449,7 +457,7 @@ Fluxo operacional desejado:
 
 O cronômetro do frontend é ferramenta operacional; o backend continua validando e persistindo o resultado oficial.
 
-Entrada manual de tempo também deve permanecer possível para correção operacional autorizada.
+Entrada manual de tempo permanece possível para correção operacional autorizada.
 
 ## 6.4 Penalidades de tempo
 
@@ -471,7 +479,7 @@ Valor comum de referência:
 +10 s
 ```
 
-O valor não deve ser rigidamente fixado no código. A organização pode digitar/ajustar a penalidade conforme ocorrência e regulamento da edição.
+O valor não é rigidamente fixado no código. A configuração da categoria fornece a penalidade padrão e a organização pode ajustar o valor da tentativa conforme ocorrência e regulamento da edição.
 
 ### Falha em parar corretamente
 
@@ -487,7 +495,7 @@ não parou corretamente
 → aplica penalidade temporal
 ```
 
-A UI pode possuir ação específica `NÃO PAROU`, preenchendo a penalidade padrão configurada, com confirmação da organização.
+A UI possui ação `NÃO PAROU`, preenchendo a penalidade padrão configurada antes da confirmação da organização.
 
 ## 6.5 Estados válidos de tentativa
 
@@ -523,6 +531,8 @@ valida = true + tempoSegundos = null    ❌
 concluida = true + tempoSegundos = null ❌
 ```
 
+Essas combinações são bloqueadas pelo service do backend.
+
 `checkpointsAlcancados` é informativo/operacional e não altera o ranking enquanto não houver regra competitiva específica aprovada.
 
 ## 6.6 Ranking
@@ -540,7 +550,7 @@ Para o robô:
 ```text
 resultadoDoRobo
 =
-menor tempoFinal entre as 3 melhores tomadas
+menor tempoFinal entre as melhores tentativas de suas tomadas
 ```
 
 Classificação final:
@@ -566,7 +576,7 @@ Tempo padrão recomendado:
 60 segundos
 ```
 
-Esse valor deve ser configurável.
+Esse valor é configurável.
 
 Se o competidor não comparecer dentro do limite:
 
@@ -576,7 +586,7 @@ TOMADA → PERDIDA_POR_AUSENCIA
 
 A perda é da tomada, não da inscrição inteira.
 
-Não criar três tentativas fictícias apenas para representar a ausência.
+A ausência possui registro próprio com responsável, observação e data/hora. Não são criadas três tentativas fictícias para representá-la, e uma tomada marcada por ausência não aceita tentativas posteriormente.
 
 ## 6.8 Inspeção
 
@@ -584,41 +594,35 @@ Seguidor de Linha **não entra na inspeção de Sumô** descrita neste documento
 
 ---
 
-# 7. UX operacional futura do Follow
+# 7. UX operacional do Follow
 
-Ao selecionar o robô que realizará a tomada, a gestão deve abrir uma tela/modal focada exclusivamente naquele competidor/robô.
+A gestão abre uma experiência focada no robô/tomada selecionado.
 
-Informações desejadas:
+Informações e ações implementadas no Bloco 2:
 
 ```text
 foto do robô
-equipe
-competidores
-categoria
+equipe/categoria
 tomada atual
-3 tentativas da tomada
-cronômetro
+3 tentativas
+cronômetro da tentativa
+cronômetro de apresentação
 penalidades
-tempo bruto
-tempo final
-histórico das tomadas anteriores
+tempo bruto/final
+histórico
 observações
-```
 
-A operação deve permitir, de forma clara:
-
-```text
 INICIAR CRONÔMETRO
 PARAR
-SALVAR TEMPO
+SALVAR/AJUSTAR TEMPO
 APLICAR PENALIDADE
 MARCAR NÃO PAROU
 INVALIDAR TENTATIVA
 MARCAR NÃO CONCLUIU
-ENCERRAR TOMADA
+MARCAR TOMADA PERDIDA POR AUSÊNCIA
 ```
 
-Essa orientação é de UX; a fonte de verdade continua sendo o backend.
+A fonte de verdade continua sendo o backend.
 
 ---
 
@@ -1003,44 +1007,44 @@ Legenda:
 | Reativação só com inscrições abertas | janela, estado e compatibilidade física revalidados | ✅ implementado |
 | Cancelamento PENDENTE | participante restrito a PENDENTE | ✅ implementado |
 | Cancelamento APROVADA por solicitação | solicitação persistida + análise da organização | ✅ implementado |
-| CANCELADA x DESISTENTE | distinção aplicada conforme atividade competitiva | ✅ implementado |
+| CANCELADA x DESISTENTE | tentativa/ausência Follow e atividade Sumô contam como histórico | ✅ implementado |
 | Pagamento antes de aprovação quando habilitado | não existe | futuro, preservar invariante |
 | Prorrogação/reabertura explícita | operação auditável + histórico persistido | ✅ implementado |
-| Reabertura depois de atividade competitiva | bloqueada por verificações de atividade | ✅ implementado |
+| Reabertura depois de atividade competitiva | inclui ausência Follow nas verificações | ✅ implementado |
 | Chave atual ao reabrir sem disputa | preservada historicamente e invalidada como atual | ✅ implementado |
 | Classe física explícita das categorias Sumô | `CompetitionCategory.sumoPhysicalClass` + Flyway V9 | ✅ implementado |
 | Robô híbrido na mesma classe física | Auto/R/C compatíveis compartilham o mesmo Robot | ✅ implementado |
 | Mini + 3kg no mesmo robô/edição | conflito detectado em criação/edição/reativação | ✅ bloqueado |
 | Follow coexistindo com Sumô no mesmo Robot | Follow ignorado na trava de classe física | ✅ implementado |
-| Follow 3 tomadas × 3 tentativas | configurável | ✅ base aproveitável; fixar regra RRC |
-| Tempo máximo por tentativa | existe `maxTempoSegundos` | ✅ alinhar sem janela total |
-| Penalidade temporal | já existe | ✅ manter entrada configurável |
-| Estados válidos Follow | combinações inconsistentes ainda possíveis | ⚠️ corrigir |
-| Perda de tomada por ausência | não existe | 🆕 modelar |
-| Cronômetro operacional frontend | parcialmente manual | 🆕/UX |
-| Inspeção Sumô humana APTO/INAPTO | backend decide pelo peso | ⚠️ corrigir |
-| Peso apenas informativo | hoje decide aprovação | ⚠️ corrigir |
+| Follow 3 tomadas × 3 tentativas | `ConfigFollow` protegido no perfil RRC + normalização V10 | ✅ implementado |
+| Tempo máximo por tentativa | `maxTempoSegundos` aplicado por tentativa | ✅ implementado |
+| Penalidade temporal | entrada em segundos + padrão configurável | ✅ implementado |
+| Estados válidos Follow | combinações impossíveis bloqueadas no service | ✅ implementado |
+| Perda de tomada por ausência | entidade/serviço próprios; sem tentativas fictícias | ✅ implementado |
+| Cronômetro operacional frontend | tentativa + apresentação integrados à operação | ✅ implementado |
+| Inspeção Sumô humana APTO/INAPTO | backend ainda decide pelo peso | ⚠️ corrigir no Bloco 3 |
+| Peso apenas informativo | hoje ainda participa da decisão automática | ⚠️ corrigir no Bloco 3 |
 | Mini/3kg Auto/R/C no mesmo motor | arquitetura suporta categorias | ✅ |
 | 3 rounds / 2 vitórias | configurável e suportado | ✅ |
 | Round anulado sem vitória | suportado | ✅ |
-| Rounds extras justificados | há round extra simples | ⚠️ exigir condição + justificativa |
-| Decisão do juiz | não formalizada | 🆕 modelar |
-| Juiz identificado | não formalizado | 🆕 modelar |
-| Falha de inicialização | não formalizada | 🆕 modelar |
-| Geração só com inscrições encerradas | status não é validado | ⚠️ corrigir |
-| Regeneração só antes da atividade | incompleto | ⚠️ proteger |
-| Agenda separada da árvore | não formalizado | 🆕 estruturar quando aplicável |
-| Correção segura antes da próxima partida | progressão protege slots, mas não desfaz avanço | ⚠️ implementar transacionalmente |
-| Correção depois de dependência iniciada | risco atual | ⚠️ bloquear |
+| Rounds extras justificados | há round extra simples | ⚠️ exigir condição + justificativa no Bloco 3 |
+| Decisão do juiz | não formalizada | 🆕 modelar no Bloco 3 |
+| Juiz identificado | não formalizado | 🆕 modelar no Bloco 3 |
+| Falha de inicialização | não formalizada | 🆕 modelar no Bloco 3 |
+| Geração só com inscrições encerradas | status não é validado | ⚠️ corrigir no Bloco 4 |
+| Regeneração só antes da atividade | incompleto | ⚠️ proteger no Bloco 4 |
+| Agenda separada da árvore | não formalizado | 🆕 estruturar no Bloco 4 quando aplicável |
+| Correção segura antes da próxima partida | progressão protege slots, mas não desfaz avanço | ⚠️ implementar no Bloco 4 |
+| Correção depois de dependência iniciada | risco atual | ⚠️ bloquear no Bloco 4 |
 
-Checkpoint automatizado após a conclusão do bloco `Competition + Registration`:
+Checkpoint automatizado após a conclusão do Bloco 2 — Follow:
 
 ```text
-73 testes
+86 testes
 0 falhas
 0 erros
 0 skipped
-MySQL + Flyway V9 + testdata ✅
+MySQL + Flyway V10 + testdata ✅
 Frontend Gestão typecheck + build ✅
 ```
 
@@ -1071,15 +1075,21 @@ Os cenários unitários principais dessas regras já existem; a simulação inte
 
 ## 18.2 Fluxo Follow
 
-Simular:
+O Bloco 2 já possui testes unitários derivados das invariantes de:
 
 ```text
-3 tomadas
-×
-3 tentativas
+3 tomadas × 3 tentativas
+estados válidos
+limite de tempo
+penalidade
+não concluiu
+perda por ausência
+bloqueio de tentativa em tomada ausente
+integração da ausência com desistência/reabertura
+ranking preservado
 ```
 
-Incluindo:
+O Bloco 5 ainda deverá executar a simulação integrada de competição completa, incluindo:
 
 - tempo válido;
 - penalidade;
@@ -1116,6 +1126,7 @@ Testar tentativas de quebra:
 - regenerar após competição iniciada;
 - alterar resultado cujo vencedor já alimentou partida iniciada;
 - registrar combinações impossíveis de Follow;
+- registrar tentativa em tomada perdida por ausência;
 - cadastrar o mesmo robô em classes físicas Mini e 3 kg na mesma edição;
 - reabrir inscrições após atividade competitiva.
 
