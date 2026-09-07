@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **06/09/2026**
+Última atualização: **07/09/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -30,19 +30,34 @@ ETAPA 1  🚧 atual — lógica, integridade e testes de fluxo
 ETAPA 2+ ⏳ não iniciadas
 ```
 
-Em 04/09/2026 foi feito um checkpoint documental para remover material obsoleto, corrigir divergências e atualizar os documentos vivos.
+Checkpoint interno da ETAPA 1:
 
-Em 06/09/2026 foi criado `docs/CONTRATO_REGRAS_COMPETITIVAS.md`, consolidando as regras aprovadas de inscrições, Competition, Follow, Sumô, inspeção, rounds, juízes, chaves e integridade.
+```text
+Bloco 1 — Competition + Registration     ✅ CONCLUÍDO
+Bloco 2 — Follow Line                    ✅ CONCLUÍDO
+Bloco 3 — Sumô                           🚧 ATUAL
+Bloco 4 — Chaves                         ⏳
+Bloco 5 — Fluxos integrados completos    ⏳
+```
 
-Também em 06/09/2026 o bloco **`Competition + Registration`** foi concluído no backend e refletido no frontend, incluindo:
+Em 06/09/2026 o bloco `Competition + Registration` foi concluído no backend e refletido no frontend.
 
-- transições protegidas de Competition;
-- `DESISTENTE`;
-- cancelamento solicitado de inscrição aprovada;
-- prorrogação/reabertura auditável;
-- suporte ao conceito de robô híbrido por classe física de Sumô.
+Entre 06 e 07/09/2026 o bloco **Follow Line** foi concluído, incluindo:
 
-**A ETAPA 1 continua aberta.** O próximo bloco é Follow; depois permanecem Sumô, chaves e testes integrados.
+- perfil RRC `3 tomadas × 3 tentativas`;
+- estados válidos de tentativa;
+- cronômetro operacional por tentativa;
+- entrada manual de tempo preservada;
+- penalidade temporal configurável;
+- ação operacional `Não parou`;
+- cronômetro de apresentação;
+- tomada perdida por ausência;
+- ausência sem criação de tentativas fictícias;
+- histórico auditável de ausências;
+- checkpoints apenas informativos para ranking;
+- progresso da prova considerando tentativas e ausências.
+
+**A ETAPA 1 continua aberta. O bloco atual é Sumô.**
 
 ---
 
@@ -83,12 +98,12 @@ Equipes / robôs / modalidades               ✅
 Classe física das categorias de Sumô        ✅
 Ativo/inativo                               ✅
 Usuários                                    ✅
-Follow Line                                 ✅ base atual
-Histórico por tomadas                       ✅
-Operação da tomada                          ✅ base atual
-Sumô                                        ✅ base atual
-Chave visual                                ✅
-Arena da partida                            ✅
+Follow Line                                 ✅ bloco competitivo alinhado
+Histórico por tomadas                       ✅ tentativas + ausências
+Operação da tomada                          ✅ cronômetros + penalidades
+Sumô                                        ✅ base atual; Bloco 3 em alinhamento
+Chave visual                                ✅ base atual
+Arena da partida                            ✅ base atual
 2 penalidades = derrota automática          ✅
 Suicídio/WO                                 ✅
 Histórico de chaves                         ✅
@@ -96,30 +111,89 @@ Fotos dos robôs                             ✅
 404 personalizada                           ✅
 ```
 
-Na tela de competição, a organização possui uma operação explícita para:
+## Follow — implementação consolidada
+
+Ao escolher uma inscrição aprovada, a gestão abre a operação focada naquele robô/tomada.
+
+A experiência atual suporta:
 
 ```text
-INSCRICOES_ABERTAS
-→ Prorrogar inscrições
-
-INSCRICOES_ENCERRADAS
-→ Reabrir inscrições
+foto/equipe/categoria
+3 tomadas × 3 tentativas
+cronômetro de tentativa
+PARAR → preenche o tempo
+ajuste manual de tempo
+penalidade em segundos
+NÃO PAROU → aplica penalidade padrão configurada
+INVALIDAR
+NÃO CONCLUIU
+cronômetro de apresentação
+tomada perdida por ausência
+histórico/auditoria
 ```
 
-O formulário exige nova data final e motivo. O histórico de alterações é exibido na própria operação. Em reabertura, a UI informa que o backend bloqueará a ação se já houver atividade competitiva e que uma chave atual ainda não utilizada será preservada no histórico e invalidada como atual.
-
-Na tela de inscrições, solicitações de cancelamento aprovadas pelo participante aparecem em uma fila própria para a organização:
+Regras representadas pela UI, mas validadas pelo backend:
 
 ```text
-motivo
-solicitante/data
-→ APROVAR
-→ REJEITAR
+concluída + válida + tempo      → classificável
+concluída + inválida + tempo    → histórico, fora do ranking
+não concluída + inválida        → sem tempo
+```
+
+A ausência encerra a tomada sem criar três tentativas artificiais.
+
+O painel e o histórico consideram tomadas perdidas por ausência. O ranking continua sendo calculado pelo backend e checkpoints não influenciam a classificação.
+
+Arquivos principais alterados no bloco:
+
+```text
+gestao/src/types.ts
+→ ConfigFollow estendida + FollowTakeAbsence
+
+gestao/src/api.ts
+→ leitura/gravação de ausências do Follow
+
+gestao/src/views/FollowRunView.vue
+→ cronômetros, penalidade, ausência e operação da tomada
+
+gestao/src/views/FollowView.vue
+→ progresso considerando ausências
+
+gestao/src/components/FollowTakeHistory.vue
+→ auditoria de tentativas e tomadas perdidas por ausência
+```
+
+## Sumô — bloco atual
+
+A base atual já possui:
+
+```text
+inspeções
+configuração de rounds
+partidas
+rounds
+2 penalidades = derrota automática
+SUICIDIO_WO
+progressão
+BYE
+```
+
+O Bloco 3 deve alinhar a base ao contrato competitivo:
+
+```text
+inspeção humana APTO/INAPTO
+peso apenas informativo
+rounds extras apenas quando realmente necessários
+justificativa obrigatória para round extra
+decisão de juiz auditável
+identificação de juiz
+FALHA_INICIALIZACAO formalizada
+motivos de resultado explícitos
 ```
 
 ## Robôs híbridos
 
-O frontend não classifica o próprio `Robot` como Mini ou 3 kg. A nova metadata vem da categoria:
+O frontend não classifica o próprio `Robot` como Mini ou 3 kg. A metadata vem da categoria:
 
 ```text
 Category.sumoPhysicalClass
@@ -127,41 +201,11 @@ Category.sumoPhysicalClass
 └─ SUMO_3KG
 ```
 
-`gestao/src/types.ts` expõe `SumoPhysicalClass` e `AdminCatalogView.vue` mostra a coluna **Classe física**:
-
-```text
-MINI_500G → Mini 500 g
-SUMO_3KG  → Sumô 3 kg
-FOLLOW    → —
-```
-
-A regra de compatibilidade é validada pelo backend; a UI apenas representa o contrato.
-
-Ainda pendente na ETAPA 1:
-
-```text
-Follow
-→ 3 tomadas × 3 tentativas como regra RRC
-→ cronômetro operacional por tentativa
-→ penalidades temporais claras
-→ estado de tomada perdida por ausência
-→ UX focada no robô/tomada
-
-Sumô
-→ inspeção humana APTO/INAPTO
-→ rounds extras justificados
-→ decisão/identificação de juiz
-→ falha de inicialização
-
-Chaves
-→ agenda/pistas separadas da estrutura lógica
-→ correção segura de resultado antes da dependência iniciar
-→ bloqueio após dependência competitiva iniciada
-```
+`AdminCatalogView.vue` mostra a classe física e o backend continua sendo autoridade da compatibilidade.
 
 ## Participante
 
-Primeira versão em `/minha-equipe` agora inclui:
+Primeira versão em `/minha-equipe` inclui:
 
 - equipe;
 - competidores;
@@ -170,20 +214,11 @@ Primeira versão em `/minha-equipe` agora inclui:
 - Follow/histórico;
 - acompanhamento de Sumô;
 - cancelamento direto de inscrição `PENDENTE`;
-- solicitação de cancelamento para inscrição `APROVADA` com motivo obrigatório;
-- indicação de solicitação de cancelamento já pendente;
-- reativação de inscrição `CANCELADA` quando o backend permitir.
+- solicitação de cancelamento para inscrição `APROVADA`;
+- indicação de solicitação pendente;
+- reativação de inscrição `CANCELADA` quando permitida.
 
-Fluxo de cancelamento aprovado:
-
-```text
-APROVADA
-→ participante solicita cancelamento
-→ continua APROVADA enquanto aguarda
-→ organização aprova/rejeita
-```
-
-O portal ainda não é completo; conclusão geral permanece na etapa prevista pelo roadmap.
+O portal ainda não é completo; conclusão geral permanece na ETAPA 10.
 
 ## Landing
 
@@ -194,30 +229,30 @@ Competição ativa                       ✅
 Follow público                          ✅
 Sumô/chave público                      ✅
 404 personalizada                      ✅
-CMS/Mídia                              ⏳ etapa futura
-Consolidação Landing/Galeria           ⏳ etapa futura
+CMS/Mídia                              ⏳ ETAPA 7
+Consolidação Landing/Galeria           ⏳ ETAPA 11
 ```
 
 ## Galeria
 
-`photo-gallery/` continua protótipo separado. Consultar o roadmap canônico para a etapa atual de consolidação Landing/Galeria.
+`photo-gallery/` continua protótipo separado. A decisão definitiva de absorção/manutenção independente pertence à ETAPA 11.
 
 ---
 
 # 4. Qualidade conhecida
 
-Checkpoint atual confirmado em 06/09/2026:
+Checkpoint confirmado após o Bloco 2:
 
 ```text
 Frontend Gestão     ✅ typecheck + build
-Backend             ✅ 73 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V9   ✅
+Backend             ✅ 86 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V10  ✅
 Profile testdata    ✅
 ```
 
-A contagem acima vem do CI real; não atualizar por inferência em checkpoints futuros.
+A contagem vem do CI real. Não atualizar por inferência em checkpoints futuros.
 
-A ETAPA 1 ainda deverá adicionar testes automatizados de fluxo que simulem competições completas, além dos testes unitários existentes.
+A ETAPA 1 ainda deverá adicionar os testes automatizados de fluxo completo no Bloco 5.
 
 ---
 
@@ -230,8 +265,6 @@ ORGANIZACAO
 PARTICIPANTE
 ```
 
-Helpers atuais refletem `isOrganization` e `isParticipant`.
-
 ETAPA 3:
 
 ```text
@@ -241,7 +274,7 @@ MIDIA
 PARTICIPANTE
 ```
 
-Ao evoluir, preferir capacidades semânticas na UI, mas a autorização real continuará no backend.
+Ao evoluir, preferir capacidades semânticas na UI, mantendo autorização real no backend.
 
 ---
 
@@ -275,70 +308,42 @@ ParticipantView.vue
 NotFoundView.vue
 ```
 
-Arquivos relevantes alterados no bloco `Competition + Registration`:
-
-```text
-gestao/src/types.ts
-→ cancelamentos, histórico da janela e SumoPhysicalClass
-
-gestao/src/api.ts
-→ contratos HTTP de cancelamento, reativação e prorrogação
-
-gestao/src/views/CompetitionsView.vue
-→ prorrogação/reabertura + histórico
-
-gestao/src/views/RegistrationsView.vue
-→ fila de análise de cancelamentos
-
-gestao/src/views/ParticipantView.vue
-→ cancelar PENDENTE / solicitar APROVADA / reativar CANCELADA
-
-gestao/src/views/AdminCatalogView.vue
-→ exibe classe física das categorias Sumô
-```
-
 ---
 
-# 7. Regras de UX competitiva já aprovadas
+# 7. Regras de UX competitiva aprovadas
 
-Consultar o contrato para a regra completa. Direções de frontend já registradas:
-
-## Follow
-
-Ao escolher o robô que fará a tomada, abrir experiência focada naquele robô com:
+## Follow — implementado no Bloco 2
 
 ```text
-foto
-equipe/categoria
-tomada atual
-3 tentativas
-cronômetro
-penalidades
-tempo bruto/final
-histórico
-observações
-```
-
-Ações previstas:
-
-```text
-INICIAR
+INICIAR CRONÔMETRO
 PARAR
-SALVAR TEMPO
+SALVAR/AJUSTAR TEMPO
 APLICAR PENALIDADE
 MARCAR NÃO PAROU
-INVALIDAR
+INVALIDAR TENTATIVA
 MARCAR NÃO CONCLUIU
-ENCERRAR TOMADA
+CRONÔMETRO DE APRESENTAÇÃO
+MARCAR TOMADA PERDIDA POR AUSÊNCIA
 ```
 
-## Sumô
+A fonte de verdade permanece no backend.
 
-A UI não calcula inspeção física. A organização informa `APTO/INAPTO`.
+## Sumô — direção do Bloco 3
 
-Rounds extras só aparecem quando o backend permitir e devem exigir justificativa. Decisão do juiz deve mostrar claramente vencedor, juiz e justificativa.
+A UI não deve decidir inspeção física por cálculo de peso. A organização informa `APTO/INAPTO`.
 
-## Chaveamento
+Rounds extras só devem aparecer quando o backend permitir e devem exigir justificativa.
+
+Decisão do juiz deve mostrar claramente:
+
+```text
+vencedor
+juiz
+justificativa
+data/hora
+```
+
+## Chaveamento — Bloco 4
 
 A UI deve distinguir:
 
@@ -347,8 +352,6 @@ estrutura lógica da chave
 ≠
 agenda real de execução/pista/horário
 ```
-
-Assim uma partida pode ser adiada/adiantada operacionalmente sem reescrever a árvore.
 
 ---
 
@@ -368,58 +371,58 @@ Não antecipar refatoração ampla durante a ETAPA 1.
 
 ## ETAPA 3 — permissões
 
-Frontend reflete `DEV | GESTAO | MIDIA | PARTICIPANTE`; backend permanece fonte de autorização.
+Frontend refletirá `DEV | GESTAO | MIDIA | PARTICIPANTE`; backend permanece fonte de autorização.
 
-## ETAPA 4 — Avisos + Telegram
+## ETAPA 4 — Avisos IN_APP + Telegram
 
-O trabalho será conjunto:
+Roadmap canônico atual reúne os dois canais na mesma etapa:
 
 ```text
 GESTAO/DEV
-→ seleciona competição
-→ publica aviso
-→ Aviso IN_APP persistido
-→ Telegram recebe a mesma comunicação quando integração estiver habilitada
+→ seleciona Competition
+→ publica Aviso IN_APP
+→ backend persiste
+→ Telegram recebe a mesma comunicação quando habilitado
 ```
 
-Decisões consolidadas:
+Regras:
 
 - IN_APP é fonte de verdade;
 - Telegram é canal complementar;
 - frontend não chama Telegram diretamente;
-- falha do Telegram não invalida o aviso;
-- vínculo entre `UserAccount` e Telegram **não é obrigatório inicialmente**;
-- futuro código competitivo da `Registration` pode identificar opcionalmente quem recebe avisos, sem bloquear a primeira versão.
+- falha externa não invalida o aviso;
+- vínculo individual Telegram não é obrigatório na primeira versão;
+- futuro código competitivo da `Registration` pode ser reutilizado opcionalmente.
 
-## Ajustes Gerais futuros
+## ETAPA 5 — Ajustes Gerais
 
-Área DEV-only com operações explícitas e auditáveis; inclui futura possibilidade de rollback competitivo excepcional, não editor genérico de banco.
+Área DEV-only com operações explícitas e auditáveis; nunca editor genérico de banco.
 
-## CMS/Mídia futuro
+## ETAPA 7 — CMS/Mídia
 
-Painel para `MediaAsset`, `ContentSlot` e `ContentItem`; Landing deixa de depender de commits para conteúdo comum.
+Painel para conteúdo e mídia, reutilizando `ObjectStorageService`/R2.
 
-## Regras públicas
+## ETAPA 8 — Regras públicas
 
-O futuro regulamento público deve ser derivado de `CONTRATO_REGRAS_COMPETITIVAS.md`, removendo detalhes internos de implementação e preservando as regras que os competidores precisam conhecer.
+Derivar texto público do contrato competitivo, sem detalhes internos de implementação.
 
-## Futebol
+## ETAPA 9 — Futebol
 
-Frontend vem após alteração real do domínio no backend, porque `Registration.robot` é obrigatório hoje.
+Frontend vem após alteração real do domínio, pois `Registration.robot` é obrigatório hoje.
 
-## Participante completo
+## ETAPA 10 — Participante completo
 
-Completar fluxos e criar identificador competitivo por `Registration` aprovada na etapa prevista pelo roadmap.
+Completar os fluxos e criar identificador competitivo por `Registration` aprovada.
 
 ---
 
 # 10. Landing e referências históricas
 
-`docs/STATUS_LANDING_PAGE.md` permanece como snapshot visual de 26/08/2026, não como estado global.
+`docs/STATUS_LANDING_PAGE.md` permanece como snapshot visual, não como estado global.
 
-`CONTINUIDADE_LANDING_PAGE.md` e `CONTINUIDADE_GALERIA_FOTOS.md` permanecem como históricos específicos de subsistema.
+`CONTINUIDADE_LANDING_PAGE.md` e `CONTINUIDADE_GALERIA_FOTOS.md` permanecem históricos específicos de subsistema.
 
-Documentos de demonstração/MVP redundantes foram removidos no checkpoint documental de 04/09/2026 para evitar que fossem confundidos com documentação viva.
+Se algum documento histórico apresentar numeração diferente das etapas, prevalece `docs/ETAPAS_POS_PROJETO.md`.
 
 ---
 
@@ -427,19 +430,17 @@ Documentos de demonstração/MVP redundantes foram removidos no checkpoint docum
 
 ```text
 Competition + Registration              ✅ CONCLUÍDO
-├─ cancelamento/prorrogação             ✅
-└─ robôs híbridos / classe física       ✅
         ↓
-Follow                                  ← PRÓXIMO
+Follow                                  ✅ CONCLUÍDO
         ↓
-Sumô
+Sumô                                    ← BLOCO ATUAL
         ↓
 Chaves
         ↓
-testes automatizados de fluxo completo
+fluxos automatizados completos
 ```
 
-Não iniciar ETAPA 2 sem confirmação explícita.
+Não iniciar ETAPA 2 sem conclusão e validação explícita da ETAPA 1.
 
 ---
 
