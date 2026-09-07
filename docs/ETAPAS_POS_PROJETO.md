@@ -1,6 +1,6 @@
 # RasComp — Etapas Pós-Projeto
 
-Última revisão: **04/09/2026**
+Última revisão: **07/09/2026**
 
 Este é o **único documento canônico para ordem de execução, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -24,7 +24,7 @@ backend: rascomp/docs/CONTINUIDADE.md
 
 ---
 
-# 1. Estado de execução em 04/09/2026
+# 1. Estado de execução em 07/09/2026
 
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
@@ -65,6 +65,34 @@ retomar ETAPA 1
 → apresentar checkpoint
 → não iniciar ETAPA 2 sem confirmação explícita
 ```
+
+## Checkpoint interno da ETAPA 1
+
+A ETAPA 1 está sendo executada em blocos funcionais para reduzir risco e preservar validação incremental:
+
+```text
+Bloco 1 — Competition + Registration     ✅ CONCLUÍDO / VALIDADO
+Bloco 2 — Follow Line                    ✅ CONCLUÍDO / VALIDADO
+Bloco 3 — Sumô                           🚧 BLOCO ATUAL
+Bloco 4 — Chaves                         ⏳ NÃO INICIADO
+Bloco 5 — Fluxos integrados completos    ⏳ NÃO INICIADO
+```
+
+O Bloco 2 consolidou:
+
+- perfil RRC de `3 tomadas × 3 tentativas`;
+- estados válidos de tentativa;
+- limite por tentativa;
+- penalidade temporal configurável;
+- cronômetro operacional;
+- tomada perdida por ausência sem tentativas fictícias;
+- checkpoints apenas informativos para ranking;
+- integração da ausência com integridade de cancelamento/reabertura;
+- Flyway V10;
+- backend com 86 testes verdes;
+- frontend Gestão com typecheck + build verdes.
+
+**A conclusão dos Blocos 1 e 2 não encerra a ETAPA 1.**
 
 ---
 
@@ -115,27 +143,37 @@ Resultado consolidado:
 
 ## 1.1 Reativação de inscrição
 
-Problema confirmado:
+Problema confirmado originalmente:
 
 ```text
 RegistrationService.reativar()
-→ reativa como PENDENTE
-→ não revalida a janela de inscrições
+→ reativava como PENDENTE
+→ não revalidava a janela de inscrições
 ```
 
-Impedir reativação indevida fora do período permitido.
+Situação atual:
+
+```text
+✅ corrigido no Bloco 1
+```
 
 ## 1.2 Cancelamento de inscrição
 
-Definir e implementar política explícita para:
+Política explícita implementada para:
 
 - PENDENTE;
 - APROVADA;
-- após geração de chave;
-- competição EM_ANDAMENTO;
-- inscrição com histórico competitivo.
+- histórico competitivo;
+- cancelamento solicitado pelo participante;
+- distinção entre `CANCELADA` e `DESISTENTE`.
 
-Ownership não é suficiente; o backend deve validar o estado do domínio.
+Ownership não substitui validação de estado do domínio.
+
+Situação atual:
+
+```text
+✅ corrigido no Bloco 1
+```
 
 ## 1.3 Geração/regeneração de chave
 
@@ -145,6 +183,12 @@ Definir estados de `Competition` permitidos para geração/regeneração e aplic
 BracketGenerationService
 BracketService
 BracketProgressionService
+```
+
+Situação atual:
+
+```text
+⏳ Bloco 4 — Chaves
 ```
 
 ## 1.4 Correção de resultado após progressão
@@ -157,12 +201,20 @@ resultado alterado
 → árvore inconsistente
 ```
 
-Estratégia a decidir/implementar:
+Direção aprovada:
 
 ```text
-A. bloquear alteração após progressão
-ou
-B. rollback/reprocessamento explícito e consistente
+próxima dependência ainda não iniciada
+→ correção transacional segura
+
+próxima dependência já iniciada
+→ bloqueio da correção comum
+```
+
+Situação atual:
+
+```text
+⏳ Bloco 4 — Chaves
 ```
 
 ## 1.5 Estados válidos de tentativa Follow
@@ -176,11 +228,47 @@ tempoSegundos
 checkpointsAlcancados
 ```
 
-O efeito oficial dos checkpoints no ranking depende do regulamento e não deve ser inventado.
+O efeito oficial dos checkpoints no ranking não deve ser inventado.
+
+Situação atual:
+
+```text
+✅ corrigido no Bloco 2
+```
+
+O Bloco 2 também fechou a regra 3×3, cronômetros, penalidade configurável e tomada perdida por ausência.
 
 ## 1.6 Invariantes administrativas futuras
 
 Mapear invariantes que os futuros Ajustes Gerais não poderão quebrar, inclusive proteção para manter ao menos um DEV ativo quando a nova matriz de roles existir.
+
+Situação atual:
+
+```text
+⏳ permanece como invariante da ETAPA 1 e da futura ETAPA 5
+```
+
+## 1.7 Sumô — bloco atual
+
+O Bloco 3 deve alinhar o motor existente ao contrato competitivo aprovado:
+
+```text
+inspeção humana APTO/INAPTO
+peso apenas informativo
+3 rounds regulares / 2 vitórias
+rounds extras apenas quando necessários e justificados
+falha de inicialização formalizada
+identificação/decisão de juiz auditável
+motivos de resultado explícitos
+```
+
+Preservar as regras já funcionais:
+
+```text
+2 penalidades → derrota automática do round
+SUICIDIO_WO  → adversário vence
+BYE          → avanço automático
+```
 
 ## Critério de saída
 
