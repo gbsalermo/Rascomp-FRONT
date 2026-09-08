@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **07/09/2026**
+Última atualização: **08/09/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -35,8 +35,8 @@ Checkpoint interno da ETAPA 1:
 ```text
 Bloco 1 — Competition + Registration     ✅ CONCLUÍDO
 Bloco 2 — Follow Line                    ✅ CONCLUÍDO
-Bloco 3 — Sumô                           🚧 ATUAL
-Bloco 4 — Chaves                         ⏳
+Bloco 3 — Sumô                           ✅ CONCLUÍDO
+Bloco 4 — Chaves                         ⏭️ PRÓXIMO / NÃO INICIADO
 Bloco 5 — Fluxos integrados completos    ⏳
 ```
 
@@ -57,7 +57,20 @@ Entre 06 e 07/09/2026 o bloco **Follow Line** foi concluído, incluindo:
 - checkpoints apenas informativos para ranking;
 - progresso da prova considerando tentativas e ausências.
 
-**A ETAPA 1 continua aberta. O bloco atual é Sumô.**
+Em 08/09/2026 o bloco **Sumô** foi concluído e integrado ao `gestao/`, incluindo:
+
+- inspeção humana `APTO/INAPTO`;
+- peso medido opcional e apenas informativo;
+- modo da categoria `AUTONOMO | RC`;
+- orientação operacional do atraso regulamentar de 5 s para autônomos;
+- rounds extras com limite e justificativa obrigatória;
+- `FALHA_INICIALIZACAO` como motivo explícito, sem consequência automática escolhida pelo frontend/backend;
+- cadastro de juiz por competição;
+- decisão final por juiz identificado após esgotar rounds regulares/extras;
+- justificativa obrigatória e histórico da decisão;
+- visualização do modo de controle no catálogo de modalidades.
+
+**A ETAPA 1 continua aberta. O próximo bloco é Chaves.**
 
 ---
 
@@ -96,14 +109,20 @@ Inscrições                                  ✅
 Solicitações de cancelamento APROVADA       ✅
 Equipes / robôs / modalidades               ✅
 Classe física das categorias de Sumô        ✅
+Modo AUTONOMO / RC das categorias           ✅
 Ativo/inativo                               ✅
 Usuários                                    ✅
 Follow Line                                 ✅ bloco competitivo alinhado
 Histórico por tomadas                       ✅ tentativas + ausências
 Operação da tomada                          ✅ cronômetros + penalidades
-Sumô                                        ✅ base atual; Bloco 3 em alinhamento
+Sumô                                        ✅ Bloco 3 alinhado
+Inspeção Sumô humana                        ✅ APTO/INAPTO + peso informativo
+Rounds extras                               ✅ limite + justificativa
+Falha de inicialização                      ✅ motivo explícito + decisão humana
+Juízes por competição                       ✅
+Decisão de juiz                             ✅ identificada + justificada
 Chave visual                                ✅ base atual
-Arena da partida                            ✅ base atual
+Arena da partida                            ✅ contrato do Bloco 3 integrado
 2 penalidades = derrota automática          ✅
 Suicídio/WO                                 ✅
 Histórico de chaves                         ✅
@@ -163,32 +182,67 @@ gestao/src/components/FollowTakeHistory.vue
 → auditoria de tentativas e tomadas perdidas por ausência
 ```
 
-## Sumô — bloco atual
+## Sumô — Bloco 3 consolidado
 
-A base atual já possui:
+A experiência de gestão agora representa explicitamente:
 
 ```text
-inspeções
-configuração de rounds
-partidas
-rounds
-2 penalidades = derrota automática
-SUICIDIO_WO
-progressão
-BYE
+inspeção física
+→ organização informa APTO/INAPTO
+→ peso é opcional/informativo
+
+categoria Sumô
+→ classe física MINI_500G | SUMO_3KG
+→ controle AUTONOMO | RC
+
+partida
+→ 3 rounds regulares / 2 vitórias
+→ penalidades
+→ SUICIDIO_WO
+→ FALHA_INICIALIZACAO
+→ ANULADO / CANCELADO / EMPATADO
+→ rounds extras somente quando backend permitir
+→ justificativa obrigatória nos extras
+→ decisão de juiz após limite de rounds
 ```
 
-O Bloco 3 deve alinhar a base ao contrato competitivo:
+A decisão de juiz exige:
 
 ```text
-inspeção humana APTO/INAPTO
-peso apenas informativo
-rounds extras apenas quando realmente necessários
-justificativa obrigatória para round extra
-decisão de juiz auditável
-identificação de juiz
-FALHA_INICIALIZACAO formalizada
-motivos de resultado explícitos
+vencedor
+juiz ativo da competição
+justificativa
+data/hora persistida pelo backend
+```
+
+Arquivos principais alterados no fechamento:
+
+```text
+gestao/src/types.ts
+→ SumoControlMode, SumoInspection, CompetitionJudge, MatchJudgeDecision
+→ ConfigSumo.maxRoundsExtras
+→ RoundSumo.justificativa e motivos novos
+
+gestao/src/api.ts
+→ inspeções tipadas
+→ juízes da competição
+→ decisão de juiz
+→ justificativa em rounds
+
+gestao/src/views/SumoView.vue
+→ APTO/INAPTO humano
+→ peso opcional
+→ cadastro/lista de juízes
+→ metadata AUTONOMO/RC
+
+gestao/src/views/SumoMatchView.vue
+→ modo de controle
+→ falha de inicialização
+→ rounds extras justificados
+→ decisão final de juiz
+
+gestao/src/views/AdminCatalogView.vue
+→ exibição do modo AUTONOMO/RC
 ```
 
 ## Robôs híbridos
@@ -199,9 +253,13 @@ O frontend não classifica o próprio `Robot` como Mini ou 3 kg. A metadata vem 
 Category.sumoPhysicalClass
 ├─ MINI_500G
 └─ SUMO_3KG
+
+Category.sumoControlMode
+├─ AUTONOMO
+└─ RC
 ```
 
-`AdminCatalogView.vue` mostra a classe física e o backend continua sendo autoridade da compatibilidade.
+`AdminCatalogView.vue` mostra classe física e modo de controle; o backend continua sendo autoridade da compatibilidade.
 
 ## Participante
 
@@ -241,16 +299,16 @@ Consolidação Landing/Galeria           ⏳ ETAPA 11
 
 # 4. Qualidade conhecida
 
-Checkpoint confirmado após o Bloco 2:
+Checkpoint confirmado após o Bloco 3:
 
 ```text
 Frontend Gestão     ✅ typecheck + build
-Backend             ✅ 86 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V10  ✅
-Profile testdata    ✅
+Backend             ✅ 87 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V11  ✅
+Profile testdata    ✅ cenário completo contra MySQL real
 ```
 
-A contagem vem do CI real. Não atualizar por inferência em checkpoints futuros.
+A contagem vem do CI real do commit backend `44984c5e73d0a0e4be15bb4a4cb2131fbc8eac93`. O frontend foi validado pelo workflow `Frontend Checks` no commit `37e7642c8d8e3c71f62de3ffb7ee45cc5f743794`.
 
 A ETAPA 1 ainda deverá adicionar os testes automatizados de fluxo completo no Bloco 5.
 
@@ -328,20 +386,15 @@ MARCAR TOMADA PERDIDA POR AUSÊNCIA
 
 A fonte de verdade permanece no backend.
 
-## Sumô — direção do Bloco 3
+## Sumô — implementado no Bloco 3
 
-A UI não deve decidir inspeção física por cálculo de peso. A organização informa `APTO/INAPTO`.
+A UI não decide inspeção física por cálculo de peso. A organização informa `APTO/INAPTO` e pode guardar o peso como dado informativo.
 
-Rounds extras só devem aparecer quando o backend permitir e devem exigir justificativa.
+A UI identifica `AUTONOMO/RC`, mas não transforma atraso ou falha de inicialização em decisão automática.
 
-Decisão do juiz deve mostrar claramente:
+Rounds extras só ficam registráveis dentro do limite do backend e exigem justificativa.
 
-```text
-vencedor
-juiz
-justificativa
-data/hora
-```
+Depois de esgotar rounds regulares e extras sem vencedor, a UI oferece decisão de juiz identificada e justificada.
 
 ## Chaveamento — Bloco 4
 
@@ -433,9 +486,9 @@ Competition + Registration              ✅ CONCLUÍDO
         ↓
 Follow                                  ✅ CONCLUÍDO
         ↓
-Sumô                                    ← BLOCO ATUAL
+Sumô                                    ✅ CONCLUÍDO
         ↓
-Chaves
+Chaves                                  ← PRÓXIMO BLOCO / NÃO INICIADO
         ↓
 fluxos automatizados completos
 ```
