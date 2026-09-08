@@ -3,25 +3,45 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
-import type { ConfigSumo, Match, RoundSumo, RoundSumoOutcomeReason, RoundSumoStatus } from '../types'
+import type {
+  Category,
+  CompetitionJudge,
+  ConfigSumo,
+  Match,
+  MatchJudgeDecision,
+  RoundSumo,
+  RoundSumoOutcomeReason,
+  RoundSumoStatus
+} from '../types'
 import RobotPhoto from '../components/RobotPhoto.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 
 type RoundChoice = 'A' | 'B' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
+type WinnerSide = 'A' | 'B'
 
 const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const saving = ref(false)
+const deciding = ref(false)
 const match = ref<Match>()
+const category = ref<Category>()
 const config = ref<ConfigSumo>()
 const rounds = ref<RoundSumo[]>([])
+const judges = ref<CompetitionJudge[]>([])
+const judgeDecision = ref<MatchJudgeDecision>()
 const form = reactive({
   choice: undefined as RoundChoice | undefined,
   motivoResultado: 'DISPUTA' as RoundSumoOutcomeReason,
   penalidadesA: 0,
   penalidadesB: 0,
-  observacao: ''
+  observacao: '',
+  justificativa: ''
+})
+const decisionForm = reactive({
+  winnerSide: undefined as WinnerSide | undefined,
+  judgeId: undefined as number | undefined,
+  justificativa: ''
 })
 
 const matchId = computed(() => Number(route.params.matchId))
@@ -43,50 +63,92 @@ const score = computed(() => {
   return { A, B }
 })
 const nextRoundNumber = computed(() => rounds.value.length + 1)
-const nextRoundLabel = computed(() => {
-  if (!config.value) return `Round ${nextRoundNumber.value}`
-  return nextRoundNumber.value > config.value.numeroRounds ? 'Round extra' : `Round ${nextRoundNumber.value}`
+const isExtraRound = computed(() => Boolean(config.value && nextRoundNumber.value > config.value.numeroRounds))
+const maxTotalRounds = computed(() => {
+  if (!config.value) return 0
+  const extras = config.value.permiteRoundDesempate ? config.value.maxRoundsExtras : 0
+  return config.value.numeroRounds + extras
 })
-const currentWinner = computed<'A' | 'B' | undefined>(() => {
+const nextRoundLabel = computed(() => isExtraRound.value ? `Round extra ${nextRoundNumber.value - (config.value?.numeroRounds || 0)}` : `Round ${nextRoundNumber.value}`)
+const currentWinner = computed<WinnerSide | undefined>(() => {
   const target = config.value?.roundsParaVencer
   if (!target) return undefined
   if (score.value.A >= target) return 'A'
   if (score.value.B >= target) return 'B'
   return undefined
 })
-const penaltyLoser = computed<'A' | 'B' | undefined>(() => {
+const penaltyLoser = computed<WinnerSide | undefined>(() => {
   if (form.penalidadesA === 2 && form.penalidadesB < 2) return 'A'
   if (form.penalidadesB === 2 && form.penalidadesA < 2) return 'B'
   return undefined
 })
 const bothAtPenaltyLimit = computed(() => form.penalidadesA === 2 && form.penalidadesB === 2)
-const canSave = computed(() => Boolean(form.choice) && !readOnly.value && !currentWinner.value && !bothAtPenaltyLimit.value)
+const requiresRoundJustification = computed(() => isExtraRound.value || form.motivoResultado === 'FALHA_INICIALIZACAO')
+const roundLimitReached = computed(() => Boolean(config.value && rounds.value.length >= maxTotalRounds.value))
+const canSave = computed(() =>
+  Boolean(form.choice) &&
+  !readOnly.value &&
+  !currentWinner.value &&
+  !roundLimitReached.value &&
+  !bothAtPenaltyLimit.value &&
+  (!requiresRoundJustification.value || Boolean(form.justificativa.trim()))
+)
+const canJudgeDecide = computed(() =>
+  Boolean(match.value) &&
+  !readOnly.value &&
+  !currentWinner.value &&
+  roundLimitReached.value &&
+  !judgeDecision.value
+)
+const canSubmitJudgeDecision = computed(() =>
+  canJudgeDecide.value &&
+  Boolean(decisionForm.winnerSide) &&
+  Boolean(decisionForm.judgeId) &&
+  Boolean(decisionForm.justificativa.trim())
+)
+const controlModeLabel = computed(() => {
+  if (category.value?.sumoControlMode === 'AUTONOMO') return 'Autônomo'
+  if (category.value?.sumoControlMode === 'RC') return 'R/C'
+  return 'Modo não configurado'
+})
 
 function phaseLabel(round: number) {
   return `Rodada ${round}`
 }
 
-function chooseWinner(side: 'A' | 'B') {
+function chooseWinner(side: WinnerSide) {
   if (penaltyLoser.value === side) {
     ElMessage.warning('Um robô com 2 penalidades perde o round automaticamente.')
     return
   }
   form.choice = side
   form.motivoResultado = 'DISPUTA'
+  if (!isExtraRound.value) form.justificativa = ''
 }
 
-function chooseWo(loser: 'A' | 'B') {
+function chooseWo(loser: WinnerSide) {
   if (penaltyLoser.value) {
     ElMessage.warning('O resultado já foi definido automaticamente pelas 2 penalidades.')
     return
   }
   form.choice = loser === 'A' ? 'B' : 'A'
   form.motivoResultado = 'SUICIDIO_WO'
+  if (!isExtraRound.value) form.justificativa = ''
+}
+
+function chooseInitializationFailure(loser: WinnerSide) {
+  if (penaltyLoser.value) {
+    ElMessage.warning('O resultado já foi definido automaticamente pelas 2 penalidades.')
+    return
+  }
+  form.choice = loser === 'A' ? 'B' : 'A'
+  form.motivoResultado = 'FALHA_INICIALIZACAO'
 }
 
 function chooseNeutral(status: 'EMPATADO' | 'ANULADO' | 'CANCELADO') {
   form.choice = status
   form.motivoResultado = 'DISPUTA'
+  if (!isExtraRound.value) form.justificativa = ''
 }
 
 function roundWinner(round: RoundSumo) {
@@ -99,7 +161,9 @@ function roundWinner(round: RoundSumo) {
     ? ' · Suicídio/WO do adversário'
     : round.motivoResultado === 'PENALIDADES'
       ? ' · adversário atingiu 2 penalidades'
-      : ''
+      : round.motivoResultado === 'FALHA_INICIALIZACAO'
+        ? ' · falha de inicialização julgada pela organização'
+        : ''
   return `${round.winnerRobotNome || 'Vencedor'} venceu${detail}`
 }
 
@@ -116,6 +180,20 @@ function resetForm() {
   form.penalidadesA = 0
   form.penalidadesB = 0
   form.observacao = ''
+  form.justificativa = ''
+}
+
+async function loadJudgeDecision() {
+  if (!match.value) return
+  try {
+    judgeDecision.value = await adminApi.judgeDecision(match.value.id)
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      judgeDecision.value = undefined
+      return
+    }
+    throw error
+  }
 }
 
 watch(
@@ -153,12 +231,18 @@ async function load() {
     const detail = await adminApi.match(matchId.value)
     match.value = detail
     if (!detail.categoryId) throw new Error('A partida não possui categoria associada.')
-    const [sumoConfig, sumoRounds] = await Promise.all([
+
+    const [sumoConfig, sumoRounds, sumoCategories, competitionJudges] = await Promise.all([
       adminApi.sumoConfig(detail.categoryId),
-      adminApi.rounds(detail.id)
+      adminApi.rounds(detail.id),
+      adminApi.categories('SUMO'),
+      detail.competitionId ? adminApi.judges(detail.competitionId) : Promise.resolve([] as CompetitionJudge[])
     ])
     config.value = sumoConfig
     rounds.value = [...sumoRounds].sort((a, b) => a.numeroRound - b.numeroRound)
+    category.value = sumoCategories.find((item) => item.id === detail.categoryId)
+    judges.value = competitionJudges
+    await loadJudgeDecision()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || error?.message || 'Não foi possível carregar a partida.')
   } finally {
@@ -189,13 +273,16 @@ async function saveRound() {
         motivoResultado: form.motivoResultado,
         penalidadesA: form.penalidadesA,
         penalidadesB: form.penalidadesB,
-        observacao: form.observacao || undefined
+        observacao: form.observacao || undefined,
+        justificativa: form.justificativa.trim() || undefined
       }]
     })
     ElMessage.success(
       form.motivoResultado === 'PENALIDADES'
         ? 'Round registrado com derrota automática por 2 penalidades.'
-        : 'Round registrado. Placar e progressão atualizados pelo backend.'
+        : form.motivoResultado === 'FALHA_INICIALIZACAO'
+          ? 'Falha de inicialização e resultado do round registrados.'
+          : 'Round registrado. Placar e progressão atualizados pelo backend.'
     )
     resetForm()
     await load()
@@ -203,6 +290,30 @@ async function saveRound() {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar o round.')
   } finally {
     saving.value = false
+  }
+}
+
+async function saveJudgeDecision() {
+  if (!match.value || !decisionForm.winnerSide || !decisionForm.judgeId || !canSubmitJudgeDecision.value) return
+  const winnerRegistrationId = decisionForm.winnerSide === 'A'
+    ? match.value.registrationAId
+    : match.value.registrationBId
+  if (!winnerRegistrationId) return
+
+  deciding.value = true
+  try {
+    judgeDecision.value = await adminApi.decideSumoMatch({
+      matchId: match.value.id,
+      winnerRegistrationId,
+      judgeId: decisionForm.judgeId,
+      justificativa: decisionForm.justificativa.trim()
+    })
+    ElMessage.success('Decisão do juiz registrada e partida encerrada pelo backend.')
+    await load()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a decisão do juiz.')
+  } finally {
+    deciding.value = false
   }
 }
 
@@ -237,6 +348,14 @@ onMounted(load)
     </header>
 
     <template v-if="match && config">
+      <section class="arena-rule-strip">
+        <div><span>Controle</span><strong>{{ controlModeLabel }}</strong></div>
+        <div><span>Formato</span><strong>{{ config.numeroRounds }} rounds · {{ config.roundsParaVencer }} vitórias</strong></div>
+        <div><span>Extras</span><strong>{{ config.permiteRoundDesempate ? `até ${config.maxRoundsExtras}` : 'não permitidos' }}</strong></div>
+        <p v-if="category?.sumoControlMode === 'AUTONOMO'">Autônomo: após autorização/ativação, respeite o atraso regulamentar de 5 s. O RasComp não decide falha automaticamente.</p>
+        <p v-else-if="category?.sumoControlMode === 'RC'">R/C: início ao comando do juiz, sem o atraso regulamentar de 5 s dos autônomos.</p>
+      </section>
+
       <section class="arena-scoreboard">
         <article class="arena-competitor">
           <div class="robot-photo-placeholder">
@@ -272,6 +391,11 @@ onMounted(load)
         Esta partida pertence a uma chave histórica. Consulta somente leitura.
       </div>
 
+      <article v-if="judgeDecision" class="judge-decision-banner">
+        <div><span class="eyebrow">Decisão de juiz</span><strong>{{ judgeDecision.winnerRobotNome }} venceu por decisão de {{ judgeDecision.judgeNome }}</strong></div>
+        <p>{{ judgeDecision.justificativa }}</p>
+      </article>
+
       <div class="arena-workspace">
         <section class="arena-round-history">
           <div class="arena-card-heading">
@@ -291,17 +415,22 @@ onMounted(load)
                 <template v-if="round.dataCadastro"> · {{ formatDate(round.dataCadastro) }}</template>
               </small>
               <em v-if="round.observacao">{{ round.observacao }}</em>
+              <em v-if="round.justificativa"><b>Justificativa:</b> {{ round.justificativa }}</em>
             </div>
           </article>
         </section>
 
         <aside class="arena-control-panel">
           <div class="arena-card-heading">
-            <div><span class="eyebrow">Registro rápido</span><h2>{{ nextRoundLabel }}</h2></div>
-            <span v-if="currentWinner" class="arena-finished">Batalha encerrada</span>
+            <div><span class="eyebrow">Registro rápido</span><h2>{{ roundLimitReached && !currentWinner ? 'Decisão final' : nextRoundLabel }}</h2></div>
+            <span v-if="currentWinner || judgeDecision" class="arena-finished">Batalha encerrada</span>
           </div>
 
-          <template v-if="!currentWinner && !readOnly">
+          <template v-if="!currentWinner && !readOnly && !roundLimitReached">
+            <div v-if="isExtraRound" class="extra-round-warning">
+              Os rounds regulares terminaram sem vencedor. Este round extra só pode ser registrado com justificativa.
+            </div>
+
             <div class="control-section">
               <span class="control-label">Vitória no round</span>
               <div class="winner-actions">
@@ -365,6 +494,15 @@ onMounted(load)
             </div>
 
             <div class="control-section">
+              <span class="control-label">Falha de inicialização · decisão humana</span>
+              <div class="wo-actions">
+                <button type="button" class="wo-button" :class="{ selected: form.choice === 'B' && form.motivoResultado === 'FALHA_INICIALIZACAO' }" @click="chooseInitializationFailure('A')">Perda do round por falha de {{ match.robotANome }}</button>
+                <button type="button" class="wo-button" :class="{ selected: form.choice === 'A' && form.motivoResultado === 'FALHA_INICIALIZACAO' }" @click="chooseInitializationFailure('B')">Perda do round por falha de {{ match.robotBNome }}</button>
+              </div>
+              <small class="penalty-rule">Se o juiz aplicar apenas penalidade, use o controle de penalidades e registre o resultado real do round. O backend não escolhe a consequência automaticamente.</small>
+            </div>
+
+            <div class="control-section">
               <span class="control-label">Outras ocorrências</span>
               <div class="neutral-actions">
                 <button type="button" :class="{ selected: form.choice === 'EMPATADO' }" @click="chooseNeutral('EMPATADO')">Empate</button>
@@ -373,12 +511,39 @@ onMounted(load)
               </div>
             </div>
 
-            <label class="arena-note">Observação<el-input v-model="form.observacao" type="textarea" :rows="3" placeholder="Opcional" /></label>
+            <label v-if="requiresRoundJustification" class="arena-note required-note">
+              Justificativa obrigatória
+              <el-input v-model="form.justificativa" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="Explique o round extra ou a falha de inicialização" />
+            </label>
+            <label class="arena-note">Observação<el-input v-model="form.observacao" type="textarea" :rows="3" maxlength="500" placeholder="Opcional" /></label>
             <button type="button" class="arena-save" :disabled="!canSave || saving" @click="saveRound">{{ saving ? 'Registrando...' : `Registrar ${nextRoundLabel}` }}</button>
           </template>
 
+          <template v-else-if="canJudgeDecide">
+            <div class="judge-panel">
+              <p>Os rounds regulares e extras disponíveis foram esgotados sem vencedor. A partida deve ser encerrada por decisão identificada de um juiz.</p>
+              <label>Vencedor
+                <el-radio-group v-model="decisionForm.winnerSide">
+                  <el-radio-button value="A">{{ match.robotANome }}</el-radio-button>
+                  <el-radio-button value="B">{{ match.robotBNome }}</el-radio-button>
+                </el-radio-group>
+              </label>
+              <label>Juiz
+                <el-select v-model="decisionForm.judgeId" placeholder="Selecione o juiz" style="width:100%">
+                  <el-option v-for="judge in judges" :key="judge.id" :label="judge.nome" :value="judge.id" />
+                </el-select>
+              </label>
+              <small v-if="!judges.length" class="penalty-error">Nenhum juiz ativo cadastrado. Volte à tela do Sumô e cadastre um juiz para esta competição.</small>
+              <label>Justificativa
+                <el-input v-model="decisionForm.justificativa" type="textarea" :rows="4" maxlength="500" show-word-limit />
+              </label>
+              <button type="button" class="arena-save" :disabled="!canSubmitJudgeDecision || deciding" @click="saveJudgeDecision">{{ deciding ? 'Registrando...' : 'Registrar decisão do juiz' }}</button>
+            </div>
+          </template>
+
           <div v-else class="arena-closed-state">
-            <strong v-if="currentWinner">{{ currentWinner === 'A' ? match.robotANome : match.robotBNome }} venceu a batalha</strong>
+            <strong v-if="judgeDecision">{{ judgeDecision.winnerRobotNome }} venceu por decisão de juiz</strong>
+            <strong v-else-if="currentWinner">{{ currentWinner === 'A' ? match.robotANome : match.robotBNome }} venceu a batalha</strong>
             <strong v-else>Somente leitura</strong>
             <span>O histórico permanece disponível ao lado.</span>
           </div>
@@ -394,6 +559,11 @@ onMounted(load)
 .arena-back { display:grid; place-items:center; width:42px; height:42px; border:1px solid #e5d9df; border-radius:12px; background:#fff; color:#5a4650; font-size:22px; cursor:pointer; }
 .arena-title h1 { margin:2px 0 3px; font-size:24px; }
 .arena-title p { margin:0; color:#756870; font-size:12px; }
+.arena-rule-strip { display:flex; align-items:center; flex-wrap:wrap; gap:10px 18px; padding:12px 16px; border:1px solid #e8dde2; border-radius:14px; background:#fff; }
+.arena-rule-strip > div { display:grid; gap:2px; }
+.arena-rule-strip span { color:#8a7b82; font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:.08em; }
+.arena-rule-strip strong { color:#4f4148; font-size:12px; }
+.arena-rule-strip p { flex-basis:100%; margin:2px 0 0; color:#7f273f; font-size:11px; }
 .arena-scoreboard { display:grid; grid-template-columns:minmax(0,1fr) 120px minmax(0,1fr); align-items:center; gap:14px; padding:22px; border:1px solid #e8dde2; border-radius:20px; background:linear-gradient(180deg,#fff 0%,#fffafb 100%); box-shadow:0 12px 32px rgba(73,28,49,.07); }
 .arena-competitor { display:grid; grid-template-columns:84px minmax(0,1fr) auto; align-items:center; gap:14px; }
 .arena-competitor-b { grid-template-columns:auto minmax(0,1fr) 84px; }
@@ -409,6 +579,10 @@ onMounted(load)
 .arena-versus span { font-size:18px; font-weight:900; }
 .arena-versus small { max-width:110px; text-align:center; font-size:10px; }
 .arena-readonly-banner { padding:10px 14px; border:1px solid #edd7df; border-radius:12px; background:#fff5f8; color:#8f1238; font-size:12px; font-weight:700; }
+.judge-decision-banner { display:grid; gap:6px; padding:14px 16px; border:1px solid #d8e9df; border-radius:14px; background:#f2fbf6; }
+.judge-decision-banner div { display:grid; gap:3px; }
+.judge-decision-banner strong { color:#246344; }
+.judge-decision-banner p { margin:0; color:#5b6e62; font-size:12px; }
 .arena-workspace { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr); gap:18px; align-items:start; }
 .arena-round-history,.arena-control-panel { border:1px solid #e8dde2; border-radius:18px; background:#fff; box-shadow:0 10px 28px rgba(73,28,49,.05); }
 .arena-round-history { padding:18px; } .arena-control-panel { padding:18px; position:sticky; top:18px; }
@@ -447,9 +621,14 @@ onMounted(load)
 .neutral-actions { grid-template-columns:repeat(3,1fr); }
 .neutral-actions button { min-height:38px; color:#6e5f66; font-size:11px; font-weight:800; }
 .neutral-actions button.selected { border-color:#6c5177; background:#f5f0f7; color:#4f1967; }
+.extra-round-warning { margin-bottom:10px; padding:10px 12px; border-radius:10px; background:#fff8e8; color:#805200; font-size:11px; font-weight:700; line-height:1.45; }
 .arena-note { display:grid; gap:6px; margin-top:12px; color:#6d5d65; font-size:11px; font-weight:700; }
+.required-note { color:#8f1238; }
 .arena-save { width:100%; min-height:48px; margin-top:14px; border:0; border-radius:12px; background:linear-gradient(90deg,#6f1b7d 0%,#9f0f3b 100%); color:#fff; font-weight:900; cursor:pointer; box-shadow:0 8px 18px rgba(111,27,125,.18); }
 .arena-save:disabled { opacity:.45; cursor:not-allowed; }
+.judge-panel { display:grid; gap:12px; }
+.judge-panel > p { margin:0; padding:10px 12px; border-radius:10px; background:#f8f3f5; color:#6f6067; font-size:11px; line-height:1.5; }
+.judge-panel label { display:grid; gap:6px; color:#6d5d65; font-size:11px; font-weight:700; }
 .arena-closed-state { display:grid; gap:5px; padding:28px 10px; text-align:center; }
 .arena-closed-state strong { color:#8f1238; font-size:16px; } .arena-closed-state span { color:#84767d; font-size:11px; }
 @media (max-width:980px) { .arena-workspace { grid-template-columns:1fr; } .arena-control-panel { position:static; } }
