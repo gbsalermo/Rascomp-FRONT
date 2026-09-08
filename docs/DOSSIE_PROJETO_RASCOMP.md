@@ -1,6 +1,6 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **04/09/2026**
+Última revisão estrutural: **08/09/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
@@ -16,17 +16,26 @@ Para começar do zero, ler primeiro `docs/README.md`.
 Projeto apresentado/aprovado                  ✅
 ETAPA 0 — baseline                            ✅ concluída / validada
 ETAPA 1 — lógica e integridade                🚧 etapa atual
+Bloco 1 — Competition + Registration           ✅ concluído / validado
+Bloco 2 — Follow Line                          ✅ concluído / validado
+Bloco 3 — Sumô                                 ✅ concluído / validado
+Bloco 4 — Chaves                               ⏭️ próximo / não iniciado
+Bloco 5 — Fluxos integrados                    ⏳ não iniciado
 ETAPA 2+                                       ⏳ não iniciadas
-Backend — último checkpoint documentado       48 testes / 0 falhas / 0 erros
-Banco ativo                                   MySQL
-Migrations                                    V1–V7
-Próxima migration estrutural                  V8+
-Roles atuais                                  ORGANIZACAO | PARTICIPANTE
-Roles futuras                                 DEV | GESTAO | MIDIA | PARTICIPANTE
-Deploy cloud                                  ⏳ ETAPA 14
+Backend — último checkpoint funcional          87 testes / 0 falhas / 0 erros / 0 skipped
+Frontend Gestão                                typecheck + build ✅
+Banco ativo                                    MySQL
+Migrations                                     V1–V11
+Próxima migration estrutural                   V12+
+Profile testdata                               ✅ contra MySQL real
+Roles atuais                                   ORGANIZACAO | PARTICIPANTE
+Roles futuras                                  DEV | GESTAO | MIDIA | PARTICIPANTE
+Deploy cloud                                   ⏳ ETAPA 14
 ```
 
 Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, sem mudança de etapa. Limpeza técnica de código/artefatos continua reservada à ETAPA 2.
+
+Em 08/09/2026 o Bloco 3 da ETAPA 1 foi encerrado após alinhamento do backend, frontend, seeds, testes, MySQL/Flyway V11 e documentação competitiva.
 
 ---
 
@@ -53,6 +62,8 @@ conteúdo institucional
 ```
 
 **Camunda não faz parte da arquitetura atual.** Referências antigas a Camunda pertenciam a documentação histórica removida/obsoleta e não representam o código atual.
+
+**PostgreSQL também não faz parte da arquitetura ativa. O banco atual é MySQL.**
 
 ---
 
@@ -115,7 +126,9 @@ O backend é fonte de verdade para:
 - vencedor;
 - progressão;
 - campeão;
-- resultados competitivos.
+- resultados competitivos;
+- validação de rounds;
+- decisão de juiz.
 
 O frontend pode antecipar regras para UX, mas nunca substituí-las.
 
@@ -144,14 +157,30 @@ Banco ativo: **MySQL**.
 
 ```text
 src/main/resources/db/migration/
-V1 ... V7
+V1 ... V11
+```
+
+Resumo atual:
+
+```text
+V1  — schema competitivo principal
+V2  — inspeções de Sumô
+V3  — rounds de Sumô
+V4  — remoção de estrutura legada Follow/chaves
+V5  — usuários / ownership / fotos
+V6  — histórico de chaves
+V7  — regras estendidas de round/penalidades
+V8  — solicitações de cancelamento + histórico da janela de inscrições
+V9  — classe física de Sumô nas categorias
+V10 — Follow 3×3 + parâmetros operacionais + ausência de tomada
+V11 — modo de controle Sumô + rounds extras + auditoria de inspeção + juízes/decisão
 ```
 
 Regra congelada:
 
 ```text
-V1–V7 nunca são reescritas
-próxima mudança estrutural = V8+
+V1–V11 nunca são reescritas
+próxima mudança estrutural = V12+
 ```
 
 PostgreSQL não faz parte da configuração ativa. Referências antigas dentro de artefatos legados não definem a arquitetura atual.
@@ -211,6 +240,9 @@ Competitor
 
 Team.responsibleUser
 → usuário responsável pela equipe no portal
+
+Robot
+→ robô físico cadastrado da equipe
 ```
 
 Consequência para Ajustes Gerais:
@@ -226,32 +258,46 @@ Operações administrativas devem permanecer explícitas e auditáveis.
 
 ---
 
-# 8. Competition / Category / Registration
+# 8. Competition / Category / Registration — Bloco 1 consolidado
 
 ## Competition
 
-Regras atuais relevantes:
+O ciclo normal é:
 
-- nome único;
-- janela de inscrições consistente;
-- fim das inscrições até início da competição;
-- exclusão lógica via `ativo=false`.
+```text
+PLANEJADA
+→ INSCRICOES_ABERTAS
+→ INSCRICOES_ENCERRADAS
+→ EM_ANDAMENTO
+→ FINALIZADA
+```
+
+`CANCELADA` permanece saída administrativa permitida conforme regras de domínio.
+
+A janela de inscrições pode ser prorrogada/reaberta por operação explícita e auditável, respeitando estado competitivo e histórico.
 
 ## CompetitionCategory
 
-Catálogo global. Modalidades atuais:
+Modalidades técnicas atuais:
 
 ```text
 SUMO
 FOLLOW_LINE
 ```
 
-Configuração:
+Metadata de Sumô:
 
 ```text
-CompetitionCategory 1:1 ConfigSumo
-CompetitionCategory 1:1 ConfigFollow
+sumoPhysicalClass
+├─ MINI_500G
+└─ SUMO_3KG
+
+sumoControlMode
+├─ AUTONOMO
+└─ RC
 ```
+
+Classe física e modo pertencem à categoria, não ao `Robot`.
 
 ## Registration
 
@@ -260,7 +306,7 @@ Registration
 ├─ Competition obrigatória
 ├─ CompetitionCategory obrigatória
 ├─ Team obrigatória
-├─ Robot obrigatório
+├─ Robot obrigatório no domínio atual
 ├─ Competitor(s)
 ├─ status
 ├─ requestedByUser
@@ -274,68 +320,90 @@ Unicidade atual:
 competition + category + robot
 ```
 
-Arquivos centrais:
+Estados:
 
 ```text
-model/Registration.java
-dto/RegistrationDTO.java
-dto/ParticipantRegistrationRequest.java
-controller/RegistrationController.java
-service/RegistrationService.java
-repository/RegistrationRepository.java
-service/ParticipantPortalService.java
+PENDENTE
+APROVADA
+REJEITADA
+CANCELADA
+DESISTENTE
+DESCLASSIFICADA
 ```
 
-### Riscos atuais da ETAPA 1
+Regras consolidadas no Bloco 1:
 
-1. `RegistrationService.reativar()` não revalida a janela de inscrições.
-2. Cancelamento ainda precisa política por estado competitivo.
-3. Geração/regeneração de chave precisa estados de `Competition` explicitamente permitidos.
-4. Correção de `MatchResult` após progressão precisa bloqueio ou rollback/reprocessamento.
-5. Estados válidos de tentativa Follow precisam formalização.
+- reativação revalida janela e compatibilidade;
+- participante cancela diretamente apenas `PENDENTE`;
+- cancelamento de `APROVADA` passa por solicitação analisada pela organização;
+- histórico competitivo diferencia `CANCELADA` de `DESISTENTE`;
+- prorrogação/reabertura possui histórico auditável;
+- robô híbrido pode coexistir em Follow + Sumô e em Auto/R/C da mesma classe física;
+- Mini + 3 kg para o mesmo robô na mesma edição é bloqueado.
 
 ---
 
-# 9. Follow Line
+# 9. Follow Line — Bloco 2 consolidado
 
-Estrutura:
+Estrutura RRC atual:
 
 ```text
-Registration
-└─ Tomadas
-   └─ Tentativas
+3 tomadas
+×
+3 tentativas por tomada
 ```
 
-Ranking atual:
+Estados válidos:
 
 ```text
-tentativa válida + concluída + com tempo
-→ melhor tentativa da tomada
+CLASSIFICÁVEL
+concluida=true
+valida=true
+tempoSegundos!=null
+
+CONCLUÍDA INVALIDADA
+concluida=true
+valida=false
+tempoSegundos!=null
+
+NÃO CONCLUÍDA
+concluida=false
+valida=false
+tempoSegundos=null
+```
+
+Ranking:
+
+```text
+tempoFinal = tempoSegundos + penalidadeSegundos
+→ melhor tentativa classificável da tomada
 → melhor tomada da inscrição
 → menor tempo final
 ```
 
-```text
-tempoFinal = tempoSegundos + penalidadeSegundos
-```
+`checkpointsAlcancados` permanece informativo e **não altera ranking**.
 
-`checkpointsAlcancados` é persistido/exibido, mas **não altera ranking atualmente**.
+Operação também suporta:
 
-Decisões abertas:
+- cronômetro por tentativa;
+- ajuste manual autorizado;
+- penalidade temporal configurável;
+- ação `NÃO PAROU`;
+- cronômetro de apresentação;
+- tomada perdida por ausência;
+- ausência auditável sem criar tentativas fictícias.
 
-- combinações válidas de `concluida`, `valida` e `tempoSegundos`;
-- efeito oficial dos checkpoints;
-- critérios adicionais oficiais de invalidação/desclassificação.
+A ausência conta como atividade competitiva para regras de desistência e reabertura.
 
 ---
 
-# 10. Sumô, chave e progressão
+# 10. Sumô — Bloco 3 consolidado
 
-Fluxo:
+Fluxo principal:
 
 ```text
 Registration APROVADA
-→ inspeção apta
+→ inspeção humana APTO/INAPTO
 → Bracket
 → Match
 → RoundSumo
@@ -343,23 +411,122 @@ Registration APROVADA
 → progressão
 ```
 
-Categorias compartilham o motor e ficam isoladas por:
+Categorias compartilham o mesmo motor e ficam isoladas por:
 
 ```text
 competitionId + categoryId
 ```
 
-Regras consolidadas:
+## 10.1 Inspeção
+
+A inspeção é decisão humana:
 
 ```text
-0 penalidade → normal
-1 penalidade → normal
+aprovada=true  → APTO
+aprovada=false → INAPTO
+```
+
+`pesoMedido` é opcional e auditável. Ele **não aprova ou reprova automaticamente**.
+
+O registro preserva tentativa, observação, responsável e data/hora.
+
+## 10.2 Autônomo e R/C
+
+`CompetitionCategory.sumoControlMode` diferencia:
+
+```text
+AUTONOMO
+RC
+```
+
+Autônomos usam a orientação regulamentar de atraso de 5 segundos após autorização/ativação. Esse atraso não é falha.
+
+R/C inicia ao comando do juiz e não usa o atraso de 5 segundos.
+
+`FALHA_INICIALIZACAO` é motivo explícito, porém a consequência é decisão humana. O sistema não escolhe automaticamente entre penalidade e perda do round.
+
+## 10.3 Rounds
+
+Perfil operacional:
+
+```text
+3 rounds regulares
+2 vitórias necessárias
+```
+
+Regras preservadas:
+
+```text
+0 penalidades → normal
+1 penalidade  → normal
 2 penalidades → derrota automática do round
 SUICIDIO_WO  → adversário vence
 BYE          → avanço automático
 ```
 
-Histórico de chaves:
+Motivos explícitos:
+
+```text
+DISPUTA
+SUICIDIO_WO
+PENALIDADES
+FALHA_INICIALIZACAO
+DECISAO_JUIZ
+```
+
+## 10.4 Rounds extras
+
+`ConfigSumo.maxRoundsExtras` limita os extras.
+
+Round extra somente quando:
+
+- não existe vencedor;
+- rounds regulares foram consumidos;
+- desempate está permitido;
+- limite ainda não foi atingido;
+- justificativa foi informada.
+
+## 10.5 Juiz e decisão final
+
+```text
+CompetitionJudge
+├─ Competition
+├─ nome
+├─ ativo
+└─ UserAccount opcional
+
+MatchJudgeDecision
+├─ Match
+├─ winnerRegistration
+├─ judge
+├─ justificativa
+└─ data/hora
+```
+
+A decisão específica de juiz só é aceita após esgotar os rounds regulares + extras disponíveis sem vencedor.
+
+A operação valida vencedor, juiz ativo da mesma competição, chave atual/ativa, ausência de decisão duplicada e justificativa obrigatória. O resultado oficial entra na progressão normal.
+
+## 10.6 Frontend operacional
+
+`gestao/` representa o contrato com:
+
+- APTO/INAPTO explícito;
+- peso opcional;
+- metadata `AUTONOMO/RC`;
+- orientação de 5 s para autônomo;
+- falha de inicialização;
+- rounds extras com justificativa;
+- cadastro/lista de juízes;
+- decisão de juiz identificada e justificada.
+
+O frontend não toma decisões competitivas que pertencem ao backend/juiz.
+
+---
+
+# 11. Chaves e progressão — Bloco 4 próximo / não iniciado
+
+Histórico de chaves já existente:
 
 ```text
 nova chave → atual=true
@@ -368,9 +535,53 @@ anterior   → atual=false
 
 `ativo` e `atual` são conceitos distintos. Chave histórica é read-only para operação competitiva.
 
+O contrato já aprovado para o Bloco 4 determina:
+
+```text
+INSCRICOES_ENCERRADAS ✅ geração comum
+demais estados       ❌
+```
+
+Também precisa fechar:
+
+- regeneração comum somente antes de atividade competitiva dependente;
+- distinção entre estrutura lógica da chave e agenda operacional;
+- correção transacional quando a dependência seguinte ainda não começou;
+- bloqueio de correção comum quando a dependência seguinte já iniciou.
+
+**Esses itens não foram antecipados no Bloco 3.**
+
 ---
 
-# 11. Fotos e storage
+# 12. Qualidade e testes
+
+Checkpoint funcional confirmado após o Bloco 3:
+
+```text
+Backend Tests
+→ 87 testes
+→ 0 falhas
+→ 0 erros
+→ 0 skipped
+
+MySQL + Flyway V11
+→ ✅
+
+Profile testdata contra MySQL real
+→ ✅
+
+Frontend Gestão
+→ typecheck ✅
+→ build ✅
+```
+
+Esse checkpoint cobre services/unitários relevantes e smoke completo de inicialização do `testdata`.
+
+O Bloco 5 ainda é responsável pela camada integrada de competição completa com repositories reais e invariantes ponta a ponta.
+
+---
+
+# 13. Fotos e storage
 
 Fotos de robôs hoje:
 
@@ -401,7 +612,7 @@ Não criar um terceiro mecanismo de upload.
 
 # PARTE B — FRONTEND
 
-# 12. Gestão autenticada
+# 14. Gestão autenticada
 
 Arquivos-base:
 
@@ -439,7 +650,7 @@ Dívida de `api.ts`, `types.ts`, views grandes e CSS sobreposto fica reservada �
 
 ---
 
-# 13. Landing pública
+# 15. Landing pública
 
 Aplicação:
 
@@ -467,7 +678,7 @@ Conteúdo institucional ainda possui hardcodes/placeholders. A ETAPA 7 criará C
 
 ---
 
-# 14. Galeria
+# 16. Galeria
 
 `photo-gallery/` continua protótipo separado e utiliza catálogo estático.
 
@@ -484,7 +695,7 @@ Direção preferencial atual: **B**, salvo necessidade real de URL/deploy indepe
 
 # PARTE C — EVOLUÇÕES APROVADAS
 
-# 15. ETAPA 4 — Avisos IN_APP + Telegram
+# 17. ETAPA 4 — Avisos IN_APP + Telegram
 
 Avisos e Telegram serão tratados **na mesma etapa**.
 
@@ -522,11 +733,11 @@ Consequências:
 - não criar identificador Telegram paralelo se o código competitivo puder ser reutilizado depois;
 - `@username` do Telegram não deve virar identidade oficial do domínio.
 
-A política exata de distribuição (canal/grupo/bot, destinatários e estados de inscrição elegíveis) será fechada na implementação da ETAPA 4.
+A política exata de distribuição será fechada na implementação da ETAPA 4.
 
 ---
 
-# 16. Ajustes Gerais / portabilidade / CMS
+# 18. Ajustes Gerais / portabilidade / CMS
 
 ## ETAPA 5 — Ajustes Gerais DEV
 
@@ -554,11 +765,11 @@ Conteúdo institucional deve deixar de depender de commit Vue.
 
 ---
 
-# 17. Regras e Futebol
+# 19. Regras e Futebol
 
 ## ETAPA 8 — Regras
 
-Publicação de regulamentos oficiais de Follow, Sumô, Futebol e ambiente/vestimenta. Textos atuais são requisitos preliminares até validação da organização.
+Publicação de regulamentos oficiais de Follow, Sumô, Futebol e ambiente/vestimenta. O contrato competitivo técnico será a base para produzir a versão pública simplificada.
 
 ## ETAPA 9 — Futebol de Robôs
 
@@ -583,7 +794,7 @@ A solução deve permitir inscrição legítima sem robô próprio conforme moda
 
 ---
 
-# 18. Portal participante e identificação competitiva
+# 20. Portal participante e identificação competitiva
 
 ETAPA 10 completa equipe, integrantes, robôs, inscrições, avisos, desempenho e acompanhamento.
 
@@ -595,7 +806,7 @@ O código poderá ser reutilizado por conferência física e, opcionalmente, par
 
 ---
 
-# 19. Deploy
+# 21. Deploy
 
 Deploy permanece ETAPA 14.
 
@@ -622,23 +833,28 @@ D1 não é requisito do primeiro deploy.
 
 ---
 
-# PARTE D — RISCOS E DECISÕES ABERTAS
+# PARTE D — PENDÊNCIAS E DECISÕES ABERTAS
 
-# 20. Pendências atuais
+# 22. Pendências atuais
 
-## ETAPA 1
+## ETAPA 1 — Bloco 4
 
-- reativação fora da janela;
-- política de cancelamento;
-- estados válidos para chave;
-- alteração de resultado após progressão;
-- estados de tentativa Follow.
+- validar estado de `Competition` para geração comum de chave;
+- bloquear regeneração depois de atividade competitiva;
+- separar estrutura lógica e agenda operacional quando aplicável;
+- corrigir resultado com segurança antes da dependência seguinte iniciar;
+- bloquear correção comum depois de dependência iniciada.
+
+## ETAPA 1 — Bloco 5
+
+- simulação integrada de competição completa;
+- fluxos reais com repositories;
+- garantia de ausência de persistência parcial em operações inválidas.
 
 ## Follow
 
-- impacto oficial de checkpoints;
-- estados válidos de tentativa;
-- desclassificações adicionais oficiais.
+- checkpoints continuam sem impacto no ranking até regra oficial diferente ser aprovada;
+- eventuais desclassificações adicionais ficam dependentes do regulamento da edição.
 
 ## Futebol
 
@@ -657,8 +873,8 @@ D1 não é requisito do primeiro deploy.
 
 ## Telegram
 
-- formato inicial de distribuição (canal/grupo/bot);
-- estados de inscrição que recebem comunicação;
+- formato inicial de distribuição;
+- estados de inscrição elegíveis;
 - identificação individual opcional ou não na primeira versão;
 - estratégia de rastreabilidade/reenvio necessária.
 
@@ -670,7 +886,7 @@ D1 não é requisito do primeiro deploy.
 
 # PARTE E — QUERO ALTERAR X: ONDE MEXO?
 
-# 21. Mapa rápido
+# 23. Mapa rápido
 
 ## Login/JWT/roles
 
@@ -703,15 +919,22 @@ Frontend: AdminCatalogView.vue, ParticipantView.vue, RobotPhoto.vue
 ## Follow
 
 ```text
-Backend: ConfigFollow*, TentativaSeguidorLinha*, RankingFollowService
+Backend: ConfigFollow*, TentativaSeguidorLinha*, AusenciaTomadaSeguidorLinha*, RankingFollowService
 Frontend: FollowView.vue, FollowRunView.vue, FollowTakeHistory.vue
 ```
 
-## Sumô / chave / resultados
+## Sumô
 
 ```text
-Backend: ConfigSumo*, InspecaoSumo*, RoundSumo*, Bracket*, Match*, MatchResult*
-Frontend: SumoView.vue, SumoMatchView.vue, TournamentBracket.vue, BracketHistoryView.vue
+Backend: CompetitionCategory.sumoControlMode, ConfigSumo*, InspecaoSumo*, RoundSumo*, CompetitionJudge*, MatchJudgeDecision*
+Frontend: SumoView.vue, SumoMatchView.vue, AdminCatalogView.vue, api.ts, types.ts
+```
+
+## Chave / resultados
+
+```text
+Backend: BracketGenerationService, BracketProgressionService, BracketService, MatchService, MatchResultService
+Frontend: TournamentBracket.vue, BracketHistoryView.vue, MatchesView.vue, ResultsView.vue
 ```
 
 ## Landing pública
@@ -730,7 +953,7 @@ Frontend: futura seção Avisos em gestao/
 
 ---
 
-# 22. Regras de manutenção para qualquer IA
+# 24. Regras de manutenção para qualquer IA
 
 Antes de regra competitiva:
 
@@ -748,18 +971,18 @@ Antes de schema:
 
 ```text
 1. modelar impacto
-2. criar migration V8+
-3. nunca reescrever V1–V7
+2. criar migration V12+
+3. nunca reescrever V1–V11
 4. atualizar testes
 5. validar MySQL/Flyway/testdata
 ```
 
-Antes de uma etapa:
+Antes de uma etapa/bloco:
 
 ```text
 1. ler docs/README.md
 2. conferir docs/ETAPAS_POS_PROJETO.md
-3. permanecer na etapa atual
+3. permanecer na etapa/bloco atual
 4. não criar roadmap paralelo
 5. não avançar sem validação explícita
 ```
