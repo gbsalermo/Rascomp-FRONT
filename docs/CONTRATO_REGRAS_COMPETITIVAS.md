@@ -1,6 +1,6 @@
 # RasComp — Contrato de Regras Competitivas
 
-Última revisão: **07/09/2026**
+Última revisão: **08/09/2026**
 
 Este documento consolida as **regras competitivas e invariantes de domínio aprovadas durante a ETAPA 1** do RasComp.
 
@@ -128,9 +128,14 @@ CompetitionCategory.sumoPhysicalClass
 ├─ MINI_500G
 ├─ SUMO_3KG
 └─ null para categorias não-SUMO
+
+CompetitionCategory.sumoControlMode
+├─ AUTONOMO
+├─ RC
+└─ null para categorias não-SUMO
 ```
 
-A classe física pertence à `CompetitionCategory`, e não ao `Robot`. Dessa forma, um único robô físico pode ser inscrito em mais de uma categoria compatível sem ser duplicado no cadastro.
+A classe física e o modo de controle pertencem à `CompetitionCategory`, e não ao `Robot`. Dessa forma, um único robô físico pode ser inscrito em mais de uma categoria compatível sem ser duplicado no cadastro.
 
 Regras de integridade implementadas no `RegistrationService`:
 
@@ -143,7 +148,7 @@ mesmo Robot + mesma Competition
 └─ Mini + 3 kg                           ❌
 ```
 
-A comparação considera inscrições `PENDENTE` e `APROVADA`, inclusive ao reativar uma inscrição antiga. Categoria `SUMO` sem classe física não aceita nova inscrição pelo fluxo normal.
+A comparação considera inscrições `PENDENTE` e `APROVADA`, inclusive ao reativar uma inscrição antiga. Categoria `SUMO` sem classe física ou modo de controle não aceita configuração normal compatível com o contrato atual.
 
 A migration V9 introduziu a coluna `sumo_physical_class` e fez o backfill das categorias Sumô existentes a partir do `peso_max` já armazenado em `ConfigSumo`. Esse uso de peso é apenas uma estratégia de migração de dados legados; **o runtime não infere a classe pelo nome da categoria nem pelo peso medido na inspeção**.
 
@@ -638,9 +643,9 @@ Follow não usa esse fluxo.
 
 As medidas físicas são verificadas presencialmente com gabarito fixo e demais instrumentos da organização.
 
-O RasComp não deve decidir automaticamente aprovação por dimensão ou peso.
+O RasComp não decide automaticamente aprovação por dimensão ou peso.
 
-Fluxo:
+Fluxo implementado no Bloco 3:
 
 ```text
 organização realiza inspeção física
@@ -656,7 +661,7 @@ Dados possíveis apenas para informação/auditoria:
 - responsável pela inspeção;
 - data/hora.
 
-`pesoMedido` não determina sozinho o resultado.
+`pesoMedido` não determina sozinho o resultado. O backend recebe explicitamente `aprovada=true|false` e persiste a decisão humana.
 
 Reinspeções podem existir conforme decisão da organização.
 
@@ -712,6 +717,15 @@ BYE não recebe resultado manual comum.
 
 # 10. Sumô — Autônomo x R/C
 
+O modo de controle é persistido em `CompetitionCategory.sumoControlMode`:
+
+```text
+AUTONOMO
+RC
+```
+
+Categorias `SUMO` devem possuir um modo de controle; categorias não-Sumô não usam essa metadata.
+
 ## 10.1 Autônomo
 
 Após autorização do juiz e ativação pelo competidor, existe atraso regulamentar antes da movimentação.
@@ -737,7 +751,7 @@ A consequência pode ser, conforme decisão do juiz/regulamento da edição:
 - penalidade;
 - perda do round.
 
-O backend não deve escolher automaticamente entre essas consequências.
+O backend não escolhe automaticamente entre essas consequências. Quando a falha for usada como motivo do resultado do round, a justificativa é obrigatória.
 
 Se existir um tempo de tolerância adicional para considerar a falha definitiva, ele deve ser configurável/documentado pela competição.
 
@@ -777,11 +791,14 @@ placar = 1 x 1
 Um round extra só pode ser criado quando:
 
 - a partida ainda não possui vencedor;
-- um ou mais rounds não produziram vitória suficiente para atingir 2 vitórias;
+- os rounds regulares já foram consumidos;
+- um ou mais rounds não produziram vitórias suficientes para atingir 2 vitórias;
+- a categoria permite round de desempate;
+- o limite configurado ainda não foi atingido;
 - o juiz/organização autoriza;
 - existe justificativa registrada.
 
-Configuração inicial recomendada:
+Configuração inicial consolidada:
 
 ```text
 numeroRoundsRegulares = 3
@@ -795,37 +812,44 @@ Se um participante já alcançou 2 vitórias:
 round extra ❌
 ```
 
-Se o limite de rounds extras for atingido e ainda não houver vencedor, a partida deve ser decidida por decisão dos juízes.
+Se o limite de rounds extras for atingido e ainda não houver vencedor, a partida deve ser decidida pela operação específica de decisão de juiz.
 
 ---
 
 # 12. Decisão dos juízes
 
-O sistema deve suportar resultado por decisão do juiz quando necessário.
+O sistema suporta resultado por decisão de juiz quando os rounds regulares e extras disponíveis foram esgotados sem vencedor.
 
-Motivo competitivo candidato:
+A decisão é uma operação específica e **não é registrada como um round artificial**.
 
-```text
-DECISAO_JUIZ
-```
-
-Registro mínimo:
+Registro implementado:
 
 ```text
-partida
-winnerRegistrationId
-judgeId
-justificativa obrigatória
-data/hora
+MatchJudgeDecision
+├─ partida
+├─ winnerRegistrationId
+├─ judgeId
+├─ justificativa obrigatória
+└─ data/hora
 ```
 
 A decisão não pode existir sem vencedor e justificativa.
 
+Regras implementadas:
+
+- somente chave atual e ativa;
+- partida ativa e com os dois participantes;
+- rounds regulares + extras disponíveis já esgotados;
+- nenhum participante já pode ter atingido as vitórias necessárias;
+- vencedor deve participar da partida;
+- juiz precisa estar ativo e pertencer à mesma competição;
+- apenas uma decisão de juiz por partida;
+- justificativa obrigatória, com limite de tamanho;
+- resultado oficial e progressão criados pelo fluxo de backend.
+
 ## 12.1 Cadastro de juiz
 
-Um juiz pode ser cadastrado no contexto da competição.
-
-Conceito candidato:
+Um juiz é cadastrado no contexto da competição:
 
 ```text
 CompetitionJudge
@@ -840,13 +864,13 @@ O juiz pode ser:
 - integrante da organização com conta no RasComp;
 - pessoa cadastrada apenas como juiz, sem login próprio.
 
-A organização deve conseguir identificar quem tomou a decisão registrada.
+A organização consegue identificar quem tomou a decisão registrada.
 
 ---
 
 # 13. Motivos de resultado do Sumô
 
-A implementação deve conseguir representar de forma auditável motivos como:
+A implementação representa de forma auditável:
 
 ```text
 DISPUTA
@@ -855,6 +879,8 @@ PENALIDADES
 FALHA_INICIALIZACAO
 DECISAO_JUIZ
 ```
+
+`DECISAO_JUIZ` pertence ao fluxo específico `MatchJudgeDecision`, e não deve ser enviado como round comum.
 
 Não usar um motivo genérico quando a causa real tiver impacto na compreensão do resultado.
 
@@ -1022,31 +1048,33 @@ Legenda:
 | Estados válidos Follow | combinações impossíveis bloqueadas no service | ✅ implementado |
 | Perda de tomada por ausência | entidade/serviço próprios; sem tentativas fictícias | ✅ implementado |
 | Cronômetro operacional frontend | tentativa + apresentação integrados à operação | ✅ implementado |
-| Inspeção Sumô humana APTO/INAPTO | backend ainda decide pelo peso | ⚠️ corrigir no Bloco 3 |
-| Peso apenas informativo | hoje ainda participa da decisão automática | ⚠️ corrigir no Bloco 3 |
-| Mini/3kg Auto/R/C no mesmo motor | arquitetura suporta categorias | ✅ |
-| 3 rounds / 2 vitórias | configurável e suportado | ✅ |
+| Inspeção Sumô humana APTO/INAPTO | decisão humana explícita persistida e auditável | ✅ implementado no Bloco 3 |
+| Peso apenas informativo | `pesoMedido` opcional e sem decisão automática | ✅ implementado no Bloco 3 |
+| Mini/3kg Auto/R/C no mesmo motor | classe física + `sumoControlMode` por categoria | ✅ implementado no Bloco 3 |
+| 3 rounds / 2 vitórias | configurável e protegido pelo motor | ✅ |
 | Round anulado sem vitória | suportado | ✅ |
-| Rounds extras justificados | há round extra simples | ⚠️ exigir condição + justificativa no Bloco 3 |
-| Decisão do juiz | não formalizada | 🆕 modelar no Bloco 3 |
-| Juiz identificado | não formalizado | 🆕 modelar no Bloco 3 |
-| Falha de inicialização | não formalizada | 🆕 modelar no Bloco 3 |
-| Geração só com inscrições encerradas | status não é validado | ⚠️ corrigir no Bloco 4 |
+| Rounds extras justificados | condição, limite e justificativa validados no service | ✅ implementado no Bloco 3 |
+| Decisão do juiz | `MatchJudgeDecision` + operação específica | ✅ implementado no Bloco 3 |
+| Juiz identificado | `CompetitionJudge` vinculado à competição | ✅ implementado no Bloco 3 |
+| Falha de inicialização | motivo explícito + justificativa; consequência humana | ✅ implementado no Bloco 3 |
+| Geração só com inscrições encerradas | status ainda requer fechamento explícito | ⚠️ corrigir no Bloco 4 |
 | Regeneração só antes da atividade | incompleto | ⚠️ proteger no Bloco 4 |
 | Agenda separada da árvore | não formalizado | 🆕 estruturar no Bloco 4 quando aplicável |
 | Correção segura antes da próxima partida | progressão protege slots, mas não desfaz avanço | ⚠️ implementar no Bloco 4 |
 | Correção depois de dependência iniciada | risco atual | ⚠️ bloquear no Bloco 4 |
 
-Checkpoint automatizado após a conclusão do Bloco 2 — Follow:
+Checkpoint automatizado após a conclusão do Bloco 3 — Sumô:
 
 ```text
-86 testes
+87 testes
 0 falhas
 0 erros
 0 skipped
-MySQL + Flyway V10 + testdata ✅
+MySQL + Flyway V11 + testdata ✅
 Frontend Gestão typecheck + build ✅
 ```
+
+O `demo-profile` também inicializa o cenário completo contra MySQL real com os seeds alinhados ao contrato de inspeção humana e modo de controle.
 
 ---
 
@@ -1102,7 +1130,9 @@ O Bloco 5 ainda deverá executar a simulação integrada de competição complet
 
 ## 18.3 Fluxo Sumô
 
-Simular:
+O Bloco 3 já possui cobertura unitária relevante para inspeção humana, categoria/configuração e regras de rounds. O profile `testdata` também comprova inicialização completa contra MySQL/Flyway V11.
+
+O Bloco 5 ainda deverá executar a simulação integrada ponta a ponta com repositories reais, incluindo:
 
 - inspeção humana APTO/INAPTO;
 - geração de chave;
