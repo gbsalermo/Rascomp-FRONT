@@ -51,6 +51,13 @@ function physicalClassLabel(row: Category) {
   return 'Não configurada'
 }
 
+function controlModeLabel(row: Category) {
+  if (row.modalidade !== 'SUMO') return '—'
+  if (row.sumoControlMode === 'AUTONOMO') return 'Autônomo'
+  if (row.sumoControlMode === 'RC') return 'R/C'
+  return 'Não configurado'
+}
+
 async function load() {
   loading.value = true
   try {
@@ -203,6 +210,9 @@ onMounted(load)
         </el-table-column>
         <el-table-column label="Classe física" width="150">
           <template #default="{ row }">{{ physicalClassLabel(row) }}</template>
+        </el-table-column>
+        <el-table-column label="Controle" width="140">
+          <template #default="{ row }">{{ controlModeLabel(row) }}</template>
         </el-table-column>
         <el-table-column label="Situação" width="120">
           <template #default="{ row }">{{ row.ativo === false ? 'Inativa' : 'Ativa' }}</template>
