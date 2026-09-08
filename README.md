@@ -8,7 +8,7 @@ RRC      = evento / competição
 RasComp  = plataforma de software
 ```
 
-## Estado atual — 04/09/2026
+## Estado atual — 08/09/2026
 
 O projeto foi apresentado e aprovado. O ciclo atual é de estabilização e evolução controlada.
 
@@ -16,9 +16,15 @@ O projeto foi apresentado e aprovado. O ciclo atual é de estabilização e evol
 ETAPA 0  ✅ baseline concluída / validada
 ETAPA 1  🚧 atual — correções de lógica e integridade
 ETAPA 2+ ⏳ não iniciadas
+
+Bloco 1 — Competition + Registration  ✅
+Bloco 2 — Follow Line                  ✅
+Bloco 3 — Sumô                         ✅
+Bloco 4 — Chaves                       ⏭️ próximo / não iniciado
+Bloco 5 — Fluxos integrados            ⏳
 ```
 
-Em 04/09/2026 foi realizado um checkpoint de revisão/limpeza **documental** antes da retomada da ETAPA 1. Isso não antecipa a limpeza técnica da ETAPA 2.
+Em 04/09/2026 foi realizado um checkpoint de revisão/limpeza **documental**. Em 08/09/2026 o Bloco 3 — Sumô foi concluído e validado. A limpeza técnica da ETAPA 2 continua separada.
 
 Roadmap oficial:
 
@@ -30,6 +36,12 @@ Ponto de entrada da documentação:
 
 ```text
 docs/README.md
+```
+
+Contrato competitivo:
+
+```text
+docs/CONTRATO_REGRAS_COMPETITIVAS.md
 ```
 
 ---
@@ -75,7 +87,7 @@ Backend:
 
 ```text
 gbsalermo/Rascomp
-→ Java 21 + Spring Boot + MySQL + Flyway
+→ Java 21 + Spring Boot + MySQL + Flyway V11
 ```
 
 ---
@@ -91,13 +103,26 @@ Competições                            ✅
 Inscrições                             ✅
 Equipes / robôs / modalidades          ✅
 Usuários                               ✅
-Follow Line                            ✅
+Follow Line                            ✅ Bloco 2 alinhado
 Histórico e operação de tomadas        ✅
-Sumô / inspeção / batalha              ✅
-Chave visual / BYE / progressão        ✅
+Sumô / inspeção / batalha              ✅ Bloco 3 alinhado
+Inspeção humana APTO/INAPTO            ✅
+Modo Sumô AUTONOMO / RC                ✅
+Rounds extras justificados             ✅
+Falha de inicialização                 ✅
+Juízes / decisão de juiz               ✅
+Chave visual / BYE / progressão        ✅ base atual; Bloco 4 pendente
 Histórico de chaves                    ✅
 Fotos de robôs                         ✅
 404 personalizada                      ✅
+```
+
+Checkpoint de qualidade do Bloco 3:
+
+```text
+Frontend Gestão                  typecheck + build ✅
+Backend                          87 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V11 + testdata    ✅
 ```
 
 ### Participante
@@ -115,6 +140,32 @@ Conteúdo institucional ainda hardcoded/placeholder será tratado pelo CMS/Mídi
 ### Galeria
 
 `photo-gallery/` ainda usa dados estáticos e é protótipo, não fonte editorial definitiva.
+
+---
+
+## Sumô — operação atual
+
+A gestão representa o contrato competitivo aprovado com:
+
+```text
+inspeção física
+→ APTO/INAPTO informado pela organização
+→ peso opcional e apenas informativo
+
+categoria
+→ MINI_500G | SUMO_3KG
+→ AUTONOMO | RC
+
+partida
+→ 3 rounds regulares / 2 vitórias
+→ 2 penalidades = derrota automática
+→ SUICIDIO_WO
+→ FALHA_INICIALIZACAO
+→ rounds extras limitados + justificativa
+→ decisão final por juiz identificado quando necessária
+```
+
+O frontend orienta a operação, mas o backend continua sendo a fonte de verdade.
 
 ---
 
@@ -240,8 +291,9 @@ Leia nesta ordem:
 1. docs/README.md
 2. docs/ETAPAS_POS_PROJETO.md
 3. docs/DOSSIE_PROJETO_RASCOMP.md
-4. docs/CONTINUIDADE_FRONTEND.md
-5. documentos específicos do domínio necessário
+4. docs/CONTRATO_REGRAS_COMPETITIVAS.md
+5. docs/CONTINUIDADE_FRONTEND.md
+6. documentos específicos do domínio necessário
 ```
 
-Após o checkpoint documental atual, o próximo trabalho é **retomar a ETAPA 1**.
+Próximo trabalho, quando explicitamente autorizado: **ETAPA 1 · Bloco 4 — Chaves**.
