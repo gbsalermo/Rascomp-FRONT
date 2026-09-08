@@ -1,6 +1,6 @@
 # RasComp — Etapas Pós-Projeto
 
-Última revisão: **07/09/2026**
+Última revisão: **08/09/2026**
 
 Este é o **único documento canônico para ordem de execução, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -24,7 +24,7 @@ backend: rascomp/docs/CONTINUIDADE.md
 
 ---
 
-# 1. Estado de execução em 07/09/2026
+# 1. Estado de execução em 08/09/2026
 
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
@@ -73,8 +73,8 @@ A ETAPA 1 está sendo executada em blocos funcionais para reduzir risco e preser
 ```text
 Bloco 1 — Competition + Registration     ✅ CONCLUÍDO / VALIDADO
 Bloco 2 — Follow Line                    ✅ CONCLUÍDO / VALIDADO
-Bloco 3 — Sumô                           🚧 BLOCO ATUAL
-Bloco 4 — Chaves                         ⏳ NÃO INICIADO
+Bloco 3 — Sumô                           ✅ CONCLUÍDO / VALIDADO
+Bloco 4 — Chaves                         ⏭️ PRÓXIMO / NÃO INICIADO
 Bloco 5 — Fluxos integrados completos    ⏳ NÃO INICIADO
 ```
 
@@ -92,7 +92,22 @@ O Bloco 2 consolidou:
 - backend com 86 testes verdes;
 - frontend Gestão com typecheck + build verdes.
 
-**A conclusão dos Blocos 1 e 2 não encerra a ETAPA 1.**
+O Bloco 3 consolidou:
+
+- inspeção de Sumô como decisão humana `APTO/INAPTO`;
+- peso medido apenas informativo/auditável;
+- categorias de Sumô com modo de controle `AUTONOMO | RC`;
+- 3 rounds regulares / 2 vitórias preservados como perfil operacional;
+- rounds extras somente quando necessários, limitados e com justificativa obrigatória;
+- `FALHA_INICIALIZACAO` formalizada sem decisão automática do sistema;
+- cadastro de juízes por competição;
+- decisão de juiz identificada, justificada e auditável após esgotar rounds regulares/extras;
+- motivos de resultado explícitos;
+- Flyway V11;
+- backend com 87 testes, 0 falhas/erros/skipped e `demo-profile` verde contra MySQL real;
+- frontend Gestão com typecheck + build verdes e operação alinhada ao novo contrato.
+
+**A conclusão dos Blocos 1, 2 e 3 não encerra a ETAPA 1. O próximo bloco é Chaves.**
 
 ---
 
@@ -188,7 +203,7 @@ BracketProgressionService
 Situação atual:
 
 ```text
-⏳ Bloco 4 — Chaves
+⏭️ Bloco 4 — Chaves
 ```
 
 ## 1.4 Correção de resultado após progressão
@@ -214,7 +229,7 @@ próxima dependência já iniciada
 Situação atual:
 
 ```text
-⏳ Bloco 4 — Chaves
+⏭️ Bloco 4 — Chaves
 ```
 
 ## 1.5 Estados válidos de tentativa Follow
@@ -248,26 +263,36 @@ Situação atual:
 ⏳ permanece como invariante da ETAPA 1 e da futura ETAPA 5
 ```
 
-## 1.7 Sumô — bloco atual
+## 1.7 Sumô — Bloco 3 concluído
 
-O Bloco 3 deve alinhar o motor existente ao contrato competitivo aprovado:
+O Bloco 3 alinhou o motor existente ao contrato competitivo aprovado:
 
 ```text
-inspeção humana APTO/INAPTO
-peso apenas informativo
-3 rounds regulares / 2 vitórias
-rounds extras apenas quando necessários e justificados
-falha de inicialização formalizada
-identificação/decisão de juiz auditável
-motivos de resultado explícitos
+inspeção humana APTO/INAPTO                         ✅
+peso apenas informativo                            ✅
+modo de controle AUTONOMO | RC                     ✅
+3 rounds regulares / 2 vitórias                    ✅
+rounds extras necessários + limite + justificativa ✅
+falha de inicialização formalizada                 ✅
+identificação/decisão de juiz auditável            ✅
+motivos de resultado explícitos                    ✅
 ```
 
-Preservar as regras já funcionais:
+Foram preservadas as regras já funcionais:
 
 ```text
 2 penalidades → derrota automática do round
 SUICIDIO_WO  → adversário vence
 BYE          → avanço automático
+```
+
+Checkpoint do bloco:
+
+```text
+Backend Tests        ✅ 87 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V11   ✅
+Profile testdata     ✅ cenário completo sobe contra MySQL real
+Frontend Gestão      ✅ typecheck + build
 ```
 
 ## Critério de saída
