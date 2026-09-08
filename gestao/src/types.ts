@@ -17,8 +17,14 @@ export type CancellationRequestStatus = 'PENDENTE' | 'APROVADA' | 'REJEITADA'
 export type RegistrationWindowChangeType = 'PRORROGACAO' | 'REABERTURA'
 export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
 export type SumoPhysicalClass = 'MINI_500G' | 'SUMO_3KG'
+export type SumoControlMode = 'AUTONOMO' | 'RC'
 export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
-export type RoundSumoOutcomeReason = 'DISPUTA' | 'SUICIDIO_WO' | 'PENALIDADES'
+export type RoundSumoOutcomeReason =
+  | 'DISPUTA'
+  | 'SUICIDIO_WO'
+  | 'PENALIDADES'
+  | 'FALHA_INICIALIZACAO'
+  | 'DECISAO_JUIZ'
 
 export interface UserAccount {
   id: number
@@ -68,6 +74,7 @@ export interface Category {
   nome: string
   modalidade: Modalidade
   sumoPhysicalClass?: SumoPhysicalClass
+  sumoControlMode?: SumoControlMode
   competitionId?: number
   ativo?: boolean
   [key: string]: unknown
@@ -82,6 +89,7 @@ export interface ConfigSumo {
   numeroRounds: number
   roundsParaVencer: number
   permiteRoundDesempate: boolean
+  maxRoundsExtras: number
 }
 
 export interface ConfigFollow {
@@ -181,6 +189,38 @@ export interface FollowTakeAbsence {
   dataCadastro?: string
 }
 
+export interface SumoInspection {
+  id: number
+  registrationId: number
+  numeroTentativa?: number
+  pesoMedido?: number
+  aprovada: boolean
+  observacao?: string
+  registradoPorId?: number
+  registradoPorNome?: string
+  dataCadastro?: string
+}
+
+export interface CompetitionJudge {
+  id: number
+  competitionId: number
+  nome: string
+  userAccountId?: number
+  ativo?: boolean
+  dataCadastro?: string
+}
+
+export interface MatchJudgeDecision {
+  id: number
+  matchId: number
+  winnerRegistrationId: number
+  winnerRobotNome?: string
+  judgeId: number
+  judgeNome?: string
+  justificativa: string
+  dataCadastro?: string
+}
+
 export interface Bracket {
   id: number
   competitionId: number
@@ -241,6 +281,7 @@ export interface RoundSumo {
   penalidadesA?: number
   penalidadesB?: number
   observacao?: string
+  justificativa?: string
   dataCadastro?: string
 }
 
