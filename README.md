@@ -1,212 +1,301 @@
-# RasComp Frontend
+<a id="readme-top"></a>
 
-Frontend da plataforma **RasComp**.
+<div align="center">
+  <a href="https://github.com/gbsalermo/Rascomp-FRONT">
+    <img src="gestao/public/rascomp-logo.webp" alt="RasComp" width="360">
+  </a>
 
-```text
-RAS UFRB = organização / capítulo estudantil
-RRC      = evento / competição
-RasComp  = plataforma de software
-```
+  <h1 align="center">RasComp — Frontend</h1>
 
-## Estado atual — 08/09/2026
+  <p align="center">
+    <strong>Gestão da competição, portal do participante e acompanhamento público do RRC em uma única experiência integrada ao backend RasComp.</strong>
+  </p>
 
-O projeto foi apresentado e aprovado. O ciclo atual é de estabilização e evolução controlada.
+  <p align="center">
+    <img src="https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white" alt="Vue 3">
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+    <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+    <img src="https://img.shields.io/badge/Pinia-FFD859?style=for-the-badge&logo=vue.js&logoColor=black" alt="Pinia">
+    <img src="https://img.shields.io/badge/Element_Plus-409EFF?style=for-the-badge" alt="Element Plus">
+    <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios">
+  </p>
 
-```text
-ETAPA 0  ✅ baseline concluída / validada
-ETAPA 1  🚧 atual — correções de lógica e integridade
-ETAPA 2+ ⏳ não iniciadas
-
-Bloco 1 — Competition + Registration  ✅
-Bloco 2 — Follow Line                  ✅
-Bloco 3 — Sumô                         ✅
-Bloco 4 — Chaves                       ⏭️ próximo / não iniciado
-Bloco 5 — Fluxos integrados            ⏳
-```
-
-Em 04/09/2026 foi realizado um checkpoint de revisão/limpeza **documental**. Em 08/09/2026 o Bloco 3 — Sumô foi concluído e validado. A limpeza técnica da ETAPA 2 continua separada.
-
-Roadmap oficial:
-
-```text
-docs/ETAPAS_POS_PROJETO.md
-```
-
-Ponto de entrada da documentação:
-
-```text
-docs/README.md
-```
-
-Contrato competitivo:
-
-```text
-docs/CONTRATO_REGRAS_COMPETITIVAS.md
-```
+  <p align="center">
+    <a href="#-sobre-o-projeto">Sobre</a> •
+    <a href="#-aplicações">Aplicações</a> •
+    <a href="#-arquitetura">Arquitetura</a> •
+    <a href="#-funcionalidades">Funcionalidades</a> •
+    <a href="#-tecnologias">Tecnologias</a> •
+    <a href="#-como-executar">Execução</a> •
+    <a href="#-documentação">Documentação</a>
+  </p>
+</div>
 
 ---
 
-## Aplicações
+## 📌 Sobre o Projeto
+
+O **RasComp** é a plataforma de gestão e acompanhamento das competições de robótica realizadas no contexto da **IEEE Robotics & Automation Society — UFRB**.
+
+Este repositório concentra as interfaces responsáveis por conectar os diferentes públicos da competição ao mesmo domínio oficial:
+
+```text
+Organização ───────────────┐
+                           │
+Participante ──────────────┼──► RasComp Frontend ───► Backend RasComp
+                           │                            │
+Público / visitantes ──────┘                            └──► MySQL
+```
+
+A interface não recalcula regras competitivas por conta própria. Ranking, elegibilidade, resultados, inspeções, BYEs, progressão e campeão continuam sendo definidos pelo backend.
+
+<p align="right">(<a href="#readme-top">voltar ao topo ⬆</a>)</p>
+
+---
+
+## 🧩 Aplicações
+
+O repositório é organizado em três aplicações Vue independentes.
+
+### Gestão — `gestao/`
+
+Interface autenticada usada pela organização e pelos participantes.
 
 ```text
 gestao/
-├─ interface autenticada de operação
-├─ portal do participante
-└─ futuras áreas DEV e MIDIA
+├─ dashboard / central da competição
+├─ competições
+├─ inscrições
+├─ equipes
+├─ robôs
+├─ modalidades
+├─ Follow Line
+├─ Sumô
+├─ chaves e resultados
+├─ usuários
+└─ portal do participante
+```
 
+### Landing Page — `landing-page/`
+
+Interface pública voltada à apresentação institucional e ao acompanhamento da competição.
+
+```text
 landing-page/
-└─ site público institucional + competitivo
-
-photo-gallery/
-└─ protótipo separado de galeria
+├─ conteúdo institucional
+├─ competição em destaque
+├─ Follow Line público
+├─ Sumô e chaveamentos
+├─ equipes / robôs / resultados
+└─ navegação pública
 ```
 
-A decisão definitiva sobre incorporar `photo-gallery/` à Landing pertence à ETAPA 11.
+### Galeria — `photo-gallery/`
+
+Experiência pública dedicada à exibição de álbuns e fotos relacionados ao evento.
+
+<p align="right">(<a href="#readme-top">voltar ao topo ⬆</a>)</p>
 
 ---
 
-## Stack
+## 🏛️ Arquitetura
 
-### Gestão
-
-- Vue 3
-- TypeScript
-- Vite
-- Pinia
-- Vue Router
-- Element Plus
-- Axios
-
-### Landing / Galeria
-
-- Vue 3
-- TypeScript
-- Vite
-
-Backend:
+O frontend trabalha sobre contratos REST fornecidos pelo backend RasComp.
 
 ```text
-gbsalermo/Rascomp
-→ Java 21 + Spring Boot + MySQL + Flyway V11
+┌──────────────────────┐
+│      Gestão          │
+│ organização + portal │
+└──────────┬───────────┘
+           │ JWT
+           ▼
+ /api/v1/**
+ /api/v1/participante/**
+           │
+           │
+┌──────────┴───────────┐
+│    Backend RasComp   │
+│ Spring Boot + MySQL  │
+└──────────┬───────────┘
+           │
+           │ projeção pública
+           ▼
+ /api/v1/public/**
+           │
+┌──────────┴───────────┐
+│ Landing / interfaces │
+│      públicas        │
+└──────────────────────┘
 ```
+
+### Princípios da integração
+
+- o backend é a fonte de verdade;
+- autenticação é feita com JWT;
+- operações administrativas usam os contratos autenticados;
+- o participante acessa recursos próprios conforme ownership validado no backend;
+- a Landing utiliza somente contratos públicos e sanitizados;
+- alterações competitivas realizadas na Gestão são refletidas ao público pela mesma fonte de dados.
+
+<p align="right">(<a href="#readme-top">voltar ao topo ⬆</a>)</p>
 
 ---
 
-## Estado funcional conhecido
+## ✨ Funcionalidades
 
-### Gestão
+### Organização
 
-```text
-Autenticação JWT                       ✅
-Dashboard / Central                    ✅
-Competições                            ✅
-Inscrições                             ✅
-Equipes / robôs / modalidades          ✅
-Usuários                               ✅
-Follow Line                            ✅ Bloco 2 alinhado
-Histórico e operação de tomadas        ✅
-Sumô / inspeção / batalha              ✅ Bloco 3 alinhado
-Inspeção humana APTO/INAPTO            ✅
-Modo Sumô AUTONOMO / RC                ✅
-Rounds extras justificados             ✅
-Falha de inicialização                 ✅
-Juízes / decisão de juiz               ✅
-Chave visual / BYE / progressão        ✅ base atual; Bloco 4 pendente
-Histórico de chaves                    ✅
-Fotos de robôs                         ✅
-404 personalizada                      ✅
-```
-
-Checkpoint de qualidade do Bloco 3:
-
-```text
-Frontend Gestão                  typecheck + build ✅
-Backend                          87 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V11 + testdata    ✅
-```
+- [x] Autenticação;
+- [x] Dashboard / Central da competição;
+- [x] Gestão de competições;
+- [x] Revisão de inscrições;
+- [x] Equipes, robôs e modalidades;
+- [x] Gestão de usuários;
+- [x] Operação de Follow Line;
+- [x] Histórico de tomadas;
+- [x] Operação de Sumô;
+- [x] Inspeção de competidores;
+- [x] Partidas e rounds;
+- [x] Chave visual;
+- [x] BYEs e progressão refletidos pela API;
+- [x] Resultados competitivos;
+- [x] Fotos de robôs.
 
 ### Participante
 
-A primeira versão funcional está em `/minha-equipe` e inclui equipe, competidores, robôs/fotos, inscrições e acompanhamento de Follow/Sumô.
+O portal autenticado reúne em um único espaço:
 
-A conclusão do portal é ETAPA 10.
+- equipe;
+- competidores;
+- robôs;
+- fotos;
+- inscrições;
+- acompanhamento do Follow Line;
+- acompanhamento do Sumô;
+- histórico competitivo disponível para a própria equipe.
 
-### Landing
+### Público
 
-A Landing consome a API pública competitiva e já possui competição ativa, Follow público, Sumô/chaves e 404 personalizada.
+A experiência pública permite consultar informações competitivas sem autenticação, utilizando DTOs sanitizados fornecidos pelo backend.
 
-Conteúdo institucional ainda hardcoded/placeholder será tratado pelo CMS/Mídia na ETAPA 7.
+Entre os conteúdos exibidos estão:
 
-### Galeria
+- informações institucionais;
+- competição;
+- equipes e robôs;
+- ranking do Follow Line;
+- chaveamento do Sumô;
+- partidas e resultados;
+- informações públicas de acompanhamento da competição.
 
-`photo-gallery/` ainda usa dados estáticos e é protótipo, não fonte editorial definitiva.
-
----
-
-## Sumô — operação atual
-
-A gestão representa o contrato competitivo aprovado com:
-
-```text
-inspeção física
-→ APTO/INAPTO informado pela organização
-→ peso opcional e apenas informativo
-
-categoria
-→ MINI_500G | SUMO_3KG
-→ AUTONOMO | RC
-
-partida
-→ 3 rounds regulares / 2 vitórias
-→ 2 penalidades = derrota automática
-→ SUICIDIO_WO
-→ FALHA_INICIALIZACAO
-→ rounds extras limitados + justificativa
-→ decisão final por juiz identificado quando necessária
-```
-
-O frontend orienta a operação, mas o backend continua sendo a fonte de verdade.
+<p align="right">(<a href="#readme-top">voltar ao topo ⬆</a>)</p>
 
 ---
 
-## Segurança
+## 🤖 Experiência Competitiva
 
-Modelo atual:
-
-```text
-ORGANIZACAO
-PARTICIPANTE
-```
-
-Modelo aprovado para ETAPA 3:
+### Follow Line
 
 ```text
-DEV
-GESTAO
-MIDIA
-PARTICIPANTE
+Gestão registra tentativa
+        ↓
+Backend valida e persiste
+        ↓
+Ranking oficial é recalculado
+        ↓
+Frontend atualiza a interface
+        ↓
+Landing lê a projeção pública
 ```
 
-A autorização real pertence ao backend. Esconder menu/botão não é segurança.
+A interface apresenta tomadas, tentativas, tempos, penalidades, ausência e ranking sem assumir a responsabilidade pelo cálculo oficial.
+
+### Sumô
+
+```text
+Inspeção
+   ↓
+Chave
+   ↓
+Partida
+   ↓
+Rounds
+   ↓
+Resultado
+   ↓
+Progressão
+```
+
+A Gestão orienta a operação visual da arena, enquanto o backend decide oficialmente vencedor, resultado e progressão de chave.
+
+<p align="right">(<a href="#readme-top">voltar ao topo ⬆</a>)</p>
 
 ---
 
-## Avisos e Telegram — planejamento
+## 🛠️ Tecnologias
 
-A ETAPA 4 concentrará o trabalho de comunicação:
+### Gestão
+
+| Tecnologia | Finalidade |
+|---|---|
+| Vue 3 | Framework de interface |
+| TypeScript | Tipagem estática |
+| Vite | Build e desenvolvimento |
+| Pinia | Estado global |
+| Vue Router | Navegação |
+| Element Plus | Componentes de interface |
+| Axios | Cliente HTTP |
+
+### Landing e Galeria
+
+| Tecnologia | Finalidade |
+|---|---|
+| Vue 3 | Interface pública |
+| TypeScript | Tipagem |
+| Vite | Build e desenvolvimento |
+| Vue Router | Navegação quando aplicável |
+
+### Backend relacionado
+
+**[gbsalermo/Rascomp](https://github.com/gbsalermo/Rascomp)**
 
 ```text
-GESTAO/DEV
-→ Avisos de uma competição
-→ persistência IN_APP
-→ entrega complementar via Telegram quando habilitada
+Java 21
+Spring Boot 3.5.x
+Spring Security + JWT
+JPA / Hibernate
+MySQL
+Flyway
+Swagger / OpenAPI
 ```
 
-`IN_APP` será a fonte de verdade. Não será obrigatório, inicialmente, vincular a conta RasComp à conta Telegram. O futuro código competitivo da `Registration` poderá ser reutilizado como identificação opcional sem bloquear a primeira versão.
+<p align="right">(<a href="#readme-top">voltar ao topo ⬆</a>)</p>
 
 ---
 
-## Executar localmente
+## 📁 Estrutura do Repositório
+
+```text
+Rascomp-FRONT/
+├── gestao/             # aplicação autenticada
+├── landing-page/       # experiência pública institucional/competitiva
+├── photo-gallery/      # galeria pública
+├── docs/               # documentação técnica do frontend
+├── README.md
+└── .gitignore
+```
+
+Cada aplicação possui configuração e dependências próprias, permitindo execução independente durante o desenvolvimento.
+
+---
+
+## 🚀 Como Executar
+
+### Pré-requisitos
+
+- Node.js
+- npm
+- backend RasComp disponível para os fluxos integrados
 
 ### Gestão
 
@@ -223,7 +312,7 @@ npm run typecheck
 npm run build
 ```
 
-### Landing
+### Landing Page
 
 ```powershell
 cd landing-page
@@ -239,61 +328,52 @@ npm install
 npm run dev
 ```
 
-API padrão:
+### API
+
+As aplicações utilizam a variável:
 
 ```text
 VITE_API_URL=http://localhost:8080
 ```
 
-O modo local deve continuar funcional após a futura implantação cloud.
+para apontar para o backend durante a execução local.
+
+<p align="right">(<a href="#readme-top">voltar ao topo ⬆</a>)</p>
 
 ---
 
-## Rotas principais da gestão
+## 🔐 Segurança
+
+A segurança efetiva pertence ao backend.
+
+A interface pode adaptar menus e rotas à experiência do usuário, mas nunca trata ocultação de componentes como controle de acesso.
 
 ```text
-/login
-/cadastro
-/recuperar-senha
-/
-/competicoes
-/inscricoes
-/equipes
-/robos
-/modalidades
-/follow-line
-/follow-line/tomada/:registrationId
-/sumo
-/sumo/partida/:matchId
-/chaves
-/partidas
-/resultados
-/usuarios
-/configuracoes
-/minha-equipe
+Frontend
+   ↓
+JWT
+   ↓
+Backend
+   ↓
+autorização + ownership + regra de domínio
 ```
 
-Rotas futuras serão definidas nas etapas correspondentes (`/avisos`, `/midia`, `/regras`, `/ajustes-gerais`, `/futebol`).
+Dados públicos são consumidos por contratos específicos e sanitizados.
 
 ---
 
-## Fonte de verdade
+## 📚 Documentação
 
-O frontend não decide oficialmente autorização, ownership, elegibilidade, ranking, inspeção, BYE, vencedor, progressão, campeão ou resultado competitivo. Essas regras pertencem ao backend.
+A documentação técnica detalhada permanece separada da página de apresentação do projeto.
+
+- [`docs/README.md`](docs/README.md) — índice geral da documentação;
+- [`docs/DOSSIE_PROJETO_RASCOMP.md`](docs/DOSSIE_PROJETO_RASCOMP.md) — arquitetura e visão consolidada;
+- [`docs/SYSTEM_DESIGN_GESTAO.md`](docs/SYSTEM_DESIGN_GESTAO.md) — desenho técnico da Gestão;
+- [`docs/CONTRATO_REGRAS_COMPETITIVAS.md`](docs/CONTRATO_REGRAS_COMPETITIVAS.md) — referência das regras competitivas.
 
 ---
 
-## Documentação
-
-Leia nesta ordem:
-
-```text
-1. docs/README.md
-2. docs/ETAPAS_POS_PROJETO.md
-3. docs/DOSSIE_PROJETO_RASCOMP.md
-4. docs/CONTRATO_REGRAS_COMPETITIVAS.md
-5. docs/CONTINUIDADE_FRONTEND.md
-6. documentos específicos do domínio necessário
-```
-
-Próximo trabalho, quando explicitamente autorizado: **ETAPA 1 · Bloco 4 — Chaves**.
+<div align="center">
+  <strong>RasComp</strong><br>
+  Gestão e acompanhamento de competições de robótica — IEEE RAS UFRB
+</div>
