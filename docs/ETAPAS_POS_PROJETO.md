@@ -1,6 +1,6 @@
 # RasComp — Etapas Pós-Projeto
 
-Última revisão: **08/09/2026**
+Última revisão: **09/09/2026**
 
 Este é o **único documento canônico para ordem de execução, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -24,7 +24,7 @@ backend: rascomp/docs/CONTINUIDADE.md
 
 ---
 
-# 1. Estado de execução em 08/09/2026
+# 1. Estado de execução em 09/09/2026
 
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
@@ -74,8 +74,8 @@ A ETAPA 1 está sendo executada em blocos funcionais para reduzir risco e preser
 Bloco 1 — Competition + Registration     ✅ CONCLUÍDO / VALIDADO
 Bloco 2 — Follow Line                    ✅ CONCLUÍDO / VALIDADO
 Bloco 3 — Sumô                           ✅ CONCLUÍDO / VALIDADO
-Bloco 4 — Chaves                         ⏭️ PRÓXIMO / NÃO INICIADO
-Bloco 5 — Fluxos integrados completos    ⏳ NÃO INICIADO
+Bloco 4 — Chaves                         ✅ CONCLUÍDO / VALIDADO
+Bloco 5 — Fluxos integrados completos    ⏭️ PRÓXIMO / NÃO INICIADO
 ```
 
 O Bloco 2 consolidou:
@@ -107,7 +107,23 @@ O Bloco 3 consolidou:
 - backend com 87 testes, 0 falhas/erros/skipped e `demo-profile` verde contra MySQL real;
 - frontend Gestão com typecheck + build verdes e operação alinhada ao novo contrato.
 
-**A conclusão dos Blocos 1, 2 e 3 não encerra a ETAPA 1. O próximo bloco é Chaves.**
+O Bloco 4 consolidou:
+
+- geração/regeneração de chave permitida pelo fluxo comum somente em `INSCRICOES_ENCERRADAS`;
+- BYE automático diferenciado de atividade competitiva real;
+- regeneração bloqueada após round, resultado ou partida efetivamente iniciada/finalizada;
+- chave marcada `EM_ANDAMENTO` quando a disputa real começa;
+- árvore lógica protegida contra edição estrutural comum após geração;
+- agenda operacional separada da árvore, com horário, pista, ordem de execução e convocação;
+- correção de vencedor propagado permitida apenas quando a dependência seguinte ainda não começou;
+- correção bloqueada quando a partida dependente já possui atividade competitiva;
+- frontend Gestão alinhado ao estado permitido de geração e à nova agenda;
+- `testdata` ajustado para montar as chaves em estado válido antes de avançar os cenários demonstrativos;
+- Flyway V12;
+- backend com 98 testes, 0 falhas/erros/skipped e `demo-profile` verde contra MySQL real;
+- frontend Gestão com typecheck + build verdes.
+
+**A conclusão dos Blocos 1, 2, 3 e 4 não encerra a ETAPA 1. O próximo bloco é Fluxos integrados completos.**
 
 ---
 
@@ -200,10 +216,23 @@ BracketService
 BracketProgressionService
 ```
 
+Contrato consolidado:
+
+```text
+INSCRICOES_ENCERRADAS
+→ geração/regeneração comum permitida
+
+chave somente gerada / apenas BYE automático
+→ regeneração ainda permitida
+
+round, resultado ou disputa real iniciada
+→ regeneração comum bloqueada
+```
+
 Situação atual:
 
 ```text
-⏭️ Bloco 4 — Chaves
+✅ corrigido no Bloco 4
 ```
 
 ## 1.4 Correção de resultado após progressão
@@ -216,20 +245,22 @@ resultado alterado
 → árvore inconsistente
 ```
 
-Direção aprovada:
+Direção aprovada e implementada:
 
 ```text
 próxima dependência ainda não iniciada
 → correção transacional segura
+→ vencedor propagado anterior é removido/substituído
 
 próxima dependência já iniciada
 → bloqueio da correção comum
+→ histórico competitivo não é reescrito silenciosamente
 ```
 
 Situação atual:
 
 ```text
-⏭️ Bloco 4 — Chaves
+✅ corrigido no Bloco 4
 ```
 
 ## 1.5 Estados válidos de tentativa Follow
@@ -291,6 +322,29 @@ Checkpoint do bloco:
 ```text
 Backend Tests        ✅ 87 testes / 0 falhas / 0 erros / 0 skipped
 MySQL + Flyway V11   ✅
+Profile testdata     ✅ cenário completo sobe contra MySQL real
+Frontend Gestão      ✅ typecheck + build
+```
+
+## 1.8 Chaves — Bloco 4 concluído
+
+O Bloco 4 separou a estrutura competitiva da agenda operacional e protegeu a progressão:
+
+```text
+geração em estado inválido                           → bloqueada
+regeneração após atividade competitiva               → bloqueada
+BYE automático sem disputa                           → não bloqueia regeneração
+estrutura da árvore após geração                     → protegida
+agenda (horário/pista/ordem operacional/convocação)  → editável separadamente
+correção antes da próxima disputa                    → propagação corrigida com segurança
+correção após dependência iniciada                   → bloqueada
+```
+
+Checkpoint do bloco:
+
+```text
+Backend Tests        ✅ 98 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V12   ✅
 Profile testdata     ✅ cenário completo sobe contra MySQL real
 Frontend Gestão      ✅ typecheck + build
 ```
