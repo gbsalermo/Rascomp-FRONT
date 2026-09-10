@@ -1,6 +1,6 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **08/09/2026**
+Última revisão estrutural: **09/09/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
@@ -19,14 +19,14 @@ ETAPA 1 — lógica e integridade                🚧 etapa atual
 Bloco 1 — Competition + Registration           ✅ concluído / validado
 Bloco 2 — Follow Line                          ✅ concluído / validado
 Bloco 3 — Sumô                                 ✅ concluído / validado
-Bloco 4 — Chaves                               ⏭️ próximo / não iniciado
-Bloco 5 — Fluxos integrados                    ⏳ não iniciado
+Bloco 4 — Chaves                               ✅ concluído / validado
+Bloco 5 — Fluxos integrados                    ⏭️ próximo / não iniciado
 ETAPA 2+                                       ⏳ não iniciadas
-Backend — último checkpoint funcional          87 testes / 0 falhas / 0 erros / 0 skipped
+Backend — último checkpoint funcional          98 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
-Migrations                                     V1–V11
-Próxima migration estrutural                   V12+
+Migrations                                     V1–V12
+Próxima migration estrutural                   V13+
 Profile testdata                               ✅ contra MySQL real
 Roles atuais                                   ORGANIZACAO | PARTICIPANTE
 Roles futuras                                  DEV | GESTAO | MIDIA | PARTICIPANTE
@@ -36,6 +36,8 @@ Deploy cloud                                   ⏳ ETAPA 14
 Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, sem mudança de etapa. Limpeza técnica de código/artefatos continua reservada à ETAPA 2.
 
 Em 08/09/2026 o Bloco 3 da ETAPA 1 foi encerrado após alinhamento do backend, frontend, seeds, testes, MySQL/Flyway V11 e documentação competitiva.
+
+Em 09/09/2026 o Bloco 4 da ETAPA 1 foi encerrado após proteção da geração/regeneração, separação da agenda operacional, correção segura da progressão, Flyway V12, frontend alinhado e validação com 98 testes + `testdata` contra MySQL real.
 
 ---
 
@@ -128,7 +130,9 @@ O backend é fonte de verdade para:
 - campeão;
 - resultados competitivos;
 - validação de rounds;
-- decisão de juiz.
+- decisão de juiz;
+- integridade de geração/regeneração de chaves;
+- proteção da árvore competitiva e correção de dependências.
 
 O frontend pode antecipar regras para UX, mas nunca substituí-las.
 
@@ -157,7 +161,7 @@ Banco ativo: **MySQL**.
 
 ```text
 src/main/resources/db/migration/
-V1 ... V11
+V1 ... V12
 ```
 
 Resumo atual:
@@ -174,13 +178,14 @@ V8  — solicitações de cancelamento + histórico da janela de inscrições
 V9  — classe física de Sumô nas categorias
 V10 — Follow 3×3 + parâmetros operacionais + ausência de tomada
 V11 — modo de controle Sumô + rounds extras + auditoria de inspeção + juízes/decisão
+V12 — separação da agenda operacional da estrutura lógica das partidas
 ```
 
 Regra congelada:
 
 ```text
-V1–V11 nunca são reescritas
-próxima mudança estrutural = V12+
+V1–V12 nunca são reescritas
+próxima mudança estrutural = V13+
 ```
 
 PostgreSQL não faz parte da configuração ativa. Referências antigas dentro de artefatos legados não definem a arquitetura atual.
@@ -248,7 +253,7 @@ Robot
 Consequência para Ajustes Gerais:
 
 ```text
-transferirCompetidor
+transferirCompetitor
 ≠ transferirResponsabilidade
 ≠ transferirRobo
 ≠ alterarRole
@@ -524,47 +529,96 @@ O frontend não toma decisões competitivas que pertencem ao backend/juiz.
 
 ---
 
-# 11. Chaves e progressão — Bloco 4 próximo / não iniciado
+# 11. Chaves e progressão — Bloco 4 consolidado
 
-Histórico de chaves já existente:
+Histórico de chaves:
 
 ```text
 nova chave → atual=true
 anterior   → atual=false
 ```
 
-`ativo` e `atual` são conceitos distintos. Chave histórica é read-only para operação competitiva.
+`ativo` e `atual` são conceitos distintos. Chave histórica permanece read-only para operação competitiva.
 
-O contrato já aprovado para o Bloco 4 determina:
+## 11.1 Geração/regeneração
+
+Fluxo comum:
 
 ```text
-INSCRICOES_ENCERRADAS ✅ geração comum
+INSCRICOES_ENCERRADAS ✅ geração/regeneração comum
 demais estados       ❌
 ```
 
-Também precisa fechar:
+`BracketIntegrityService` centraliza a proteção.
 
-- regeneração comum somente antes de atividade competitiva dependente;
-- distinção entre estrutura lógica da chave e agenda operacional;
-- correção transacional quando a dependência seguinte ainda não começou;
-- bloqueio de correção comum quando a dependência seguinte já iniciou.
+Uma chave apenas montada, inclusive com avanço automático por BYE, ainda pode ser regenerada. A regeneração comum é bloqueada depois de round, resultado ou partida competitiva efetivamente iniciada/finalizada.
 
-**Esses itens não foram antecipados no Bloco 3.**
+## 11.2 Estrutura lógica x agenda operacional
+
+```text
+estrutura lógica
+→ rodada
+→ ordem lógica
+→ participantes
+→ progressão
+
+agenda operacional
+→ data/hora
+→ pista
+→ ordem de execução
+→ estado de convocação
+```
+
+A edição de agenda não altera quem enfrenta quem. O backend expõe operação específica de agenda em `PATCH /api/v1/partidas/{id}/agenda`.
+
+Depois da geração, o fluxo comum não deve reescrever rodada, ordem lógica ou participantes por uma edição genérica de partida.
+
+## 11.3 Progressão e correção segura
+
+Ao começar disputa real, a chave passa para `EM_ANDAMENTO`.
+
+Correção de resultado propagado:
+
+```text
+próxima partida ainda sem atividade
+→ correção permitida
+→ remover/substituir vencedor anterior no slot dependente
+
+próxima partida já iniciou, possui round ou resultado
+→ correção comum bloqueada
+→ histórico não é reescrito silenciosamente
+```
+
+Rollback competitivo excepcional fica reservado às futuras ferramentas administrativas auditáveis.
+
+## 11.4 Testdata
+
+Os seeds respeitam a mesma invariante de produção:
+
+```text
+montar competição em INSCRICOES_ENCERRADAS
+→ criar participantes/inspeções
+→ gerar chave
+→ preparar disputas/histórico
+→ restaurar estado demonstrativo EM_ANDAMENTO ou FINALIZADA
+```
+
+O cenário Mini Sumô ao vivo monta 16 participantes antes da primeira geração para não depender de regeneração após atividade competitiva.
 
 ---
 
 # 12. Qualidade e testes
 
-Checkpoint funcional confirmado após o Bloco 3:
+Checkpoint funcional confirmado após o Bloco 4:
 
 ```text
 Backend Tests
-→ 87 testes
+→ 98 testes
 → 0 falhas
 → 0 erros
 → 0 skipped
 
-MySQL + Flyway V11
+MySQL + Flyway V12
 → ✅
 
 Profile testdata contra MySQL real
@@ -575,7 +629,7 @@ Frontend Gestão
 → build ✅
 ```
 
-Esse checkpoint cobre services/unitários relevantes e smoke completo de inicialização do `testdata`.
+Esse checkpoint cobre services/unitários relevantes, regras de integridade de chaves, progressão/agenda e smoke completo de inicialização do `testdata`.
 
 O Bloco 5 ainda é responsável pela camada integrada de competição completa com repositories reais e invariantes ponta a ponta.
 
@@ -837,19 +891,12 @@ D1 não é requisito do primeiro deploy.
 
 # 22. Pendências atuais
 
-## ETAPA 1 — Bloco 4
-
-- validar estado de `Competition` para geração comum de chave;
-- bloquear regeneração depois de atividade competitiva;
-- separar estrutura lógica e agenda operacional quando aplicável;
-- corrigir resultado com segurança antes da dependência seguinte iniciar;
-- bloquear correção comum depois de dependência iniciada.
-
 ## ETAPA 1 — Bloco 5
 
 - simulação integrada de competição completa;
 - fluxos reais com repositories;
-- garantia de ausência de persistência parcial em operações inválidas.
+- garantia de ausência de persistência parcial em operações inválidas;
+- cobrir ciclo de Competition, Registration, Follow, Sumô e integridade cross-domain.
 
 ## Follow
 
@@ -930,10 +977,10 @@ Backend: CompetitionCategory.sumoControlMode, ConfigSumo*, InspecaoSumo*, RoundS
 Frontend: SumoView.vue, SumoMatchView.vue, AdminCatalogView.vue, api.ts, types.ts
 ```
 
-## Chave / resultados
+## Chave / resultados / agenda
 
 ```text
-Backend: BracketGenerationService, BracketProgressionService, BracketService, MatchService, MatchResultService
+Backend: BracketGenerationService, BracketIntegrityService, BracketProgressionService, BracketService, MatchService, MatchResultService
 Frontend: TournamentBracket.vue, BracketHistoryView.vue, MatchesView.vue, ResultsView.vue
 ```
 
@@ -971,8 +1018,8 @@ Antes de schema:
 
 ```text
 1. modelar impacto
-2. criar migration V12+
-3. nunca reescrever V1–V11
+2. criar migration V13+
+3. nunca reescrever V1–V12
 4. atualizar testes
 5. validar MySQL/Flyway/testdata
 ```
