@@ -18,6 +18,7 @@ export type RegistrationWindowChangeType = 'PRORROGACAO' | 'REABERTURA'
 export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
 export type SumoPhysicalClass = 'MINI_500G' | 'SUMO_3KG'
 export type SumoControlMode = 'AUTONOMO' | 'RC'
+export type MatchCallStatus = 'NAO_CONVOCADA' | 'CONVOCADA' | 'EM_CHAMADA' | 'PRONTA' | 'ADIADA'
 export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
 export type RoundSumoOutcomeReason =
   | 'DISPUTA'
@@ -255,6 +256,9 @@ export interface Match {
   robotBNome?: string
   teamBNome?: string
   dataHora?: string
+  pista?: string
+  ordemExecucao?: number
+  statusConvocacao?: MatchCallStatus
   status?: string
   ativo?: boolean
   dataCadastro?: string
