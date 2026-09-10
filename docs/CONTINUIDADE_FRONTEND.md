@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **08/09/2026**
+Última atualização: **09/09/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -36,8 +36,8 @@ Checkpoint interno da ETAPA 1:
 Bloco 1 — Competition + Registration     ✅ CONCLUÍDO
 Bloco 2 — Follow Line                    ✅ CONCLUÍDO
 Bloco 3 — Sumô                           ✅ CONCLUÍDO
-Bloco 4 — Chaves                         ⏭️ PRÓXIMO / NÃO INICIADO
-Bloco 5 — Fluxos integrados completos    ⏳
+Bloco 4 — Chaves                         ✅ CONCLUÍDO
+Bloco 5 — Fluxos integrados completos    ⏭️ PRÓXIMO / NÃO INICIADO
 ```
 
 Em 06/09/2026 o bloco `Competition + Registration` foi concluído no backend e refletido no frontend.
@@ -70,7 +70,19 @@ Em 08/09/2026 o bloco **Sumô** foi concluído e integrado ao `gestao/`, incluin
 - justificativa obrigatória e histórico da decisão;
 - visualização do modo de controle no catálogo de modalidades.
 
-**A ETAPA 1 continua aberta. O próximo bloco é Chaves.**
+Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, incluindo:
+
+- geração/regeneração comum somente em `INSCRICOES_ENCERRADAS`;
+- aviso e bloqueio visual da geração fora do estado permitido;
+- regeneração protegida contra atividade competitiva real;
+- BYE automático sem ser confundido com disputa iniciada;
+- árvore lógica protegida após geração;
+- agenda operacional separada da estrutura da chave;
+- edição de horário, pista, ordem de execução e convocação sem alterar confrontos;
+- correção de vencedor propagado apenas enquanto a próxima dependência ainda não começou;
+- bloqueio da correção comum após início da dependência seguinte.
+
+**A ETAPA 1 continua aberta. O próximo bloco é Fluxos integrados completos.**
 
 ---
 
@@ -121,7 +133,9 @@ Rounds extras                               ✅ limite + justificativa
 Falha de inicialização                      ✅ motivo explícito + decisão humana
 Juízes por competição                       ✅
 Decisão de juiz                             ✅ identificada + justificada
-Chave visual                                ✅ base atual
+Chave visual                                ✅ Bloco 4 alinhado
+Agenda operacional das partidas             ✅ horário + pista + ordem + convocação
+Estrutura da chave protegida                ✅ sem edição comum após geração
 Arena da partida                            ✅ contrato do Bloco 3 integrado
 2 penalidades = derrota automática          ✅
 Suicídio/WO                                 ✅
@@ -245,6 +259,42 @@ gestao/src/views/AdminCatalogView.vue
 → exibição do modo AUTONOMO/RC
 ```
 
+## Chaves — Bloco 4 consolidado
+
+A gestão distingue agora dois conceitos:
+
+```text
+estrutura lógica da chave
+→ rodada
+→ ordem lógica
+→ participantes
+→ progressão
+
+agenda operacional
+→ data/hora
+→ pista
+→ ordem de execução
+→ estado de convocação
+```
+
+A geração/regeneração só é apresentada como disponível quando a competição está em `INSCRICOES_ENCERRADAS`. A agenda pode ser ajustada sem reescrever a árvore competitiva.
+
+Arquivos principais do fechamento:
+
+```text
+gestao/src/types.ts
+→ metadata operacional de Match
+
+gestao/src/api.ts
+→ atualização específica da agenda da partida
+
+gestao/src/views/MatchesView.vue
+→ edição operacional de horário, pista, ordem e convocação
+
+gestao/src/views/SumoView.vue
+→ geração/regeneração respeitando o estado da Competition
+```
+
 ## Robôs híbridos
 
 O frontend não classifica o próprio `Robot` como Mini ou 3 kg. A metadata vem da categoria:
@@ -299,16 +349,16 @@ Consolidação Landing/Galeria           ⏳ ETAPA 11
 
 # 4. Qualidade conhecida
 
-Checkpoint confirmado após o Bloco 3:
+Checkpoint confirmado após o Bloco 4:
 
 ```text
 Frontend Gestão     ✅ typecheck + build
-Backend             ✅ 87 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V11  ✅
+Backend             ✅ 98 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V12  ✅
 Profile testdata    ✅ cenário completo contra MySQL real
 ```
 
-A contagem vem do CI real do commit backend `44984c5e73d0a0e4be15bb4a4cb2131fbc8eac93`. O frontend foi validado pelo workflow `Frontend Checks` no commit `37e7642c8d8e3c71f62de3ffb7ee45cc5f743794`.
+A contagem vem do CI real do commit backend `4561d79388cf5befbac7d59b2dbf99ce122998bc`. O frontend foi validado pelo workflow `Frontend Checks` no commit `103481cc8eb855a222ed6756cbe6eeb1458b9257`.
 
 A ETAPA 1 ainda deverá adicionar os testes automatizados de fluxo completo no Bloco 5.
 
@@ -396,15 +446,30 @@ Rounds extras só ficam registráveis dentro do limite do backend e exigem justi
 
 Depois de esgotar rounds regulares e extras sem vencedor, a UI oferece decisão de juiz identificada e justificada.
 
-## Chaveamento — Bloco 4
+## Chaveamento — implementado no Bloco 4
 
-A UI deve distinguir:
+A UI distingue:
 
 ```text
 estrutura lógica da chave
 ≠
 agenda real de execução/pista/horário
 ```
+
+Regras representadas:
+
+```text
+Competition != INSCRICOES_ENCERRADAS
+→ geração/regeneração indisponível
+
+chave gerada
+→ estrutura lógica não é editada pela agenda
+
+agenda
+→ horário, pista, ordem operacional e convocação podem ser ajustados
+```
+
+O backend continua sendo a fonte de verdade para integridade, regeneração, progressão e correção de resultado.
 
 ---
 
@@ -488,9 +553,9 @@ Follow                                  ✅ CONCLUÍDO
         ↓
 Sumô                                    ✅ CONCLUÍDO
         ↓
-Chaves                                  ← PRÓXIMO BLOCO / NÃO INICIADO
+Chaves                                  ✅ CONCLUÍDO
         ↓
-fluxos automatizados completos
+Fluxos automatizados completos          ← PRÓXIMO BLOCO / NÃO INICIADO
 ```
 
 Não iniciar ETAPA 2 sem conclusão e validação explícita da ETAPA 1.
