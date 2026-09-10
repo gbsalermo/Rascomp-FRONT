@@ -31,9 +31,11 @@ const inspection = reactive({
 })
 const judgeForm = reactive({ nome: '' })
 
+const currentCompetition = computed(() => competition.competitions.find((item) => item.id === competitionId.value))
 const currentCategory = computed(() => categories.value.find((item) => item.id === categoryId.value))
 const currentBracket = computed(() => brackets.value.find((item) => item.id === bracketId.value))
 const historicalSelected = computed(() => currentBracket.value?.atual === false)
+const canGenerate = computed(() => currentCompetition.value?.status === 'INSCRICOES_ENCERRADAS')
 const filteredBrackets = computed(() =>
   brackets.value
     .filter((item) => !categoryId.value || item.categoryId === categoryId.value)
@@ -145,13 +147,17 @@ async function loadBracket() {
 
 async function generate() {
   if (!competitionId.value || !categoryId.value) return
+  if (!canGenerate.value) {
+    return ElMessage.warning('Chaves só podem ser geradas ou regeneradas quando as inscrições estiverem encerradas.')
+  }
+
   const existingCurrent = filteredBrackets.value.find((item) => item.atual !== false)
   const message = existingCurrent
-    ? 'Já existe uma chave vigente para esta categoria. A nova geração se tornará a atual e a anterior será preservada no histórico. Continuar?'
-    : 'Gerar o chaveamento agora? Apenas inscrições aptas entrarão.'
+    ? 'Já existe uma chave vigente para esta categoria. A regeneração só será aceita se nenhuma disputa real tiver começado; a chave anterior será preservada no histórico. Continuar?'
+    : 'Gerar o chaveamento agora? Apenas inscrições aprovadas e aptas entrarão.'
 
   try {
-    await ElMessageBox.confirm(message, 'Gerar nova chave')
+    await ElMessageBox.confirm(message, existingCurrent ? 'Regenerar chave' : 'Gerar chave')
     const created = await adminApi.generateBracket(competitionId.value, categoryId.value)
     ElMessage.success(existingCurrent
       ? 'Nova chave criada. A versão anterior foi preservada no histórico.'
@@ -239,7 +245,12 @@ onMounted(initialize)
       <div class="heading-actions">
         <el-button @click="judgeDialog = true">Cadastrar juiz</el-button>
         <el-button @click="inspectionDialog = true">Nova inspeção</el-button>
-        <el-button class="brand-button" @click="generate">Gerar nova chave</el-button>
+        <el-button
+          class="brand-button"
+          :disabled="!canGenerate"
+          :title="canGenerate ? 'Gerar ou regenerar chave' : 'Disponível somente com inscrições encerradas'"
+          @click="generate"
+        >Gerar nova chave</el-button>
       </div>
     </div>
 
@@ -259,6 +270,9 @@ onMounted(initialize)
         />
       </el-select>
       <el-button @click="loadCompetition(bracketId)">Atualizar</el-button>
+      <span v-if="currentCompetition && !canGenerate" class="generation-hint">
+        Geração disponível somente em INSCRIÇÕES ENCERRADAS.
+      </span>
     </article>
 
     <article v-if="currentCategory" class="feature-card compact sumo-rule-card">
@@ -376,4 +390,5 @@ onMounted(initialize)
 .sumo-rule-card { align-items:center; }
 .inspection-hint { margin:0; padding:10px 12px; border-radius:10px; background:#f8f3f5; color:#6f6067; font-size:12px; line-height:1.5; }
 .judge-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.generation-hint { color:#8b6d78; font-size:11px; font-weight:700; }
 </style>
