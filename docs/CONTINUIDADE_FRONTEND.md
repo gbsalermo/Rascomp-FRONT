@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **12/09/2026**
+Última atualização: **13/09/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
