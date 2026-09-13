@@ -28,7 +28,8 @@ docs/README.md
 ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
-ETAPA 3+ ⏳ não iniciadas
+ETAPA 3   🚧 em andamento
+ETAPA 4+ ⏳ não iniciadas
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -578,7 +579,7 @@ Chaves                                  ✅ CONCLUÍDO
 Fluxos automatizados completos          ← PRÓXIMO BLOCO / NÃO INICIADO
 ```
 
-As ETAPAS 1 e 2 foram concluídas e validadas. A ETAPA 3 é a próxima etapa funcional.
+As ETAPAS 1 e 2 foram concluídas e validadas. A ETAPA 3 está em andamento: backend concluído no Bloco 1 e frontend pendente.
 
 ---
 
@@ -598,3 +599,16 @@ Outra IA deve:
 9. transformar regra em teste
 10. atualizar documentação quando o estado realmente mudar
 ```
+
+## 10.2 ETAPA 3 — checkpoint backend
+
+Backend concluído no primeiro bloco:
+
+- `DEV | GESTAO | MIDIA | PARTICIPANTE` ativos no domínio;
+- V13 migra `ORGANIZACAO → DEV`;
+- `DEV` administra usuários;
+- `DEV/GESTAO` operam competição;
+- `MIDIA` não recebe acesso competitivo;
+- Backend Tests #298/#299 verdes com MySQL/Flyway V13/testdata.
+
+O frontend ainda usa a matriz anterior e é o próximo bloco da ETAPA 3. Não tratar a UI como fonte de segurança.
