@@ -356,7 +356,7 @@ Checkpoint confirmado após o Bloco 5 / encerramento da ETAPA 1:
 
 ```text
 Frontend Gestão     ✅ typecheck + build
-Backend             ✅ 109 testes / 0 falhas / 0 erros / 0 skipped
+Backend             ✅ 111 testes / 0 falhas / 0 erros / 0 skipped
 H2 flowtest          ✅ fluxos integrados com repositories reais
 MySQL + Flyway V12  ✅
 Profile testdata    ✅ cenário completo contra MySQL real
