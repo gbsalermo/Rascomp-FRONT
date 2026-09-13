@@ -33,7 +33,7 @@ const mobileOpen = ref(false)
 const alertLoading = ref(false)
 const alerts = ref<AdminAlert[]>([])
 
-const organizationSections = [
+const devSections = [
   { label: 'Geral', items: [{ label: 'Dashboard', to: '/', icon: DataBoard }] },
   {
     label: 'Competição',
@@ -76,7 +76,19 @@ const participantSections = [
   }
 ]
 
-const sections = computed(() => (auth.isOrganization ? organizationSections : participantSections))
+const mediaSections = [
+  {
+    label: 'Mídia',
+    items: [{ label: 'Painel', to: '/', icon: DataBoard }]
+  }
+]
+
+const sections = computed(() => {
+  if (auth.isParticipant) return participantSections
+  if (auth.isMedia) return mediaSections
+  if (auth.isDev) return devSections
+  return devSections.filter((section) => section.label !== 'Sistema')
+})
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
     '/': 'Visão geral',
@@ -94,9 +106,25 @@ const pageTitle = computed(() => {
     '/configuracoes': 'Configurações',
     '/minha-equipe': 'Meu painel'
   }
-  return titles[route.path] || (auth.isOrganization ? 'Gestão da competição' : 'Portal do participante')
+  if (titles[route.path]) return titles[route.path]
+  if (auth.isParticipant) return 'Portal do participante'
+  if (auth.isMedia) return 'Painel de mídia'
+  return 'Gestão da competição'
 })
-const roleLabel = computed(() => (auth.isOrganization ? 'Organização' : 'Participante'))
+const roleLabel = computed(() => {
+  const labels = {
+    DEV: 'DEV',
+    GESTAO: 'Gestão',
+    MIDIA: 'Mídia',
+    PARTICIPANTE: 'Participante'
+  } as const
+  return auth.user ? labels[auth.user.role] : 'Usuário'
+})
+const panelLabel = computed(() => {
+  if (auth.isParticipant) return 'Portal do Participante'
+  if (auth.isMedia) return 'Painel de Mídia'
+  return 'Painel de Gestão'
+})
 const alertCount = computed(() => alerts.value.length)
 
 function isActive(to: string) {
@@ -118,7 +146,7 @@ function minutesUntil(value: string) {
 }
 
 async function loadAlerts() {
-  if (!auth.isOrganization || !competition.selectedId) {
+  if (!auth.canOperateCompetition || !competition.selectedId) {
     alerts.value = []
     return
   }
@@ -135,7 +163,7 @@ async function loadAlerts() {
       nextAlerts.push({
         id: 'pending-registrations',
         title: `${pending.length} inscrição(ões) pendente(s)`,
-        detail: 'Há inscrições aguardando análise da organização.',
+        detail: 'Há inscrições aguardando análise da gestão.',
         to: '/inscricoes',
         kind: 'attention'
       })
@@ -178,7 +206,7 @@ async function loadAlerts() {
 }
 
 onMounted(async () => {
-  if (auth.isOrganization) {
+  if (auth.canOperateCompetition) {
     await competition.load()
     await loadAlerts()
   }
@@ -194,7 +222,7 @@ watch(() => competition.selectedId, loadAlerts)
         <el-icon><component :is="collapsed ? ArrowRight : ArrowLeft" /></el-icon>
       </button>
 
-      <button class="brand sidebar-brand-v2" @click="go(auth.isOrganization ? '/' : '/minha-equipe')">
+      <button class="brand sidebar-brand-v2" @click="go(auth.isParticipant ? '/minha-equipe' : '/')">
         <span class="sidebar-rascomp-logo" aria-hidden="true">
           <svg viewBox="0 0 96 96">
             <path d="M48 15v10" /><circle cx="48" cy="11" r="4" /><rect x="22" y="28" width="52" height="45" rx="14" />
@@ -203,7 +231,7 @@ watch(() => competition.selectedId, loadAlerts)
         </span>
         <div v-if="!collapsed" class="brand-copy">
           <strong>RasComp</strong>
-          <small>{{ auth.isOrganization ? 'Painel de Gestão' : 'Portal do Participante' }}</small>
+          <small>{{ panelLabel }}</small>
         </div>
       </button>
 
@@ -231,7 +259,7 @@ watch(() => competition.selectedId, loadAlerts)
           </div>
         </div>
 
-        <div v-if="auth.isOrganization" class="topbar-competition-switch">
+        <div v-if="auth.canOperateCompetition" class="topbar-competition-switch">
           <div class="competition-switch-copy">
             <span>Competição em foco</span>
             <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Selecione a edição' }}</small>
@@ -248,7 +276,7 @@ watch(() => competition.selectedId, loadAlerts)
         </div>
 
         <div class="topbar-user">
-          <el-dropdown v-if="auth.isOrganization" trigger="click" placement="bottom-end" @visible-change="(visible: boolean) => visible && loadAlerts()">
+          <el-dropdown v-if="auth.canOperateCompetition" trigger="click" placement="bottom-end" @visible-change="(visible: boolean) => visible && loadAlerts()">
             <button class="notification-bell" aria-label="Abrir alertas" title="Alertas da competição">
               <el-badge :value="alertCount" :hidden="alertCount === 0" :max="9">
                 <el-icon><Bell /></el-icon>
