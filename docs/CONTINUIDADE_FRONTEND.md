@@ -493,13 +493,14 @@ O backend continua sendo a fonte de verdade para integridade, regeneração, pro
 
 # 8. ETAPA 2 — limpeza técnica concluída
 
-- `api.ts` e `types.ts` centralizados;
-- views grandes;
-- CSS corretivo sobreposto;
-- duplicações/componentes extraíveis;
-- responsabilidade potencialmente duplicada da `photo-gallery`.
+- `api.ts` e `types.ts` são fachadas compatíveis;
+- HTTP/auth/público/participante e domínios administrativos foram separados internamente;
+- views grandes foram preservadas quando não havia ganho real em decompô-las;
+- CSS administrativo foi consolidado preservando cascata;
+- código morto/artefatos/versionamento foram revisados sem remoção especulativa;
+- decisões sobre `photo-gallery` continuam reservadas à ETAPA 11.
 
-Não antecipar refatoração ampla durante a ETAPA 1.
+A ETAPA 2 está encerrada; não reabrir refatoração ampla sem necessidade da etapa funcional atual.
 
 ---
 
@@ -581,18 +582,16 @@ Se algum documento histórico apresentar numeração diferente das etapas, preva
 # 11. Próximo passo
 
 ```text
-Competition + Registration              ✅ CONCLUÍDO
-        ↓
-Follow                                  ✅ CONCLUÍDO
-        ↓
-Sumô                                    ✅ CONCLUÍDO
-        ↓
-Chaves                                  ✅ CONCLUÍDO
-        ↓
-Fluxos automatizados completos          ← PRÓXIMO BLOCO / NÃO INICIADO
+ETAPA 1 — lógica/integridade             ✅ CONCLUÍDA
+ETAPA 2 — limpeza/organização            ✅ CONCLUÍDA
+ETAPA 3 — matriz de permissões
+├─ backend                               ✅
+├─ frontend                              ✅
+├─ testes automatizados                  ✅
+└─ checkpoint prático dos quatro perfis  🚧 PENDENTE DO USUÁRIO
 ```
 
-As ETAPAS 1 e 2 foram concluídas e validadas. A ETAPA 3 está em andamento com backend, frontend e validação automatizada integrados; resta apenas o checkpoint prático solicitado pelo usuário antes do fechamento formal.
+Não iniciar a ETAPA 4 antes do fechamento explícito da ETAPA 3.
 
 ---
 
