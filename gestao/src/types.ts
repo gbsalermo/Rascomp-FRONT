@@ -1,4 +1,4 @@
-export type UserRole = 'PARTICIPANTE' | 'ORGANIZACAO'
+export type { UserRole, UserAccount, AuthResponse } from './types/auth'
 export type CompetitionStatus =
   | 'PLANEJADA'
   | 'INSCRICOES_ABERTAS'
@@ -26,23 +26,6 @@ export type RoundSumoOutcomeReason =
   | 'PENALIDADES'
   | 'FALHA_INICIALIZACAO'
   | 'DECISAO_JUIZ'
-
-export interface UserAccount {
-  id: number
-  nome: string
-  email: string
-  telefone?: string
-  role: UserRole
-  ativo: boolean
-  ultimoLogin?: string
-  dataCadastro?: string
-}
-
-export interface AuthResponse {
-  token: string
-  tipo: 'Bearer' | string
-  usuario: UserAccount
-}
 
 export interface Competition {
   id?: number
