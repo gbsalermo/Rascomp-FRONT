@@ -1,4 +1,11 @@
-export type UserRole = 'PARTICIPANTE' | 'ORGANIZACAO'
+export type UserRole = 'DEV' | 'GESTAO' | 'MIDIA' | 'PARTICIPANTE'
+
+export type AuthCapability =
+  | 'operateCompetition'
+  | 'manageUsers'
+  | 'manageSystem'
+  | 'manageMedia'
+  | 'participant'
 
 export interface UserAccount {
   id: number
