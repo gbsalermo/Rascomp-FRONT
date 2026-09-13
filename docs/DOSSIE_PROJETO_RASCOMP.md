@@ -1,6 +1,6 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **09/09/2026**
+Última revisão estrutural: **12/09/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
@@ -15,14 +15,15 @@ Para começar do zero, ler primeiro `docs/README.md`.
 ```text
 Projeto apresentado/aprovado                  ✅
 ETAPA 0 — baseline                            ✅ concluída / validada
-ETAPA 1 — lógica e integridade                🚧 etapa atual
+ETAPA 1 — lógica e integridade                ✅ concluída / validada
 Bloco 1 — Competition + Registration           ✅ concluído / validado
 Bloco 2 — Follow Line                          ✅ concluído / validado
 Bloco 3 — Sumô                                 ✅ concluído / validado
 Bloco 4 — Chaves                               ✅ concluído / validado
-Bloco 5 — Fluxos integrados                    ⏭️ próximo / não iniciado
-ETAPA 2+                                       ⏳ não iniciadas
-Backend — último checkpoint funcional          98 testes / 0 falhas / 0 erros / 0 skipped
+Bloco 5 — Fluxos integrados                    ✅ concluído / validado
+ETAPA 2                                        ⏭️ próxima / não iniciada
+ETAPA 3+                                       ⏳ não iniciadas
+Backend — último checkpoint funcional          109 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
 Migrations                                     V1–V12
@@ -38,6 +39,8 @@ Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, se
 Em 08/09/2026 o Bloco 3 da ETAPA 1 foi encerrado após alinhamento do backend, frontend, seeds, testes, MySQL/Flyway V11 e documentação competitiva.
 
 Em 09/09/2026 o Bloco 4 da ETAPA 1 foi encerrado após proteção da geração/regeneração, separação da agenda operacional, correção segura da progressão, Flyway V12, frontend alinhado e validação com 98 testes + `testdata` contra MySQL real.
+
+Em 12/09/2026 o Bloco 5 encerrou a ETAPA 1 com cinco suítes de fluxo integrado usando services/repositories reais em H2, validação explícita de rollback e **109 testes verdes**; o `testdata` também permaneceu verde contra MySQL real + Flyway V12.
 
 ---
 
@@ -609,11 +612,11 @@ O cenário Mini Sumô ao vivo monta 16 participantes antes da primeira geração
 
 # 12. Qualidade e testes
 
-Checkpoint funcional confirmado após o Bloco 4:
+Checkpoint funcional confirmado após o Bloco 5 / encerramento da ETAPA 1:
 
 ```text
 Backend Tests
-→ 98 testes
+→ 109 testes
 → 0 falhas
 → 0 erros
 → 0 skipped
@@ -629,9 +632,9 @@ Frontend Gestão
 → build ✅
 ```
 
-Esse checkpoint cobre services/unitários relevantes, regras de integridade de chaves, progressão/agenda e smoke completo de inicialização do `testdata`.
+Esse checkpoint cobre unitários + fluxos integrados reais de Competition, Registration, Follow, Sumô e integridade cross-domain, além do smoke completo de inicialização do `testdata`.
 
-O Bloco 5 ainda é responsável pela camada integrada de competição completa com repositories reais e invariantes ponta a ponta.
+O Bloco 5 concluiu a camada integrada de competição completa com repositories reais e invariantes ponta a ponta.
 
 ---
 
@@ -891,13 +894,6 @@ D1 não é requisito do primeiro deploy.
 
 # 22. Pendências atuais
 
-## ETAPA 1 — Bloco 5
-
-- simulação integrada de competição completa;
-- fluxos reais com repositories;
-- garantia de ausência de persistência parcial em operações inválidas;
-- cobrir ciclo de Competition, Registration, Follow, Sumô e integridade cross-domain.
-
 ## Follow
 
 - checkpoints continuam sem impacto no ranking até regra oficial diferente ser aprovada;
@@ -1029,7 +1025,7 @@ Antes de uma etapa/bloco:
 ```text
 1. ler docs/README.md
 2. conferir docs/ETAPAS_POS_PROJETO.md
-3. permanecer na etapa/bloco atual
+3. permanecer na etapa/bloco atual; após ETAPA 1, aguardar autorização para iniciar ETAPA 2
 4. não criar roadmap paralelo
 5. não avançar sem validação explícita
 ```
