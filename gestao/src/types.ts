@@ -1,4 +1,4 @@
-export type { UserRole, UserAccount, AuthResponse, AuthCapability } from './types/auth'
+export type { UserRole, InternalUserRole, InternalUserCreatePayload, UserAccount, AuthResponse, AuthCapability } from './types/auth'
 export type {
   CompetitionStatus,
   RegistrationWindowChangeType,
