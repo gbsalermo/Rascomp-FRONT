@@ -369,6 +369,16 @@ Os fluxos automatizados completos do Bloco 5 foram adicionados; não houve neces
 
 ---
 
+## Checkpoint automatizado atual da ETAPA 3
+
+```text
+Frontend Gestão                ✅ typecheck + build
+Backend                        ✅ 120 testes / 0 falhas / 0 erros / 0 skipped
+SecurityAuthorizationFlowTest  ✅ matriz HTTP
+DemoShowcaseDataInitializerTest ✅ quatro perfis testdata
+MySQL + Flyway V13 + testdata  ✅
+```
+
 # 5. Segurança
 
 Modelo atual:
