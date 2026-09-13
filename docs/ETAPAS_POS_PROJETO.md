@@ -1,6 +1,6 @@
 # RasComp — Etapas Pós-Projeto
 
-Última revisão: **12/09/2026**
+Última revisão: **13/09/2026**
 
 Este é o **único documento canônico para ordem de execução, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -24,7 +24,7 @@ backend: rascomp/docs/CONTINUIDADE.md
 
 ---
 
-# 1. Estado de execução em 12/09/2026
+# 1. Estado de execução em 13/09/2026
 
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
