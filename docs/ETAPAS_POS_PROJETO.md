@@ -1,6 +1,6 @@
 # RasComp — Etapas Pós-Projeto
 
-Última revisão: **09/09/2026**
+Última revisão: **12/09/2026**
 
 Este é o **único documento canônico para ordem de execução, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -24,12 +24,12 @@ backend: rascomp/docs/CONTINUIDADE.md
 
 ---
 
-# 1. Estado de execução em 09/09/2026
+# 1. Estado de execução em 12/09/2026
 
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
-ETAPA 1   🚧 ETAPA ATUAL — EM EXECUÇÃO E VALIDAÇÃO
-ETAPA 2   ⏳ NÃO INICIADA
+ETAPA 1   ✅ CONCLUÍDA / VALIDADA
+ETAPA 2   ⏭️ PRÓXIMA / NÃO INICIADA
 CHECKPOINT README/SCREENSHOTS ⏳ NÃO INICIADO
 ETAPA 3   ⏳ NÃO INICIADA
 ETAPA 4   ⏳ NÃO INICIADA
@@ -75,7 +75,7 @@ Bloco 1 — Competition + Registration     ✅ CONCLUÍDO / VALIDADO
 Bloco 2 — Follow Line                    ✅ CONCLUÍDO / VALIDADO
 Bloco 3 — Sumô                           ✅ CONCLUÍDO / VALIDADO
 Bloco 4 — Chaves                         ✅ CONCLUÍDO / VALIDADO
-Bloco 5 — Fluxos integrados completos    ⏭️ PRÓXIMO / NÃO INICIADO
+Bloco 5 — Fluxos integrados completos    ✅ CONCLUÍDO / VALIDADO
 ```
 
 O Bloco 2 consolidou:
@@ -123,7 +123,19 @@ O Bloco 4 consolidou:
 - backend com 98 testes, 0 falhas/erros/skipped e `demo-profile` verde contra MySQL real;
 - frontend Gestão com typecheck + build verdes.
 
-**A conclusão dos Blocos 1, 2, 3 e 4 não encerra a ETAPA 1. O próximo bloco é Fluxos integrados completos.**
+O Bloco 5 consolidou o fechamento integrado da ETAPA 1:
+
+- cinco suítes de fluxo com services + repositories reais usando H2 em memória no profile `flowtest`;
+- `CompetitionLifecycleFlowTest` para ciclo completo e preservação de estado em transição inválida;
+- `RegistrationFlowTest` para criação, aprovação, cancelamento e DESISTENTE após atividade competitiva;
+- `FollowCompetitionFlowTest` para tentativas, ranking, ausência e rejeição de estados impossíveis;
+- `SumoCompetitionFlowTest` para inspeção → chave → rounds → resultado → campeão e regra de penalidades;
+- `CompetitionIntegrityFlowTest` para ausência de persistência parcial e rollback transacional;
+- backend com **109 testes**, 0 falhas/erros/skipped;
+- profile `testdata` novamente validado contra MySQL real + Flyway V12;
+- frontend sem mudança funcional no Bloco 5, preservando o último typecheck + build verde.
+
+**A ETAPA 1 está concluída e validada. A ETAPA 2 é a próxima etapa, mas permanece NÃO INICIADA até confirmação explícita.**
 
 ---
 
@@ -168,7 +180,7 @@ Resultado consolidado:
 
 ---
 
-# ETAPA 1 — Correções de lógica e integridade 🚧
+# ETAPA 1 — Correções de lógica e integridade ✅
 
 **Objetivo:** fechar riscos que podem comprometer competição, histórico ou consistência antes da limpeza técnica e das novas funcionalidades.
 
@@ -291,7 +303,7 @@ Mapear invariantes que os futuros Ajustes Gerais não poderão quebrar, inclusiv
 Situação atual:
 
 ```text
-⏳ permanece como invariante da ETAPA 1 e da futura ETAPA 5
+✅ invariante mapeada na ETAPA 1; implementação administrativa permanece reservada à ETAPA 5
 ```
 
 ## 1.7 Sumô — Bloco 3 concluído
@@ -749,7 +761,7 @@ Cloudflare D1 não é requisito do primeiro deploy.
 ```text
 ETAPA 0  Baseline ✅
     ↓
-ETAPA 1  Correções de lógica e integridade 🚧
+ETAPA 1  Correções de lógica e integridade ✅
     ↓
 ETAPA 2  Limpeza técnica
     ↓
