@@ -49,7 +49,7 @@ Ainda em 13/09/2026, os domínios Follow e Sumô/chaves foram extraídos do `adm
 
 Na sequência, competições, inscrições e catálogos também foram modularizados. `api.ts` passou a ser somente uma fachada de composição, `types.ts` uma fachada de tipos e os CSS administrativos adjacentes foram consolidados em `admin-ui.css`. Com Frontend Checks #60–#62 verdes e o escopo técnico confirmado, a ETAPA 2 ficou concluída/validada. Smoke visual e testes práticos ficam reservados para etapas funcionais posteriores.
 
-Em 13/09/2026 a ETAPA 3 foi iniciada pelo backend. Flyway V13 migrou `ORGANIZACAO → DEV`, a autorização passou para a matriz `DEV | GESTAO | MIDIA | PARTICIPANTE` e os checks competitivos passaram a usar capacidades semânticas. Backend Tests #298/#299 ficaram verdes, inclusive `testdata` contra MySQL + Flyway V13.
+Em 13/09/2026 a ETAPA 3 foi iniciada em abordagem backend-first. Flyway V13 migrou `ORGANIZACAO → DEV`, a autorização passou para a matriz `DEV | GESTAO | MIDIA | PARTICIPANTE` e os checks competitivos passaram a usar capacidades semânticas. Na sequência, o frontend Gestão foi alinhado às mesmas capacidades, com rotas/menu separados para DEV, GESTAO, MIDIA e PARTICIPANTE. A matriz passou a ter validação HTTP real por `SecurityAuthorizationFlowTest`, seed dos quatro perfis coberto por `DemoShowcaseDataInitializerTest`, 120 testes verdes e profile `testdata` validado contra MySQL + Flyway V13.
 
 ---
 
