@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **09/09/2026**
+Última atualização: **12/09/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -26,8 +26,9 @@ docs/README.md
 
 ```text
 ETAPA 0  ✅ concluída / validada
-ETAPA 1  🚧 atual — lógica, integridade e testes de fluxo
-ETAPA 2+ ⏳ não iniciadas
+ETAPA 1  ✅ concluída / validada
+ETAPA 2   ⏭️ próxima / não iniciada
+ETAPA 3+ ⏳ não iniciadas
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -37,7 +38,7 @@ Bloco 1 — Competition + Registration     ✅ CONCLUÍDO
 Bloco 2 — Follow Line                    ✅ CONCLUÍDO
 Bloco 3 — Sumô                           ✅ CONCLUÍDO
 Bloco 4 — Chaves                         ✅ CONCLUÍDO
-Bloco 5 — Fluxos integrados completos    ⏭️ PRÓXIMO / NÃO INICIADO
+Bloco 5 — Fluxos integrados completos    ✅ CONCLUÍDO
 ```
 
 Em 06/09/2026 o bloco `Competition + Registration` foi concluído no backend e refletido no frontend.
@@ -82,7 +83,9 @@ Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, inclui
 - correção de vencedor propagado apenas enquanto a próxima dependência ainda não começou;
 - bloqueio da correção comum após início da dependência seguinte.
 
-**A ETAPA 1 continua aberta. O próximo bloco é Fluxos integrados completos.**
+Em 12/09/2026 o **Bloco 5 — Fluxos integrados completos** foi concluído no backend. Ele não exigiu nova funcionalidade visual: validou, com services e repositories reais, que os contratos já refletidos no `gestao/` funcionam juntos e que falhas não deixam persistência parcial.
+
+**A ETAPA 1 está concluída e validada. A ETAPA 2 é a próxima, mas permanece NÃO INICIADA até autorização explícita.**
 
 ---
 
@@ -349,18 +352,19 @@ Consolidação Landing/Galeria           ⏳ ETAPA 11
 
 # 4. Qualidade conhecida
 
-Checkpoint confirmado após o Bloco 4:
+Checkpoint confirmado após o Bloco 5 / encerramento da ETAPA 1:
 
 ```text
 Frontend Gestão     ✅ typecheck + build
-Backend             ✅ 98 testes / 0 falhas / 0 erros / 0 skipped
+Backend             ✅ 109 testes / 0 falhas / 0 erros / 0 skipped
+H2 flowtest          ✅ fluxos integrados com repositories reais
 MySQL + Flyway V12  ✅
 Profile testdata    ✅ cenário completo contra MySQL real
 ```
 
 A contagem vem do CI real do commit backend `4561d79388cf5befbac7d59b2dbf99ce122998bc`. O frontend foi validado pelo workflow `Frontend Checks` no commit `103481cc8eb855a222ed6756cbe6eeb1458b9257`.
 
-A ETAPA 1 ainda deverá adicionar os testes automatizados de fluxo completo no Bloco 5.
+Os fluxos automatizados completos do Bloco 5 foram adicionados; não houve necessidade de alterar o frontend nesse bloco.
 
 ---
 
@@ -558,7 +562,7 @@ Chaves                                  ✅ CONCLUÍDO
 Fluxos automatizados completos          ← PRÓXIMO BLOCO / NÃO INICIADO
 ```
 
-Não iniciar ETAPA 2 sem conclusão e validação explícita da ETAPA 1.
+A ETAPA 1 foi concluída e validada. Não iniciar ETAPA 2 sem autorização explícita.
 
 ---
 
