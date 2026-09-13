@@ -374,20 +374,23 @@ Os fluxos automatizados completos do Bloco 5 foram adicionados; não houve neces
 Modelo atual:
 
 ```text
-ORGANIZACAO
-PARTICIPANTE
-```
-
-ETAPA 3:
-
-```text
 DEV
 GESTAO
 MIDIA
 PARTICIPANTE
 ```
 
-Ao evoluir, preferir capacidades semânticas na UI, mantendo autorização real no backend.
+Capacidades atuais da UI:
+
+```text
+operateCompetition → DEV | GESTAO
+manageUsers        → DEV
+manageSystem       → DEV
+manageMedia        → DEV | MIDIA
+participant        → PARTICIPANTE
+```
+
+A UI usa capacidades semânticas, mas a autorização real continua pertencendo ao backend.
 
 ---
 
@@ -579,7 +582,7 @@ Chaves                                  ✅ CONCLUÍDO
 Fluxos automatizados completos          ← PRÓXIMO BLOCO / NÃO INICIADO
 ```
 
-As ETAPAS 1 e 2 foram concluídas e validadas. A ETAPA 3 está em andamento: backend concluído no Bloco 1 e frontend pendente.
+As ETAPAS 1 e 2 foram concluídas e validadas. A ETAPA 3 está em andamento com backend, frontend e validação automatizada integrados; resta apenas o checkpoint prático solicitado pelo usuário antes do fechamento formal.
 
 ---
 
@@ -600,15 +603,27 @@ Outra IA deve:
 10. atualizar documentação quando o estado realmente mudar
 ```
 
-## 10.2 ETAPA 3 — checkpoint backend
+## 10.2 ETAPA 3 — checkpoint integrado
 
-Backend concluído no primeiro bloco:
+Backend:
 
 - `DEV | GESTAO | MIDIA | PARTICIPANTE` ativos no domínio;
 - V13 migra `ORGANIZACAO → DEV`;
 - `DEV` administra usuários;
 - `DEV/GESTAO` operam competição;
 - `MIDIA` não recebe acesso competitivo;
-- Backend Tests #298/#299 verdes com MySQL/Flyway V13/testdata.
+- `PARTICIPANTE` mantém namespace próprio.
 
-O frontend ainda usa a matriz anterior e é o próximo bloco da ETAPA 3. Não tratar a UI como fonte de segurança.
+Frontend:
+
+- capacidades semânticas integradas no store/router;
+- DEV, GESTAO, MIDIA e PARTICIPANTE recebem navegação compatível;
+- Frontend Checks #64 verde.
+
+Validação:
+
+- `SecurityAuthorizationFlowTest` cobre autorização HTTP real;
+- `DemoShowcaseDataInitializerTest` cobre o seed dos quatro perfis;
+- MySQL + Flyway V13 + profile `testdata` verdes.
+
+Não tratar a UI como fonte de segurança.
