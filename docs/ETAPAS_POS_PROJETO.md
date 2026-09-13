@@ -31,7 +31,7 @@ ETAPA 0   ✅ CONCLUÍDA / VALIDADA
 ETAPA 1   ✅ CONCLUÍDA / VALIDADA
 ETAPA 2   ✅ CONCLUÍDA / VALIDADA
 CHECKPOINT README/SCREENSHOTS ⏳ NÃO INICIADO
-ETAPA 3   ⏳ NÃO INICIADA
+ETAPA 3   🚧 EM ANDAMENTO
 ETAPA 4   ⏳ NÃO INICIADA
 ETAPA 5   ⏳ NÃO INICIADA
 ETAPA 6   ⏳ NÃO INICIADA
@@ -473,6 +473,26 @@ Quando executado:
 ---
 
 # ETAPA 3 — Nova matriz de permissões
+
+## Checkpoint inicial — 13/09/2026
+
+A ETAPA 3 foi autorizada e iniciada pelo backend.
+
+### Bloco 1 — backend ✅
+
+- `UserRole` passou para `DEV | GESTAO | MIDIA | PARTICIPANTE`;
+- Flyway V13 migra usuários legados `ORGANIZACAO → DEV`, preservando o nível de acesso integral existente;
+- `DEV` administra usuários;
+- `DEV | GESTAO` operam as APIs competitivas existentes;
+- `MIDIA` não herda acesso competitivo; os módulos editoriais continuam reservados às etapas de mídia;
+- `PARTICIPANTE` mantém o namespace próprio;
+- verificações de negócio deixaram de depender de `ORGANIZACAO` e usam capacidade semântica de operação;
+- bootstrap inicial passou a criar `DEV`, mantendo fallback das variáveis legadas de ambiente;
+- Backend Tests #298 (PR) e #299 (main) ✅, incluindo MySQL + Flyway V13 + `testdata`.
+
+### Próximo bloco
+
+Integrar a mesma matriz no frontend Gestão com capacidades semânticas, navegação e proteção de rotas compatíveis com o backend.
 
 Substituir:
 
