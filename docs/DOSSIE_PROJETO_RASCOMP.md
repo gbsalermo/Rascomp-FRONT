@@ -210,7 +210,9 @@ PostgreSQL não faz parte da configuração ativa. Referências antigas dentro d
 
 ```text
 UserRole
-├─ ORGANIZACAO
+├─ DEV
+├─ GESTAO
+├─ MIDIA
 └─ PARTICIPANTE
 ```
 
@@ -219,12 +221,28 @@ Política predominante:
 ```text
 /api/v1/public/**       → público
 /api/v1/participante/** → PARTICIPANTE
-/api/v1/**              → ORGANIZACAO
+/api/v1/usuarios/**     → DEV
+/api/v1/**              → DEV | GESTAO
 ```
+
+`MIDIA` não herda operação competitiva.
 
 Conta desativada invalida autenticação nas requisições seguintes porque a validação JWT depende também de `usuario.isEnabled()`.
 
-## ETAPA 3 — matriz futura
+## Política de criação de contas
+
+```text
+cadastro público → PARTICIPANTE
+criação interna DEV-only → DEV | GESTAO | MIDIA
+```
+
+O cliente público não escolhe privilégios. Mesmo que envie um campo `role`, o fluxo de cadastro cria `PARTICIPANTE`.
+
+Uma mesma pessoa pode manter uma conta pessoal de participante e outra institucional. Como `email` é o identificador único de autenticação, essas contas usam e-mails distintos.
+
+Troca genérica de role não faz parte da ETAPA 3; operações desse tipo continuam reservadas aos Ajustes Gerais da ETAPA 5.
+
+## ETAPA 3 — matriz implementada
 
 ```text
 DEV
@@ -710,7 +728,7 @@ ParticipantView.vue
 NotFoundView.vue
 ```
 
-A gestão ainda usa `isOrganization`/`isParticipant`. A ETAPA 3 migrará para a nova matriz de permissões e deve preferir capacidades semânticas (`canManageCompetition`, `canOperateCompetition`, etc.).
+A gestão usa capacidades semânticas sobre `DEV | GESTAO | MIDIA | PARTICIPANTE`; a autorização real permanece no backend.
 
 A dívida prevista de `api.ts`, `types.ts` e CSS administrativo foi tratada na ETAPA 2; views grandes permanecem intactas quando não há ganho real em decompô-las.
 
