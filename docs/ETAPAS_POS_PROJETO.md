@@ -131,7 +131,7 @@ O Bloco 5 consolidou o fechamento integrado da ETAPA 1:
 - `FollowCompetitionFlowTest` para tentativas, ranking, ausência e rejeição de estados impossíveis;
 - `SumoCompetitionFlowTest` para inspeção → chave → rounds → resultado → campeão e regra de penalidades;
 - `CompetitionIntegrityFlowTest` para ausência de persistência parcial e rollback transacional;
-- backend com **109 testes**, 0 falhas/erros/skipped;
+- backend com **111 testes**, 0 falhas/erros/skipped;
 - profile `testdata` novamente validado contra MySQL real + Flyway V12;
 - frontend sem mudança funcional no Bloco 5, preservando o último typecheck + build verde.
 
