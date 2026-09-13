@@ -361,6 +361,30 @@ Profile testdata     ✅ cenário completo sobe contra MySQL real
 Frontend Gestão      ✅ typecheck + build
 ```
 
+## 1.9 Fluxos integrados — Bloco 5 concluído
+
+O Bloco 5 validou a composição ponta a ponta das regras dos Blocos 1–4 sem adicionar nova funcionalidade competitiva.
+
+```text
+CompetitionLifecycleFlowTest  → ciclo e transições
+RegistrationFlowTest          → inscrição/aprovação/cancelamento/desistência
+FollowCompetitionFlowTest     → tentativas/ranking/ausência
+SumoCompetitionFlowTest       → inspeção/chave/rounds/resultado/campeão/BYE
+CompetitionIntegrityFlowTest  → rollback e proteção cross-domain
+```
+
+Checkpoint final da ETAPA 1:
+
+```text
+Backend Tests        ✅ 111 testes / 0 falhas / 0 erros / 0 skipped
+H2 flowtest          ✅ services + repositories JPA reais
+MySQL + Flyway V12   ✅
+Profile testdata     ✅ cenário completo sobe contra MySQL real
+Frontend Gestão      ✅ último typecheck + build verde preservado
+```
+
+O Bloco 5 comprovou também que operações rejeitadas preservam o estado anterior e não deixam persistência parcial.
+
 ## Critério de saída
 
 - regras decididas;
