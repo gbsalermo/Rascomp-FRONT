@@ -1,6 +1,6 @@
 # RasComp — Índice da Documentação
 
-Última revisão: **06/09/2026**
+Última revisão: **13/09/2026**
 
 Este é o ponto de entrada para qualquer pessoa ou IA que precise entender ou continuar o RasComp.
 
@@ -27,15 +27,16 @@ A documentação foi revisada para evitar roadmaps paralelos, snapshots de demon
    → checkpoint vivo do backend
 ```
 
-Estado oficial em 06/09/2026:
+Estado oficial em 13/09/2026:
 
 ```text
 ETAPA 0  ✅ concluída / validada
-ETAPA 1  🚧 atual — lógica e integridade
-ETAPA 2+ ⏳ não iniciadas
+ETAPA 1  ✅ concluída / validada
+ETAPA 2  ⏭️ próxima / não iniciada
+ETAPA 3+ ⏳ não iniciadas
 ```
 
-O checkpoint documental de 04/09/2026 não alterou a etapa atual. Em 06/09/2026 a ETAPA 1 passou a possuir um contrato explícito de regras competitivas para orientar implementação e testes de fluxo.
+A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 é a próxima, mas permanece não iniciada até autorização explícita.
 
 ---
 
@@ -98,7 +99,7 @@ O backend é fonte de verdade de autorização, ownership e regras/resultados co
 
 ## `ETAPAS_POS_PROJETO.md`
 
-Planejamento único do ciclo. Define ETAPAS 0–14 e marca a ETAPA 1 como atual.
+Planejamento único do ciclo. Define ETAPAS 0–14, marca a ETAPA 1 como concluída e a ETAPA 2 como próxima/não iniciada.
 
 ## `DOSSIE_PROJETO_RASCOMP.md`
 
@@ -171,11 +172,11 @@ EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
 
 ```text
 Banco ativo                           MySQL
-Migrations                            V1–V7 imutáveis
-Próxima migration                     V8+
+Migrations                            V1–V12 imutáveis
+Próxima migration                     V13+
 Roles atuais                          ORGANIZACAO | PARTICIPANTE
 Roles futuras                         DEV | GESTAO | MIDIA | PARTICIPANTE
-ETAPA 1                               contrato competitivo + correções + testes de fluxo
+ETAPA 1                               ✅ contrato + correções + fluxos integrados concluídos
 Follow                                3 tomadas × 3 tentativas
 Ranking Follow                        menor (tempo + penalidades)
 Inspeção Sumô                         decisão humana APTO/INAPTO
@@ -215,7 +216,7 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 3. se a tarefa tocar competição, ler CONTRATO_REGRAS_COMPETITIVAS.md
 4. ler a continuidade do repositório afetado
 5. conferir código real
-6. trabalhar somente na etapa atual
+6. trabalhar somente na etapa autorizada pelo roadmap
 7. regra de negócio → backend primeiro
 8. atualizar testes
 9. integrar frontend
@@ -224,4 +225,4 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 12. parar no checkpoint e aguardar validação
 ```
 
-No estado atual, o próximo trabalho é **implementar as correções da ETAPA 1 e transformá-las em testes automatizados de fluxo**, usando o contrato competitivo como referência.
+No estado atual, a **ETAPA 1 está encerrada**. O próximo trabalho é a **ETAPA 2 — Limpeza técnica e organização de código**, ainda não iniciada; ao abrir uma nova janela, confirmar o roadmap antes de começar.
