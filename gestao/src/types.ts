@@ -1,11 +1,16 @@
 export type { UserRole, UserAccount, AuthResponse } from './types/auth'
-export type CompetitionStatus =
-  | 'PLANEJADA'
-  | 'INSCRICOES_ABERTAS'
-  | 'INSCRICOES_ENCERRADAS'
-  | 'EM_ANDAMENTO'
-  | 'FINALIZADA'
-  | 'CANCELADA'
+export type {
+  CompetitionStatus,
+  RegistrationWindowChangeType,
+  Modalidade,
+  SumoPhysicalClass,
+  SumoControlMode,
+  Competition,
+  CompetitionRegistrationWindowChange,
+  Category,
+  ConfigSumo,
+  ConfigFollow
+} from './types/competition'
 export type RegistrationStatus =
   | 'PENDENTE'
   | 'APROVADA'
@@ -14,10 +19,6 @@ export type RegistrationStatus =
   | 'DESISTENTE'
   | 'DESCLASSIFICADA'
 export type CancellationRequestStatus = 'PENDENTE' | 'APROVADA' | 'REJEITADA'
-export type RegistrationWindowChangeType = 'PRORROGACAO' | 'REABERTURA'
-export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
-export type SumoPhysicalClass = 'MINI_500G' | 'SUMO_3KG'
-export type SumoControlMode = 'AUTONOMO' | 'RC'
 export type MatchCallStatus = 'NAO_CONVOCADA' | 'CONVOCADA' | 'EM_CHAMADA' | 'PRONTA' | 'ADIADA'
 export type RoundSumoStatus = 'FINALIZADO' | 'EMPATADO' | 'ANULADO' | 'CANCELADO'
 export type RoundSumoOutcomeReason =
@@ -26,66 +27,6 @@ export type RoundSumoOutcomeReason =
   | 'PENALIDADES'
   | 'FALHA_INICIALIZACAO'
   | 'DECISAO_JUIZ'
-
-export interface Competition {
-  id?: number
-  nome: string
-  descricao?: string
-  inicioInscricoes: string
-  fimInscricoes: string
-  dataInicio: string
-  dataFim: string
-  status?: CompetitionStatus
-  ativo?: boolean
-  dataCadastro?: string
-}
-
-export interface CompetitionRegistrationWindowChange {
-  id?: number
-  competitionId: number
-  competitionNome?: string
-  tipo: RegistrationWindowChangeType
-  dataFimAnterior: string
-  novaDataFim: string
-  motivo: string
-  realizadoPorId?: number
-  realizadoPorNome?: string
-  dataCadastro?: string
-}
-
-export interface Category {
-  id: number
-  nome: string
-  modalidade: Modalidade
-  sumoPhysicalClass?: SumoPhysicalClass
-  sumoControlMode?: SumoControlMode
-  competitionId?: number
-  ativo?: boolean
-  [key: string]: unknown
-}
-
-export interface ConfigSumo {
-  id?: number
-  categoryId: number
-  pesoMax: number
-  exigeInspecao: boolean
-  maxTentativasInspecao: number
-  numeroRounds: number
-  roundsParaVencer: number
-  permiteRoundDesempate: boolean
-  maxRoundsExtras: number
-}
-
-export interface ConfigFollow {
-  id?: number
-  competitionCategoryId: number
-  numeroTomadas: number
-  tentativasPorTomada: number
-  maxTempoSegundos: number
-  numeroCheckpoints: number
-  penalidadePadraoSegundos: number
-  tempoApresentacaoSegundos: number
-}
 
 export interface Registration {
   id: number
