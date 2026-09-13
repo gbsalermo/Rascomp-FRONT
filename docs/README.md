@@ -204,7 +204,7 @@ Foram classificados como obsoletos documentos de preparação da demonstração,
 
 A intenção não é apagar decisões válidas: o estado consolidado foi preservado no roadmap, Dossiê Mestre e continuidades.
 
-A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS e estrutura de packages **não faz parte deste checkpoint documental**; permanece na ETAPA 2.
+A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS e estrutura de packages foi tratada posteriormente na ETAPA 2, já concluída.
 
 ---
 
