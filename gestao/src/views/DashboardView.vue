@@ -74,6 +74,12 @@ function categoryCount(categoryId: number) {
 }
 
 async function load() {
+  if (!auth.canOperateCompetition) {
+    loading.value = false
+    error.value = ''
+    return
+  }
+
   loading.value = true
   error.value = ''
   try {
@@ -102,7 +108,25 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="page-stack dashboard-page dashboard-v2" v-loading="loading">
+  <div v-if="auth.isMedia" class="page-stack dashboard-page dashboard-v2">
+    <div class="page-heading dashboard-heading">
+      <div>
+        <span class="eyebrow">Painel de mídia</span>
+        <h1>Olá, {{ auth.user?.nome?.split(' ')[0] }}.</h1>
+        <p class="muted">Seu perfil está separado da operação competitiva.</p>
+      </div>
+    </div>
+
+    <article class="feature-card">
+      <div>
+        <span class="eyebrow">Acesso editorial</span>
+        <h2>Perfil de mídia ativo</h2>
+        <p class="muted">As ferramentas editoriais serão disponibilizadas no módulo de mídia. Este perfil não possui acesso às rotinas de competição.</p>
+      </div>
+    </article>
+  </div>
+
+  <div v-else class="page-stack dashboard-page dashboard-v2" v-loading="loading">
     <div class="page-heading dashboard-heading">
       <div>
         <span class="eyebrow">Painel de gestão</span>

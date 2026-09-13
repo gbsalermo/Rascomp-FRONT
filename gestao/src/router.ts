@@ -19,8 +19,12 @@ import UsersView from './views/UsersView.vue'
 import SettingsView from './views/SettingsView.vue'
 import ParticipantView from './views/ParticipantView.vue'
 import NotFoundView from './views/NotFoundView.vue'
+import type { AuthCapability } from './types'
 
-const organizationMeta = { role: 'ORGANIZACAO' }
+const competitionMeta = { capability: 'operateCompetition' as AuthCapability }
+const usersMeta = { capability: 'manageUsers' as AuthCapability }
+const systemMeta = { capability: 'manageSystem' as AuthCapability }
+const participantMeta = { capability: 'participant' as AuthCapability }
 
 const router = createRouter({
   history: createWebHistory(),
@@ -33,21 +37,21 @@ const router = createRouter({
       component: ShellLayout,
       children: [
         { path: '', name: 'dashboard', component: DashboardView },
-        { path: 'competicoes', name: 'competitions', component: CompetitionsView, meta: organizationMeta },
-        { path: 'inscricoes', name: 'registrations', component: RegistrationsView, meta: organizationMeta },
-        { path: 'equipes', name: 'teams-admin', component: AdminCatalogView, meta: organizationMeta },
-        { path: 'robos', name: 'robots-admin', component: AdminCatalogView, meta: organizationMeta },
-        { path: 'modalidades', name: 'modalities-admin', component: AdminCatalogView, meta: organizationMeta },
-        { path: 'follow-line', name: 'follow', component: FollowView, meta: organizationMeta },
-        { path: 'follow-line/tomada/:registrationId', name: 'follow-run', component: FollowRunView, meta: organizationMeta },
-        { path: 'sumo', name: 'sumo', component: SumoView, meta: organizationMeta },
-        { path: 'sumo/partida/:matchId', name: 'sumo-match', component: SumoMatchView, meta: organizationMeta },
-        { path: 'chaves', name: 'brackets-history', component: BracketHistoryView, meta: organizationMeta },
-        { path: 'partidas', name: 'matches-admin', component: MatchesView, meta: organizationMeta },
-        { path: 'resultados', name: 'results-admin', component: ResultsView, meta: organizationMeta },
-        { path: 'usuarios', name: 'users-admin', component: UsersView, meta: organizationMeta },
-        { path: 'configuracoes', name: 'settings-admin', component: SettingsView, meta: organizationMeta },
-        { path: 'minha-equipe', name: 'participant', component: ParticipantView, meta: { role: 'PARTICIPANTE' } }
+        { path: 'competicoes', name: 'competitions', component: CompetitionsView, meta: competitionMeta },
+        { path: 'inscricoes', name: 'registrations', component: RegistrationsView, meta: competitionMeta },
+        { path: 'equipes', name: 'teams-admin', component: AdminCatalogView, meta: competitionMeta },
+        { path: 'robos', name: 'robots-admin', component: AdminCatalogView, meta: competitionMeta },
+        { path: 'modalidades', name: 'modalities-admin', component: AdminCatalogView, meta: competitionMeta },
+        { path: 'follow-line', name: 'follow', component: FollowView, meta: competitionMeta },
+        { path: 'follow-line/tomada/:registrationId', name: 'follow-run', component: FollowRunView, meta: competitionMeta },
+        { path: 'sumo', name: 'sumo', component: SumoView, meta: competitionMeta },
+        { path: 'sumo/partida/:matchId', name: 'sumo-match', component: SumoMatchView, meta: competitionMeta },
+        { path: 'chaves', name: 'brackets-history', component: BracketHistoryView, meta: competitionMeta },
+        { path: 'partidas', name: 'matches-admin', component: MatchesView, meta: competitionMeta },
+        { path: 'resultados', name: 'results-admin', component: ResultsView, meta: competitionMeta },
+        { path: 'usuarios', name: 'users-admin', component: UsersView, meta: usersMeta },
+        { path: 'configuracoes', name: 'settings-admin', component: SettingsView, meta: systemMeta },
+        { path: 'minha-equipe', name: 'participant', component: ParticipantView, meta: participantMeta }
       ]
     },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { public: true } }
@@ -67,7 +71,7 @@ router.beforeEach(async (to) => {
 
   if (to.meta.public) {
     if (auth.isAuthenticated && auth.user && ['login', 'register'].includes(String(to.name))) {
-      return auth.user.role === 'PARTICIPANTE' ? { name: 'participant' } : { name: 'dashboard' }
+      return auth.isParticipant ? { name: 'participant' } : { name: 'dashboard' }
     }
     return true
   }
@@ -76,13 +80,13 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
 
-  if (auth.user.role === 'PARTICIPANTE' && to.name === 'dashboard') {
+  if (auth.isParticipant && to.name === 'dashboard') {
     return { name: 'participant' }
   }
 
-  const requiredRole = to.meta.role as string | undefined
-  if (requiredRole && auth.user.role !== requiredRole) {
-    return auth.user.role === 'PARTICIPANTE' ? { name: 'participant' } : { name: 'dashboard' }
+  const requiredCapability = to.meta.capability as AuthCapability | undefined
+  if (requiredCapability && !auth.hasCapability(requiredCapability)) {
+    return auth.isParticipant ? { name: 'participant' } : { name: 'dashboard' }
   }
   return true
 })
