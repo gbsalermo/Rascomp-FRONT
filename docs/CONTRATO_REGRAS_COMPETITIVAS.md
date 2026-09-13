@@ -1,6 +1,6 @@
 # RasComp — Contrato de Regras Competitivas
 
-Última revisão: **12/09/2026**
+Última revisão: **13/09/2026**
 
 Este documento consolida as **regras competitivas e invariantes de domínio aprovadas durante a ETAPA 1** do RasComp.
 
