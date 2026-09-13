@@ -1,6 +1,6 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **12/09/2026**
+Última revisão estrutural: **13/09/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
