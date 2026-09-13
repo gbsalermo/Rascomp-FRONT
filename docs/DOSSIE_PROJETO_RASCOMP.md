@@ -709,7 +709,7 @@ NotFoundView.vue
 
 A gestão ainda usa `isOrganization`/`isParticipant`. A ETAPA 3 migrará para a nova matriz de permissões e deve preferir capacidades semânticas (`canManageCompetition`, `canOperateCompetition`, etc.).
 
-Dívida de `api.ts`, `types.ts`, views grandes e CSS sobreposto fica reservada à ETAPA 2.
+A dívida prevista de `api.ts`, `types.ts` e CSS administrativo foi tratada na ETAPA 2; views grandes permanecem intactas quando não há ganho real em decompô-las.
 
 ---
 
