@@ -364,9 +364,12 @@ Dados públicos são consumidos por contratos específicos e sanitizados.
 
 ## 📚 Documentação
 
+A ETAPA 1 — lógica e integridade está concluída/validada. O backend possui checkpoint de **111 testes verdes** com MySQL/Flyway V12 validado. A ETAPA 2 é a próxima etapa do roadmap, mas permanece não iniciada.
+
 A documentação técnica detalhada permanece separada da página de apresentação do projeto.
 
 - [`docs/README.md`](docs/README.md) — índice geral da documentação;
+- [`docs/ETAPAS_POS_PROJETO.md`](docs/ETAPAS_POS_PROJETO.md) — roadmap canônico e estado atual;
 - [`docs/DOSSIE_PROJETO_RASCOMP.md`](docs/DOSSIE_PROJETO_RASCOMP.md) — arquitetura e visão consolidada;
 - [`docs/SYSTEM_DESIGN_GESTAO.md`](docs/SYSTEM_DESIGN_GESTAO.md) — desenho técnico da Gestão;
 - [`docs/CONTRATO_REGRAS_COMPETITIVAS.md`](docs/CONTRATO_REGRAS_COMPETITIVAS.md) — referência das regras competitivas.
