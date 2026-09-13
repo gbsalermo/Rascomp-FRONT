@@ -75,6 +75,27 @@ backend avança vencedor
 
 Na ETAPA 4 a gestão ganhará seção de Avisos por competição. O backend persistirá o aviso IN_APP e, quando configurado, fará a entrega complementar via Telegram. A UI não chamará a Telegram Bot API diretamente.
 
+## Verificação local dos perfis da ETAPA 3
+
+Suba o backend com o profile local de demonstração:
+
+```powershell
+cd rascomp
+$env:SPRING_PROFILES_ACTIVE="testdata"
+.\mvnw spring-boot:run
+```
+
+Depois rode o `gestao/` normalmente e compare os quatro perfis:
+
+```text
+DEV            organizacao.demo@rascomp.local   / Rascomp@2026
+GESTAO         gestao.demo@rascomp.local        / Rascomp@2026
+MIDIA          midia.demo@rascomp.local         / Rascomp@2026
+PARTICIPANTE   lider.demo@rascomp.local         / Rascomp@2026
+```
+
+O participante possui equipe, robôs e inscrições no cenário de demonstração. O profile `testdata` é somente para ambiente local/testes e nunca deve ser habilitado em produção.
+
 ## Rodar localmente
 
 ```bash
