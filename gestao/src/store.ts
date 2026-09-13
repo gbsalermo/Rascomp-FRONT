@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { adminApi, AUTH_UNAUTHORIZED_EVENT, authApi } from './api'
-import type { Competition, UserAccount } from './types'
+import type { AuthCapability, Competition, UserAccount } from './types'
 
 const TOKEN_KEY = 'rascomp.token'
 const USER_KEY = 'rascomp.user'
@@ -44,8 +44,31 @@ export const useAuthStore = defineStore('auth', () => {
   const hydrated = ref(false)
 
   const isAuthenticated = computed(() => Boolean(token.value))
-  const isOrganization = computed(() => user.value?.role === 'ORGANIZACAO')
+  const isDev = computed(() => user.value?.role === 'DEV')
+  const isManagement = computed(() => user.value?.role === 'GESTAO')
+  const isMedia = computed(() => user.value?.role === 'MIDIA')
   const isParticipant = computed(() => user.value?.role === 'PARTICIPANTE')
+  const canOperateCompetition = computed(() => isDev.value || isManagement.value)
+  const canManageUsers = computed(() => isDev.value)
+  const canManageSystem = computed(() => isDev.value)
+  const canManageMedia = computed(() => isDev.value || isMedia.value)
+
+  function hasCapability(capability: AuthCapability) {
+    switch (capability) {
+      case 'operateCompetition':
+        return canOperateCompetition.value
+      case 'manageUsers':
+        return canManageUsers.value
+      case 'manageSystem':
+        return canManageSystem.value
+      case 'manageMedia':
+        return canManageMedia.value
+      case 'participant':
+        return isParticipant.value
+      default:
+        return false
+    }
+  }
 
   function persist() {
     clearStoredSession()
@@ -131,8 +154,15 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     hydrated,
     isAuthenticated,
-    isOrganization,
+    isDev,
+    isManagement,
+    isMedia,
     isParticipant,
+    canOperateCompetition,
+    canManageUsers,
+    canManageSystem,
+    canManageMedia,
+    hasCapability,
     login,
     register,
     hydrate,
