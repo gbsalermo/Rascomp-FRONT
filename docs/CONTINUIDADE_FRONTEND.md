@@ -553,8 +553,10 @@ Se algum documento histórico apresentar numeração diferente das etapas, preva
 - `api/http.ts` e `api/auth.ts` extraídos;
 - `api/public.ts` e `api/participant.ts` extraídos;
 - `types/auth.ts` e `types/competition.ts` extraídos;
+- domínio Follow extraído para `api/admin/follow.ts` + `types/follow.ts`;
+- domínio Sumô/chaves extraído para `api/admin/sumo.ts` + `types/sumo.ts`;
 - `api.ts` e `types.ts` mantidos como fachadas compatíveis;
-- Frontend Checks #57 com typecheck + build verdes;
+- Frontend Checks #57, #58 e #59 com typecheck + build verdes;
 - CSS corretivo mapeado, ainda sem consolidação para evitar regressão visual.
 
 # 11. Próximo passo

@@ -44,6 +44,8 @@ Em 12/09/2026 o Bloco 5 encerrou a ETAPA 1 com cinco suítes de fluxo integrado 
 
 Em 13/09/2026 foi iniciado o **checkpoint inicial da ETAPA 2**, com limpeza estrutural do backend e divisão incremental de `api.ts`/`types.ts` no frontend, preservando compatibilidade e sem refatoração big-bang. Backend Tests #297 e Frontend Checks #57 ficaram verdes.
 
+Ainda em 13/09/2026, os domínios Follow e Sumô/chaves foram extraídos do `adminApi` monolítico para módulos próprios, com `types/follow.ts` e `types/sumo.ts`; Frontend Checks #58 e #59 ficaram verdes.
+
 ---
 
 # 2. Identidade e escopo

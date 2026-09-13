@@ -419,12 +419,14 @@ A ETAPA 2 foi autorizada e iniciada.
 - autenticação separada em `api/auth.ts`;
 - APIs pública e participante separadas em `api/public.ts` e `api/participant.ts`;
 - tipos de autenticação e competição separados em `types/auth.ts` e `types/competition.ts`;
+- domínio Follow separado em `api/admin/follow.ts` + `types/follow.ts`;
+- domínio Sumô/chaves separado em `api/admin/sumo.ts` + `types/sumo.ts`;
 - `api.ts` e `types.ts` permanecem fachadas compatíveis para evitar refatoração big-bang;
-- Frontend Checks #57 ✅ (typecheck + build).
+- Frontend Checks #57, #58 e #59 ✅ (typecheck + build).
 
 ### Ainda pendente na ETAPA 2
 
-- revisar `adminApi` gradualmente;
+- revisar o restante de `adminApi` gradualmente (competição/inscrições/catálogos);
 - continuar divisão de tipos apenas onde houver ganho real;
 - decompor views grandes somente quando tocadas;
 - consolidar CSS corretivo sem regressão visual.
