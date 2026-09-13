@@ -135,7 +135,7 @@ O Bloco 5 consolidou o fechamento integrado da ETAPA 1:
 - profile `testdata` novamente validado contra MySQL real + Flyway V12;
 - frontend sem mudança funcional no Bloco 5, preservando o último typecheck + build verde.
 
-**A ETAPA 1 e a ETAPA 2 estão concluídas e validadas. A ETAPA 3 é a próxima etapa funcional do roadmap.**
+**As ETAPAS 1 e 2 estão concluídas e validadas. A ETAPA 3 está em andamento com backend, frontend e validação automatizada integrados; o checkpoint prático dos perfis permanece antes do fechamento formal.**
 
 ---
 
