@@ -85,7 +85,7 @@ Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, inclui
 
 Em 12/09/2026 o **Bloco 5 — Fluxos integrados completos** foi concluído no backend. Ele não exigiu nova funcionalidade visual: validou, com services e repositories reais, que os contratos já refletidos no `gestao/` funcionam juntos e que falhas não deixam persistência parcial.
 
-**A ETAPA 1 está concluída e validada. A ETAPA 2 é a próxima, mas permanece NÃO INICIADA até autorização explícita.**
+**As ETAPAS 1 e 2 estão concluídas e validadas. A ETAPA 3 é a próxima etapa funcional.**
 
 ---
 
@@ -477,7 +477,7 @@ O backend continua sendo a fonte de verdade para integridade, regeneração, pro
 
 ---
 
-# 8. Dívida técnica reservada à ETAPA 2
+# 8. ETAPA 2 — limpeza técnica concluída
 
 - `api.ts` e `types.ts` centralizados;
 - views grandes;
