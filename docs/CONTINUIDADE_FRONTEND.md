@@ -612,6 +612,21 @@ Outra IA deve:
 10. atualizar documentação quando o estado realmente mudar
 ```
 
+## 10.3 ETAPA 3 — política de contas
+
+```text
+Cadastro comum             → sempre PARTICIPANTE
+Nova conta interna         → DEV | GESTAO | MIDIA
+Quem cria conta interna    → somente DEV
+Alterar role genericamente → não faz parte da ETAPA 3
+```
+
+A tela `/usuarios` do DEV oferece criação explícita de conta interna. `PARTICIPANTE` não aparece entre as opções porque deve usar o cadastro comum.
+
+Uma mesma pessoa pode possuir uma conta participante e uma conta institucional separadas. Os e-mails precisam ser diferentes porque o e-mail é único e funciona como login.
+
+Backend Tests #309: 125 testes verdes. Frontend Checks #68: typecheck + build verdes.
+
 ## 10.2 ETAPA 3 — checkpoint integrado
 
 Backend:
