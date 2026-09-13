@@ -1,6 +1,6 @@
 # RasComp — Contrato de Regras Competitivas
 
-Última revisão: **08/09/2026**
+Última revisão: **12/09/2026**
 
 Este documento consolida as **regras competitivas e invariantes de domínio aprovadas durante a ETAPA 1** do RasComp.
 
@@ -1057,21 +1057,22 @@ Legenda:
 | Decisão do juiz | `MatchJudgeDecision` + operação específica | ✅ implementado no Bloco 3 |
 | Juiz identificado | `CompetitionJudge` vinculado à competição | ✅ implementado no Bloco 3 |
 | Falha de inicialização | motivo explícito + justificativa; consequência humana | ✅ implementado no Bloco 3 |
-| Geração só com inscrições encerradas | status ainda requer fechamento explícito | ⚠️ corrigir no Bloco 4 |
-| Regeneração só antes da atividade | incompleto | ⚠️ proteger no Bloco 4 |
-| Agenda separada da árvore | não formalizado | 🆕 estruturar no Bloco 4 quando aplicável |
-| Correção segura antes da próxima partida | progressão protege slots, mas não desfaz avanço | ⚠️ implementar no Bloco 4 |
-| Correção depois de dependência iniciada | risco atual | ⚠️ bloquear no Bloco 4 |
+| Geração só com inscrições encerradas | `BracketIntegrityService` exige `INSCRICOES_ENCERRADAS` | ✅ implementado no Bloco 4 |
+| Regeneração só antes da atividade | round, resultado ou partida real iniciada/finalizada bloqueiam regeneração; BYE isolado não bloqueia | ✅ implementado no Bloco 4 |
+| Agenda separada da árvore | horário, pista, ordem de execução e convocação separados da estrutura lógica | ✅ implementado no Bloco 4 |
+| Correção segura antes da próxima partida | vencedor propagado pode ser removido/substituído enquanto a dependência está intacta | ✅ implementado no Bloco 4 |
+| Correção depois de dependência iniciada | round, resultado ou estado iniciado/finalizado bloqueiam correção comum | ✅ implementado no Bloco 4 |
 
-Checkpoint automatizado após a conclusão do Bloco 3 — Sumô:
+Checkpoint automatizado após a conclusão do Bloco 5 — encerramento da ETAPA 1:
 
 ```text
-87 testes
+111 testes
 0 falhas
 0 erros
 0 skipped
-MySQL + Flyway V11 + testdata ✅
-Frontend Gestão typecheck + build ✅
+H2 flowtest com services/repositories reais ✅
+MySQL + Flyway V12 + testdata ✅
+Frontend Gestão preserva o último typecheck + build verde ✅
 ```
 
 O `demo-profile` também inicializa o cenário completo contra MySQL real com os seeds alinhados ao contrato de inspeção humana e modo de controle.
@@ -1080,7 +1081,7 @@ O `demo-profile` também inicializa o cenário completo contra MySQL real com os
 
 # 18. Testes automatizados derivados deste contrato
 
-A ETAPA 1 deve transformar as regras acima em testes automatizados de fluxo.
+A ETAPA 1 transformou as regras centrais em testes unitários e fluxos integrados.
 
 ## 18.1 Fluxo de inscrição/Competition
 
@@ -1099,7 +1100,7 @@ Cobrir:
 - coexistência Follow + Sumô no mesmo robô;
 - bloqueio Mini + 3 kg na mesma edição.
 
-Os cenários unitários principais dessas regras já existem; a simulação integrada com repositories reais permanece como camada adicional da ETAPA 1.
+Os cenários unitários permanecem e o Bloco 5 adicionou `RegistrationFlowTest` com repositories reais para criação, aprovação, cancelamento e DESISTENTE após atividade competitiva.
 
 ## 18.2 Fluxo Follow
 
@@ -1117,7 +1118,7 @@ integração da ausência com desistência/reabertura
 ranking preservado
 ```
 
-O Bloco 5 ainda deverá executar a simulação integrada de competição completa, incluindo:
+O Bloco 5 adicionou `FollowCompetitionFlowTest`, cobrindo de forma integrada:
 
 - tempo válido;
 - penalidade;
@@ -1130,9 +1131,9 @@ O Bloco 5 ainda deverá executar a simulação integrada de competição complet
 
 ## 18.3 Fluxo Sumô
 
-O Bloco 3 já possui cobertura unitária relevante para inspeção humana, categoria/configuração e regras de rounds. O profile `testdata` também comprova inicialização completa contra MySQL/Flyway V11.
+O Bloco 3 preserva sua cobertura unitária e o Bloco 5 adicionou `SumoCompetitionFlowTest`; o profile `testdata` continua comprovando inicialização completa contra MySQL/Flyway V12.
 
-O Bloco 5 ainda deverá executar a simulação integrada ponta a ponta com repositories reais, incluindo:
+A camada integrada do Sumô cobre diretamente:
 
 - inspeção humana APTO/INAPTO;
 - geração de chave;
@@ -1219,3 +1220,42 @@ Ao alterar uma regra competitiva:
 ```
 
 Não manter regra competitiva importante somente em código, somente em interface ou somente em conversa.
+
+
+---
+
+# 21. Fechamento da ETAPA 1 — Bloco 5
+
+O Bloco 5 não adicionou regra competitiva nova. Ele validou a composição dos contratos dos Blocos 1–4 usando Spring Boot, services reais e repositories JPA reais.
+
+Suítes integradas adicionadas:
+
+```text
+CompetitionLifecycleFlowTest
+RegistrationFlowTest
+FollowCompetitionFlowTest
+SumoCompetitionFlowTest
+CompetitionIntegrityFlowTest
+```
+
+Cobertura integrada confirmada:
+
+- ciclo normal de Competition e rejeição de transição inválida sem alteração persistida;
+- criação/aprovação de Registration, cancelamento sem histórico e DESISTENTE após atividade;
+- Follow com ranking, penalidade, ausência e rejeição de estado impossível;
+- Sumô com inspeção humana, geração de chave, BYE, rounds, penalidades, resultado e campeão;
+- correção de vencedor bloqueada quando a dependência seguinte já iniciou;
+- batalha multi-round inválida com rollback integral, sem round ou resultado parcial persistido.
+
+A suíte completa encerrou a ETAPA 1 com:
+
+```text
+111 testes
+0 falhas
+0 erros
+0 skipped
+```
+
+O profile `flowtest` usa H2 em memória exclusivamente para os fluxos integrados rápidos. O job separado `demo-profile` continua validando MySQL real + Flyway V1–V12 + initializers.
+
+A ETAPA 1 está concluída e validada. A ETAPA 2 permanece não iniciada até autorização explícita.
