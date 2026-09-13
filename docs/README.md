@@ -67,7 +67,7 @@ SNAPSHOT HISTÓRICO
 → serve apenas como contexto do momento em que foi escrito
 ```
 
-O código atual prevalece sobre documentação histórica para afirmar o que realmente está implementado. Quando o código divergir de uma regra competitiva já aprovada no contrato, isso representa uma pendência de implementação da etapa atual, não uma mudança automática da regra.
+O código atual prevalece sobre documentação histórica para afirmar o que realmente está implementado. Quando o código divergir de uma regra competitiva já aprovada no contrato, isso representa uma pendência de consistência a ser registrada e tratada explicitamente no roadmap; não altera automaticamente a regra nem o escopo da etapa atual.
 
 ---
 
