@@ -32,21 +32,8 @@ import { http } from './api/http'
 export { API_URL, assetUrl, AUTH_UNAUTHORIZED_EVENT, http } from './api/http'
 export { authApi } from './api/auth'
 
-export const publicApi = {
-  competitions: () => http.get<Competition[]>('/api/v1/public/competicoes').then((r) => r.data),
-  categories: (modalidade?: string) =>
-    http.get<Category[]>('/api/v1/public/categorias', { params: modalidade ? { modalidade } : undefined }).then((r) => r.data),
-  robotPhotos: (robotId: number) =>
-    http.get<RobotImage[]>(`/api/v1/public/robos/${robotId}/fotos`).then((r) => r.data),
-  rankingFollow: (competitionId: number, categoryId: number) =>
-    http.get<RankingItem[]>('/api/v1/public/ranking/seguidor-linha', { params: { competitionId, categoryId } }).then((r) => r.data),
-  brackets: (competitionId: number) =>
-    http.get<Bracket[]>('/api/v1/public/chaveamentos', { params: { competitionId } }).then((r) => r.data),
-  matches: (bracketId: number) =>
-    http.get<Match[]>('/api/v1/public/partidas', { params: { bracketId } }).then((r) => r.data),
-  results: (bracketId: number) =>
-    http.get<MatchResult[]>('/api/v1/public/resultados', { params: { bracketId } }).then((r) => r.data)
-}
+export { publicApi } from './api/public'
+export { participantApi } from './api/participant'
 
 export const adminApi = {
   competitions: (status?: string) =>
@@ -149,35 +136,4 @@ export const adminApi = {
     http.get<MatchJudgeDecision>('/api/v1/decisoes-juiz-sumo/por-partida', { params: { matchId } }).then((r) => r.data),
   decideSumoMatch: (payload: { matchId: number; winnerRegistrationId: number; judgeId: number; justificativa: string }) =>
     http.post<MatchJudgeDecision>('/api/v1/decisoes-juiz-sumo', payload).then((r) => r.data)
-}
-
-export const participantApi = {
-  institutions: () => http.get<Array<{ id: number; nome: string; sigla?: string }>>('/api/v1/public/instituicoes').then((r) => r.data),
-  teams: () => http.get<Team[]>('/api/v1/participante/equipes').then((r) => r.data),
-  createTeam: (payload: { nome: string; institutionId: number }) => http.post<Team>('/api/v1/participante/equipes', payload).then((r) => r.data),
-  competitors: (teamId: number) => http.get<Competitor[]>(`/api/v1/participante/equipes/${teamId}/competidores`).then((r) => r.data),
-  robots: (teamId: number) => http.get<Robot[]>(`/api/v1/participante/equipes/${teamId}/robos`).then((r) => r.data),
-  robotPhotos: (robotId: number) => http.get<RobotImage[]>(`/api/v1/participante/robos/${robotId}/fotos`).then((r) => r.data),
-  uploadRobotPhoto: (robotId: number, file: File) => {
-    const form = new FormData()
-    form.append('arquivo', file)
-    return http.post<RobotImage>(`/api/v1/participante/robos/${robotId}/fotos`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    }).then((r) => r.data)
-  },
-  setPrincipalRobotPhoto: (robotId: number, imageId: number) =>
-    http.patch<RobotImage>(`/api/v1/participante/robos/${robotId}/fotos/${imageId}/principal`).then((r) => r.data),
-  deleteRobotPhoto: (robotId: number, imageId: number) => http.delete(`/api/v1/participante/robos/${robotId}/fotos/${imageId}`),
-  registrations: (teamId: number) => http.get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`).then((r) => r.data),
-  cancelRegistration: (registrationId: number) => http.delete(`/api/v1/participante/inscricoes/${registrationId}`),
-  reactivateRegistration: (registrationId: number) =>
-    http.patch<Registration>(`/api/v1/participante/inscricoes/${registrationId}/reativar`).then((r) => r.data),
-  requestRegistrationCancellation: (registrationId: number, motivo: string) =>
-    http.post<RegistrationCancellationRequest>(`/api/v1/participante/inscricoes/${registrationId}/solicitacoes-cancelamento`, { motivo }).then((r) => r.data),
-  registrationCancellationRequests: (registrationId: number) =>
-    http.get<RegistrationCancellationRequest[]>(`/api/v1/participante/inscricoes/${registrationId}/solicitacoes-cancelamento`).then((r) => r.data),
-  followAttempts: (registrationId: number) =>
-    http.get<FollowAttempt[]>(`/api/v1/participante/inscricoes/${registrationId}/tentativas-follow`).then((r) => r.data),
-  followConfig: (registrationId: number) =>
-    http.get<ConfigFollow>(`/api/v1/participante/inscricoes/${registrationId}/config-follow`).then((r) => r.data)
 }
