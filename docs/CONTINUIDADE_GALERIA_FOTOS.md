@@ -1,6 +1,6 @@
 # Continuidade — Galeria de Fotos RAS UFRB
 
-Última revisão: **31/08/2026**
+Última revisão: **13/09/2026**
 
 Este arquivo registra o estado específico de `photo-gallery/` e as decisões técnicas de mídia já tomadas.
 
@@ -16,8 +16,9 @@ Estado global atual:
 
 ```text
 ETAPA 0  ✅ concluída / validada
-ETAPA 1  🚧 atual
-ETAPA 2+ ⏳ não iniciadas
+ETAPA 1  ✅ concluída / validada
+ETAPA 2  ⏭️ próxima / não iniciada
+ETAPA 3+ ⏳ não iniciadas
 ```
 
 Portanto, não iniciar agora o backend de álbuns/CMS apenas porque ele aparece neste documento como evolução futura.
@@ -104,7 +105,7 @@ A Landing:
 - pode apontar para a aplicação separada via configuração;
 - ainda depende de placeholders/dados demonstrativos em partes do conteúdo.
 
-A consolidação com conteúdo real pertence às ETAPAS 7 e 11, não à ETAPA 1 atual.
+A consolidação com conteúdo real pertence às ETAPAS 7 e 11, não à próxima ETAPA 2.
 
 ---
 
