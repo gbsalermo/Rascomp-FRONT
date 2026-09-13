@@ -490,9 +490,30 @@ A ETAPA 3 foi autorizada e iniciada pelo backend.
 - bootstrap inicial passou a criar `DEV`, mantendo fallback das variáveis legadas de ambiente;
 - Backend Tests #298 (PR) e #299 (main) ✅, incluindo MySQL + Flyway V13 + `testdata`.
 
-### Próximo bloco
+### Bloco 2 — frontend ✅
 
-Integrar a mesma matriz no frontend Gestão com capacidades semânticas, navegação e proteção de rotas compatíveis com o backend.
+- tipos atualizados para `DEV | GESTAO | MIDIA | PARTICIPANTE`;
+- store usa capacidades semânticas em vez de comparar a role em toda a UI;
+- `DEV` possui operação competitiva, usuários e sistema;
+- `GESTAO` possui operação competitiva sem administração estrutural;
+- `MIDIA` possui painel autenticado próprio e não herda operação competitiva;
+- `PARTICIPANTE` permanece direcionado ao portal próprio;
+- rotas protegidas por capacidade;
+- Frontend Checks #64 ✅ (typecheck + build).
+
+### Bloco 3 — validação automatizada ✅
+
+- `SecurityAuthorizationFlowTest` valida a matriz no Spring Security por HTTP;
+- DEV acessa operação competitiva e administração de usuários;
+- GESTAO acessa competição e recebe 403 em administração de usuários;
+- MIDIA recebe 403 nos namespaces competitivos/administrativos atuais;
+- PARTICIPANTE recebe 403 nos namespaces administrativos;
+- `DemoShowcaseDataInitializerTest` valida os quatro usuários locais de demonstração;
+- Backend Tests #302 ✅ e checkpoint final do seed/testdata validado contra MySQL + Flyway V13.
+
+### Verificação prática disponível
+
+Com o profile `testdata`, existem contas locais para os quatro perfis. A verificação manual serve como checkpoint do usuário, mas a autorização oficial permanece coberta pelo backend e pelos testes automatizados.
 
 Substituir:
 
