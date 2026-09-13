@@ -9,10 +9,38 @@ const auth = useAuthStore()
 const loading = ref(false)
 const changingIds = ref<number[]>([])
 const selectedRole = ref<UserRole>('PARTICIPANTE')
-const participants = ref<UserAccount[]>([])
-const organization = ref<UserAccount[]>([])
 
-const rows = computed(() => selectedRole.value === 'PARTICIPANTE' ? participants.value : organization.value)
+const roleOptions: Array<{ label: string; value: UserRole }> = [
+  { label: 'Participantes', value: 'PARTICIPANTE' },
+  { label: 'Gestão', value: 'GESTAO' },
+  { label: 'Mídia', value: 'MIDIA' },
+  { label: 'DEV', value: 'DEV' }
+]
+
+const usersByRole = ref<Record<UserRole, UserAccount[]>>({
+  DEV: [],
+  GESTAO: [],
+  MIDIA: [],
+  PARTICIPANTE: []
+})
+
+const rows = computed(() => usersByRole.value[selectedRole.value])
+const participants = computed(() => usersByRole.value.PARTICIPANTE)
+const internalUsers = computed(() => [
+  ...usersByRole.value.DEV,
+  ...usersByRole.value.GESTAO,
+  ...usersByRole.value.MIDIA
+])
+
+function roleLabel(role: UserRole) {
+  const labels: Record<UserRole, string> = {
+    DEV: 'DEV',
+    GESTAO: 'Gestão',
+    MIDIA: 'Mídia',
+    PARTICIPANTE: 'Participante'
+  }
+  return labels[role]
+}
 
 function isChanging(id: number) {
   return changingIds.value.includes(id)
@@ -46,12 +74,11 @@ function formatDateTime(value?: string) {
 async function load() {
   loading.value = true
   try {
-    const [participantRows, organizationRows] = await Promise.all([
-      adminApi.users('PARTICIPANTE'),
-      adminApi.users('ORGANIZACAO')
-    ])
-    participants.value = participantRows
-    organization.value = organizationRows
+    const roles: UserRole[] = ['PARTICIPANTE', 'GESTAO', 'MIDIA', 'DEV']
+    const results = await Promise.all(roles.map((role) => adminApi.users(role)))
+    roles.forEach((role, index) => {
+      usersByRole.value[role] = results[index]
+    })
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os usuários.')
   } finally {
@@ -111,9 +138,9 @@ onMounted(load)
         <small>{{ participants.filter((item) => item.ativo).length }} ativos</small>
       </article>
       <article class="metric-card accent-red">
-        <span>Organização</span>
-        <strong>{{ organization.length }}</strong>
-        <small>{{ organization.filter((item) => item.ativo).length }} ativos</small>
+        <span>Equipe interna</span>
+        <strong>{{ internalUsers.length }}</strong>
+        <small>{{ internalUsers.filter((item) => item.ativo).length }} ativos entre DEV, Gestão e Mídia</small>
       </article>
     </section>
 
@@ -125,10 +152,7 @@ onMounted(load)
         </div>
         <el-segmented
           v-model="selectedRole"
-          :options="[
-            { label: 'Participantes', value: 'PARTICIPANTE' },
-            { label: 'Organização', value: 'ORGANIZACAO' }
-          ]"
+          :options="roleOptions"
         />
       </div>
 
@@ -137,7 +161,7 @@ onMounted(load)
         <el-table-column prop="email" label="E-mail" min-width="230" />
         <el-table-column label="Perfil" width="140">
           <template #default="{ row }">
-            {{ row.role === 'ORGANIZACAO' ? 'Organização' : 'Participante' }}
+            {{ roleLabel(row.role) }}
           </template>
         </el-table-column>
         <el-table-column label="Último acesso" min-width="170">
