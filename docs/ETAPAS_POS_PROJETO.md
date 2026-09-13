@@ -422,14 +422,21 @@ A ETAPA 2 foi autorizada e iniciada.
 - domínio Follow separado em `api/admin/follow.ts` + `types/follow.ts`;
 - domínio Sumô/chaves separado em `api/admin/sumo.ts` + `types/sumo.ts`;
 - `api.ts` e `types.ts` permanecem fachadas compatíveis para evitar refatoração big-bang;
-- Frontend Checks #57, #58 e #59 ✅ (typecheck + build).
+- domínios de competição, inscrições e catálogos separados em módulos administrativos próprios;
+- `api.ts` reduzido a uma fachada de composição e `types.ts` a uma fachada de tipos;
+- `admin-consolidation.css` + `admin-refinement.css` consolidados em `admin-ui.css`, preservando a ordem da cascata;
+- views grandes mantidas intactas porque não foram tocadas funcionalmente;
+- varredura sem `TODO:` / `FIXME`, backups ou artefatos gerados versionados;
+- Frontend Checks #57–#62 ✅ (typecheck + build).
 
-### Ainda pendente na ETAPA 2
+### Implementação técnica concluída
 
-- revisar o restante de `adminApi` gradualmente (competição/inscrições/catálogos);
-- continuar divisão de tipos apenas onde houver ganho real;
-- decompor views grandes somente quando tocadas;
-- consolidar CSS corretivo sem regressão visual.
+Os itens técnicos previstos para a ETAPA 2 foram executados sem refatoração big-bang.
+
+### Ainda pendente para encerrar a ETAPA 2
+
+- smoke visual das telas principais, especialmente login/portal/admin;
+- validação explícita do checkpoint antes de iniciar a ETAPA 3.
 
 ## Backend
 

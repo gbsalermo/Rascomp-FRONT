@@ -46,6 +46,8 @@ Em 13/09/2026 foi iniciado o **checkpoint inicial da ETAPA 2**, com limpeza estr
 
 Ainda em 13/09/2026, os domínios Follow e Sumô/chaves foram extraídos do `adminApi` monolítico para módulos próprios, com `types/follow.ts` e `types/sumo.ts`; Frontend Checks #58 e #59 ficaram verdes.
 
+Na sequência, competições, inscrições e catálogos também foram modularizados. `api.ts` passou a ser somente uma fachada de composição, `types.ts` uma fachada de tipos e os CSS administrativos adjacentes foram consolidados em `admin-ui.css`. Com Frontend Checks #60–#62 verdes, a implementação técnica da ETAPA 2 ficou concluída; resta smoke visual e validação explícita antes da ETAPA 3.
+
 ---
 
 # 2. Identidade e escopo

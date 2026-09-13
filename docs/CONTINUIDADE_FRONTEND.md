@@ -557,7 +557,12 @@ Se algum documento histórico apresentar numeração diferente das etapas, preva
 - domínio Sumô/chaves extraído para `api/admin/sumo.ts` + `types/sumo.ts`;
 - `api.ts` e `types.ts` mantidos como fachadas compatíveis;
 - Frontend Checks #57, #58 e #59 com typecheck + build verdes;
-- CSS corretivo mapeado, ainda sem consolidação para evitar regressão visual.
+- competições/inscrições extraídas para módulos administrativos próprios;
+- catálogos/usuários extraídos para `api/admin/catalog.ts` + `types/catalog.ts`;
+- `api.ts` virou fachada de composição; `types.ts` virou fachada de tipos;
+- `admin-consolidation.css` + `admin-refinement.css` consolidados em `admin-ui.css` preservando a cascata;
+- Frontend Checks #60, #61 e #62 com typecheck + build verdes;
+- bloco de login mantido sem reordenação para evitar regressão visual.
 
 # 11. Próximo passo
 
