@@ -5,14 +5,10 @@ import type {
   Competition,
   CompetitionJudge,
   CompetitionRegistrationWindowChange,
-  ConfigFollow,
   ConfigSumo,
-  FollowAttempt,
-  FollowTakeAbsence,
   Match,
   MatchJudgeDecision,
   MatchResult,
-  RankingItem,
   Registration,
   RegistrationCancellationRequest,
   RobotImage,
@@ -28,6 +24,7 @@ import type {
 } from './types'
 
 import { http } from './api/http'
+import { adminFollowApi } from './api/admin/follow'
 
 export { API_URL, assetUrl, AUTH_UNAUTHORIZED_EVENT, http } from './api/http'
 export { authApi } from './api/auth'
@@ -78,17 +75,7 @@ export const adminApi = {
     http.patch<UserAccount>(`/api/v1/usuarios/${id}/ativo`, null, { params: { ativo } }).then((r) => r.data),
   robotPhotos: (robotId: number) => http.get<RobotImage[]>(`/api/v1/robos/${robotId}/fotos`).then((r) => r.data),
   competitors: () => http.get<Competitor[]>('/api/v1/competidores').then((r) => r.data),
-  rankingFollow: (competitionId: number, categoryId: number) =>
-    http.get<RankingItem[]>('/api/v1/ranking/seguidor-linha', { params: { competitionId, categoryId } }).then((r) => r.data),
-  followConfig: (categoryId: number) => http.get<ConfigFollow>(`/api/v1/categorias/${categoryId}/config-follow`).then((r) => r.data),
-  followAttempts: (competitionId: number, categoryId: number) =>
-    http.get<FollowAttempt[]>('/api/v1/tentativas-seguidor-linha/por-contexto', { params: { competitionId, categoryId } }).then((r) => r.data),
-  createFollowAttempt: (payload: Omit<FollowAttempt, 'id' | 'competitionId' | 'categoryId' | 'teamNome' | 'robotNome' | 'tempoFinalSegundos' | 'dataCadastro'>) =>
-    http.post<FollowAttempt>('/api/v1/tentativas-seguidor-linha', payload).then((r) => r.data),
-  followTakeAbsences: (competitionId: number, categoryId: number) =>
-    http.get<FollowTakeAbsence[]>('/api/v1/ausencias-tomada-seguidor-linha/por-contexto', { params: { competitionId, categoryId } }).then((r) => r.data),
-  markFollowTakeAbsence: (payload: { registrationId: number; tomada: number; observacao?: string }) =>
-    http.post<FollowTakeAbsence>('/api/v1/ausencias-tomada-seguidor-linha', payload).then((r) => r.data),
+  ...adminFollowApi,
   inspectSumo: (payload: { registrationId: number; aprovada: boolean; pesoMedido?: number; observacao?: string }) =>
     http.post<SumoInspection>('/api/v1/inspecoes-sumo', payload).then((r) => r.data),
   sumoInspections: (registrationId: number) =>
