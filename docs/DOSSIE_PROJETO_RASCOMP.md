@@ -22,15 +22,16 @@ Bloco 3 — Sumô                                 ✅ concluído / validado
 Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
-ETAPA 3+                                       ⏳ não iniciadas
+ETAPA 3                                        🚧 em andamento
+ETAPA 4+                                       ⏳ não iniciadas
 Backend — último checkpoint funcional          111 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
-Migrations                                     V1–V12
-Próxima migration estrutural                   V13+
+Migrations                                     V1–V13
+Próxima migration estrutural                   V14+
 Profile testdata                               ✅ contra MySQL real
-Roles atuais                                   ORGANIZACAO | PARTICIPANTE
-Roles futuras                                  DEV | GESTAO | MIDIA | PARTICIPANTE
+Roles atuais                                   DEV | GESTAO | MIDIA | PARTICIPANTE
+ETAPA 3                                        backend ✅ / frontend ⏳
 Deploy cloud                                   ⏳ ETAPA 14
 ```
 
@@ -47,6 +48,8 @@ Em 13/09/2026 foi iniciado o **checkpoint inicial da ETAPA 2**, com limpeza estr
 Ainda em 13/09/2026, os domínios Follow e Sumô/chaves foram extraídos do `adminApi` monolítico para módulos próprios, com `types/follow.ts` e `types/sumo.ts`; Frontend Checks #58 e #59 ficaram verdes.
 
 Na sequência, competições, inscrições e catálogos também foram modularizados. `api.ts` passou a ser somente uma fachada de composição, `types.ts` uma fachada de tipos e os CSS administrativos adjacentes foram consolidados em `admin-ui.css`. Com Frontend Checks #60–#62 verdes e o escopo técnico confirmado, a ETAPA 2 ficou concluída/validada. Smoke visual e testes práticos ficam reservados para etapas funcionais posteriores.
+
+Em 13/09/2026 a ETAPA 3 foi iniciada pelo backend. Flyway V13 migrou `ORGANIZACAO → DEV`, a autorização passou para a matriz `DEV | GESTAO | MIDIA | PARTICIPANTE` e os checks competitivos passaram a usar capacidades semânticas. Backend Tests #298/#299 ficaram verdes, inclusive `testdata` contra MySQL + Flyway V13.
 
 ---
 
