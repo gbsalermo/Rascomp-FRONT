@@ -37,7 +37,7 @@ ETAPA 3  🚧 em andamento
 ETAPA 4+ ⏳ não iniciadas
 ```
 
-A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi concluída/validada em 13/09/2026 no escopo técnico de limpeza e organização. A ETAPA 3 está em andamento; o Bloco 1 do backend foi concluído e o frontend é o próximo bloco.
+A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi concluída/validada em 13/09/2026 no escopo técnico de limpeza e organização. A ETAPA 3 está em andamento; backend e frontend da matriz já foram integrados e a autorização foi validada por testes HTTP. Há contas locais de `testdata` para o checkpoint prático dos quatro perfis.
 
 ---
 
@@ -176,7 +176,7 @@ Banco ativo                           MySQL
 Migrations                            V1–V13 imutáveis
 Próxima migration                     V14+
 Roles atuais                          DEV | GESTAO | MIDIA | PARTICIPANTE
-ETAPA 3                               🚧 backend concluído / frontend pendente
+ETAPA 3                               🚧 backend + frontend + testes integrados
 ETAPA 1                               ✅ contrato + correções + fluxos integrados concluídos
 Follow                                3 tomadas × 3 tentativas
 Ranking Follow                        menor (tempo + penalidades)
@@ -226,4 +226,4 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 12. parar no checkpoint e aguardar validação
 ```
 
-No estado atual, as **ETAPAS 1 e 2 estão encerradas/validadas** e a **ETAPA 3 — Nova matriz de permissões** está em andamento, com o bloco backend concluído.
+No estado atual, as **ETAPAS 1 e 2 estão encerradas/validadas** e a **ETAPA 3 — Nova matriz de permissões** está em andamento, com backend, frontend e testes automatizados integrados.
