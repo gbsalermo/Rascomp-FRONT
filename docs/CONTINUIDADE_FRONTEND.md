@@ -86,7 +86,7 @@ Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, inclui
 
 Em 12/09/2026 o **Bloco 5 — Fluxos integrados completos** foi concluído no backend. Ele não exigiu nova funcionalidade visual: validou, com services e repositories reais, que os contratos já refletidos no `gestao/` funcionam juntos e que falhas não deixam persistência parcial.
 
-**As ETAPAS 1 e 2 estão concluídas e validadas. A ETAPA 3 é a próxima etapa funcional.**
+**As ETAPAS 1 e 2 estão concluídas e validadas. A ETAPA 3 está em andamento com backend, frontend e testes automatizados integrados.**
 
 ---
 
@@ -97,7 +97,7 @@ gestao/
 → aplicação autenticada
 → operação da organização
 → portal do participante
-→ futuras áreas DEV/MIDIA
+→ perfis DEV/GESTAO/MIDIA/PARTICIPANTE ativos
 
 landing-page/
 → site público institucional e competitivo
