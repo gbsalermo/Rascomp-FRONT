@@ -5,14 +5,25 @@ Aplicação autenticada de operação do RasComp, construída em **Vue 3 + TypeS
 ## Responsabilidades atuais
 
 ```text
-ORGANIZACAO
+DEV
+→ acesso integral ao painel autenticado
+→ operação competitiva
+→ administração de usuários
+→ configurações de sistema
+
+GESTAO
 → competições
 → revisão de inscrições
 → equipes/robôs/modalidades
 → Follow Line
 → Sumô
 → chaves/resultados
-→ usuários
+→ sem administração estrutural de usuários/sistema
+
+MIDIA
+→ painel autenticado próprio
+→ sem acesso automático à operação competitiva
+→ ferramentas editoriais permanecem reservadas às etapas de mídia
 
 PARTICIPANTE
 → /minha-equipe
@@ -21,7 +32,7 @@ PARTICIPANTE
 → acompanhamento competitivo
 ```
 
-A nova matriz `DEV | GESTAO | MIDIA | PARTICIPANTE` pertence à ETAPA 3 e ainda não está implementada.
+A matriz atual é `DEV | GESTAO | MIDIA | PARTICIPANTE`. A UI usa capacidades semânticas para navegação e proteção de rotas, enquanto a autorização oficial permanece no backend.
 
 ## Integração com backend
 
@@ -44,9 +55,11 @@ src/router.ts
 src/store.ts
 src/api.ts
 src/types.ts
+src/api/**
+src/types/**
 ```
 
-A divisão de `api.ts`/`types.ts` e decomposição de views pertence à ETAPA 2 e deve ser gradual.
+`api.ts` e `types.ts` funcionam como fachadas compatíveis; os domínios internos foram separados durante a ETAPA 2.
 
 ## Chaveamento
 
