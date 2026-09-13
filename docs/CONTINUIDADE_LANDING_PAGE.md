@@ -1,6 +1,6 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
-Última revisão: **31/08/2026**
+Última revisão: **13/09/2026**
 
 Este documento é um **checkpoint específico da aplicação `landing-page/`**. Ele preserva decisões visuais/funcionais da Landing, mas não define a etapa global do RasComp.
 
@@ -14,8 +14,9 @@ Estado global:
 
 ```text
 ETAPA 0  ✅ concluída / validada
-ETAPA 1  🚧 atual
-ETAPA 2+ ⏳ não iniciadas
+ETAPA 1  ✅ concluída / validada
+ETAPA 2  ⏭️ próxima / não iniciada
+ETAPA 3+ ⏳ não iniciadas
 ```
 
 A maior parte da Landing abaixo foi consolidada para a demonstração de **26/08/2026**. Depois disso, a página 404 pública foi adicionada em **30/08/2026**.
@@ -265,7 +266,7 @@ docs/CONTINUIDADE_GALERIA_FOTOS.md
 
 # 10. Pendências futuras da Landing
 
-Não são tarefas da ETAPA 1 atual. Devem ser tratadas nas etapas apropriadas:
+Não fazem parte da ETAPA 2. Devem continuar reservadas às etapas apropriadas:
 
 ## ETAPA 7 — CMS/Mídia
 
