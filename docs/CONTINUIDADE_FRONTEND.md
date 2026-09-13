@@ -27,7 +27,7 @@ docs/README.md
 ```text
 ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
-ETAPA 2   ⏭️ próxima / não iniciada
+ETAPA 2   🚧 em andamento
 ETAPA 3+ ⏳ não iniciadas
 ```
 
@@ -548,6 +548,15 @@ Se algum documento histórico apresentar numeração diferente das etapas, preva
 
 ---
 
+# 10.1 Checkpoint inicial da ETAPA 2
+
+- `api/http.ts` e `api/auth.ts` extraídos;
+- `api/public.ts` e `api/participant.ts` extraídos;
+- `types/auth.ts` e `types/competition.ts` extraídos;
+- `api.ts` e `types.ts` mantidos como fachadas compatíveis;
+- Frontend Checks #57 com typecheck + build verdes;
+- CSS corretivo mapeado, ainda sem consolidação para evitar regressão visual.
+
 # 11. Próximo passo
 
 ```text
@@ -562,7 +571,7 @@ Chaves                                  ✅ CONCLUÍDO
 Fluxos automatizados completos          ← PRÓXIMO BLOCO / NÃO INICIADO
 ```
 
-A ETAPA 1 foi concluída e validada. Não iniciar ETAPA 2 sem autorização explícita.
+A ETAPA 1 foi concluída e validada. A ETAPA 2 foi autorizada em 13/09/2026 e está em andamento.
 
 ---
 

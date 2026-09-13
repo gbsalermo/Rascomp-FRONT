@@ -21,7 +21,7 @@ Bloco 2 — Follow Line                          ✅ concluído / validado
 Bloco 3 — Sumô                                 ✅ concluído / validado
 Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
-ETAPA 2                                        ⏭️ próxima / não iniciada
+ETAPA 2                                        🚧 em andamento
 ETAPA 3+                                       ⏳ não iniciadas
 Backend — último checkpoint funcional          111 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
@@ -34,13 +34,15 @@ Roles futuras                                  DEV | GESTAO | MIDIA | PARTICIPAN
 Deploy cloud                                   ⏳ ETAPA 14
 ```
 
-Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, sem mudança de etapa. Limpeza técnica de código/artefatos continua reservada à ETAPA 2.
+Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, sem mudança de etapa. A limpeza técnica de código/artefatos foi iniciada em 13/09/2026 na ETAPA 2.
 
 Em 08/09/2026 o Bloco 3 da ETAPA 1 foi encerrado após alinhamento do backend, frontend, seeds, testes, MySQL/Flyway V11 e documentação competitiva.
 
 Em 09/09/2026 o Bloco 4 da ETAPA 1 foi encerrado após proteção da geração/regeneração, separação da agenda operacional, correção segura da progressão, Flyway V12, frontend alinhado e validação com 98 testes + `testdata` contra MySQL real.
 
 Em 12/09/2026 o Bloco 5 encerrou a ETAPA 1 com cinco suítes de fluxo integrado usando services/repositories reais em H2, validação explícita de rollback e **111 testes verdes**; o `testdata` também permaneceu verde contra MySQL real + Flyway V12.
+
+Em 13/09/2026 foi iniciado o **checkpoint inicial da ETAPA 2**, com limpeza estrutural do backend e divisão incremental de `api.ts`/`types.ts` no frontend, preservando compatibilidade e sem refatoração big-bang. Backend Tests #297 e Frontend Checks #57 ficaram verdes.
 
 ---
 

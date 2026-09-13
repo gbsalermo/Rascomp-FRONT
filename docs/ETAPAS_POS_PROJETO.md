@@ -29,7 +29,7 @@ backend: rascomp/docs/CONTINUIDADE.md
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
 ETAPA 1   ✅ CONCLUÍDA / VALIDADA
-ETAPA 2   ⏭️ PRÓXIMA / NÃO INICIADA
+ETAPA 2   🚧 EM ANDAMENTO
 CHECKPOINT README/SCREENSHOTS ⏳ NÃO INICIADO
 ETAPA 3   ⏳ NÃO INICIADA
 ETAPA 4   ⏳ NÃO INICIADA
@@ -135,7 +135,7 @@ O Bloco 5 consolidou o fechamento integrado da ETAPA 1:
 - profile `testdata` novamente validado contra MySQL real + Flyway V12;
 - frontend sem mudança funcional no Bloco 5, preservando o último typecheck + build verde.
 
-**A ETAPA 1 está concluída e validada. A ETAPA 2 é a próxima etapa, mas permanece NÃO INICIADA até confirmação explícita.**
+**A ETAPA 1 está concluída e validada. A ETAPA 2 foi autorizada em 13/09/2026 e está EM ANDAMENTO.**
 
 ---
 
@@ -400,6 +400,34 @@ O Bloco 5 comprovou também que operações rejeitadas preservam o estado anteri
 # ETAPA 2 — Limpeza técnica e organização de código
 
 **Objetivo:** reduzir dívida técnica antes dos novos módulos.
+
+## Checkpoint inicial — 13/09/2026
+
+A ETAPA 2 foi autorizada e iniciada.
+
+### Backend
+
+- `rascomp/bin/` removido em commit isolado (`775df79`);
+- `.classpath`, `.project` e `.gitkeep` desnecessários removidos (`78088f0`);
+- varredura sem `TODO:` / `FIXME` reais e sem outros artefatos compilados/versionados;
+- nenhuma reorganização de packages aplicada sem ganho comprovado;
+- Backend Tests #297 ✅.
+
+### Frontend Gestão
+
+- cliente HTTP separado em `api/http.ts`;
+- autenticação separada em `api/auth.ts`;
+- APIs pública e participante separadas em `api/public.ts` e `api/participant.ts`;
+- tipos de autenticação e competição separados em `types/auth.ts` e `types/competition.ts`;
+- `api.ts` e `types.ts` permanecem fachadas compatíveis para evitar refatoração big-bang;
+- Frontend Checks #57 ✅ (typecheck + build).
+
+### Ainda pendente na ETAPA 2
+
+- revisar `adminApi` gradualmente;
+- continuar divisão de tipos apenas onde houver ganho real;
+- decompor views grandes somente quando tocadas;
+- consolidar CSS corretivo sem regressão visual.
 
 ## Backend
 

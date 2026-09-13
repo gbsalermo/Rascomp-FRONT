@@ -364,7 +364,7 @@ Dados públicos são consumidos por contratos específicos e sanitizados.
 
 ## 📚 Documentação
 
-A ETAPA 1 — lógica e integridade está concluída/validada. O backend possui checkpoint de **111 testes verdes** com MySQL/Flyway V12 validado. A ETAPA 2 é a próxima etapa do roadmap, mas permanece não iniciada.
+A ETAPA 1 — lógica e integridade está concluída/validada. O backend possui checkpoint de **111 testes verdes** com MySQL/Flyway V12 validado. A ETAPA 2 — limpeza técnica e organização de código — está em andamento.
 
 A documentação técnica detalhada permanece separada da página de apresentação do projeto.
 
