@@ -23,7 +23,7 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ⏭️ próxima / não iniciada
 ETAPA 3+                                       ⏳ não iniciadas
-Backend — último checkpoint funcional          109 testes / 0 falhas / 0 erros / 0 skipped
+Backend — último checkpoint funcional          111 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
 Migrations                                     V1–V12
@@ -40,7 +40,7 @@ Em 08/09/2026 o Bloco 3 da ETAPA 1 foi encerrado após alinhamento do backend, f
 
 Em 09/09/2026 o Bloco 4 da ETAPA 1 foi encerrado após proteção da geração/regeneração, separação da agenda operacional, correção segura da progressão, Flyway V12, frontend alinhado e validação com 98 testes + `testdata` contra MySQL real.
 
-Em 12/09/2026 o Bloco 5 encerrou a ETAPA 1 com cinco suítes de fluxo integrado usando services/repositories reais em H2, validação explícita de rollback e **109 testes verdes**; o `testdata` também permaneceu verde contra MySQL real + Flyway V12.
+Em 12/09/2026 o Bloco 5 encerrou a ETAPA 1 com cinco suítes de fluxo integrado usando services/repositories reais em H2, validação explícita de rollback e **111 testes verdes**; o `testdata` também permaneceu verde contra MySQL real + Flyway V12.
 
 ---
 
@@ -616,7 +616,7 @@ Checkpoint funcional confirmado após o Bloco 5 / encerramento da ETAPA 1:
 
 ```text
 Backend Tests
-→ 109 testes
+→ 111 testes
 → 0 falhas
 → 0 erros
 → 0 skipped
