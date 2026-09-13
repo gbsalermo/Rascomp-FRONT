@@ -21,7 +21,7 @@ Bloco 2 — Follow Line                          ✅ concluído / validado
 Bloco 3 — Sumô                                 ✅ concluído / validado
 Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
-ETAPA 2                                        🚧 em andamento
+ETAPA 2                                        ✅ concluída / validada
 ETAPA 3+                                       ⏳ não iniciadas
 Backend — último checkpoint funcional          111 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
@@ -46,7 +46,7 @@ Em 13/09/2026 foi iniciado o **checkpoint inicial da ETAPA 2**, com limpeza estr
 
 Ainda em 13/09/2026, os domínios Follow e Sumô/chaves foram extraídos do `adminApi` monolítico para módulos próprios, com `types/follow.ts` e `types/sumo.ts`; Frontend Checks #58 e #59 ficaram verdes.
 
-Na sequência, competições, inscrições e catálogos também foram modularizados. `api.ts` passou a ser somente uma fachada de composição, `types.ts` uma fachada de tipos e os CSS administrativos adjacentes foram consolidados em `admin-ui.css`. Com Frontend Checks #60–#62 verdes, a implementação técnica da ETAPA 2 ficou concluída; resta smoke visual e validação explícita antes da ETAPA 3.
+Na sequência, competições, inscrições e catálogos também foram modularizados. `api.ts` passou a ser somente uma fachada de composição, `types.ts` uma fachada de tipos e os CSS administrativos adjacentes foram consolidados em `admin-ui.css`. Com Frontend Checks #60–#62 verdes e o escopo técnico confirmado, a ETAPA 2 ficou concluída/validada. Smoke visual e testes práticos ficam reservados para etapas funcionais posteriores.
 
 ---
 

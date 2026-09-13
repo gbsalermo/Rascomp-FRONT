@@ -29,7 +29,7 @@ backend: rascomp/docs/CONTINUIDADE.md
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
 ETAPA 1   ✅ CONCLUÍDA / VALIDADA
-ETAPA 2   🚧 EM ANDAMENTO
+ETAPA 2   ✅ CONCLUÍDA / VALIDADA
 CHECKPOINT README/SCREENSHOTS ⏳ NÃO INICIADO
 ETAPA 3   ⏳ NÃO INICIADA
 ETAPA 4   ⏳ NÃO INICIADA
@@ -135,7 +135,7 @@ O Bloco 5 consolidou o fechamento integrado da ETAPA 1:
 - profile `testdata` novamente validado contra MySQL real + Flyway V12;
 - frontend sem mudança funcional no Bloco 5, preservando o último typecheck + build verde.
 
-**A ETAPA 1 está concluída e validada. A ETAPA 2 foi autorizada em 13/09/2026 e está EM ANDAMENTO.**
+**A ETAPA 1 e a ETAPA 2 estão concluídas e validadas. A ETAPA 3 é a próxima etapa funcional do roadmap.**
 
 ---
 
@@ -433,10 +433,11 @@ A ETAPA 2 foi autorizada e iniciada.
 
 Os itens técnicos previstos para a ETAPA 2 foram executados sem refatoração big-bang.
 
-### Ainda pendente para encerrar a ETAPA 2
+### Encerramento da ETAPA 2
 
-- smoke visual das telas principais, especialmente login/portal/admin;
-- validação explícita do checkpoint antes de iniciar a ETAPA 3.
+A ETAPA 2 é exclusivamente técnica: limpeza, modularização e organização de código. Os checks automatizados verdes e a confirmação de escopo encerram a etapa.
+
+Smoke visual e validações práticas de fluxo não são critério de saída desta etapa; ficam para etapas funcionais ou checkpoints posteriores em que essas telas forem alteradas.
 
 ## Backend
 
@@ -458,11 +459,11 @@ Não fazer refatoração big-bang.
 
 ---
 
-# CHECKPOINT PÓS-ETAPA 2 — README + screenshots
+# CHECKPOINT DE APRESENTAÇÃO — README + screenshots
 
-Não é uma etapa nova.
+Não é uma etapa nova e não bloqueia a ETAPA 3. Pode ser executado em checkpoint posterior de apresentação/validação visual.
 
-Após ETAPAS 1 e 2 validadas:
+Quando executado:
 
 - revisar README como vitrine pública;
 - capturar telas reais e atualizadas;

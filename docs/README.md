@@ -32,11 +32,11 @@ Estado oficial em 13/09/2026:
 ```text
 ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
-ETAPA 2  🚧 em andamento
+ETAPA 2  ✅ concluída / validada
 ETAPA 3+ ⏳ não iniciadas
 ```
 
-A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi autorizada em 13/09/2026 e está em andamento.
+A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi concluída/validada em 13/09/2026 no escopo técnico de limpeza e organização. A ETAPA 3 é a próxima.
 
 ---
 
@@ -99,7 +99,7 @@ O backend é fonte de verdade de autorização, ownership e regras/resultados co
 
 ## `ETAPAS_POS_PROJETO.md`
 
-Planejamento único do ciclo. Define ETAPAS 0–14, marca a ETAPA 1 como concluída e a ETAPA 2 como em andamento.
+Planejamento único do ciclo. Define ETAPAS 0–14, marca as ETAPAS 1 e 2 como concluídas/validadas e a ETAPA 3 como próxima.
 
 ## `DOSSIE_PROJETO_RASCOMP.md`
 
@@ -225,4 +225,4 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 12. parar no checkpoint e aguardar validação
 ```
 
-No estado atual, a **ETAPA 1 está encerrada** e a **ETAPA 2 — Limpeza técnica e organização de código** está em andamento. Permanecer nela até o checkpoint de validação explícita.
+No estado atual, as **ETAPAS 1 e 2 estão encerradas/validadas**. A próxima etapa funcional é a **ETAPA 3 — Nova matriz de permissões**.
