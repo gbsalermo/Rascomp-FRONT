@@ -364,7 +364,7 @@ Dados públicos são consumidos por contratos específicos e sanitizados.
 
 ## 📚 Documentação
 
-As ETAPAS 1 — lógica e integridade — e 2 — limpeza técnica e organização de código — estão concluídas/validadas. O backend mantém checkpoint de **111 testes verdes** com MySQL/Flyway V12 validado. A ETAPA 3 está em andamento; o backend da nova matriz de permissões já foi integrado e o frontend é o próximo bloco.
+As ETAPAS 1 — lógica e integridade — e 2 — limpeza técnica e organização de código — estão concluídas/validadas. A ETAPA 3 está em andamento com backend e frontend integrados à matriz `DEV | GESTAO | MIDIA | PARTICIPANTE`; MySQL/Flyway V13 e testes automatizados de autorização estão verdes.
 
 A documentação técnica detalhada permanece separada da página de apresentação do projeto.
 
