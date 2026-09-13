@@ -1,14 +1,29 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
 import { useAuthStore } from '../store'
-import type { UserAccount, UserRole } from '../types'
+import type { InternalUserRole, UserAccount, UserRole } from '../types'
 
 const auth = useAuthStore()
 const loading = ref(false)
 const changingIds = ref<number[]>([])
 const selectedRole = ref<UserRole>('PARTICIPANTE')
+const createDialogOpen = ref(false)
+const creating = ref(false)
+const newInternalUser = reactive({
+  nome: '',
+  email: '',
+  senha: '',
+  telefone: '',
+  role: 'GESTAO' as InternalUserRole
+})
+
+const internalRoleOptions: Array<{ label: string; value: InternalUserRole }> = [
+  { label: 'Gestão', value: 'GESTAO' },
+  { label: 'Mídia', value: 'MIDIA' },
+  { label: 'DEV', value: 'DEV' }
+]
 
 const roleOptions: Array<{ label: string; value: UserRole }> = [
   { label: 'Participantes', value: 'PARTICIPANTE' },
@@ -71,6 +86,43 @@ function formatDateTime(value?: string) {
   }).format(date)
 }
 
+function resetInternalUserForm() {
+  newInternalUser.nome = ''
+  newInternalUser.email = ''
+  newInternalUser.senha = ''
+  newInternalUser.telefone = ''
+  newInternalUser.role = 'GESTAO'
+}
+
+async function createInternalUser() {
+  if (!newInternalUser.nome.trim() || !newInternalUser.email.trim() || newInternalUser.senha.length < 8) {
+    ElMessage.warning('Informe nome, e-mail e uma senha com pelo menos 8 caracteres.')
+    return
+  }
+
+  creating.value = true
+  try {
+    await adminApi.createInternalUser(
+      {
+        nome: newInternalUser.nome.trim(),
+        email: newInternalUser.email.trim(),
+        senha: newInternalUser.senha,
+        telefone: newInternalUser.telefone.trim() || undefined
+      },
+      newInternalUser.role
+    )
+    selectedRole.value = newInternalUser.role
+    createDialogOpen.value = false
+    ElMessage.success(`Conta ${roleLabel(newInternalUser.role)} criada.`)
+    resetInternalUserForm()
+    await load()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a conta interna.')
+  } finally {
+    creating.value = false
+  }
+}
+
 async function load() {
   loading.value = true
   try {
@@ -128,7 +180,10 @@ onMounted(load)
         <h1>Usuários</h1>
         <p class="muted">Consulte contas e controle quem permanece ativo no RasComp.</p>
       </div>
-      <el-button @click="load">Atualizar</el-button>
+      <div class="action-row">
+        <el-button type="primary" @click="createDialogOpen = true">Nova conta interna</el-button>
+        <el-button @click="load">Atualizar</el-button>
+      </div>
     </div>
 
     <section class="metric-grid">
@@ -191,6 +246,41 @@ onMounted(load)
         </el-table-column>
       </el-table>
     </article>
+
+    <el-dialog v-model="createDialogOpen" title="Nova conta interna" width="520px" @closed="resetInternalUserForm">
+      <el-form label-position="top">
+        <el-form-item label="Perfil">
+          <el-select v-model="newInternalUser.role" style="width: 100%">
+            <el-option
+              v-for="option in internalRoleOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Nome">
+          <el-input v-model="newInternalUser.nome" maxlength="150" />
+        </el-form-item>
+        <el-form-item label="E-mail de acesso">
+          <el-input v-model="newInternalUser.email" type="email" maxlength="150" />
+        </el-form-item>
+        <el-form-item label="Telefone (opcional)">
+          <el-input v-model="newInternalUser.telefone" maxlength="20" />
+        </el-form-item>
+        <el-form-item label="Senha inicial">
+          <el-input v-model="newInternalUser.senha" type="password" show-password maxlength="72" />
+        </el-form-item>
+        <div class="callout">
+          <strong>Conta interna separada.</strong>
+          <p>O cadastro público sempre cria PARTICIPANTE. Uma mesma pessoa pode ter uma conta pessoal de participante e outra conta institucional, usando e-mails de acesso diferentes.</p>
+        </div>
+      </el-form>
+      <template #footer>
+        <el-button @click="createDialogOpen = false">Cancelar</el-button>
+        <el-button type="primary" :loading="creating" @click="createInternalUser">Criar conta</el-button>
+      </template>
+    </el-dialog>
 
     <div class="callout">
       <strong>Desativação não remove histórico.</strong>

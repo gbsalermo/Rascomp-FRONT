@@ -1,4 +1,5 @@
 export type UserRole = 'DEV' | 'GESTAO' | 'MIDIA' | 'PARTICIPANTE'
+export type InternalUserRole = Exclude<UserRole, 'PARTICIPANTE'>
 
 export type AuthCapability =
   | 'operateCompetition'
@@ -16,6 +17,13 @@ export interface UserAccount {
   ativo: boolean
   ultimoLogin?: string
   dataCadastro?: string
+}
+
+export interface InternalUserCreatePayload {
+  nome: string
+  email: string
+  senha: string
+  telefone?: string
 }
 
 export interface AuthResponse {

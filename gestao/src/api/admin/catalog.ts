@@ -1,4 +1,4 @@
-import type { UserAccount, UserRole } from '../../types/auth'
+import type { InternalUserCreatePayload, InternalUserRole, UserAccount, UserRole } from '../../types/auth'
 import type { Competitor, Robot, RobotImage, Team } from '../../types/catalog'
 import { http } from '../http'
 
@@ -15,6 +15,8 @@ export const adminCatalogApi = {
       : http.delete(`/api/v1/robos/${id}`).then(() => undefined),
   users: (role: UserRole) =>
     http.get<UserAccount[]>('/api/v1/usuarios', { params: { role } }).then((r) => r.data),
+  createInternalUser: (payload: InternalUserCreatePayload, role: InternalUserRole) =>
+    http.post<UserAccount>('/api/v1/usuarios/internos', payload, { params: { role } }).then((r) => r.data),
   setUserActive: (id: number, ativo: boolean) =>
     http.patch<UserAccount>(`/api/v1/usuarios/${id}/ativo`, null, { params: { ativo } }).then((r) => r.data),
   robotPhotos: (robotId: number) =>
