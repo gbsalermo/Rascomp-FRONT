@@ -511,6 +511,43 @@ A ETAPA 3 foi autorizada e iniciada pelo backend.
 - `DemoShowcaseDataInitializerTest` valida os quatro usuários locais de demonstração;
 - Backend Tests #302 ✅ e checkpoint final do seed/testdata validado contra MySQL + Flyway V13.
 
+### Bloco 4 — política de criação de contas ✅
+
+Regra consolidada:
+
+```text
+cadastro público
+→ sempre PARTICIPANTE
+→ role enviada pelo cliente é ignorada pelo contrato de cadastro
+
+conta interna
+→ criação explícita por DEV
+→ role obrigatória: DEV | GESTAO | MIDIA
+→ PARTICIPANTE não pode ser criado pela rota interna
+```
+
+Não existe promoção automática de conta participante para conta interna nesta etapa.
+
+Uma mesma pessoa pode possuir:
+
+```text
+conta pessoal PARTICIPANTE
++
+conta institucional GESTAO/MIDIA/DEV
+```
+
+As contas usam e-mails/login distintos, pois `UserAccount.email` permanece único. Isso permite que alguém da organização participe de uma competição sem herdar privilégios administrativos na conta pessoal.
+
+Validação:
+
+- cadastro público tentando enviar `role=DEV` continua criando `PARTICIPANTE`;
+- somente DEV cria contas internas;
+- GESTAO não pode criar contas internas;
+- rota interna rejeita `PARTICIPANTE`;
+- Backend Tests #309 ✅ — 125 testes;
+- Frontend Checks #68 ✅ — typecheck + build;
+- tela DEV de Usuários possui criação explícita de contas internas.
+
 ### Verificação prática disponível
 
 Com o profile `testdata`, existem contas locais para os quatro perfis. A verificação manual serve como checkpoint do usuário, mas a autorização oficial permanece coberta pelo backend e pelos testes automatizados.
