@@ -552,9 +552,37 @@ Validação:
 - a própria conta logada não pode alterar sua role durante a sessão;
 - o último DEV ativo não pode ser rebaixado nem desativado.
 
+### Bloco 5 — líder x membro no portal participante ✅
+
+A visibilidade do portal foi separada por vínculo real com a equipe:
+
+```text
+LÍDER / Team.responsibleUser
+→ vê todos os robôs da equipe
+→ vê todas as inscrições da equipe
+→ administra fotos e ações da equipe
+
+MEMBRO / Competitor.userAccount
+→ acessa a equipe da qual faz parte
+→ vê somente inscrições em que seu Competitor está associado
+→ vê somente os robôs dessas inscrições
+→ acesso de acompanhamento, sem administração da equipe
+```
+
+A fonte de verdade é o backend. O frontend apenas reflete a relação retornada.
+
+Validação:
+
+- `AccessPolicyService` reconhece responsável e membro;
+- `ParticipantPortalServiceTest` cobre líder, filtro de robôs e filtro de inscrições do membro;
+- Backend Tests #315 ✅ — 135 testes;
+- MySQL + Flyway V13 + `testdata` ✅;
+- Frontend Checks #72 ✅ — typecheck + build;
+- conta local `membro.demo@rascomp.local` adicionada para validação prática.
+
 ### Verificação prática disponível
 
-Com o profile `testdata`, existem contas locais para os quatro perfis. A verificação manual serve como checkpoint do usuário, mas a autorização oficial permanece coberta pelo backend e pelos testes automatizados.
+Com o profile `testdata`, existem contas locais para os quatro perfis e uma conta adicional de membro comum para validar a diferença entre líder e integrante. A verificação manual serve como checkpoint do usuário, mas a autorização oficial permanece coberta pelo backend e pelos testes automatizados.
 
 Substituir:
 
