@@ -3,6 +3,9 @@ export interface Team {
   nome: string
   institutionId?: number
   institutionNome?: string
+  responsibleUserId?: number
+  responsibleUserNome?: string
+  responsibleUserEmail?: string
   ativo?: boolean
   [key: string]: unknown
 }

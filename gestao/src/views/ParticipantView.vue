@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { assetUrl, http, participantApi, publicApi } from '../api'
+import { useAuthStore } from '../store'
 import type {
   Competitor,
   ConfigFollow,
@@ -39,6 +40,7 @@ interface SumoOverview {
   bracketName?: string
 }
 
+const auth = useAuthStore()
 const loading = ref(false)
 const creatingTeam = ref(false)
 const uploadRobotId = ref<number>()
@@ -62,6 +64,9 @@ const followMap = ref<Record<number, FollowOverview>>({})
 const sumoMap = ref<Record<number, SumoOverview>>({})
 
 const activeTeam = computed(() => teams.value.find((item) => item.id === teamId.value))
+const isTeamLeader = computed(() =>
+  Boolean(activeTeam.value?.responsibleUserId && activeTeam.value.responsibleUserId === auth.user?.id)
+)
 const approvedRegistrations = computed(() => registrations.value.filter((item) => item.status === 'APROVADA'))
 const pendingRegistrations = computed(() => registrations.value.filter((item) => item.status === 'PENDENTE'))
 const filteredAvailableTeams = computed(() => {
@@ -144,17 +149,19 @@ async function loadTeam() {
     )
     photoMap.value = Object.fromEntries(photoEntries)
 
-    const cancellationEntries = await Promise.all(
-      approvedRegistrations.value.map(async (registration) => [
-        registration.id,
-        await participantApi.registrationCancellationRequests(registration.id).catch(() => [])
-      ] as const)
-    )
-    cancellationPendingIds.value = new Set(
-      cancellationEntries
-        .filter(([, requests]) => requests.some((request) => request.status === 'PENDENTE'))
-        .map(([registrationId]) => registrationId)
-    )
+    if (isTeamLeader.value) {
+      const cancellationEntries = await Promise.all(
+        approvedRegistrations.value.map(async (registration) => [
+          registration.id,
+          await participantApi.registrationCancellationRequests(registration.id).catch(() => [])
+        ] as const)
+      )
+      cancellationPendingIds.value = new Set(
+        cancellationEntries
+          .filter(([, requests]) => requests.some((request) => request.status === 'PENDENTE'))
+          .map(([registrationId]) => registrationId)
+      )
+    }
 
     await Promise.all(approvedRegistrations.value.map(loadRegistrationOverview))
   } catch (error: any) {
@@ -371,14 +378,14 @@ onMounted(loadTeams)
     <template v-else-if="activeTeam">
       <section class="participant-summary-grid">
         <article><span>Competidores</span><strong>{{ competitors.length }}</strong><small>na equipe</small></article>
-        <article><span>Robôs</span><strong>{{ robots.length }}</strong><small>cadastrados</small></article>
-        <article><span>Inscrições aprovadas</span><strong>{{ approvedRegistrations.length }}</strong><small>em competição</small></article>
-        <article class="attention"><span>Pendentes</span><strong>{{ pendingRegistrations.length }}</strong><small>aguardando organização</small></article>
+        <article><span>Robôs</span><strong>{{ robots.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'vinculados a mim' }}</small></article>
+        <article><span>Inscrições aprovadas</span><strong>{{ approvedRegistrations.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'minhas' }}</small></article>
+        <article class="attention"><span>Pendentes</span><strong>{{ pendingRegistrations.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'minhas' }}</small></article>
       </section>
 
       <section class="participant-section">
         <div class="participant-section-heading">
-          <div><span class="eyebrow">Competição</span><h2>Minha participação</h2></div>
+          <div><span class="eyebrow">Competição</span><h2>{{ isTeamLeader ? 'Participação da equipe' : 'Minha participação' }}</h2></div>
           <span class="muted">Acompanhe o que já aconteceu e o que ainda falta.</span>
         </div>
 
@@ -451,13 +458,21 @@ onMounted(loadTeams)
             </template>
           </article>
         </div>
-        <el-empty v-else description="Ainda não há inscrições aprovadas para esta equipe." :image-size="82" />
+        <el-empty
+          v-else
+          :description="isTeamLeader ? 'Ainda não há inscrições aprovadas para esta equipe.' : 'Você ainda não possui inscrição aprovada nesta equipe.'"
+          :image-size="82"
+        />
       </section>
 
       <section class="participant-section">
         <div class="participant-section-heading">
-          <div><span class="eyebrow">Equipe</span><h2>Meus robôs</h2></div>
-          <span class="muted">A foto principal acompanha o robô no portal e nas telas operacionais.</span>
+          <div><span class="eyebrow">Equipe</span><h2>{{ isTeamLeader ? 'Robôs da equipe' : 'Meus robôs' }}</h2></div>
+          <span class="muted">
+            {{ isTeamLeader
+              ? 'Como líder, você visualiza e administra todos os robôs da equipe.'
+              : 'Aqui aparecem somente os robôs das inscrições em que você participa.' }}
+          </span>
         </div>
         <div class="robot-gallery">
           <article v-for="robot in robots" :key="robot.id" class="robot-gallery-card">
@@ -470,7 +485,7 @@ onMounted(loadTeams)
               <span>{{ robot.descricao || 'Sem descrição' }}</span>
               <small>{{ (photoMap[robot.id] || []).length }} foto(s) cadastrada(s)</small>
             </div>
-            <label class="robot-photo-upload" :class="{ disabled: uploadRobotId === robot.id }">
+            <label v-if="isTeamLeader" class="robot-photo-upload" :class="{ disabled: uploadRobotId === robot.id }">
               {{ uploadRobotId === robot.id ? 'Enviando...' : 'Trocar / adicionar foto' }}
               <input type="file" accept="image/png,image/jpeg,image/webp" :disabled="uploadRobotId === robot.id" @change="onPhotoSelected(robot, $event)" />
             </label>
@@ -480,13 +495,13 @@ onMounted(loadTeams)
 
       <section class="participant-lower-grid">
         <article class="table-card">
-          <div class="card-heading"><div><span class="eyebrow">Inscrições</span><h2>Acompanhamento</h2></div></div>
+          <div class="card-heading"><div><span class="eyebrow">Inscrições</span><h2>{{ isTeamLeader ? 'Acompanhamento da equipe' : 'Minhas inscrições' }}</h2></div></div>
           <el-table :data="registrations" empty-text="Nenhuma inscrição">
             <el-table-column prop="competitionNome" label="Competição" min-width="170" />
             <el-table-column prop="categoryNome" label="Categoria" min-width="160" />
             <el-table-column prop="robotNome" label="Robô" min-width="120" />
             <el-table-column label="Status" width="130"><template #default="{ row }"><StatusBadge :value="row.status" /></template></el-table-column>
-            <el-table-column label="Ação" min-width="190" align="right">
+            <el-table-column v-if="isTeamLeader" label="Ação" min-width="190" align="right">
               <template #default="{ row }">
                 <el-button
                   v-if="row.status === 'PENDENTE'"
