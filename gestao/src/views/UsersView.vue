@@ -11,6 +11,10 @@ const changingIds = ref<number[]>([])
 const selectedRole = ref<UserRole>('PARTICIPANTE')
 const createDialogOpen = ref(false)
 const creating = ref(false)
+const roleDialogOpen = ref(false)
+const roleSaving = ref(false)
+const editingUser = ref<UserAccount | null>(null)
+const editingRole = ref<InternalUserRole>('GESTAO')
 const newInternalUser = reactive({
   nome: '',
   email: '',
@@ -84,6 +88,39 @@ function formatDateTime(value?: string) {
     hour: '2-digit',
     minute: '2-digit'
   }).format(date)
+}
+
+function openRoleDialog(user: UserAccount) {
+  if (user.role === 'PARTICIPANTE') return
+  if (isCurrentUser(user)) {
+    ElMessage.warning('A conta atualmente logada não pode alterar a própria permissão.')
+    return
+  }
+  editingUser.value = user
+  editingRole.value = user.role
+  roleDialogOpen.value = true
+}
+
+function resetRoleDialog() {
+  editingUser.value = null
+  editingRole.value = 'GESTAO'
+}
+
+async function saveRole() {
+  if (!editingUser.value) return
+  roleSaving.value = true
+  try {
+    const updated = await adminApi.setUserRole(editingUser.value.id, editingRole.value)
+    roleDialogOpen.value = false
+    selectedRole.value = updated.role
+    ElMessage.success(`Permissão alterada para ${roleLabel(updated.role)}.`)
+    resetRoleDialog()
+    await load()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível alterar a permissão do usuário.')
+  } finally {
+    roleSaving.value = false
+  }
 }
 
 function resetInternalUserForm() {
@@ -229,23 +266,68 @@ onMounted(load)
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Ação" width="160" align="right">
+        <el-table-column label="Ações" width="260" align="right">
           <template #default="{ row }">
-            <el-button
-              size="small"
-              :type="row.ativo ? 'danger' : 'success'"
-              plain
-              :disabled="row.ativo && isCurrentUser(row)"
-              :loading="isChanging(row.id)"
-              :title="row.ativo && isCurrentUser(row) ? 'Conta atualmente logada' : undefined"
-              @click="toggleUser(row)"
-            >
-              {{ row.ativo ? (isCurrentUser(row) ? 'Conta atual' : 'Desativar') : 'Reativar' }}
-            </el-button>
+            <div class="action-row">
+              <el-button
+                v-if="row.role !== 'PARTICIPANTE'"
+                size="small"
+                plain
+                :disabled="isCurrentUser(row)"
+                :title="isCurrentUser(row) ? 'A conta atual não pode alterar a própria permissão' : undefined"
+                @click="openRoleDialog(row)"
+              >
+                Permissão
+              </el-button>
+              <el-button
+                size="small"
+                :type="row.ativo ? 'danger' : 'success'"
+                plain
+                :disabled="row.ativo && isCurrentUser(row)"
+                :loading="isChanging(row.id)"
+                :title="row.ativo && isCurrentUser(row) ? 'Conta atualmente logada' : undefined"
+                @click="toggleUser(row)"
+              >
+                {{ row.ativo ? (isCurrentUser(row) ? 'Conta atual' : 'Desativar') : 'Reativar' }}
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
     </article>
+
+    <el-dialog
+      v-model="roleDialogOpen"
+      title="Editar permissão"
+      width="460px"
+      @closed="resetRoleDialog"
+    >
+      <template v-if="editingUser">
+        <p class="muted">
+          {{ editingUser.nome }} · {{ editingUser.email }}
+        </p>
+        <el-form label-position="top">
+          <el-form-item label="Perfil interno">
+            <el-select v-model="editingRole" style="width: 100%">
+              <el-option
+                v-for="option in internalRoleOptions"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
+          <div class="callout">
+            <strong>Conta participante é separada.</strong>
+            <p>Esta edição altera apenas permissões entre DEV, Gestão e Mídia. Não converte contas de participante em contas internas.</p>
+          </div>
+        </el-form>
+      </template>
+      <template #footer>
+        <el-button @click="roleDialogOpen = false">Cancelar</el-button>
+        <el-button type="primary" :loading="roleSaving" @click="saveRole">Salvar permissão</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="createDialogOpen" title="Nova conta interna" width="520px" @closed="resetInternalUserForm">
       <el-form label-position="top">

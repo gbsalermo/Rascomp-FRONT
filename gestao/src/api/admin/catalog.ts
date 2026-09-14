@@ -19,6 +19,8 @@ export const adminCatalogApi = {
     http.post<UserAccount>('/api/v1/usuarios/internos', payload, { params: { role } }).then((r) => r.data),
   setUserActive: (id: number, ativo: boolean) =>
     http.patch<UserAccount>(`/api/v1/usuarios/${id}/ativo`, null, { params: { ativo } }).then((r) => r.data),
+  setUserRole: (id: number, role: InternalUserRole) =>
+    http.patch<UserAccount>(`/api/v1/usuarios/${id}/role`, null, { params: { role } }).then((r) => r.data),
   robotPhotos: (robotId: number) =>
     http.get<RobotImage[]>(`/api/v1/robos/${robotId}/fotos`).then((r) => r.data),
   competitors: () => http.get<Competitor[]>('/api/v1/competidores').then((r) => r.data)
