@@ -526,7 +526,7 @@ conta interna
 → PARTICIPANTE não pode ser criado pela rota interna
 ```
 
-Não existe promoção automática de conta participante para conta interna nesta etapa.
+Não existe promoção automática de conta participante para conta interna nesta etapa. A edição de permissão é restrita às contas internas e não equivale a uma troca genérica de identidade.
 
 Uma mesma pessoa pode possuir:
 
@@ -546,7 +546,11 @@ Validação:
 - rota interna rejeita `PARTICIPANTE`;
 - Backend Tests #309 ✅ — 125 testes;
 - Frontend Checks #68 ✅ — typecheck + build;
-- tela DEV de Usuários possui criação explícita de contas internas.
+- tela DEV de Usuários possui criação explícita de contas internas;
+- contas internas podem ter a permissão alterada entre `DEV | GESTAO | MIDIA`;
+- `PARTICIPANTE` continua fora dessa edição e permanece identidade separada;
+- a própria conta logada não pode alterar sua role durante a sessão;
+- o último DEV ativo não pode ser rebaixado nem desativado.
 
 ### Verificação prática disponível
 
