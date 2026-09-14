@@ -1058,3 +1058,22 @@ Antes de uma etapa/bloco:
 ```
 
 O RasComp já possui base aprovada. A prioridade é evoluir sem perder integridade, rastreabilidade e previsibilidade.
+
+
+### Liderança e visibilidade no portal participante
+
+`Team.responsibleUser` representa liderança/gestão da equipe no portal. `Competitor.userAccount` representa a pessoa participante vinculada à equipe.
+
+A visibilidade não é equivalente:
+
+```text
+responsibleUser
+→ equipe inteira
+
+Competitor.userAccount
+→ própria participação
+→ Registration em que está associado
+→ Robot dessas Registration
+```
+
+Assim, pertencer à mesma equipe não concede automaticamente acesso administrativo ou visão de todos os robôs. A regra é aplicada no backend e apenas refletida no frontend.
