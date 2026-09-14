@@ -92,9 +92,10 @@ DEV            organizacao.demo@rascomp.local   / Rascomp@2026
 GESTAO         gestao.demo@rascomp.local        / Rascomp@2026
 MIDIA          midia.demo@rascomp.local         / Rascomp@2026
 PARTICIPANTE   lider.demo@rascomp.local         / Rascomp@2026
+MEMBRO          membro.demo@rascomp.local        / Rascomp@2026
 ```
 
-O participante possui equipe, robôs e inscrições no cenário de demonstração. O profile `testdata` é somente para ambiente local/testes e nunca deve ser habilitado em produção.
+O `lider.demo` é responsável pela equipe e vê Chronos + Titan. O `membro.demo` pertence à mesma equipe, participa somente da inscrição do Chronos e deve enxergar apenas esse robô/essa participação. O profile `testdata` é somente para ambiente local/testes e nunca deve ser habilitado em produção.
 
 ## Rodar localmente
 
