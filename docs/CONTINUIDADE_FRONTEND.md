@@ -618,10 +618,11 @@ Outra IA deve:
 Cadastro comum             → sempre PARTICIPANTE
 Nova conta interna         → DEV | GESTAO | MIDIA
 Quem cria conta interna    → somente DEV
-Alterar role genericamente → não faz parte da ETAPA 3
+Editar role interna          → DEV | GESTAO | MIDIA
+Converter PARTICIPANTE       → não permitido
 ```
 
-A tela `/usuarios` do DEV oferece criação explícita de conta interna. `PARTICIPANTE` não aparece entre as opções porque deve usar o cadastro comum.
+A tela `/usuarios` do DEV oferece criação explícita de conta interna e edição de permissão para contas internas. `PARTICIPANTE` não aparece entre as opções porque deve usar o cadastro comum. A própria conta logada não pode alterar sua role pela interface.
 
 Uma mesma pessoa pode possuir uma conta participante e uma conta institucional separadas. Os e-mails precisam ser diferentes porque o e-mail é único e funciona como login.
 
