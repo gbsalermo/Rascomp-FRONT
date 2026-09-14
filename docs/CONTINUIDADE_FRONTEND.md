@@ -373,9 +373,9 @@ Os fluxos automatizados completos do Bloco 5 foram adicionados; não houve neces
 
 ```text
 Frontend Gestão                ✅ typecheck + build
-Backend                        ✅ 120 testes / 0 falhas / 0 erros / 0 skipped
+Backend                        ✅ 135 testes / 0 falhas / 0 erros / 0 skipped
 SecurityAuthorizationFlowTest  ✅ matriz HTTP
-DemoShowcaseDataInitializerTest ✅ quatro perfis testdata
+DemoShowcaseDataInitializerTest ✅ perfis testdata + membro comum
 MySQL + Flyway V13 + testdata  ✅
 ```
 
@@ -652,3 +652,38 @@ Validação:
 - MySQL + Flyway V13 + profile `testdata` verdes.
 
 Não tratar a UI como fonte de segurança.
+
+
+## 10.4 Portal participante — líder x membro
+
+Regra atual:
+
+```text
+Líder / responsibleUser
+→ visão da equipe inteira
+→ todos os robôs e inscrições
+→ ações administrativas do portal
+
+Membro / Competitor.userAccount
+→ visão apenas da própria participação
+→ somente inscrições em que está associado
+→ somente robôs dessas inscrições
+→ sem troca de foto/cancelamento/administração da equipe
+```
+
+O roster de competidores permanece visível como contexto da equipe.
+
+Frontend:
+- título do líder usa "Robôs da equipe" e "Participação da equipe";
+- membro usa "Meus robôs" e "Minha participação";
+- ações administrativas são ocultadas para membro;
+- Frontend Checks #72 ✅.
+
+Backend:
+- filtragem real por `Registration.competitors`;
+- acesso direto a robô/inscrição fora da participação é bloqueado;
+- Backend Tests #315 ✅ — 135 testes.
+
+Checkpoint prático:
+- `lider.demo@rascomp.local` deve ver Chronos + Titan;
+- `membro.demo@rascomp.local` deve ver somente Chronos.
