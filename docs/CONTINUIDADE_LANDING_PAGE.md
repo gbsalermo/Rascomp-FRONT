@@ -1,6 +1,6 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
-Última revisão: **13/09/2026**
+Última revisão: **19/09/2026**
 
 Este documento é um **checkpoint específico da aplicação `landing-page/`**. Ele preserva decisões visuais/funcionais da Landing, mas não define a etapa global do RasComp.
 

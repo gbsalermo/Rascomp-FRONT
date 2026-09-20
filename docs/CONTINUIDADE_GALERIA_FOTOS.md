@@ -1,6 +1,6 @@
 # Continuidade — Galeria de Fotos RAS UFRB
 
-Última revisão: **13/09/2026**
+Última revisão: **19/09/2026**
 
 Este arquivo registra o estado específico de `photo-gallery/` e as decisões técnicas de mídia já tomadas.
 

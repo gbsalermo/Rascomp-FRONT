@@ -1,6 +1,6 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **13/09/2026**
+Última revisão estrutural: **19/09/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
@@ -24,7 +24,7 @@ Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
 ETAPA 4                                        ⏳ próxima / não iniciada — consolidação do MVP
-Backend — último checkpoint funcional          111 testes / 0 falhas / 0 erros / 0 skipped
+Backend — último checkpoint funcional          135 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
 Migrations                                     V1–V13

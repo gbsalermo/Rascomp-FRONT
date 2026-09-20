@@ -227,3 +227,8 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 ```
 
 No estado atual, as **ETAPAS 0–3 estão encerradas/validadas**. A **ETAPA 4 — Consolidação funcional e polimento do MVP** é a próxima etapa, ainda não iniciada.
+
+## Checkpoint pessoal opcional
+
+`CHECKPOINT_ASSINATURA_PESSOAL.md`
+→ acabamento autoral opcional, sem etapa própria; se adotado, é preparado no fechamento da ETAPA 15 antes do deploy final da ETAPA 16.
