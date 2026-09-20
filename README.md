@@ -364,7 +364,7 @@ Dados públicos são consumidos por contratos específicos e sanitizados.
 
 ## 📚 Documentação
 
-As ETAPAS 1 — lógica e integridade — e 2 — limpeza técnica e organização de código — estão concluídas/validadas. A ETAPA 3 está em andamento com backend e frontend integrados à matriz `DEV | GESTAO | MIDIA | PARTICIPANTE`; MySQL/Flyway V13 e testes automatizados de autorização estão verdes.
+As ETAPAS 1, 2 e 3 estão concluídas/validadas. A matriz `DEV | GESTAO | MIDIA | PARTICIPANTE` foi validada em uso prático; a próxima etapa funcional aguardará a reorganização do roadmap.
 
 A documentação técnica detalhada permanece separada da página de apresentação do projeto.
 

@@ -591,7 +591,7 @@ ETAPA 3 — matriz de permissões
 └─ checkpoint prático dos quatro perfis  🚧 PENDENTE DO USUÁRIO
 ```
 
-Não iniciar a ETAPA 4 antes do fechamento explícito da ETAPA 3.
+Não iniciar a próxima etapa funcional até o roadmap ser reorganizado e novamente autorizado.
 
 ---
 

@@ -1258,4 +1258,4 @@ A suíte completa encerrou a ETAPA 1 com:
 
 O profile `flowtest` usa H2 em memória exclusivamente para os fluxos integrados rápidos. O job separado `demo-profile` continua validando MySQL real + Flyway V1–V12 + initializers.
 
-As ETAPAS 1 e 2 estão concluídas e validadas; este contrato continua sendo a referência das regras competitivas já aprovadas. A ETAPA 3 está em andamento e não altera essas regras competitivas.
+As ETAPAS 1, 2 e 3 estão concluídas e validadas; este contrato continua sendo a referência das regras competitivas já aprovadas. A matriz de permissões não altera essas regras competitivas.

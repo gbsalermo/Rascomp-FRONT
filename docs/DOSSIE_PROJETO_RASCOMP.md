@@ -22,8 +22,8 @@ Bloco 3 — Sumô                                 ✅ concluído / validado
 Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
-ETAPA 3                                        🚧 em andamento
-ETAPA 4+                                       ⏳ não iniciadas
+ETAPA 3                                        ✅ concluída / validada
+PRÓXIMA ETAPA FUNCIONAL                       ⏸ aguardando reorganização do roadmap
 Backend — último checkpoint funcional          111 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
@@ -31,7 +31,7 @@ Migrations                                     V1–V13
 Próxima migration estrutural                   V14+
 Profile testdata                               ✅ contra MySQL real
 Roles atuais                                   DEV | GESTAO | MIDIA | PARTICIPANTE
-ETAPA 3                                        backend ✅ / frontend ⏳
+ETAPA 3                                        backend ✅ / frontend ✅ / validada ✅
 Deploy cloud                                   ⏳ ETAPA 14
 ```
 
@@ -240,7 +240,7 @@ O cliente público não escolhe privilégios. Mesmo que envie um campo `role`, o
 
 Uma mesma pessoa pode manter uma conta pessoal de participante e outra institucional. Como `email` é o identificador único de autenticação, essas contas usam e-mails distintos.
 
-Troca genérica de role não faz parte da ETAPA 3; operações desse tipo continuam reservadas aos Ajustes Gerais da ETAPA 5.
+A edição de permissão entre contas internas `DEV | GESTAO | MIDIA` está consolidada; identidades PARTICIPANTE permanecem separadas.
 
 ## ETAPA 3 — matriz implementada
 
