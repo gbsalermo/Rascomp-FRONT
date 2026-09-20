@@ -28,7 +28,7 @@ Footer
 404 pública
 ```
 
-A parte competitiva consome a API pública do backend. Conteúdo institucional ainda hardcoded/placeholder será substituído pelo CMS/Mídia da ETAPA 7.
+A parte competitiva consome a API pública do backend. Conteúdo institucional ainda hardcoded/placeholder será substituído pelo CMS/Mídia da ETAPA 8.
 
 Referências visuais/históricas úteis:
 
@@ -73,7 +73,7 @@ Porta padrão: `http://localhost:5174`.
 
 ## Galeria
 
-Hoje a Landing pode apontar para `photo-gallery/`, mas a decisão definitiva de manter a galeria separada ou absorvê-la na experiência pública pertence à ETAPA 11.
+Hoje a Landing pode apontar para `photo-gallery/`, mas a decisão definitiva de manter a galeria separada ou absorvê-la na experiência pública pertence à ETAPA 9.
 
 ## Conteúdo ainda não definitivo
 

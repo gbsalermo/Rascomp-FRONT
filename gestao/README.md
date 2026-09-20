@@ -73,7 +73,7 @@ backend avança vencedor
 
 ## Avisos futuros
 
-Na ETAPA 4 a gestão ganhará seção de Avisos por competição. O backend persistirá o aviso IN_APP e, quando configurado, fará a entrega complementar via Telegram. A UI não chamará a Telegram Bot API diretamente.
+Na ETAPA 11 a gestão ganhará seção de Avisos por competição. O backend persistirá o aviso IN_APP e, quando configurado, fará a entrega complementar via Telegram. A UI não chamará a Telegram Bot API diretamente.
 
 ## Verificação local dos perfis da ETAPA 3
 
@@ -113,3 +113,7 @@ npm run build
 ```
 
 Documentação global: `../docs/README.md`.
+
+## Roadmap atual
+
+As ETAPAS 0–3 estão concluídas/validadas. A próxima etapa é a **ETAPA 4 — Consolidação funcional e polimento do MVP**, ainda não iniciada. O CMS/Mídia pertence à ETAPA 8; Avisos IN_APP + Telegram à ETAPA 11; deploy à ETAPA 16.

@@ -15,8 +15,9 @@ Estado global:
 ```text
 ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
-ETAPA 2  ⏭️ próxima / não iniciada
-ETAPA 3+ ⏳ não iniciadas
+ETAPA 2  ✅ concluída / validada
+ETAPA 3  ✅ concluída / validada
+ETAPA 4  ⏳ próxima / não iniciada — consolidação funcional do MVP
 ```
 
 A maior parte da Landing abaixo foi consolidada para a demonstração de **26/08/2026**. Depois disso, a página 404 pública foi adicionada em **30/08/2026**.
@@ -229,7 +230,7 @@ A estrutura visual está aprovada, mas parte de conteúdo institucional continua
 
 Não continuar resolvendo isso com crescimento indefinido de hardcode Vue.
 
-A solução planejada é a **ETAPA 7 — CMS/Mídia**:
+A solução planejada é a **ETAPA 8 — CMS/Mídia**:
 
 ```text
 MIDIA/DEV
@@ -247,7 +248,7 @@ A Janela 5 da Landing existe e `photo-gallery/` também existe como app separado
 
 Essa separação é o estado implementado, não uma obrigação arquitetural permanente.
 
-Na ETAPA 11 decidir:
+Na ETAPA 9 decidir:
 
 ```text
 A. manter photo-gallery separado
@@ -266,9 +267,9 @@ docs/CONTINUIDADE_GALERIA_FOTOS.md
 
 # 10. Pendências futuras da Landing
 
-Não fazem parte da ETAPA 2. Devem continuar reservadas às etapas apropriadas:
+Não fazem parte da ETAPA 4. Devem continuar reservadas às etapas apropriadas do novo roadmap:
 
-## ETAPA 7 — CMS/Mídia
+## ETAPA 8 — CMS/Mídia
 
 - conteúdo real;
 - fotos/logos oficiais;
@@ -276,15 +277,15 @@ Não fazem parte da ETAPA 2. Devem continuar reservadas às etapas apropriadas:
 - R2;
 - remoção de hardcodes editoriais.
 
-## ETAPA 8 — Regras
+## ETAPA 13 — Regras, Ajuda e Segurança
 
 - área pública com regras oficiais validadas.
 
-## ETAPA 9/10
+## ETAPA 6/7
 
 - exibição pública/participante de Futebol conforme domínio implementado.
 
-## ETAPA 11 — consolidação pública
+## ETAPA 9 — consolidação pública
 
 - decidir galeria;
 - remover placeholders remanescentes;
@@ -293,7 +294,7 @@ Não fazem parte da ETAPA 2. Devem continuar reservadas às etapas apropriadas:
 - responsividade;
 - performance.
 
-## ETAPA 12–14
+## ETAPA 14–16
 
 - hardening;
 - testes manuais;

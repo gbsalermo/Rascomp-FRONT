@@ -10,7 +10,7 @@ A aplicação ainda utiliza catálogo estático em:
 src/data/albums.ts
 ```
 
-Ela **não é a fonte editorial definitiva** da plataforma. O CMS/Mídia da ETAPA 7 deverá fornecer conteúdo publicável e a ETAPA 11 decidirá a arquitetura final:
+Ela **não é a fonte editorial definitiva** da plataforma. O CMS/Mídia da ETAPA 8 deverá fornecer conteúdo publicável e a ETAPA 9 decidirá a arquitetura final:
 
 ```text
 A. manter photo-gallery como aplicação independente

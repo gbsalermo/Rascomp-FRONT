@@ -17,8 +17,9 @@ Estado global atual:
 ```text
 ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
-ETAPA 2  ⏭️ próxima / não iniciada
-ETAPA 3+ ⏳ não iniciadas
+ETAPA 2  ✅ concluída / validada
+ETAPA 3  ✅ concluída / validada
+ETAPA 4  ⏳ próxima / não iniciada — consolidação funcional do MVP
 ```
 
 Portanto, não iniciar agora o backend de álbuns/CMS apenas porque ele aparece neste documento como evolução futura.
@@ -43,7 +44,7 @@ No estado implementado:
 
 ## Importante: isso não é mais uma decisão definitiva de arquitetura futura
 
-A ETAPA 11 deverá fechar entre:
+A ETAPA 9 deverá fechar entre:
 
 ```text
 A. manter photo-gallery como app separado, alimentado pela API
@@ -105,7 +106,7 @@ A Landing:
 - pode apontar para a aplicação separada via configuração;
 - ainda depende de placeholders/dados demonstrativos em partes do conteúdo.
 
-A consolidação com conteúdo real pertence às ETAPAS 7 e 11, não à próxima ETAPA 2.
+A consolidação com conteúdo real pertence às ETAPAS 8 e 9, não à próxima ETAPA 4.
 
 ---
 
@@ -155,7 +156,7 @@ Esse arquivo não deve se tornar a fonte definitiva de conteúdo.
 
 # 5. Evolução futura de mídia
 
-A implementação real pertence principalmente à **ETAPA 7 — CMS/Mídia**.
+A implementação real pertence principalmente à **ETAPA 8 — CMS/Mídia**.
 
 Modelo de referência canônico:
 

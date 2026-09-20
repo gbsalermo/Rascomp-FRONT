@@ -228,7 +228,7 @@ No marco da demonstração ainda existiam placeholders/hardcodes para itens como
 - parceiros;
 - textos/editorial.
 
-Esses itens serão substituídos pelo CMS/Mídia na **ETAPA 7** do roadmap canônico.
+Esses itens serão substituídos pelo CMS/Mídia na **ETAPA 8** do roadmap canônico.
 
 ---
 
