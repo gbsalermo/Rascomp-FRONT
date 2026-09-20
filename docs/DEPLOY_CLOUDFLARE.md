@@ -15,7 +15,7 @@ CLOUD
 → Cloudflare para DNS, frontend, backend containerizado e mídia
 ```
 
-O deploy só deve ser executado depois da **ETAPA 13 — bateria final de testes manuais** de `docs/ETAPAS_POS_PROJETO.md`.
+O deploy corresponde à **ETAPA 16** e só deve ser executado depois da **ETAPA 15 — Validação final completa** de `docs/ETAPAS_POS_PROJETO.md`.
 
 ---
 
