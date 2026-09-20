@@ -29,7 +29,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
 ETAPA 3   ✅ concluída / validada
-PRÓXIMA ETAPA FUNCIONAL ⏸ aguardando reorganização do roadmap
+ETAPA 4   ⏳ próxima / não iniciada — Consolidação funcional e polimento do MVP
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -86,7 +86,7 @@ Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, inclui
 
 Em 12/09/2026 o **Bloco 5 — Fluxos integrados completos** foi concluído no backend. Ele não exigiu nova funcionalidade visual: validou, com services e repositories reais, que os contratos já refletidos no `gestao/` funcionam juntos e que falhas não deixam persistência parcial.
 
-**As ETAPAS 1, 2 e 3 estão concluídas e validadas. A próxima etapa funcional ficará em espera até a reorganização do roadmap solicitada pelo usuário.**
+**As ETAPAS 1, 2 e 3 estão concluídas e validadas. O roadmap foi reorganizado em 19/09/2026. A próxima etapa é a ETAPA 4 — Consolidação funcional e polimento do MVP, ainda não iniciada.**
 
 ---
 
@@ -330,7 +330,7 @@ Primeira versão em `/minha-equipe` inclui:
 - indicação de solicitação pendente;
 - reativação de inscrição `CANCELADA` quando permitida.
 
-O portal ainda não é completo; conclusão geral permanece na ETAPA 10.
+O portal ainda não é completo; a conclusão geral foi remapeada para a ETAPA 7.
 
 ## Landing
 
@@ -341,13 +341,13 @@ Competição ativa                       ✅
 Follow público                          ✅
 Sumô/chave público                      ✅
 404 personalizada                      ✅
-CMS/Mídia                              ⏳ ETAPA 7
-Consolidação Landing/Galeria           ⏳ ETAPA 11
+CMS/Mídia                              ⏳ ETAPA 8
+Consolidação Landing/Galeria           ⏳ ETAPA 9
 ```
 
 ## Galeria
 
-`photo-gallery/` continua protótipo separado. A decisão definitiva de absorção/manutenção independente pertence à ETAPA 11.
+`photo-gallery/` continua protótipo separado. A decisão definitiva de absorção/manutenção independente pertence à ETAPA 9.
 
 ---
 
@@ -498,7 +498,7 @@ O backend continua sendo a fonte de verdade para integridade, regeneração, pro
 - views grandes foram preservadas quando não havia ganho real em decompô-las;
 - CSS administrativo foi consolidado preservando cascata;
 - código morto/artefatos/versionamento foram revisados sem remoção especulativa;
-- decisões sobre `photo-gallery` continuam reservadas à ETAPA 11.
+- decisões sobre `photo-gallery` continuam reservadas à ETAPA 9.
 
 A ETAPA 2 está encerrada; não reabrir refatoração ampla sem necessidade da etapa funcional atual.
 
@@ -510,7 +510,7 @@ A ETAPA 2 está encerrada; não reabrir refatoração ampla sem necessidade da e
 
 Frontend refletirá `DEV | GESTAO | MIDIA | PARTICIPANTE`; backend permanece fonte de autorização.
 
-## ETAPA 4 — Avisos IN_APP + Telegram
+## ETAPA 11 — Avisos IN_APP + Telegram
 
 Roadmap canônico atual reúne os dois canais na mesma etapa:
 
@@ -531,23 +531,23 @@ Regras:
 - vínculo individual Telegram não é obrigatório na primeira versão;
 - futuro código competitivo da `Registration` pode ser reutilizado opcionalmente.
 
-## ETAPA 5 — Ajustes Gerais
+## ETAPA 5 — Ajustes Gerais DEV + auditoria
 
 Área DEV-only com operações explícitas e auditáveis; nunca editor genérico de banco.
 
-## ETAPA 7 — CMS/Mídia
+## ETAPA 8 — CMS/Mídia
 
 Painel para conteúdo e mídia, reutilizando `ObjectStorageService`/R2.
 
-## ETAPA 8 — Regras públicas
+## ETAPA 13 — Regras, Ajuda e Segurança
 
 Derivar texto público do contrato competitivo, sem detalhes internos de implementação.
 
-## ETAPA 9 — Futebol
+## ETAPA 6 — Futebol
 
 Frontend vem após alteração real do domínio, pois `Registration.robot` é obrigatório hoje.
 
-## ETAPA 10 — Participante completo
+## ETAPA 7 — Participante completo
 
 Completar os fluxos e criar identificador competitivo por `Registration` aprovada.
 
@@ -591,7 +591,7 @@ ETAPA 3 — matriz de permissões
 └─ checkpoint prático dos quatro perfis  🚧 PENDENTE DO USUÁRIO
 ```
 
-Não iniciar a próxima etapa funcional até o roadmap ser reorganizado e novamente autorizado.
+A ETAPA 4 é a próxima etapa do roadmap, mas só deve ser iniciada após autorização explícita.
 
 ---
 
@@ -701,9 +701,9 @@ PARTICIPANTE ✅
 líder x membro comum ✅
 ```
 
-O roadmap canônico recebeu um checkpoint extra de **validação final de permissões** imediatamente antes do deploy. Essa validação futura deverá considerar todos os módulos existentes naquele momento.
+A validação final de permissões foi incorporada à **ETAPA 15 — Validação final completa**, imediatamente antes do deploy.
 
-A próxima etapa funcional não deve ser iniciada automaticamente: o roadmap será reorganizado antes da continuação.
+A próxima etapa é a ETAPA 4, ainda não iniciada.
 
 
 ## Responsividade do login — 19/09/2026
@@ -718,3 +718,14 @@ Abaixo desse limite:
 - largura acompanha a viewport sem overflow horizontal.
 
 Também existe tratamento para viewport desktop com altura baixa, permitindo que o card cresça conforme o conteúdo e que a página role em vez de cortar o formulário.
+
+
+## 10.6 Roadmap reorganizado — 19/09/2026
+
+O ciclo passou a ser organizado por maturidade do produto:
+
+- PRIORIDADE 1: ETAPAS 4–10 — finalizar e polir o MVP;
+- PRIORIDADE 2: ETAPAS 11–15 — adições, portabilidade, hardening e validação;
+- ETAPA 16 — deploy, última etapa.
+
+A ETAPA 4 começa pela validação real do sistema existente: fluxos, bugs, interfaces, responsividade e consistência antes de novas funcionalidades.

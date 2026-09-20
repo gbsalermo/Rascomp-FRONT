@@ -364,7 +364,7 @@ Dados públicos são consumidos por contratos específicos e sanitizados.
 
 ## 📚 Documentação
 
-As ETAPAS 1, 2 e 3 estão concluídas/validadas. A matriz `DEV | GESTAO | MIDIA | PARTICIPANTE` foi validada em uso prático; a próxima etapa funcional aguardará a reorganização do roadmap.
+As ETAPAS 1, 2 e 3 estão concluídas/validadas. O novo roadmap está organizado por maturidade do produto: **PRIORIDADE 1 — finalização e polimento do MVP** e **PRIORIDADE 2 — adições, testes e portabilidade**. A próxima etapa é a **ETAPA 4 — Consolidação funcional e polimento do MVP**, ainda não iniciada.
 
 A documentação técnica detalhada permanece separada da página de apresentação do projeto.
 

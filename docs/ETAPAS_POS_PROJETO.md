@@ -1,1057 +1,505 @@
-# RasComp — Etapas Pós-Projeto
+# RasComp — Roadmap Pós-Projeto
 
 Última revisão: **19/09/2026**
 
-Este é o **único documento canônico para ordem de execução, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
+Este é o **único documento canônico para ordem de execução, prioridade, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
-Se qualquer README, continuidade, dossiê, documento datado ou registro histórico apresentar outra sequência, **este arquivo prevalece para planejamento**.
+Se qualquer README, continuidade, dossiê, snapshot histórico ou documento de subsistema apresentar outra ordem, **este arquivo prevalece para planejamento**.
 
 Documentos complementares:
 
-```text
-docs/README.md
-→ índice e hierarquia da documentação
-
-docs/DOSSIE_PROJETO_RASCOMP.md
-→ arquitetura, domínio, decisões e riscos cross-repo
-
-docs/CONTINUIDADE_FRONTEND.md
-→ checkpoint funcional do frontend
-
-backend: rascomp/docs/CONTINUIDADE.md
-→ checkpoint funcional do backend
-```
+- `docs/README.md` — índice e hierarquia documental;
+- `docs/DOSSIE_PROJETO_RASCOMP.md` — arquitetura, domínio, decisões e riscos cross-repo;
+- `docs/CONTRATO_REGRAS_COMPETITIVAS.md` — regras competitivas aprovadas;
+- `docs/CONTINUIDADE_FRONTEND.md` — checkpoint vivo do frontend;
+- backend `rascomp/docs/CONTINUIDADE.md` — checkpoint vivo do backend.
 
 ---
 
-# 1. Estado de execução em 19/09/2026
+# 1. Estratégia do ciclo
 
-```text
-ETAPA 0   ✅ CONCLUÍDA / VALIDADA
-ETAPA 1   ✅ CONCLUÍDA / VALIDADA
-ETAPA 2   ✅ CONCLUÍDA / VALIDADA
-CHECKPOINT README/SCREENSHOTS ⏳ NÃO INICIADO
-ETAPA 3   ✅ CONCLUÍDA / VALIDADA
-ETAPA 4   ⏳ NÃO INICIADA
-ETAPA 5   ⏳ NÃO INICIADA
-ETAPA 6   ⏳ NÃO INICIADA
-ETAPA 7   ⏳ NÃO INICIADA
-ETAPA 8   ⏳ NÃO INICIADA
-ETAPA 9   ⏳ NÃO INICIADA
-ETAPA 10  ⏳ NÃO INICIADA
-ETAPA 11  ⏳ NÃO INICIADA
-ETAPA 12  ⏳ NÃO INICIADA
-ETAPA 13  ⏳ NÃO INICIADA
-ETAPA 13.5 ⏳ NÃO INICIADA — validação final de permissões
-ETAPA 14  ⏳ NÃO INICIADA
-```
+O roadmap deixa de ser uma sequência de funcionalidades isoladas e passa a seguir **maturidade do produto**.
 
-## Checkpoint documental pré-ETAPA 1
+## PRIORIDADE 1 — Finalização e polimento do MVP
 
-Em 04/09/2026 foi autorizada uma revisão documental antes da retomada das correções da ETAPA 1, limitada a:
+Objetivo: transformar o que já existe em um produto realmente utilizável, consistente, apresentável e administrável antes de ampliar o escopo.
 
-- remover documentação obsoleta/redundante;
-- atualizar README, índices, dossiê e continuidades;
-- corrigir divergências entre documentos e código atual;
-- organizar referências ativas e históricas.
+Direção:
 
-Esse trabalho **não representa avanço para a ETAPA 2**, pois não inclui refatoração técnica ampla nem limpeza de código/artefatos reservada àquela etapa.
+1. testar o sistema atual de verdade;
+2. corrigir bugs e fluxos frágeis;
+3. consolidar interfaces, responsividade e feedbacks;
+4. fechar operações administrativas necessárias;
+5. completar o domínio competitivo que ainda falta;
+6. completar o Portal do Participante;
+7. criar o mecanismo real de conteúdo/mídia;
+8. consolidar Landing e Galeria;
+9. validar o MVP completo.
 
-Regra operacional após este checkpoint:
+## PRIORIDADE 2 — Adições, testes, portabilidade e preparação externa
 
-```text
-retomar ETAPA 1
-→ implementar correções
-→ testar/validar
-→ apresentar checkpoint
-→ não iniciar ETAPA 2 sem confirmação explícita
-```
+Objetivo: ampliar o produto somente depois do MVP consolidado.
 
-## Checkpoint interno da ETAPA 1
+Direção:
 
-A ETAPA 1 está sendo executada em blocos funcionais para reduzir risco e preservar validação incremental:
-
-```text
-Bloco 1 — Competition + Registration     ✅ CONCLUÍDO / VALIDADO
-Bloco 2 — Follow Line                    ✅ CONCLUÍDO / VALIDADO
-Bloco 3 — Sumô                           ✅ CONCLUÍDO / VALIDADO
-Bloco 4 — Chaves                         ✅ CONCLUÍDO / VALIDADO
-Bloco 5 — Fluxos integrados completos    ✅ CONCLUÍDO / VALIDADO
-```
-
-O Bloco 2 consolidou:
-
-- perfil RRC de `3 tomadas × 3 tentativas`;
-- estados válidos de tentativa;
-- limite por tentativa;
-- penalidade temporal configurável;
-- cronômetro operacional;
-- tomada perdida por ausência sem tentativas fictícias;
-- checkpoints apenas informativos para ranking;
-- integração da ausência com integridade de cancelamento/reabertura;
-- Flyway V10;
-- backend com 86 testes verdes;
-- frontend Gestão com typecheck + build verdes.
-
-O Bloco 3 consolidou:
-
-- inspeção de Sumô como decisão humana `APTO/INAPTO`;
-- peso medido apenas informativo/auditável;
-- categorias de Sumô com modo de controle `AUTONOMO | RC`;
-- 3 rounds regulares / 2 vitórias preservados como perfil operacional;
-- rounds extras somente quando necessários, limitados e com justificativa obrigatória;
-- `FALHA_INICIALIZACAO` formalizada sem decisão automática do sistema;
-- cadastro de juízes por competição;
-- decisão de juiz identificada, justificada e auditável após esgotar rounds regulares/extras;
-- motivos de resultado explícitos;
-- Flyway V11;
-- backend com 87 testes, 0 falhas/erros/skipped e `demo-profile` verde contra MySQL real;
-- frontend Gestão com typecheck + build verdes e operação alinhada ao novo contrato.
-
-O Bloco 4 consolidou:
-
-- geração/regeneração de chave permitida pelo fluxo comum somente em `INSCRICOES_ENCERRADAS`;
-- BYE automático diferenciado de atividade competitiva real;
-- regeneração bloqueada após round, resultado ou partida efetivamente iniciada/finalizada;
-- chave marcada `EM_ANDAMENTO` quando a disputa real começa;
-- árvore lógica protegida contra edição estrutural comum após geração;
-- agenda operacional separada da árvore, com horário, pista, ordem de execução e convocação;
-- correção de vencedor propagado permitida apenas quando a dependência seguinte ainda não começou;
-- correção bloqueada quando a partida dependente já possui atividade competitiva;
-- frontend Gestão alinhado ao estado permitido de geração e à nova agenda;
-- `testdata` ajustado para montar as chaves em estado válido antes de avançar os cenários demonstrativos;
-- Flyway V12;
-- backend com 98 testes, 0 falhas/erros/skipped e `demo-profile` verde contra MySQL real;
-- frontend Gestão com typecheck + build verdes.
-
-O Bloco 5 consolidou o fechamento integrado da ETAPA 1:
-
-- cinco suítes de fluxo com services + repositories reais usando H2 em memória no profile `flowtest`;
-- `CompetitionLifecycleFlowTest` para ciclo completo e preservação de estado em transição inválida;
-- `RegistrationFlowTest` para criação, aprovação, cancelamento e DESISTENTE após atividade competitiva;
-- `FollowCompetitionFlowTest` para tentativas, ranking, ausência e rejeição de estados impossíveis;
-- `SumoCompetitionFlowTest` para inspeção → chave → rounds → resultado → campeão e regra de penalidades;
-- `CompetitionIntegrityFlowTest` para ausência de persistência parcial e rollback transacional;
-- backend com **111 testes**, 0 falhas/erros/skipped;
-- profile `testdata` novamente validado contra MySQL real + Flyway V12;
-- frontend sem mudança funcional no Bloco 5, preservando o último typecheck + build verde.
-
-**As ETAPAS 1, 2 e 3 estão concluídas e validadas. A matriz de permissões foi confirmada em uso prático em 19/09/2026. O roadmap será reorganizado posteriormente antes da próxima etapa funcional.**
+1. comunicação IN_APP + Telegram;
+2. portabilidade institucional;
+3. regras, ajuda e segurança para participantes;
+4. hardening e testes físicos em dispositivos;
+5. validação final completa, inclusive permissões;
+6. deploy como última etapa do ciclo.
 
 ---
 
-# 2. Regras gerais do ciclo
+# 2. Estado atual
 
-```text
-não criar roadmap paralelo
-não pular etapas
-não reescrever o projeto do zero
-não quebrar o modo local
-backend = fonte de verdade do domínio
-mudanças pequenas, testáveis e reversíveis
-migrations aplicadas nunca são reescritas
-status só muda após implementação + validação + confirmação
-```
+ETAPA 0  ✅ CONCLUÍDA / VALIDADA — Baseline e congelamento da versão aprovada
+ETAPA 1  ✅ CONCLUÍDA / VALIDADA — Correções de lógica e integridade
+ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de código
+ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
-O projeto foi apresentado e aprovado. O objetivo do ciclo é **estabilizar primeiro e evoluir depois**.
+PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
+ETAPA 4  ⏳ PRÓXIMA / NÃO INICIADA — Consolidação funcional e polimento do MVP
+ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
+ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
+ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
+ETAPA 8  ⏳ NÃO INICIADA — Gestor de Mídia / CMS
+ETAPA 9  ⏳ NÃO INICIADA — Landing + Galeria + conteúdo público real
+ETAPA 10 ⏳ NÃO INICIADA — Validação e fechamento do MVP
 
-Portabilidade prevista:
+PRIORIDADE 2 — ADIÇÕES, TESTES E PORTABILIDADE
+ETAPA 11 ⏳ NÃO INICIADA — Avisos IN_APP + Telegram
+ETAPA 12 ⏳ NÃO INICIADA — Portabilidade institucional
+ETAPA 13 ⏳ NÃO INICIADA — Regras, Ajuda e Segurança
+ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
+ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
+ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-```text
-1 instalação do RasComp = 1 instituição organizadora
-```
-
-Não é multi-tenant neste ciclo.
-
----
-
-# ETAPA 0 — Baseline e congelamento da versão aprovada ✅
-
-**Objetivo:** preservar uma referência confiável da versão aprovada.
-
-Resultado consolidado:
-
-- versão funcional preservada;
-- documentação centralizada;
-- ordem pós-projeto congelada;
-- migrations aplicadas protegidas contra reescrita;
-- decisões de deploy registradas sem antecipar implantação.
-
-**Status:** concluída e validada.
+**Próxima etapa autorizável: ETAPA 4. Ela ainda não deve ser considerada iniciada até confirmação explícita.**
 
 ---
 
-# ETAPA 1 — Correções de lógica e integridade ✅
+# 3. Regras gerais do ciclo
 
-**Objetivo:** fechar riscos que podem comprometer competição, histórico ou consistência antes da limpeza técnica e das novas funcionalidades.
-
-## 1.1 Reativação de inscrição
-
-Problema confirmado originalmente:
-
-```text
-RegistrationService.reativar()
-→ reativava como PENDENTE
-→ não revalidava a janela de inscrições
-```
-
-Situação atual:
-
-```text
-✅ corrigido no Bloco 1
-```
-
-## 1.2 Cancelamento de inscrição
-
-Política explícita implementada para:
-
-- PENDENTE;
-- APROVADA;
-- histórico competitivo;
-- cancelamento solicitado pelo participante;
-- distinção entre `CANCELADA` e `DESISTENTE`.
-
-Ownership não substitui validação de estado do domínio.
-
-Situação atual:
-
-```text
-✅ corrigido no Bloco 1
-```
-
-## 1.3 Geração/regeneração de chave
-
-Definir estados de `Competition` permitidos para geração/regeneração e aplicar a regra em:
-
-```text
-BracketGenerationService
-BracketService
-BracketProgressionService
-```
-
-Contrato consolidado:
-
-```text
-INSCRICOES_ENCERRADAS
-→ geração/regeneração comum permitida
-
-chave somente gerada / apenas BYE automático
-→ regeneração ainda permitida
-
-round, resultado ou disputa real iniciada
-→ regeneração comum bloqueada
-```
-
-Situação atual:
-
-```text
-✅ corrigido no Bloco 4
-```
-
-## 1.4 Correção de resultado após progressão
-
-Evitar:
-
-```text
-resultado alterado
-→ vencedor anterior já alimentou próxima fase
-→ árvore inconsistente
-```
-
-Direção aprovada e implementada:
-
-```text
-próxima dependência ainda não iniciada
-→ correção transacional segura
-→ vencedor propagado anterior é removido/substituído
-
-próxima dependência já iniciada
-→ bloqueio da correção comum
-→ histórico competitivo não é reescrito silenciosamente
-```
-
-Situação atual:
-
-```text
-✅ corrigido no Bloco 4
-```
-
-## 1.5 Estados válidos de tentativa Follow
-
-Formalizar combinações permitidas de:
-
-```text
-concluida
-valida
-tempoSegundos
-checkpointsAlcancados
-```
-
-O efeito oficial dos checkpoints no ranking não deve ser inventado.
-
-Situação atual:
-
-```text
-✅ corrigido no Bloco 2
-```
-
-O Bloco 2 também fechou a regra 3×3, cronômetros, penalidade configurável e tomada perdida por ausência.
-
-## 1.6 Invariantes administrativas futuras
-
-Mapear invariantes que os futuros Ajustes Gerais não poderão quebrar, inclusive proteção para manter ao menos um DEV ativo quando a nova matriz de roles existir.
-
-Situação atual:
-
-```text
-✅ invariante mapeada na ETAPA 1; implementação administrativa permanece reservada à ETAPA 5
-```
-
-## 1.7 Sumô — Bloco 3 concluído
-
-O Bloco 3 alinhou o motor existente ao contrato competitivo aprovado:
-
-```text
-inspeção humana APTO/INAPTO                         ✅
-peso apenas informativo                            ✅
-modo de controle AUTONOMO | RC                     ✅
-3 rounds regulares / 2 vitórias                    ✅
-rounds extras necessários + limite + justificativa ✅
-falha de inicialização formalizada                 ✅
-identificação/decisão de juiz auditável            ✅
-motivos de resultado explícitos                    ✅
-```
-
-Foram preservadas as regras já funcionais:
-
-```text
-2 penalidades → derrota automática do round
-SUICIDIO_WO  → adversário vence
-BYE          → avanço automático
-```
-
-Checkpoint do bloco:
-
-```text
-Backend Tests        ✅ 87 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V11   ✅
-Profile testdata     ✅ cenário completo sobe contra MySQL real
-Frontend Gestão      ✅ typecheck + build
-```
-
-## 1.8 Chaves — Bloco 4 concluído
-
-O Bloco 4 separou a estrutura competitiva da agenda operacional e protegeu a progressão:
-
-```text
-geração em estado inválido                           → bloqueada
-regeneração após atividade competitiva               → bloqueada
-BYE automático sem disputa                           → não bloqueia regeneração
-estrutura da árvore após geração                     → protegida
-agenda (horário/pista/ordem operacional/convocação)  → editável separadamente
-correção antes da próxima disputa                    → propagação corrigida com segurança
-correção após dependência iniciada                   → bloqueada
-```
-
-Checkpoint do bloco:
-
-```text
-Backend Tests        ✅ 98 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V12   ✅
-Profile testdata     ✅ cenário completo sobe contra MySQL real
-Frontend Gestão      ✅ typecheck + build
-```
-
-## 1.9 Fluxos integrados — Bloco 5 concluído
-
-O Bloco 5 validou a composição ponta a ponta das regras dos Blocos 1–4 sem adicionar nova funcionalidade competitiva.
-
-```text
-CompetitionLifecycleFlowTest  → ciclo e transições
-RegistrationFlowTest          → inscrição/aprovação/cancelamento/desistência
-FollowCompetitionFlowTest     → tentativas/ranking/ausência
-SumoCompetitionFlowTest       → inspeção/chave/rounds/resultado/campeão/BYE
-CompetitionIntegrityFlowTest  → rollback e proteção cross-domain
-```
-
-Checkpoint final da ETAPA 1:
-
-```text
-Backend Tests        ✅ 111 testes / 0 falhas / 0 erros / 0 skipped
-H2 flowtest          ✅ services + repositories JPA reais
-MySQL + Flyway V12   ✅
-Profile testdata     ✅ cenário completo sobe contra MySQL real
-Frontend Gestão      ✅ último typecheck + build verde preservado
-```
-
-O Bloco 5 comprovou também que operações rejeitadas preservam o estado anterior e não deixam persistência parcial.
-
-## Critério de saída
-
-- regras decididas;
-- correções implementadas;
-- testes automatizados relevantes;
-- frontend ajustado quando contrato/erro mudar;
-- CI verde;
-- documentação atualizada;
-- validação explícita.
+- não criar roadmap paralelo;
+- não pular etapas;
+- não reescrever o projeto do zero;
+- não quebrar o modo local;
+- backend é a fonte de verdade do domínio e da autorização;
+- mudanças devem ser pequenas, testáveis e reversíveis;
+- migrations aplicadas nunca são reescritas;
+- status só muda após implementação + validação + confirmação explícita;
+- uma instalação do RasComp representa uma instituição organizadora neste ciclo;
+- multi-tenancy permanece fora deste ciclo;
+- o deploy é a última etapa operacional do roadmap.
 
 ---
 
-# ETAPA 2 — Limpeza técnica e organização de código
+# 4. Etapas concluídas
 
-**Objetivo:** reduzir dívida técnica antes dos novos módulos.
+## ETAPA 0 — Baseline e congelamento da versão aprovada ✅
 
-## Checkpoint inicial — 13/09/2026
+Preservou a versão funcional apresentada/aprovada, centralizou documentação e congelou a referência do ciclo.
 
-A ETAPA 2 foi autorizada e iniciada.
+## ETAPA 1 — Correções de lógica e integridade ✅
 
-### Backend
+Consolidou Competition/Registration, Follow, Sumô, Chaves e fluxos integrados, incluindo proteção de estados, rollback, BYE, progressão, ausência no Follow, inspeção/rounds/juízes no Sumô e testes ponta a ponta de domínio.
 
-- `rascomp/bin/` removido em commit isolado (`775df79`);
-- `.classpath`, `.project` e `.gitkeep` desnecessários removidos (`78088f0`);
-- varredura sem `TODO:` / `FIXME` reais e sem outros artefatos compilados/versionados;
-- nenhuma reorganização de packages aplicada sem ganho comprovado;
-- Backend Tests #297 ✅.
+Checkpoint histórico de fechamento: **111 testes verdes** + MySQL/Flyway V12/testdata.
 
-### Frontend Gestão
+## ETAPA 2 — Limpeza técnica e organização de código ✅
 
-- cliente HTTP separado em `api/http.ts`;
-- autenticação separada em `api/auth.ts`;
-- APIs pública e participante separadas em `api/public.ts` e `api/participant.ts`;
-- tipos de autenticação e competição separados em `types/auth.ts` e `types/competition.ts`;
-- domínio Follow separado em `api/admin/follow.ts` + `types/follow.ts`;
-- domínio Sumô/chaves separado em `api/admin/sumo.ts` + `types/sumo.ts`;
-- `api.ts` e `types.ts` permanecem fachadas compatíveis para evitar refatoração big-bang;
-- domínios de competição, inscrições e catálogos separados em módulos administrativos próprios;
-- `api.ts` reduzido a uma fachada de composição e `types.ts` a uma fachada de tipos;
-- `admin-consolidation.css` + `admin-refinement.css` consolidados em `admin-ui.css`, preservando a ordem da cascata;
-- views grandes mantidas intactas porque não foram tocadas funcionalmente;
-- varredura sem `TODO:` / `FIXME`, backups ou artefatos gerados versionados;
-- Frontend Checks #57–#62 ✅ (typecheck + build).
+Removeu artefatos obsoletos, modularizou APIs/tipos do frontend de forma incremental e consolidou CSS administrativo sem refatoração big-bang.
 
-### Implementação técnica concluída
+## ETAPA 3 — Nova matriz de permissões ✅
 
-Os itens técnicos previstos para a ETAPA 2 foram executados sem refatoração big-bang.
+Matriz consolidada:
 
-### Encerramento da ETAPA 2
+- DEV — administração integral, usuários, sistema e operação competitiva;
+- GESTAO — operação competitiva sem administração estrutural;
+- MIDIA — identidade interna voltada à futura operação editorial;
+- PARTICIPANTE — portal e recursos próprios.
 
-A ETAPA 2 é exclusivamente técnica: limpeza, modularização e organização de código. Os checks automatizados verdes e a confirmação de escopo encerram a etapa.
+Também foram consolidados:
 
-Smoke visual e validações práticas de fluxo não são critério de saída desta etapa; ficam para etapas funcionais ou checkpoints posteriores em que essas telas forem alteradas.
-
-## Backend
-
-- remover `rascomp/bin/` rastreado em commit isolado;
-- avaliar `.classpath`, `.project` e `.gitkeep` remanescentes;
-- remover TODOs/comentários obsoletos;
-- revisar código morto/duplicado;
-- manter regra de negócio nos services;
-- reorganizar packages somente com ganho real.
-
-## Frontend gestão
-
-- dividir `api.ts` e `types.ts` gradualmente por domínio;
-- decompor views grandes ao tocar nelas;
-- remover código morto/duplicado;
-- consolidar CSS corretivo e reduzir dependência da ordem de imports.
-
-Não fazer refatoração big-bang.
-
----
-
-# CHECKPOINT DE APRESENTAÇÃO — README + screenshots
-
-Não é uma etapa nova e não bloqueia a ETAPA 3. Pode ser executado em checkpoint posterior de apresentação/validação visual.
-
-Quando executado:
-
-- revisar README como vitrine pública;
-- capturar telas reais e atualizadas;
-- incluir Dashboard/Central, inscrições, Follow, Sumô/chaves e Portal do Participante;
-- não expor dados sensíveis.
-
----
-
-# ETAPA 3 — Nova matriz de permissões ✅
-
-## Checkpoint inicial — 13/09/2026
-
-A ETAPA 3 foi autorizada e iniciada pelo backend.
-
-### Bloco 1 — backend ✅
-
-- `UserRole` passou para `DEV | GESTAO | MIDIA | PARTICIPANTE`;
-- Flyway V13 migra usuários legados `ORGANIZACAO → DEV`, preservando o nível de acesso integral existente;
-- `DEV` administra usuários;
-- `DEV | GESTAO` operam as APIs competitivas existentes;
-- `MIDIA` não herda acesso competitivo; os módulos editoriais continuam reservados às etapas de mídia;
-- `PARTICIPANTE` mantém o namespace próprio;
-- verificações de negócio deixaram de depender de `ORGANIZACAO` e usam capacidade semântica de operação;
-- bootstrap inicial passou a criar `DEV`, mantendo fallback das variáveis legadas de ambiente;
-- Backend Tests #298 (PR) e #299 (main) ✅, incluindo MySQL + Flyway V13 + `testdata`.
-
-### Bloco 2 — frontend ✅
-
-- tipos atualizados para `DEV | GESTAO | MIDIA | PARTICIPANTE`;
-- store usa capacidades semânticas em vez de comparar a role em toda a UI;
-- `DEV` possui operação competitiva, usuários e sistema;
-- `GESTAO` possui operação competitiva sem administração estrutural;
-- `MIDIA` possui painel autenticado próprio e não herda operação competitiva;
-- `PARTICIPANTE` permanece direcionado ao portal próprio;
-- rotas protegidas por capacidade;
-- Frontend Checks #64 ✅ (typecheck + build).
-
-### Bloco 3 — validação automatizada ✅
-
-- `SecurityAuthorizationFlowTest` valida a matriz no Spring Security por HTTP;
-- DEV acessa operação competitiva e administração de usuários;
-- GESTAO acessa competição e recebe 403 em administração de usuários;
-- MIDIA recebe 403 nos namespaces competitivos/administrativos atuais;
-- PARTICIPANTE recebe 403 nos namespaces administrativos;
-- `DemoShowcaseDataInitializerTest` valida os quatro usuários locais de demonstração;
-- Backend Tests #302 ✅ e checkpoint final do seed/testdata validado contra MySQL + Flyway V13.
-
-### Bloco 4 — política de criação de contas ✅
-
-Regra consolidada:
-
-```text
-cadastro público
-→ sempre PARTICIPANTE
-→ role enviada pelo cliente é ignorada pelo contrato de cadastro
-
-conta interna
-→ criação explícita por DEV
-→ role obrigatória: DEV | GESTAO | MIDIA
-→ PARTICIPANTE não pode ser criado pela rota interna
-```
-
-Não existe promoção automática de conta participante para conta interna nesta etapa. A edição de permissão é restrita às contas internas e não equivale a uma troca genérica de identidade.
-
-Uma mesma pessoa pode possuir:
-
-```text
-conta pessoal PARTICIPANTE
-+
-conta institucional GESTAO/MIDIA/DEV
-```
-
-As contas usam e-mails/login distintos, pois `UserAccount.email` permanece único. Isso permite que alguém da organização participe de uma competição sem herdar privilégios administrativos na conta pessoal.
-
-Validação:
-
-- cadastro público tentando enviar `role=DEV` continua criando `PARTICIPANTE`;
-- somente DEV cria contas internas;
-- GESTAO não pode criar contas internas;
-- rota interna rejeita `PARTICIPANTE`;
-- Backend Tests #309 ✅ — 125 testes;
-- Frontend Checks #68 ✅ — typecheck + build;
-- tela DEV de Usuários possui criação explícita de contas internas;
-- contas internas podem ter a permissão alterada entre `DEV | GESTAO | MIDIA`;
-- `PARTICIPANTE` continua fora dessa edição e permanece identidade separada;
-- a própria conta logada não pode alterar sua role durante a sessão;
-- o último DEV ativo não pode ser rebaixado nem desativado.
-
-### Bloco 5 — líder x membro no portal participante ✅
-
-A visibilidade do portal foi separada por vínculo real com a equipe:
-
-```text
-LÍDER / Team.responsibleUser
-→ vê todos os robôs da equipe
-→ vê todas as inscrições da equipe
-→ administra fotos e ações da equipe
-
-MEMBRO / Competitor.userAccount
-→ acessa a equipe da qual faz parte
-→ vê somente inscrições em que seu Competitor está associado
-→ vê somente os robôs dessas inscrições
-→ acesso de acompanhamento, sem administração da equipe
-```
-
-A fonte de verdade é o backend. O frontend apenas reflete a relação retornada.
-
-Validação:
-
-- `AccessPolicyService` reconhece responsável e membro;
-- `ParticipantPortalServiceTest` cobre líder, filtro de robôs e filtro de inscrições do membro;
-- Backend Tests #315 ✅ — 135 testes;
-- MySQL + Flyway V13 + `testdata` ✅;
-- Frontend Checks #72 ✅ — typecheck + build;
-- conta local `membro.demo@rascomp.local` adicionada para validação prática.
-
-### Verificação prática disponível
-
-Com o profile `testdata`, existem contas locais para os quatro perfis e uma conta adicional de membro comum para validar a diferença entre líder e integrante. A verificação manual serve como checkpoint do usuário, mas a autorização oficial permanece coberta pelo backend e pelos testes automatizados.
-
-Substituir:
-
-```text
-ORGANIZACAO | PARTICIPANTE
-```
-
-por:
-
-```text
-DEV | GESTAO | MIDIA | PARTICIPANTE
-```
-
-## DEV
-
-Acesso integral, estrutura de competição, roles/permissões e manutenção excepcional.
-
-## GESTAO
-
-Operação competitiva: inscrições permitidas, Follow, Sumô, inspeções, tentativas, rounds, chaves e resultados; sem manutenção estrutural DEV.
-
-## MIDIA
-
-Conteúdo institucional, mídia, galeria e publicação editorial; sem acesso automático à operação competitiva.
-
-## PARTICIPANTE
-
-Própria equipe, integrantes autorizados, robôs/fotos, inscrições, acompanhamento e avisos.
-
-Segurança obrigatória:
-
-```text
-backend → autorização real
-frontend → navegação/UX compatível
-```
-
-Menu oculto nunca é segurança.
-
-## Fechamento — 19/09/2026
-
-A matriz foi validada pelo usuário em uso prático após os ajustes de:
-
-- separação `DEV | GESTAO | MIDIA | PARTICIPANTE`;
-- criação e edição segura de contas internas;
-- conta PARTICIPANTE separada da identidade institucional;
+- cadastro público sempre PARTICIPANTE;
+- criação explícita de contas internas DEV/GESTAO/MIDIA por DEV;
+- edição segura entre roles internas;
 - proteção do último DEV ativo;
-- distinção entre líder e membro comum no Portal do Participante;
-- autorização real no backend e navegação compatível no frontend.
+- separação entre conta institucional e conta participante;
+- distinção líder x membro comum no Portal do Participante;
+- autorização real no backend e UX compatível no frontend.
 
-**Status:** ✅ CONCLUÍDA / VALIDADA.
-
-Uma nova validação global das permissões foi deliberadamente adiada para o checkpoint imediatamente anterior ao deploy, após a futura reorganização do roadmap.
-
----
-
-# ETAPA 4 — Avisos IN_APP + integração Telegram
-
-**Objetivo:** implementar em um único trabalho a comunicação operacional da competição dentro do RasComp e sua entrega complementar pelo Telegram.
-
-## 4.1 Aviso persistido
-
-Fluxo base:
-
-```text
-GESTAO/DEV
-→ seção Avisos
-→ seleciona uma competição
-→ escreve aviso/anúncio
-→ publica
-→ backend persiste Aviso
-→ participante pode consultar no RasComp
-```
-
-O aviso `IN_APP` é sempre a **fonte de verdade e histórico oficial**.
-
-## 4.2 Telegram como canal complementar
-
-No mesmo fluxo de publicação, quando a integração estiver habilitada:
-
-```text
-Aviso persistido
-→ backend seleciona destino Telegram da competição
-→ bot publica/envia a comunicação
-→ resultado da tentativa é rastreado quando aplicável
-```
-
-O frontend nunca deve chamar a Telegram Bot API diretamente.
-
-```text
-gestao
-→ API RasComp
-→ serviço de Avisos/Comunicação
-→ persistência
-→ integração Telegram
-```
-
-Falha no Telegram não pode cancelar nem apagar o aviso IN_APP.
-
-## 4.3 Escopo por competição
-
-Avisos de uma competição não devem ser disparados indiscriminadamente para todos os usuários.
-
-A etapa deve definir a forma inicial de distribuição do Telegram e a política de destinatários. O caminho pode começar com canal/grupo/bot associado à competição e evoluir para identificação individual quando necessário.
-
-## 4.4 Identificação do participante no Telegram — opcional inicialmente
-
-**Não é obrigatório vincular a conta RasComp à conta Telegram na primeira versão.**
-
-Uma evolução possível é o bot solicitar o **código competitivo da inscrição (`Registration`)** para identificar o participante/inscrição que está recebendo avisos.
-
-Esse identificador competitivo é planejado para a ETAPA 10. Portanto:
-
-- a ETAPA 4 não deve depender dele para existir;
-- a identificação individual pode ficar opcional na primeira versão;
-- quando o código existir, pode ser reutilizado sem criar um segundo identificador paralelo;
-- não usar `@username` do Telegram como identidade oficial do domínio.
-
-## 4.5 Segurança e disponibilidade
-
-Prever:
-
-- `TELEGRAM_ENABLED` para desligar a integração;
-- token do bot somente por segredo/variável de ambiente;
-- timeout e indisponibilidade da Bot API;
-- rate limit;
-- prevenção de envio duplicado;
-- registro de falha quando necessário;
-- autorização real no backend para publicação.
-
-Telegram nunca será a única cópia de um aviso.
-
-## Critério de saída
-
-- Aviso persistido e consultável IN_APP;
-- seleção por competição;
-- permissões corretas;
-- integração Telegram funcional e desligável;
-- segredo fora do repositório;
-- falha do Telegram não afeta o aviso persistido;
-- política inicial de distribuição definida;
-- identificação por código, se adotada inicialmente, tratada como opcional;
-- testes relevantes;
-- frontend integrado;
-- CI verde e documentação atualizada.
+Checkpoint final conhecido: **135 testes verdes**, MySQL + Flyway V13 + testdata e frontend typecheck/build verdes.
 
 ---
 
-# ETAPA 5 — Ajustes Gerais DEV + auditoria
+# 5. PRIORIDADE 1 — Finalização e polimento do MVP
 
-Criar operações administrativas seguras, específicas e auditáveis, por exemplo:
+## ETAPA 4 — Consolidação funcional e polimento do MVP
 
-```text
-alterarRole
-ativar/desativar usuário
-transferirCompetidor
-transferirRobo
-transferirResponsabilidade
-corrigirInscricao
-reativar entidade
-```
+**Objetivo:** provar que o RasComp atual funciona bem antes de adicionar novos módulos.
 
-Não criar editor genérico de tabelas nem console SQL.
+Executar uma revisão funcional e visual do produto existente:
+
+- login, sessão e redirecionamento por perfil;
+- Dashboard/Central da competição;
+- usuários e contas internas;
+- equipes, competidores, robôs e fotos;
+- inscrições, aprovação, cancelamento e reativação;
+- Follow Line completo;
+- Sumô completo;
+- chaves, BYE, agenda, progressão, correção e histórico;
+- Portal do Participante atual, líder e membro;
+- Landing/Galeria no estado atual;
+- estados vazios, loading, erros e feedbacks;
+- consistência de nomenclatura e textos;
+- navegação e retorno entre fluxos;
+- responsividade desktop/tablet/mobile;
+- bugs de viewport, overflow, tabelas, diálogos e formulários;
+- uso com banco local reaproveitado e banco limpo quando aplicável.
+
+Melhorias cabíveis nesta etapa são correções/polimentos que **não criam um novo grande domínio**.
+
+Critério de saída:
+
+- fluxos atuais percorridos manualmente;
+- bugs encontrados classificados e corrigidos ou documentados;
+- interfaces principais consolidadas;
+- responsividade básica validada;
+- testes automatizados preservados/verdes;
+- documentação atualizada;
+- checkpoint prático aprovado.
+
+## ETAPA 5 — Ajustes Gerais DEV + auditoria
+
+**Objetivo:** oferecer manutenção administrativa segura sem criar editor genérico de banco.
+
+Operações candidatas:
+
+- transferir competidor;
+- transferir robô;
+- transferir responsabilidade de equipe;
+- corrigir inscrição por operação explícita;
+- reativar entidades quando a regra permitir;
+- ativar/desativar usuários;
+- operações excepcionais necessárias descobertas na ETAPA 4.
 
 Ações críticas devem registrar, quando aplicável:
 
-```text
-quem
-ação
-entidade
-antes/depois
-data/hora
-motivo/observação
-```
+- quem;
+- ação;
+- entidade;
+- antes/depois;
+- data/hora;
+- motivo/observação.
 
----
+Não criar console SQL nem CRUD genérico de tabelas.
 
-# ETAPA 6 — Portabilidade institucional
+## ETAPA 6 — Futebol de Robôs
 
-Permitir instalar **backend + gestão** para outra instituição sem editar Java/Vue apenas para trocar identidade básica.
+**Objetivo:** implementar a modalidade competitiva que ainda altera o domínio estrutural.
 
-Estratégia:
+Ponto crítico já identificado:
 
-```text
-uma instalação = uma instituição organizadora
-```
+- `Registration.robot` hoje é obrigatório;
+- no Futebol os competidores usam robôs fornecidos/atribuídos pela organização;
+- a relação com robô deve ser modelada corretamente por modalidade;
+- não criar robô fictício apenas para satisfazer FK.
 
-Criar conceito próprio para configuração da instância, por exemplo `PlatformInstanceConfig`, sem reutilizar `Institution` das equipes participantes.
+Antes da migration, fechar regras de equipe, atribuição de robôs, placar, duração, empate/desempate, formato, inspeção e penalidades.
 
-Inclui identidade, contatos/links, logos, parâmetros realmente institucionais, fluxo do primeiro DEV e documentação de instalação limpa.
+## ETAPA 7 — Portal do Participante completo + identificação competitiva
 
-**Multi-tenancy fica fora deste ciclo.**
+**Objetivo:** transformar o portal atual em uma experiência realmente autônoma e prática para o competidor.
 
----
+Completar/consolidar:
 
-# ETAPA 7 — Gestor de Mídia / CMS + Landing real
-
-Criar área editorial em `gestao/` para `MIDIA`/`DEV`.
-
-Modelo de referência:
-
-```text
-MediaAsset
-ContentSlot
-ContentItem
-```
-
-A Landing deve consumir conteúdo publicado em vez de exigir commits para alterações editoriais comuns.
-
-Reutilizar `ObjectStorageService` + Cloudflare R2. Não criar terceiro mecanismo de upload.
-
----
-
-# ETAPA 8 — Módulo de Regras
-
-Criar área pública/editorial para regras de:
-
-```text
-Follow Line
-Sumô geral/RC/penalidades/WO
-Futebol de Robôs
-Ambiente/Vestimenta
-```
-
-Validar texto oficial antes de publicar. Diferenciar regra editorial de regra executável pelo backend e não inventar sanções.
-
----
-
-# ETAPA 9 — Futebol de Robôs
-
-Nova modalidade com competidores usando robôs fornecidos pela organização.
-
-Impacto crítico:
-
-```text
-Registration.robot
-→ hoje obrigatório
-→ deverá ser opcional conforme modalidade
-```
-
-Antes da migration, definir equipe, atribuição de robôs, placar, duração, empate/desempate, formato, inspeção e penalidades.
-
-**Não criar robô fictício para satisfazer FK.**
-
----
-
-# ETAPA 10 — Completar Portal do Participante + identificação competitiva
-
-Completar:
-
-- convite/aceite de equipe;
-- integrantes;
-- robôs/fotos;
+- convite/aceite ou fluxo equivalente de entrada em equipe;
+- integrantes e papéis da equipe;
+- robôs e fotos;
 - inscrições permitidas;
-- Futebol;
-- avisos;
+- integração com Futebol;
 - histórico e acompanhamento competitivo;
+- diferença clara líder x membro;
 - estados vazios/loading/erro;
-- responsividade e feedback de ações.
+- feedback de ações;
+- responsividade e navegação mobile;
+- código competitivo curto e único por Registration aprovada.
 
-## Identificador competitivo
+O identificador competitivo não substitui ownership, elegibilidade ou inspeção.
 
-Criar código curto e único por **Registration aprovada**, não por Robot.
+A comunicação/avisos não bloqueia o fechamento desta etapa; ela entra formalmente na ETAPA 11.
 
-```text
-inscrição aprovada
-→ backend gera código
-→ participante e GESTAO visualizam
-→ conferência física pode usar o mesmo código
-```
+## ETAPA 8 — Gestor de Mídia / CMS
 
-Esse código poderá também ser reutilizado futuramente como identificação opcional em integrações externas, incluindo Telegram. Não substitui ownership, elegibilidade ou inspeção.
+**Objetivo:** permitir alimentar o conteúdo público sem editar Vue nem realizar commit para cada mudança editorial.
+
+Área editorial para MIDIA/DEV, com conceitos como:
+
+- MediaAsset;
+- ContentSlot;
+- ContentItem;
+- publicação/despublicação;
+- ordem/destaque;
+- créditos e metadados;
+- imagens e mídia reutilizáveis.
+
+Reutilizar `ObjectStorageService` + Cloudflare R2 quando aplicável. Não criar um terceiro mecanismo de upload.
+
+Esta etapa é parte do MVP porque hoje a permissão MIDIA existe, mas o site ainda não possui fluxo real de alimentação editorial.
+
+## ETAPA 9 — Landing + Galeria + conteúdo público real
+
+**Objetivo:** consolidar a experiência pública usando API pública + CMS + mídia real.
+
+Fechar definitivamente:
+
+- conteúdo institucional real;
+- notícias/destaques/publicações;
+- diretoria/projetos/premiações/agenda/parceiros conforme escopo aprovado;
+- galeria integrada ao fluxo editorial;
+- consumo da API competitiva pública;
+- navegação pública e responsividade.
+
+Decisão preferencial atual: absorver a experiência de `photo-gallery/` na Landing, salvo necessidade real de aplicação/URL independente.
+
+## ETAPA 10 — Validação e fechamento do MVP
+
+**Objetivo:** declarar o MVP operacional somente depois de uma bateria manual completa da PRIORIDADE 1.
+
+Simular de ponta a ponta:
+
+- DEV, GESTAO, MIDIA e PARTICIPANTE;
+- líder e membro comum;
+- equipes, robôs e inscrições;
+- Follow;
+- Sumô;
+- Futebol;
+- chaves/BYE/progressão/resultados;
+- Ajustes Gerais/auditoria;
+- Portal do Participante;
+- CMS/Mídia;
+- Landing/Galeria/conteúdo público;
+- responsividade em tamanhos representativos;
+- cenários de erro e recuperação usuais.
+
+Saída da etapa: **MVP funcional, coerente, utilizável e apresentável**.
 
 ---
 
-# ETAPA 11 — Consolidar Landing + Galeria + conteúdo público
+# 6. PRIORIDADE 2 — Adições, testes e portabilidade
 
-Decidir definitivamente:
+## ETAPA 11 — Avisos IN_APP + integração Telegram
 
-```text
-A. manter photo-gallery como aplicação independente
-ou
-B. absorver a galeria na Landing
-```
+**Objetivo:** criar comunicação operacional persistida no RasComp e entrega complementar pelo Telegram.
 
-Direção preferencial atual: **B**, salvo necessidade real de URL/deploy separado.
+Fluxo base:
 
-A experiência pública consolidada deve consumir API pública competitiva + CMS + Regras + mídias publicadas.
+- DEV/GESTAO publica aviso por competição;
+- backend persiste o aviso;
+- participantes consultam o histórico IN_APP;
+- quando habilitado, serviço backend distribui também pelo Telegram;
+- falha do Telegram nunca apaga/invalida o aviso persistido.
 
----
+Regras:
 
-# ETAPA 12 — Hardening e preparação para uso externo
+- IN_APP é a fonte oficial;
+- Telegram é complementar e desligável;
+- token somente por segredo/variável de ambiente;
+- frontend nunca chama Bot API diretamente;
+- evitar envio duplicado;
+- tratar timeout/rate limit;
+- identificação individual via Telegram é opcional e pode reutilizar o código competitivo da Registration.
+
+## ETAPA 12 — Portabilidade institucional
+
+**Objetivo:** permitir instalar backend + gestão para outra instituição sem editar Java/Vue apenas para trocar identidade básica.
+
+Modelo:
+
+- uma instalação = uma instituição organizadora;
+- configuração própria da instância, sem reutilizar Institution de equipes;
+- nome, logos, contatos, links e identidade institucional configuráveis;
+- fluxo limpo de primeiro DEV;
+- documentação de instalação/upgrade;
+- multi-tenancy fora deste ciclo.
+
+## ETAPA 13 — Regras, Ajuda e Segurança
+
+**Objetivo:** transformar o antigo 'Módulo de Regras' em uma central útil de orientação ao participante.
+
+Conteúdo previsto:
+
+- regras oficiais de Follow;
+- regras oficiais de Sumô, RC, penalidades e WO;
+- regras oficiais de Futebol;
+- medidas e requisitos físicos relevantes;
+- segurança, ambiente e vestimenta;
+- ajuda por modalidade;
+- dúvidas frequentes;
+- orientação contextual dentro do portal quando útil.
+
+Separar claramente:
+
+- regra editorial/publicada;
+- regra executável pelo backend;
+- orientação/ajuda.
+
+Não inventar sanções nem publicar texto não validado oficialmente.
+
+## ETAPA 14 — Hardening + preparação para uso externo
+
+**Objetivo:** endurecer o produto já completo antes da validação final.
 
 Revisar sistematicamente:
 
 - autorização endpoint a endpoint;
-- erros/logs/auditoria;
+- erros, logs e auditoria;
 - CORS e segredos;
 - upload/storage;
-- migrations do zero e sobre banco existente;
+- migrations do zero e upgrade sobre banco existente;
 - backup/restore;
 - primeiro DEV;
 - instalação/upgrade;
-- `testdata` bloqueado em produção;
-- hardcodes institucionais;
-- acessibilidade/responsividade;
+- testdata bloqueado em produção;
+- hardcodes institucionais remanescentes;
+- acessibilidade;
+- responsividade;
 - falhas de API/Telegram/R2;
 - concorrência crítica e rollback administrativo.
 
----
+### Testes físicos em smartphones/tablets
 
-# ETAPA 13 — Bateria final de testes manuais
+Adicionar explicitamente testes reais pela rede local ou ambiente de teste:
 
-Simular uso real de ponta a ponta:
+- Android e iOS quando disponíveis;
+- diferentes larguras/alturas e orientação;
+- Chrome/Safari quando disponíveis;
+- login e sessão;
+- formulários, tabelas, diálogos e navegação;
+- Portal do Participante;
+- Gestão nas telas que fizerem sentido em mobile;
+- Landing pública;
+- chamadas reais ao backend usando IP/host acessível pelo dispositivo.
 
-```text
-instalação/configuração
-login/perfis/permissões
-equipes/participantes/robôs/fotos
-inscrições
-Follow
-Sumô
-Futebol
-chaves/BYE/progressão
-resultados/histórico
-Avisos IN_APP + Telegram
-Ajustes Gerais/auditoria
-CMS/mídia
-Landing/galeria/regras
-falhas e recuperação
-uso concorrente
-instalação com outra identidade institucional
-competição completa
-```
+DevTools continuam úteis, mas não substituem o teste físico final.
 
-Objetivo: validar o RasComp como produto operacional, não apenas conjunto de telas.
+## ETAPA 15 — Validação final completa
 
----
+**Objetivo:** executar a bateria final do produto consolidado antes do deploy.
 
-# ETAPA 13.5 — Validação final de permissões
+Inclui:
 
-**Objetivo:** repetir a matriz completa de autorização sobre o produto já consolidado, imediatamente antes do deploy.
+- instalação/configuração limpa;
+- competição completa;
+- todos os módulos da Prioridade 1 e 2;
+- falhas e recuperação;
+- uso concorrente representativo;
+- instalação com identidade institucional alternativa;
+- mobile real;
+- smoke de storage/integradores.
 
-Validar novamente, no mínimo:
+### Validação final de permissões
 
-```text
-DEV
-GESTAO
-MIDIA
-PARTICIPANTE — líder
-PARTICIPANTE — membro comum
-```
+Repetir a matriz completa sobre o produto final:
 
-Cobrir:
-
-- login e redirecionamento por perfil;
-- rotas frontend protegidas;
-- autorização HTTP real no backend;
+- DEV;
+- GESTAO;
+- MIDIA;
+- PARTICIPANTE líder;
+- PARTICIPANTE membro comum;
+- rotas frontend;
+- autorização HTTP real;
+- acesso direto por URL/API;
 - criação/edição/desativação de contas internas;
 - proteção do último DEV ativo;
-- isolamento entre conta institucional e conta participante;
-- visão líder x membro no Portal do Participante;
-- acesso aos módulos adicionados/reorganizados até esse momento;
-- tentativa de acesso direto por URL/API a recursos proibidos.
+- isolamento entre identidade institucional e participante;
+- acesso aos módulos adicionados depois da ETAPA 3.
 
-Essa etapa é um **checkpoint final de segurança/autorização**, não uma nova implementação da matriz.
+Essa validação substitui o antigo checkpoint separado 'ETAPA 13.5'.
 
----
+## ETAPA 16 — Deploy em nuvem / Cloudflare
 
-# ETAPA 14 — Deploy em nuvem / Cloudflare
-
-Adicionar modo cloud sem remover o modo local.
+**Objetivo:** implantar somente o produto que passou pelas validações anteriores, preservando o modo local.
 
 Arquitetura planejada:
 
-```text
-Cloudflare DNS/TLS
-Workers Static Assets → gestao + landing
-Containers/Docker → backend Spring Boot
-R2 → mídias/uploads persistentes
-Secrets → segredos
-MySQL gerenciado externo → banco persistente
-GitHub Actions/Cloudflare → CI/CD
-```
+- Cloudflare DNS/TLS;
+- Workers Static Assets para frontends quando adequado;
+- backend Spring Boot em runtime/container compatível;
+- R2 para mídias/uploads persistentes;
+- secrets fora do repositório;
+- MySQL gerenciado externo;
+- CI/CD.
 
 Cloudflare D1 não é requisito do primeiro deploy.
 
-**Deploy só começa depois da ETAPA 13 e da ETAPA 13.5 passarem.**
+**O deploy é a última etapa do roadmap e só começa depois da ETAPA 15 ser concluída/validada.**
 
 ---
 
-# 3. Ordem atual — pendente de reorganização
+# 7. Ordem oficial
 
-```text
 ETAPA 0  Baseline ✅
-    ↓
-ETAPA 1  Correções de lógica e integridade ✅
-    ↓
-ETAPA 2  Limpeza técnica
-    ↓
-CHECKPOINT README + screenshots
-    ↓
-ETAPA 3  Permissões
-    ↓
-ETAPA 4  Avisos IN_APP + Telegram
-    ↓
-ETAPA 5  Ajustes Gerais + auditoria
-    ↓
-ETAPA 6  Portabilidade institucional
-    ↓
-ETAPA 7  CMS / Mídia + Landing real
-    ↓
-ETAPA 8  Regras
-    ↓
-ETAPA 9  Futebol de Robôs
-    ↓
-ETAPA 10 Participante completo + identificação competitiva
-    ↓
-ETAPA 11 Landing + Galeria
-    ↓
-ETAPA 12 Hardening
-    ↓
-ETAPA 13 Testes manuais completos
-    ↓
-ETAPA 13.5 Validação final de permissões
-    ↓
-ETAPA 14 Deploy Cloudflare
-```
+ETAPA 1  Lógica e integridade ✅
+ETAPA 2  Limpeza técnica ✅
+ETAPA 3  Matriz de permissões ✅
+
+PRIORIDADE 1
+ETAPA 4  Consolidação funcional e polimento do MVP
+ETAPA 5  Ajustes Gerais DEV + auditoria
+ETAPA 6  Futebol de Robôs
+ETAPA 7  Portal do Participante completo
+ETAPA 8  Gestor de Mídia / CMS
+ETAPA 9  Landing + Galeria + conteúdo público real
+ETAPA 10 Validação e fechamento do MVP
+
+PRIORIDADE 2
+ETAPA 11 Avisos IN_APP + Telegram
+ETAPA 12 Portabilidade institucional
+ETAPA 13 Regras, Ajuda e Segurança
+ETAPA 14 Hardening + testes físicos mobile
+ETAPA 15 Validação final completa + permissões
+ETAPA 16 Deploy Cloudflare
 
 ---
 
-# 4. Critério para concluir qualquer etapa
+# 8. Critério para concluir qualquer etapa
 
 Conforme aplicável:
 
-```text
-regra definida
-backend implementado
-migration nova quando necessária
-testes automatizados
-frontend integrado
-permissão correta
-tratamento de erro
-documentação atualizada
-validação local
-CI verde
-validação explícita do checkpoint
-```
+- regra/objetivo definidos;
+- backend implementado;
+- migration nova quando necessária;
+- testes automatizados relevantes;
+- frontend integrado;
+- permissões corretas;
+- tratamento de erro;
+- documentação atualizada;
+- validação local/prática;
+- CI verde;
+- validação explícita do checkpoint.
 
 Não marcar uma etapa como concluída por commit parcial ou apenas porque uma tela apareceu.
 
 ---
 
-# 5. Protocolo de continuidade
+# 9. Protocolo de continuidade
 
 Ao continuar o RasComp:
 
-```text
-1. ler docs/README.md
-2. conferir a etapa atual neste arquivo
-3. ler docs/DOSSIE_PROJETO_RASCOMP.md
-4. ler a continuidade do repositório afetado
-5. confirmar estado real no código
-6. permanecer na etapa atual
-7. implementar backend primeiro para regra de negócio
-8. adicionar/ajustar testes
-9. integrar frontend
-10. validar e atualizar documentação
-11. parar no checkpoint e aguardar validação
-```
+1. ler `docs/README.md`;
+2. conferir a etapa atual neste arquivo;
+3. ler `docs/DOSSIE_PROJETO_RASCOMP.md`;
+4. se tocar competição, ler `docs/CONTRATO_REGRAS_COMPETITIVAS.md`;
+5. ler a continuidade do repositório afetado;
+6. confirmar o estado real no código;
+7. trabalhar somente na etapa autorizada;
+8. implementar backend primeiro quando houver regra de negócio/segurança;
+9. adicionar/ajustar testes;
+10. integrar frontend;
+11. validar e atualizar documentação;
+12. parar no checkpoint e aguardar confirmação.
 
 Se houver conflito de **ordem de execução**, este arquivo é a autoridade.

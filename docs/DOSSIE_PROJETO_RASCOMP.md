@@ -23,7 +23,7 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
-PRÓXIMA ETAPA FUNCIONAL                       ⏸ aguardando reorganização do roadmap
+ETAPA 4                                        ⏳ próxima / não iniciada — consolidação do MVP
 Backend — último checkpoint funcional          111 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
@@ -32,7 +32,7 @@ Próxima migration estrutural                   V14+
 Profile testdata                               ✅ contra MySQL real
 Roles atuais                                   DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                                        backend ✅ / frontend ✅ / validada ✅
-Deploy cloud                                   ⏳ ETAPA 14
+Deploy cloud                                   ⏳ ETAPA 16
 ```
 
 Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, sem mudança de etapa. A limpeza técnica de código/artefatos foi iniciada em 13/09/2026 na ETAPA 2.
@@ -106,7 +106,7 @@ gbsalermo/Rascomp-FRONT
 └─ photo-gallery/ → protótipo público separado de galeria
 ```
 
-A existência de três aplicações frontend é o estado atual. A ETAPA 11 decidirá se `photo-gallery/` permanece independente ou é absorvida pela Landing.
+A existência de três aplicações frontend é o estado atual. A ETAPA 9 decidirá se `photo-gallery/` permanece independente ou é absorvida pela Landing.
 
 ---
 
@@ -758,7 +758,7 @@ InstitutionalFooter.vue
 PublicNotFound.vue
 ```
 
-Conteúdo institucional ainda possui hardcodes/placeholders. A ETAPA 7 criará CMS/Mídia para remover a necessidade de commits em atualizações editoriais comuns.
+Conteúdo institucional ainda possui hardcodes/placeholders. A ETAPA 8 criará CMS/Mídia para remover a necessidade de commits em atualizações editoriais comuns.
 
 ---
 
@@ -766,7 +766,7 @@ Conteúdo institucional ainda possui hardcodes/placeholders. A ETAPA 7 criará C
 
 `photo-gallery/` continua protótipo separado e utiliza catálogo estático.
 
-ETAPA 11 decidirá:
+ETAPA 9 decidirá:
 
 ```text
 A. manter aplicação separada
@@ -779,7 +779,7 @@ Direção preferencial atual: **B**, salvo necessidade real de URL/deploy indepe
 
 # PARTE C — EVOLUÇÕES APROVADAS
 
-# 17. ETAPA 4 — Avisos IN_APP + Telegram
+# 17. ETAPA 11 — Avisos IN_APP + Telegram
 
 Avisos e Telegram serão tratados **na mesma etapa**.
 
@@ -809,15 +809,15 @@ Regras congeladas:
 
 Na primeira versão **não é obrigatório vincular UserAccount à conta Telegram**.
 
-Uma opção futura/inicialmente opcional é solicitar no bot o **identificador competitivo da Registration aprovada**, planejado para a ETAPA 10, apenas para identificar quem está recebendo avisos.
+Uma opção futura/inicialmente opcional é solicitar no bot o **identificador competitivo da Registration aprovada**, planejado para a ETAPA 7, apenas para identificar quem está recebendo avisos.
 
 Consequências:
 
-- ETAPA 4 não pode depender do código da ETAPA 10 para funcionar;
+- ETAPA 11 não pode depender de identificador externo adicional; o código competitivo já planejado na ETAPA 7 pode ser reutilizado para funcionar;
 - não criar identificador Telegram paralelo se o código competitivo puder ser reutilizado depois;
 - `@username` do Telegram não deve virar identidade oficial do domínio.
 
-A política exata de distribuição será fechada na implementação da ETAPA 4.
+A política exata de distribuição será fechada na implementação da ETAPA 11.
 
 ---
 
@@ -827,7 +827,7 @@ A política exata de distribuição será fechada na implementação da ETAPA 4.
 
 Operações específicas, não editor bruto de SQL/tabelas. Ações críticas exigem auditoria.
 
-## ETAPA 6 — Portabilidade
+## ETAPA 12 — Portabilidade
 
 ```text
 1 instalação = 1 instituição organizadora
@@ -835,7 +835,7 @@ Operações específicas, não editor bruto de SQL/tabelas. Ações críticas ex
 
 Não reutilizar `Institution` das equipes para representar a instituição hospedeira. Criar conceito próprio de configuração da instância.
 
-## ETAPA 7 — CMS/Mídia
+## ETAPA 8 — CMS/Mídia
 
 Modelo de referência:
 
@@ -851,11 +851,11 @@ Conteúdo institucional deve deixar de depender de commit Vue.
 
 # 19. Regras e Futebol
 
-## ETAPA 8 — Regras
+## ETAPA 13 — Regras, Ajuda e Segurança
 
 Publicação de regulamentos oficiais de Follow, Sumô, Futebol e ambiente/vestimenta. O contrato competitivo técnico será a base para produzir a versão pública simplificada.
 
-## ETAPA 9 — Futebol de Robôs
+## ETAPA 6 — Futebol de Robôs
 
 Requisito:
 
@@ -880,7 +880,7 @@ A solução deve permitir inscrição legítima sem robô próprio conforme moda
 
 # 20. Portal participante e identificação competitiva
 
-ETAPA 10 completa equipe, integrantes, robôs, inscrições, avisos, desempenho e acompanhamento.
+ETAPA 7 completa equipe, integrantes, robôs, inscrições, desempenho e acompanhamento. Avisos entram depois na ETAPA 11.
 
 Decisão aprovada: cada **Registration aprovada** terá identificador competitivo curto.
 
@@ -892,7 +892,7 @@ O código poderá ser reutilizado por conferência física e, opcionalmente, par
 
 # 21. Deploy
 
-Deploy permanece ETAPA 14.
+Deploy passa a ser a ETAPA 16 e permanece a última etapa do ciclo.
 
 Decisão congelada:
 
@@ -1014,7 +1014,7 @@ Backend: PublicController, PublicQueryService, Public* DTOs
 Frontend: landing-page/src/api.ts, App.vue, ActiveCompetition.vue
 ```
 
-## Avisos / Telegram (futuro)
+## Avisos / Telegram (ETAPA 11)
 
 ```text
 Backend: novo domínio de Aviso + serviço de comunicação + adapter Telegram
@@ -1095,3 +1095,14 @@ PARTICIPANTE
 A separação entre identidade institucional e participante permanece obrigatória, assim como a distinção entre líder da equipe e membro comum.
 
 Por decisão de planejamento, haverá uma **validação final de permissões imediatamente antes do deploy**, depois que os demais módulos e a futura reorganização do roadmap estiverem consolidados.
+
+
+## Roadmap reorganizado — 19/09/2026
+
+O planejamento oficial agora segue duas prioridades:
+
+- **PRIORIDADE 1 / ETAPAS 4–10:** consolidação funcional, Ajustes Gerais, Futebol, Portal do Participante, CMS, Landing/Galeria e validação do MVP;
+- **PRIORIDADE 2 / ETAPAS 11–15:** Avisos+Telegram, portabilidade, Regras/Ajuda/Segurança, hardening com testes físicos mobile e validação final completa;
+- **ETAPA 16:** deploy, última etapa.
+
+A próxima etapa é a ETAPA 4 — Consolidação funcional e polimento do MVP, ainda não iniciada.

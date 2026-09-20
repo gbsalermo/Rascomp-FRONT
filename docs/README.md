@@ -34,7 +34,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2  ✅ concluída / validada
 ETAPA 3  ✅ concluída / validada
-PRÓXIMA ETAPA FUNCIONAL ⏸ aguardando reorganização do roadmap
+ETAPA 4  ⏳ próxima / não iniciada — Consolidação funcional e polimento do MVP
 ```
 
 A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi concluída/validada em 13/09/2026. A ETAPA 3 também está concluída/validada após integração, testes HTTP e validação prática dos perfis.
@@ -100,7 +100,7 @@ O backend é fonte de verdade de autorização, ownership e regras/resultados co
 
 ## `ETAPAS_POS_PROJETO.md`
 
-Planejamento único do ciclo. Define ETAPAS 0–14, marca as ETAPAS 1, 2 e 3 como concluídas/validadas e registra que o restante do roadmap será reorganizado antes da continuação.
+Planejamento único do ciclo. Define ETAPAS 0–16, organiza o trabalho em duas prioridades, marca as ETAPAS 0–3 como concluídas/validadas e a ETAPA 4 como próxima.
 
 ## `DOSSIE_PROJETO_RASCOMP.md`
 
@@ -116,7 +116,7 @@ Serve para:
 - orientar UX operacional do frontend;
 - definir invariantes dos testes automatizados de fluxo;
 - separar regra RoboCore de adaptação própria do RRC;
-- servir de fonte para o futuro regulamento público da ETAPA 8.
+- servir de fonte para a futura central de Regras, Ajuda e Segurança da ETAPA 13.
 
 Não é um segundo roadmap.
 
@@ -135,7 +135,7 @@ DECISAO_DEPLOY_CLOUD.md
 DEPLOY_CLOUDFLARE.md
 ```
 
-Referências da ETAPA 14. Não significam que o deploy já começou.
+Referências da ETAPA 16. Não significam que o deploy já começou.
 
 ---
 
@@ -187,12 +187,12 @@ Rounds Sumô                           3 regulares / 2 vitórias + extras justif
 Decisão do juiz                       vencedora + juiz + justificativa
 Prorrogação inscrições                operação explícita
 Cancelamento APROVADA                 solicitação analisada pela organização
-Avisos + Telegram                     juntos na ETAPA 4
+Avisos + Telegram                     ETAPA 11
 Telegram                              canal complementar ao IN_APP
 Vínculo RasComp ↔ Telegram            não obrigatório inicialmente
 Código de Registration no Telegram    opção futura/inicialmente opcional
-Landing + Galeria                     decisão final na ETAPA 11
-Deploy                                ETAPA 14
+Landing + Galeria                     consolidação na ETAPA 9
+Deploy                                ETAPA 16
 ```
 
 Camunda não faz parte da arquitetura atual.
@@ -226,4 +226,4 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 12. parar no checkpoint e aguardar validação
 ```
 
-No estado atual, as **ETAPAS 1, 2 e 3 estão encerradas/validadas**. A próxima etapa funcional ficará em espera até a reorganização do roadmap.
+No estado atual, as **ETAPAS 0–3 estão encerradas/validadas**. A **ETAPA 4 — Consolidação funcional e polimento do MVP** é a próxima etapa, ainda não iniciada.
