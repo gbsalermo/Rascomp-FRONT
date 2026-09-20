@@ -7,7 +7,7 @@ Este documento consolida as **regras competitivas e invariantes de domínio apro
 Ele possui dois objetivos simultâneos:
 
 1. servir como contrato para backend, frontend e testes automatizados;
-2. preservar uma redação explícita o suficiente para futuramente gerar o regulamento público entregue aos competidores na etapa de Regras.
+2. preservar uma redação explícita o suficiente para futuramente gerar o regulamento público entregue aos competidores na **ETAPA 13 — Regras, Ajuda e Segurança**.
 
 > Este documento é a referência de regras competitivas já decididas. O roadmap continua sendo `docs/ETAPAS_POS_PROJETO.md` e a arquitetura geral continua sendo `docs/DOSSIE_PROJETO_RASCOMP.md`.
 
@@ -1175,7 +1175,7 @@ nenhuma persistência parcial
 
 # 19. Base para o futuro regulamento dos competidores
 
-Na etapa de Regras, este contrato deve ser transformado em um documento público mais simples, sem detalhes de implementação.
+Na **ETAPA 13 — Regras, Ajuda e Segurança**, este contrato deve ser transformado em conteúdo público mais simples, sem detalhes de implementação.
 
 O regulamento público deverá possuir pelo menos:
 
