@@ -3,7 +3,7 @@
 Data da decisão: **26/08/2026**  
 Meta de resolução inicial: **até domingo, 30/08/2026**.
 
-Este documento congela a arquitetura escolhida para o primeiro deploy do RasComp. O objetivo é impedir que a implantação em nuvem force uma reescrita do backend ou quebre o funcionamento local já validado.
+Este documento congela a arquitetura escolhida para o primeiro deploy do RasComp. O objetivo é impedir que a implantação em nuvem force uma reescrita do backend ou quebre o funcionamento local já validado. No roadmap atual, o deploy é a **ETAPA 16**, última etapa do ciclo, após a ETAPA 15 de validação final.
 
 Documento operacional detalhado:
 
