@@ -731,7 +731,7 @@ O ciclo passou a ser organizado por maturidade do produto:
 A ETAPA 4 começa pela validação real do sistema existente: fluxos, bugs, interfaces, responsividade e consistência antes de novas funcionalidades.
 
 
-## 10.7 Estado mobile antes da ETAPA 4
+## 10.7 Checkpoint transversal — Otimização Mobile do MVP
 
 O login já possui breakpoint e composição compacta dedicados e foi corrigido para manter a marca visível em larguras intermediárias.
 
@@ -751,6 +751,8 @@ Portal do Participante         ⏳ revisar
 Tabelas, filtros e diálogos    ⏳ revisar
 ```
 
-A **ETAPA 4 — Consolidação funcional e polimento do MVP** deve incluir a otimização dessas interfaces para celular/tablet, com reorganização de conteúdo e ações quando necessário, e não apenas redução proporcional do layout desktop.
+A otimização dessas interfaces foi registrada como **checkpoint transversal da PRIORIDADE 1**.
+
+Ela começa a ser trabalhada conforme as telas forem revisadas na ETAPA 4, continua junto do Portal (ETAPA 7), CMS (ETAPA 8) e Landing/Galeria (ETAPA 9), e precisa estar concluída antes do fechamento do MVP na ETAPA 10.
 
 Os testes físicos em aparelhos reais continuam previstos na ETAPA 14 como hardening final.

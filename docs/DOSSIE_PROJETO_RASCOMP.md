@@ -1110,17 +1110,29 @@ A próxima etapa é a ETAPA 4 — Consolidação funcional e polimento do MVP, a
 
 ## Mobile e responsividade — decisão de roadmap
 
-A responsividade passa a ter dois níveis explícitos:
+A responsividade é tratada como **checkpoint transversal da PRIORIDADE 1**, e não como redefinição da ETAPA 4.
 
 ```text
 ETAPA 4
-→ otimizar de fato as interfaces do MVP para celular/tablet
-→ adaptar navegação, densidade, tabelas, formulários, filtros, diálogos e ações
-→ garantir que fluxos essenciais possam ser concluídos sem viewport desktop
+→ encontra/corrige problemas mobile do sistema atual durante o polimento
+
+ETAPA 7
+→ Portal do Participante deve nascer/consolidar responsivo
+
+ETAPA 8
+→ CMS/Mídia considera uso em telas menores
+
+ETAPA 9
+→ Landing/Galeria fecham responsividade pública
+
+CHECKPOINT MOBILE
+→ consolidação obrigatória antes do fechamento do MVP
+
+ETAPA 10
+→ só fecha o MVP depois do checkpoint mobile
 
 ETAPA 14
-→ executar testes físicos finais em smartphones/tablets reais
-→ validar navegadores, orientação, sessão, formulários, chamadas à API e comportamento por toque
+→ testes físicos/hardening em smartphones/tablets reais
 ```
 
-No checkpoint atual, apenas o login recebeu tratamento responsivo dedicado e validação visual específica. As demais interfaces autenticadas devem ser revisadas sistematicamente durante a ETAPA 4.
+No checkpoint atual, apenas o login recebeu tratamento responsivo dedicado e validação visual específica.

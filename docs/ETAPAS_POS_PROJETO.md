@@ -65,6 +65,7 @@ ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
 ETAPA 8  ⏳ NÃO INICIADA — Gestor de Mídia / CMS
 ETAPA 9  ⏳ NÃO INICIADA — Landing + Galeria + conteúdo público real
+CHECKPOINT MOBILE ⏳ NÃO INICIADO — Otimização Mobile do MVP
 ETAPA 10 ⏳ NÃO INICIADA — Validação e fechamento do MVP
 
 PRIORIDADE 2 — ADIÇÕES, TESTES E PORTABILIDADE
@@ -156,31 +157,16 @@ Executar uma revisão funcional e visual do produto existente:
 - consistência de nomenclatura e textos;
 - navegação e retorno entre fluxos;
 - responsividade desktop/tablet/mobile;
-- **otimização específica das interfaces para celular**, hoje ainda incompleta fora do login;
-- adaptação de navegação, cards, tabelas, formulários, filtros, diálogos, ações e densidade visual para telas estreitas;
-- evitar depender apenas de "encolher" o layout desktop: quando necessário, reorganizar a informação e as ações para uso por toque;
 - bugs de viewport, overflow, tabelas, diálogos e formulários;
 - uso com banco local reaproveitado e banco limpo quando aplicável.
 
 Melhorias cabíveis nesta etapa são correções/polimentos que **não criam um novo grande domínio**.
 
-### Diretriz mobile da ETAPA 4
+### Relação da ETAPA 4 com o eixo mobile
 
-O login já recebeu tratamento responsivo dedicado, mas isso **não significa que a aplicação autenticada esteja otimizada para celular**.
+A ETAPA 4 pode revelar e corrigir problemas de responsividade encontrados durante o polimento, mas **não é definida nem encerrada exclusivamente pelo trabalho mobile**.
 
-Estado conhecido antes do início da ETAPA 4:
-
-```text
-Login                         ✅ tratamento responsivo dedicado
-Gestão / telas administrativas ⚠️ ainda precisam revisão sistemática
-Portal do Participante         ⚠️ ainda precisa revisão sistemática
-Tabelas / filtros / diálogos   ⚠️ precisam adaptação para telas estreitas
-Landing pública                ⚠️ precisa validação dentro do fechamento do MVP
-```
-
-Na ETAPA 4, mobile deve ser tratado como parte do polimento do MVP, não como teste cosmético final. O objetivo é tornar os fluxos essenciais utilizáveis por toque e em telas estreitas.
-
-A ETAPA 14 continua responsável pelos **testes físicos finais em smartphones/tablets**, usando aparelhos e navegadores reais para validar o que já deverá ter sido otimizado anteriormente.
+A otimização mobile possui um checkpoint transversal próprio na PRIORIDADE 1, descrito abaixo, e deve evoluir junto com as telas alteradas nas ETAPAS 4, 7, 8 e 9 antes do fechamento do MVP na ETAPA 10.
 
 Critério de saída:
 
@@ -188,8 +174,6 @@ Critério de saída:
 - bugs encontrados classificados e corrigidos ou documentados;
 - interfaces principais consolidadas;
 - responsividade básica validada;
-- principais telas de Gestão e Participante utilizáveis em larguras típicas de smartphone e tablet;
-- nenhum fluxo essencial depende de viewport desktop para ser concluído;
 - testes automatizados preservados/verdes;
 - documentação atualizada;
 - checkpoint prático aprovado.
@@ -308,6 +292,74 @@ Simular de ponta a ponta:
 - cenários de erro e recuperação usuais.
 
 Saída da etapa: **MVP funcional, coerente, utilizável e apresentável**.
+
+---
+
+# CHECKPOINT TRANSVERSAL — Otimização Mobile do MVP
+
+**Natureza:** entrega transversal da PRIORIDADE 1, sem criar uma nova numeração artificial de etapa.
+
+**Objetivo:** garantir que o MVP seja realmente utilizável em celular/tablet e não apenas um layout desktop que encolhe.
+
+Estado conhecido ao criar o checkpoint:
+
+```text
+Login                         ✅ tratamento responsivo dedicado
+Shell administrativo          ⏳ revisar
+Dashboard/Central             ⏳ revisar
+Usuários                      ⏳ revisar
+Inscrições                    ⏳ revisar
+Follow                        ⏳ revisar
+Sumô / Chaves                 ⏳ revisar
+Portal do Participante        ⏳ revisar
+Tabelas / filtros / diálogos  ⏳ revisar
+Landing pública               ⏳ revisar
+CMS/Mídia                     ⏳ revisar quando existir
+```
+
+Fluxo lógico:
+
+```text
+ETAPA 4
+→ identificar/corrigir quebras e gargalos mobile do sistema atual
+
+ETAPA 7
+→ Portal do Participante nasce/consolida já responsivo
+
+ETAPA 8
+→ CMS/Mídia deve ser utilizável em telas menores quando fizer sentido operacional
+
+ETAPA 9
+→ Landing/Galeria devem fechar responsividade pública
+
+CHECKPOINT MOBILE
+→ consolidar o conjunto
+→ validar que os fluxos essenciais funcionam em smartphone/tablet
+
+ETAPA 10
+→ só fecha o MVP com esse checkpoint concluído
+
+ETAPA 14
+→ revalidação física/hardening em aparelhos reais
+```
+
+Critérios do checkpoint:
+
+- navegação utilizável por toque;
+- menus e shell adaptados;
+- cards e métricas reorganizados quando necessário;
+- tabelas substituídas/transformadas quando não couberem em telas estreitas;
+- filtros e ações sem overflow;
+- formulários e diálogos utilizáveis sem zoom manual;
+- textos e densidade visual adequados;
+- nenhum fluxo essencial do participante depende de desktop;
+- telas administrativas críticas mantêm operação segura em mobile quando fizer sentido;
+- Landing e conteúdo público responsivos;
+- orientação portrait e landscape considerada quando relevante.
+
+Este checkpoint deve estar **concluído antes da ETAPA 10 — Validação e fechamento do MVP**.
+
+A ETAPA 14 não cria a experiência mobile; ela apenas faz a validação física final e o hardening do que já foi construído.
 
 ---
 
@@ -476,6 +528,7 @@ ETAPA 6  Futebol de Robôs
 ETAPA 7  Portal do Participante completo
 ETAPA 8  Gestor de Mídia / CMS
 ETAPA 9  Landing + Galeria + conteúdo público real
+CHECKPOINT MOBILE  Otimização Mobile do MVP
 ETAPA 10 Validação e fechamento do MVP
 
 PRIORIDADE 2

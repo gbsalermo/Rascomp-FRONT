@@ -123,6 +123,8 @@ As ETAPAS 0–3 estão concluídas/validadas. A próxima etapa é a **ETAPA 4 �
 
 Antes da ETAPA 4, o login é a única interface que já recebeu otimização responsiva dedicada e correções específicas de breakpoint.
 
-As demais telas de `gestao/` ainda devem ser revisadas para uso em celular/tablet. A ETAPA 4 inclui explicitamente essa otimização: shell, navegação, cards, tabelas, filtros, formulários, diálogos, Follow, Sumô/chaves e Portal do Participante.
+As demais telas de `gestao/` ainda devem ser revisadas para uso em celular/tablet.
 
-A ETAPA 14 fará a validação física final em aparelhos reais.
+Esse trabalho pertence ao **checkpoint transversal de Otimização Mobile do MVP**. Ele começa junto da revisão das telas existentes na ETAPA 4 e acompanha os módulos alterados/criados na PRIORIDADE 1 até ser concluído antes da ETAPA 10.
+
+A ETAPA 14 fará apenas a validação física final em aparelhos reais.
