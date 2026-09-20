@@ -729,3 +729,28 @@ O ciclo passou a ser organizado por maturidade do produto:
 - ETAPA 16 — deploy, última etapa.
 
 A ETAPA 4 começa pela validação real do sistema existente: fluxos, bugs, interfaces, responsividade e consistência antes de novas funcionalidades.
+
+
+## 10.7 Estado mobile antes da ETAPA 4
+
+O login já possui breakpoint e composição compacta dedicados e foi corrigido para manter a marca visível em larguras intermediárias.
+
+Isso não deve ser interpretado como responsividade completa do `gestao/`.
+
+Checkpoint atual:
+
+```text
+Login                         ✅ otimizado/revisado
+Shell administrativo           ⏳ revisar
+Dashboard/Central              ⏳ revisar
+Usuários                       ⏳ revisar
+Inscrições                     ⏳ revisar
+Follow                         ⏳ revisar
+Sumô / Chaves                  ⏳ revisar
+Portal do Participante         ⏳ revisar
+Tabelas, filtros e diálogos    ⏳ revisar
+```
+
+A **ETAPA 4 — Consolidação funcional e polimento do MVP** deve incluir a otimização dessas interfaces para celular/tablet, com reorganização de conteúdo e ações quando necessário, e não apenas redução proporcional do layout desktop.
+
+Os testes físicos em aparelhos reais continuam previstos na ETAPA 14 como hardening final.

@@ -156,10 +156,31 @@ Executar uma revisão funcional e visual do produto existente:
 - consistência de nomenclatura e textos;
 - navegação e retorno entre fluxos;
 - responsividade desktop/tablet/mobile;
+- **otimização específica das interfaces para celular**, hoje ainda incompleta fora do login;
+- adaptação de navegação, cards, tabelas, formulários, filtros, diálogos, ações e densidade visual para telas estreitas;
+- evitar depender apenas de "encolher" o layout desktop: quando necessário, reorganizar a informação e as ações para uso por toque;
 - bugs de viewport, overflow, tabelas, diálogos e formulários;
 - uso com banco local reaproveitado e banco limpo quando aplicável.
 
 Melhorias cabíveis nesta etapa são correções/polimentos que **não criam um novo grande domínio**.
+
+### Diretriz mobile da ETAPA 4
+
+O login já recebeu tratamento responsivo dedicado, mas isso **não significa que a aplicação autenticada esteja otimizada para celular**.
+
+Estado conhecido antes do início da ETAPA 4:
+
+```text
+Login                         ✅ tratamento responsivo dedicado
+Gestão / telas administrativas ⚠️ ainda precisam revisão sistemática
+Portal do Participante         ⚠️ ainda precisa revisão sistemática
+Tabelas / filtros / diálogos   ⚠️ precisam adaptação para telas estreitas
+Landing pública                ⚠️ precisa validação dentro do fechamento do MVP
+```
+
+Na ETAPA 4, mobile deve ser tratado como parte do polimento do MVP, não como teste cosmético final. O objetivo é tornar os fluxos essenciais utilizáveis por toque e em telas estreitas.
+
+A ETAPA 14 continua responsável pelos **testes físicos finais em smartphones/tablets**, usando aparelhos e navegadores reais para validar o que já deverá ter sido otimizado anteriormente.
 
 Critério de saída:
 
@@ -167,6 +188,8 @@ Critério de saída:
 - bugs encontrados classificados e corrigidos ou documentados;
 - interfaces principais consolidadas;
 - responsividade básica validada;
+- principais telas de Gestão e Participante utilizáveis em larguras típicas de smartphone e tablet;
+- nenhum fluxo essencial depende de viewport desktop para ser concluído;
 - testes automatizados preservados/verdes;
 - documentação atualizada;
 - checkpoint prático aprovado.

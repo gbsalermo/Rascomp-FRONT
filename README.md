@@ -364,7 +364,7 @@ Dados públicos são consumidos por contratos específicos e sanitizados.
 
 ## 📚 Documentação
 
-As ETAPAS 1, 2 e 3 estão concluídas/validadas. O novo roadmap está organizado por maturidade do produto: **PRIORIDADE 1 — finalização e polimento do MVP** e **PRIORIDADE 2 — adições, testes e portabilidade**. A próxima etapa é a **ETAPA 4 — Consolidação funcional e polimento do MVP**, ainda não iniciada.
+As ETAPAS 1, 2 e 3 estão concluídas/validadas. O novo roadmap está organizado por maturidade do produto: **PRIORIDADE 1 — finalização e polimento do MVP** e **PRIORIDADE 2 — adições, testes e portabilidade**. A próxima etapa é a **ETAPA 4 — Consolidação funcional e polimento do MVP**, ainda não iniciada. A ETAPA 4 também inclui explicitamente a otimização das interfaces autenticadas para celular/tablet; até aqui, o login é a interface com tratamento responsivo dedicado já revisado.
 
 A documentação técnica detalhada permanece separada da página de apresentação do projeto.
 

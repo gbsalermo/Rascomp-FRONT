@@ -1106,3 +1106,21 @@ O planejamento oficial agora segue duas prioridades:
 - **ETAPA 16:** deploy, última etapa.
 
 A próxima etapa é a ETAPA 4 — Consolidação funcional e polimento do MVP, ainda não iniciada.
+
+
+## Mobile e responsividade — decisão de roadmap
+
+A responsividade passa a ter dois níveis explícitos:
+
+```text
+ETAPA 4
+→ otimizar de fato as interfaces do MVP para celular/tablet
+→ adaptar navegação, densidade, tabelas, formulários, filtros, diálogos e ações
+→ garantir que fluxos essenciais possam ser concluídos sem viewport desktop
+
+ETAPA 14
+→ executar testes físicos finais em smartphones/tablets reais
+→ validar navegadores, orientação, sessão, formulários, chamadas à API e comportamento por toque
+```
+
+No checkpoint atual, apenas o login recebeu tratamento responsivo dedicado e validação visual específica. As demais interfaces autenticadas devem ser revisadas sistematicamente durante a ETAPA 4.

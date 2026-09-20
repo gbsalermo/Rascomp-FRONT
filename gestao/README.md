@@ -117,3 +117,12 @@ Documentação global: `../docs/README.md`.
 ## Roadmap atual
 
 As ETAPAS 0–3 estão concluídas/validadas. A próxima etapa é a **ETAPA 4 — Consolidação funcional e polimento do MVP**, ainda não iniciada. O CMS/Mídia pertence à ETAPA 8; Avisos IN_APP + Telegram à ETAPA 11; deploy à ETAPA 16.
+
+
+## Estado de responsividade mobile
+
+Antes da ETAPA 4, o login é a única interface que já recebeu otimização responsiva dedicada e correções específicas de breakpoint.
+
+As demais telas de `gestao/` ainda devem ser revisadas para uso em celular/tablet. A ETAPA 4 inclui explicitamente essa otimização: shell, navegação, cards, tabelas, filtros, formulários, diálogos, Follow, Sumô/chaves e Portal do Participante.
+
+A ETAPA 14 fará a validação física final em aparelhos reais.
