@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **13/09/2026**
+Última atualização: **19/09/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -28,8 +28,8 @@ docs/README.md
 ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
-ETAPA 3   🚧 em andamento
-ETAPA 4+ ⏳ não iniciadas
+ETAPA 3   ✅ concluída / validada
+PRÓXIMA ETAPA FUNCIONAL ⏸ aguardando reorganização do roadmap
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -86,7 +86,7 @@ Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, inclui
 
 Em 12/09/2026 o **Bloco 5 — Fluxos integrados completos** foi concluído no backend. Ele não exigiu nova funcionalidade visual: validou, com services e repositories reais, que os contratos já refletidos no `gestao/` funcionam juntos e que falhas não deixam persistência parcial.
 
-**As ETAPAS 1 e 2 estão concluídas e validadas. A ETAPA 3 está em andamento com backend, frontend e testes automatizados integrados.**
+**As ETAPAS 1, 2 e 3 estão concluídas e validadas. A próxima etapa funcional ficará em espera até a reorganização do roadmap solicitada pelo usuário.**
 
 ---
 
@@ -687,3 +687,34 @@ Backend:
 Checkpoint prático:
 - `lider.demo@rascomp.local` deve ver Chronos + Titan;
 - `membro.demo@rascomp.local` deve ver somente Chronos.
+
+
+## 10.5 Fechamento da matriz de permissões — 19/09/2026
+
+A ETAPA 3 foi validada em uso prático e está formalmente concluída.
+
+```text
+DEV          ✅
+GESTAO       ✅
+MIDIA        ✅
+PARTICIPANTE ✅
+líder x membro comum ✅
+```
+
+O roadmap canônico recebeu um checkpoint extra de **validação final de permissões** imediatamente antes do deploy. Essa validação futura deverá considerar todos os módulos existentes naquele momento.
+
+A próxima etapa funcional não deve ser iniciada automaticamente: o roadmap será reorganizado antes da continuação.
+
+
+## Responsividade do login — 19/09/2026
+
+O breakpoint do layout institucional de duas colunas foi antecipado para `1100px`.
+
+Abaixo desse limite:
+
+- painel institucional lateral é removido;
+- formulário passa para uma coluna centralizada;
+- marca compacta é exibida;
+- largura acompanha a viewport sem overflow horizontal.
+
+Também existe tratamento para viewport desktop com altura baixa, permitindo que o card cresça conforme o conteúdo e que a página role em vez de cortar o formulário.

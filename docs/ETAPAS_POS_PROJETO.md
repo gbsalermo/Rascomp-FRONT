@@ -1,6 +1,6 @@
 # RasComp — Etapas Pós-Projeto
 
-Última revisão: **13/09/2026**
+Última revisão: **19/09/2026**
 
 Este é o **único documento canônico para ordem de execução, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -24,14 +24,14 @@ backend: rascomp/docs/CONTINUIDADE.md
 
 ---
 
-# 1. Estado de execução em 13/09/2026
+# 1. Estado de execução em 19/09/2026
 
 ```text
 ETAPA 0   ✅ CONCLUÍDA / VALIDADA
 ETAPA 1   ✅ CONCLUÍDA / VALIDADA
 ETAPA 2   ✅ CONCLUÍDA / VALIDADA
 CHECKPOINT README/SCREENSHOTS ⏳ NÃO INICIADO
-ETAPA 3   🚧 EM ANDAMENTO
+ETAPA 3   ✅ CONCLUÍDA / VALIDADA
 ETAPA 4   ⏳ NÃO INICIADA
 ETAPA 5   ⏳ NÃO INICIADA
 ETAPA 6   ⏳ NÃO INICIADA
@@ -42,6 +42,7 @@ ETAPA 10  ⏳ NÃO INICIADA
 ETAPA 11  ⏳ NÃO INICIADA
 ETAPA 12  ⏳ NÃO INICIADA
 ETAPA 13  ⏳ NÃO INICIADA
+ETAPA 13.5 ⏳ NÃO INICIADA — validação final de permissões
 ETAPA 14  ⏳ NÃO INICIADA
 ```
 
@@ -135,7 +136,7 @@ O Bloco 5 consolidou o fechamento integrado da ETAPA 1:
 - profile `testdata` novamente validado contra MySQL real + Flyway V12;
 - frontend sem mudança funcional no Bloco 5, preservando o último typecheck + build verde.
 
-**As ETAPAS 1 e 2 estão concluídas e validadas. A ETAPA 3 está em andamento com backend, frontend e validação automatizada integrados; o checkpoint prático dos perfis permanece antes do fechamento formal.**
+**As ETAPAS 1, 2 e 3 estão concluídas e validadas. A matriz de permissões foi confirmada em uso prático em 19/09/2026. O roadmap será reorganizado posteriormente antes da próxima etapa funcional.**
 
 ---
 
@@ -472,7 +473,7 @@ Quando executado:
 
 ---
 
-# ETAPA 3 — Nova matriz de permissões
+# ETAPA 3 — Nova matriz de permissões ✅
 
 ## Checkpoint inicial — 13/09/2026
 
@@ -620,6 +621,21 @@ frontend → navegação/UX compatível
 ```
 
 Menu oculto nunca é segurança.
+
+## Fechamento — 19/09/2026
+
+A matriz foi validada pelo usuário em uso prático após os ajustes de:
+
+- separação `DEV | GESTAO | MIDIA | PARTICIPANTE`;
+- criação e edição segura de contas internas;
+- conta PARTICIPANTE separada da identidade institucional;
+- proteção do último DEV ativo;
+- distinção entre líder e membro comum no Portal do Participante;
+- autorização real no backend e navegação compatível no frontend.
+
+**Status:** ✅ CONCLUÍDA / VALIDADA.
+
+Uma nova validação global das permissões foi deliberadamente adiada para o checkpoint imediatamente anterior ao deploy, após a futura reorganização do roadmap.
 
 ---
 
@@ -906,6 +922,36 @@ Objetivo: validar o RasComp como produto operacional, não apenas conjunto de te
 
 ---
 
+# ETAPA 13.5 — Validação final de permissões
+
+**Objetivo:** repetir a matriz completa de autorização sobre o produto já consolidado, imediatamente antes do deploy.
+
+Validar novamente, no mínimo:
+
+```text
+DEV
+GESTAO
+MIDIA
+PARTICIPANTE — líder
+PARTICIPANTE — membro comum
+```
+
+Cobrir:
+
+- login e redirecionamento por perfil;
+- rotas frontend protegidas;
+- autorização HTTP real no backend;
+- criação/edição/desativação de contas internas;
+- proteção do último DEV ativo;
+- isolamento entre conta institucional e conta participante;
+- visão líder x membro no Portal do Participante;
+- acesso aos módulos adicionados/reorganizados até esse momento;
+- tentativa de acesso direto por URL/API a recursos proibidos.
+
+Essa etapa é um **checkpoint final de segurança/autorização**, não uma nova implementação da matriz.
+
+---
+
 # ETAPA 14 — Deploy em nuvem / Cloudflare
 
 Adicionar modo cloud sem remover o modo local.
@@ -924,11 +970,11 @@ GitHub Actions/Cloudflare → CI/CD
 
 Cloudflare D1 não é requisito do primeiro deploy.
 
-**Deploy só começa depois da ETAPA 13 passar.**
+**Deploy só começa depois da ETAPA 13 e da ETAPA 13.5 passarem.**
 
 ---
 
-# 3. Ordem congelada
+# 3. Ordem atual — pendente de reorganização
 
 ```text
 ETAPA 0  Baseline ✅
@@ -960,6 +1006,8 @@ ETAPA 11 Landing + Galeria
 ETAPA 12 Hardening
     ↓
 ETAPA 13 Testes manuais completos
+    ↓
+ETAPA 13.5 Validação final de permissões
     ↓
 ETAPA 14 Deploy Cloudflare
 ```

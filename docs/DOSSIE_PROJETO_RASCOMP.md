@@ -1077,3 +1077,21 @@ Competitor.userAccount
 ```
 
 Assim, pertencer à mesma equipe não concede automaticamente acesso administrativo ou visão de todos os robôs. A regra é aplicada no backend e apenas refletida no frontend.
+
+
+## Fechamento da matriz de permissões — 19/09/2026
+
+A ETAPA 3 foi validada em uso prático e encerrada.
+
+A matriz vigente permanece:
+
+```text
+DEV
+GESTAO
+MIDIA
+PARTICIPANTE
+```
+
+A separação entre identidade institucional e participante permanece obrigatória, assim como a distinção entre líder da equipe e membro comum.
+
+Por decisão de planejamento, haverá uma **validação final de permissões imediatamente antes do deploy**, depois que os demais módulos e a futura reorganização do roadmap estiverem consolidados.

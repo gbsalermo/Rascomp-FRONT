@@ -174,7 +174,7 @@ body #app .login-mobile-rascomp-mark strong {
   letter-spacing: -.04em;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   body #app .login-page {
     position: absolute !important;
     min-height: 100dvh !important;
@@ -210,5 +210,39 @@ body #app .login-mobile-rascomp-mark strong {
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+  }
+}
+
+
+/* Em janelas desktop baixas, o conteúdo define a altura do card e a página rola.
+   Evita corte vertical provocado pelo shell fixo de 690px. */
+@media (max-height: 720px) and (min-width: 1101px) {
+  body #app .login-page {
+    position: absolute !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    align-items: flex-start !important;
+  }
+
+  body #app .login-page > .login-shell.login-shell-main {
+    height: auto !important;
+    min-height: 560px !important;
+  }
+
+  body #app .login-page .login-brand-panel {
+    min-height: 560px !important;
+    padding: 30px 38px !important;
+  }
+
+  body #app .login-page .login-form-panel {
+    padding: 30px 44px !important;
+  }
+
+  body #app .login-page .login-form-heading {
+    margin-bottom: 22px;
+  }
+
+  body #app .login-page .login-copyright {
+    margin-top: 24px;
   }
 }
