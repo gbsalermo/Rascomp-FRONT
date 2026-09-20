@@ -182,6 +182,10 @@ body #app .login-mobile-rascomp-mark strong {
     padding: 18px !important;
   }
 
+  body #app .login-page .login-mobile-brand {
+    display: flex !important;
+  }
+
   body #app .login-page > .login-shell,
   body #app .login-page > .login-shell.login-shell-main {
     width: min(560px, calc(100vw - 36px)) !important;
