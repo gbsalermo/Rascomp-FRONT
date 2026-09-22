@@ -801,3 +801,24 @@ Correções já aplicadas no BLOCO 1:
 Pendência para fechar o BLOCO 1:
 
 - validação prática/visual do usuário em desktop e celular dos fluxos de autenticação e Shell.
+
+
+## Decisão — recuperação de senha
+
+A ETAPA 4 deve apenas garantir que a interface atual não simule um fluxo inexistente. O tratamento definitivo de credenciais foi alocado na **ETAPA 13 — Regras, Ajuda e Segurança**.
+
+A ETAPA 13 deverá validar:
+
+- alteração de senha autenticada;
+- "esqueci minha senha" para usuário não autenticado;
+- resposta neutra para não enumerar contas;
+- token/código de uso único com expiração curta;
+- invalidação após uso ou nova solicitação;
+- canal real de entrega, preferencialmente e-mail configurável;
+- proteção contra abuso;
+- política para sessões antigas após redefinição;
+- tratamento de conta inativa/token inválido;
+- ação administrativa excepcional sem expor senha conhecida;
+- testes automatizados de segurança e recuperação.
+
+A ETAPA 14 revisará o hardening desse fluxo e a ETAPA 15 o incluirá na bateria final de falhas e recuperação.
