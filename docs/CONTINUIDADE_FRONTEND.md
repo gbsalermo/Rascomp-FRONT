@@ -773,3 +773,31 @@ Estado:
 - baseline técnico, autenticação, Shell e UX global são o escopo atual;
 - ETAPA 5 permanece bloqueada;
 - nenhuma nova funcionalidade estrutural deve ser antecipada.
+
+
+## ETAPA 4 — BLOCO 1 — checkpoint técnico 22/09/2026
+
+Baseline consolidado na branch `etapa-4-consolidacao-mvp`:
+
+```text
+Frontend Checks #84          ✅ typecheck + build
+Backend Tests #316           ✅ 139 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V13 + testdata ✅
+Logins DEV/GESTAO/MIDIA/PARTICIPANTE/MEMBRO ✅
+```
+
+Correções já aplicadas no BLOCO 1:
+
+- remoção de `.bak` e artefatos raiz acidentais do ajuste mobile;
+- `*.bak` adicionado ao `.gitignore`;
+- `VITE_API_URL` voltou a ser configurável, mantendo same-origin/proxy como padrão para acesso local/mobile;
+- mensagem de erro do login não expõe mais diagnóstico técnico;
+- recuperação de senha não simula mais um envio inexistente;
+- sessão expirada passa a redirecionar para o login preservando a rota de retorno;
+- seletor de competição permanece disponível no menu mobile;
+- títulos de Follow/Sumô em rotas operacionais foram ajustados;
+- dropdown de alertas e botão do menu receberam refinamentos para telas pequenas.
+
+Pendência para fechar o BLOCO 1:
+
+- validação prática/visual do usuário em desktop e celular dos fluxos de autenticação e Shell.
