@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  ⏳ PRÓXIMA / NÃO INICIADA — Consolidação funcional e polimento do MVP
+ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 1
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Próxima etapa autorizável: ETAPA 4. Ela ainda não deve ser considerada iniciada até confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. Bloco atual: BLOCO 1 — Baseline + autenticação + Shell + UX global. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -579,3 +579,34 @@ Ao continuar o RasComp:
 12. parar no checkpoint e aguardar confirmação.
 
 Se houver conflito de **ordem de execução**, este arquivo é a autoridade.
+
+---
+
+## Checkpoint de início da ETAPA 4 — 22/09/2026
+
+A ETAPA 4 foi autorizada e iniciada em branch própria nos dois repositórios:
+
+```text
+etapa-4-consolidacao-mvp
+```
+
+Execução aprovada:
+
+```text
+BLOCO 1 — Baseline + autenticação + Shell + UX global          🚧 EM ANDAMENTO
+BLOCO 2 — Gestão administrativa                               ⏳
+BLOCO 3 — Operação competitiva                                ⏳
+BLOCO 4 — Portal do Participante                              ⏳
+BLOCO 5 — Landing/Galeria atuais                              ⏳
+BLOCO 6 — Regressão integrada + documentação                  ⏳
+```
+
+Subordem do BLOCO 1:
+
+1. baseline técnico e saneamento de resíduos temporários;
+2. autenticação/sessão/redirecionamento;
+3. Shell administrativo e navegação global;
+4. UX compartilhada e responsividade básica das interfaces globais;
+5. regressão do bloco + validação prática.
+
+A ETAPA 5 permanece bloqueada até fechamento e validação explícita da ETAPA 4.
