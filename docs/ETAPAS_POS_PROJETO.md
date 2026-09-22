@@ -144,6 +144,7 @@ Checkpoint final conhecido: **135 testes verdes**, MySQL + Flyway V13 + testdata
 Executar uma revisão funcional e visual do produto existente:
 
 - login, sessão e redirecionamento por perfil;
+- comportamento atual de esquecimento/recuperação de senha, sem simular envio enquanto o fluxo seguro ainda não existir;
 - Dashboard/Central da competição;
 - usuários e contas internas;
 - equipes, competidores, robôs e fotos;
@@ -422,6 +423,28 @@ Separar claramente:
 - orientação/ajuda.
 
 Não inventar sanções nem publicar texto não validado oficialmente.
+
+### Recuperação e redefinição segura de senha
+
+A ETAPA 13 também deve fechar o tratamento definitivo de credenciais e recuperação de acesso.
+
+Validar e implementar:
+
+- alteração de senha por usuário autenticado, exigindo confirmação adequada da credencial atual quando aplicável;
+- fluxo de "esqueci minha senha" para usuário não autenticado;
+- solicitação de recuperação sem revelar se o e-mail informado existe ou não;
+- token/código de recuperação de uso único e expiração curta;
+- invalidação de tokens antigos após nova solicitação ou redefinição concluída;
+- armazenamento seguro do token de recuperação, sem persistir o segredo reutilizável em texto puro;
+- nova senha respeitando a política de senha vigente;
+- encerramento/invalidação das sessões anteriores quando a senha for redefinida, conforme decisão de segurança validada;
+- proteção contra abuso/repetição excessiva da solicitação;
+- canal real de entrega da recuperação, preferencialmente e-mail configurável, sem acoplar o domínio a um fornecedor específico;
+- feedback de sucesso/erro que não permita enumeração de contas;
+- possibilidade de ação administrativa segura para casos excepcionais, sem permitir que DEV visualize ou defina uma senha conhecida para o participante sem política explícita;
+- testes automatizados dos casos de expiração, reutilização, conta inativa e token inválido.
+
+Na ETAPA 4, a responsabilidade é apenas garantir que a interface atual não prometa um fluxo inexistente e registrar a pendência. A implementação definitiva fica nesta ETAPA 13 para ser revisada novamente no hardening da ETAPA 14 e exercitada na validação final da ETAPA 15.
 
 ## ETAPA 14 — Hardening + preparação para uso externo
 
