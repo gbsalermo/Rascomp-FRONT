@@ -29,7 +29,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
 ETAPA 3   ✅ concluída / validada
-ETAPA 4   ⏳ próxima / não iniciada — Consolidação funcional e polimento do MVP
+ETAPA 4   🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 1
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -588,7 +588,7 @@ ETAPA 3 — matriz de permissões
 ├─ backend                               ✅
 ├─ frontend                              ✅
 ├─ testes automatizados                  ✅
-└─ checkpoint prático dos quatro perfis  🚧 PENDENTE DO USUÁRIO
+└─ checkpoint prático dos quatro perfis  ✅ validado em 19/09/2026
 ```
 
 A ETAPA 4 é a próxima etapa do roadmap, mas só deve ser iniciada após autorização explícita.
@@ -703,7 +703,7 @@ líder x membro comum ✅
 
 A validação final de permissões foi incorporada à **ETAPA 15 — Validação final completa**, imediatamente antes do deploy.
 
-A próxima etapa é a ETAPA 4, ainda não iniciada.
+A ETAPA 4 está em andamento desde 22/09/2026, atualmente no BLOCO 1.
 
 
 ## Responsividade do login — 19/09/2026
@@ -756,3 +756,20 @@ A otimização dessas interfaces foi registrada como **checkpoint transversal da
 Ela começa a ser trabalhada conforme as telas forem revisadas na ETAPA 4, continua junto do Portal (ETAPA 7), CMS (ETAPA 8) e Landing/Galeria (ETAPA 9), e precisa estar concluída antes do fechamento do MVP na ETAPA 10.
 
 Os testes físicos em aparelhos reais continuam previstos na ETAPA 14 como hardening final.
+
+
+## Checkpoint de início da ETAPA 4 — 22/09/2026
+
+Branch de trabalho:
+
+```text
+etapa-4-consolidacao-mvp
+```
+
+Estado:
+
+- ETAPA 4 autorizada e iniciada;
+- BLOCO 1 em andamento;
+- baseline técnico, autenticação, Shell e UX global são o escopo atual;
+- ETAPA 5 permanece bloqueada;
+- nenhuma nova funcionalidade estrutural deve ser antecipada.
