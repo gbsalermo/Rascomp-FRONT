@@ -22,10 +22,13 @@ async function submit() {
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
     router.replace(redirect)
   } catch (error: any) {
-    ElMessage.error(
+    const message =
       error?.response?.data?.message ||
-      `ERRO: ${error?.message} | STATUS: ${error?.response?.status || 'sem resposta'} | URL: ${error?.config?.url || ''}`
-    )
+      (error?.response
+        ? 'Não foi possível entrar. Verifique suas credenciais e tente novamente.'
+        : 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.')
+
+    ElMessage.error(message)
   }
 }
 </script>
