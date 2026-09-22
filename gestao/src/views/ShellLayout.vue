@@ -107,6 +107,8 @@ const pageTitle = computed(() => {
     '/minha-equipe': 'Meu painel'
   }
   if (titles[route.path]) return titles[route.path]
+  if (route.name === 'follow-run') return 'Operação Follow Line'
+  if (route.name === 'sumo-match') return 'Partida de Sumô'
   if (auth.isParticipant) return 'Portal do participante'
   if (auth.isMedia) return 'Painel de mídia'
   return 'Gestão da competição'
@@ -236,6 +238,19 @@ watch(() => competition.selectedId, loadAlerts)
       </button>
 
       <div class="sidebar-divider" />
+
+      <div v-if="auth.canOperateCompetition" class="sidebar-competition-mobile">
+        <span>Competição em foco</span>
+        <el-select
+          :model-value="competition.selectedId"
+          :loading="competition.loading"
+          placeholder="Selecionar competição"
+          @change="competition.select"
+        >
+          <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
+        </el-select>
+      </div>
+
       <nav class="nav-list" aria-label="Navegação principal">
         <section v-for="section in sections" :key="section.label" class="nav-section">
           <span v-if="!collapsed" class="nav-caption">{{ section.label }}</span>
