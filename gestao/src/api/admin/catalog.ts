@@ -27,6 +27,8 @@ export const adminCatalogApi = {
     http.patch<UserAccount>(`/api/v1/usuarios/${id}/role`, null, { params: { role } }).then((r) => r.data),
   robotPhotos: (robotId: number) =>
     http.get<RobotImage[]>(`/api/v1/robos/${robotId}/fotos`).then((r) => r.data),
+  competitionRobotPhotos: (competitionId: number, robotId: number) =>
+    http.get<RobotImage[]>(`/api/v1/competicoes/${competitionId}/robos/${robotId}/fotos`).then((r) => r.data),
   competitors: () => http.get<Competitor[]>('/api/v1/competidores').then((r) => r.data),
   setCompetitorActive: (id: number, ativo: boolean) =>
     ativo
