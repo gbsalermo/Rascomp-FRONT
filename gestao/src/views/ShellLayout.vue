@@ -256,13 +256,13 @@ watch(() => competition.selectedId, loadAlerts)
       <div class="sidebar-divider" />
 
       <div v-if="auth.canOperateCompetition" class="sidebar-competition-mobile">
-        <span>Competição vigente</span>
+        <span>{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
         <el-select
           v-if="auth.isDev"
           :model-value="competition.selectedId"
           :loading="competition.loading"
           placeholder="Selecionar competição"
-          @change="competition.defineCurrent"
+          @change="competition.select"
         >
           <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
         </el-select>
@@ -306,7 +306,7 @@ watch(() => competition.selectedId, loadAlerts)
             :loading="competition.loading"
             placeholder="Selecionar competição"
             style="width: 245px"
-            @change="competition.defineCurrent"
+            @change="competition.select"
           >
             <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
           </el-select>
