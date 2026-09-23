@@ -961,3 +961,14 @@ Direção aplicada:
 - manter responsividade específica da tela.
 
 A regra de escopo da competição em foco para DEV x GESTAO ainda não foi alterada nesta subetapa; ela será tratada no bloco de Competições/Contexto com backend como fonte de verdade.
+
+
+### Checkpoint técnico — Dashboard/Central
+
+```text
+Frontend Checks #104 ✅
+Typecheck ✅
+Build ✅
+```
+
+A primeira versão da revisão 2.1 está pronta para validação visual/prática antes de seguir para 2.2 Competições e contexto da edição.
