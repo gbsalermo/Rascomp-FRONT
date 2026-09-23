@@ -972,3 +972,36 @@ Build ✅
 ```
 
 A primeira versão da revisão 2.1 está pronta para validação visual/prática antes de seguir para 2.2 Competições e contexto da edição.
+
+
+### Decisões do BLOCO 2 — Agenda e Competidores
+
+A revisão do Dashboard identificou duas lacunas de produto.
+
+**Agenda competitiva**
+
+- não tratar agenda como sinônimo de `Match` de Sumô;
+- Sumô já possui `dataHora/pista/ordemExecucao/statusConvocacao`;
+- Follow ainda não possui contrato de agendamento de tomada;
+- uma tomada do Follow representa uma atividade geral da categoria, dentro da qual as inscrições executam suas tentativas;
+- o Dashboard não deve exibir uma "agenda" parcial apenas de Sumô;
+- a agenda unificada será tratada no BLOCO 3C e depois consumida pelo Dashboard.
+
+Até lá, o card "Partidas" e a subseção de agenda parcial foram removidos da Central.
+
+**Competidores**
+
+O backend já possui CRUD/consulta de Competitor, inclusive listagem por equipe, mas o frontend administrativo não possui rota/tela dedicada.
+
+Pendência do BLOCO 2.4:
+
+- tela "Competidores";
+- navegação Equipe → Competidores;
+- detalhe de competidor;
+- equipe/instituição;
+- contato e conta PARTICIPANTE vinculada;
+- situação;
+- inscrições/participações;
+- robôs usados nessas inscrições.
+
+Não modelar "robô do competidor" diretamente: no domínio atual Robot pertence à Team; Competitor e Robot se relacionam por Registration.
