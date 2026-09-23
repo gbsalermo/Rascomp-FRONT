@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 1
+ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 1 ✅ / BLOCO 2 PRÓXIMO
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. Bloco atual: BLOCO 1 — Baseline + autenticação + Shell + UX global. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 concluído e validado; próximo passo autorizado é o BLOCO 2 — Gestão administrativa. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -620,8 +620,8 @@ etapa-4-consolidacao-mvp
 Execução aprovada:
 
 ```text
-BLOCO 1 — Baseline + autenticação + Shell + UX global          🚧 EM ANDAMENTO
-BLOCO 2 — Gestão administrativa                               ⏳
+BLOCO 1 — Baseline + autenticação + Shell + UX global          ✅ CONCLUÍDO
+BLOCO 2 — Gestão administrativa                               ⏭️ PRÓXIMO
 BLOCO 3 — Operação competitiva                                ⏳
 BLOCO 4 — Portal do Participante                              ⏳
 BLOCO 5 — Landing/Galeria atuais                              ⏳
@@ -677,7 +677,7 @@ Itens registrados para revisão interface por interface no BLOCO 2:
 - Resultados orientado a vencedores por categoria;
 - revisão sistemática de cada interface, sequência de ações, nomenclaturas, responsividade e densidade visual.
 
-A ETAPA 4 continua no BLOCO 1 até a repetição prática dos itens corrigidos.
+O BLOCO 1 foi validado pelo usuário e está formalmente concluído. O próximo passo é o BLOCO 2 — Gestão administrativa.
 
 
 ### Checkpoint manual complementar do BLOCO 1 — 22/09/2026
@@ -696,3 +696,61 @@ Celular físico                                  ⏳ conexão/bug intermitente p
 ```
 
 O problema observado em aparelho físico, que deixou de conseguir acessar o servidor após a desconexão, não reproduziu na janela responsiva do desktop. Ele permanece registrado no CHECKPOINT MOBILE e deverá ser revalidado em aparelho real antes do fechamento do MVP, além da bateria física da ETAPA 14.
+
+
+---
+
+## Fechamento formal do BLOCO 1 — 22/09/2026
+
+O BLOCO 1 da ETAPA 4 foi validado pelo usuário e está concluído.
+
+Escopo encerrado:
+
+- baseline técnico;
+- login válido/inválido;
+- `Lembrar de mim`;
+- logout;
+- sessão única;
+- redirecionamento e expiração de sessão;
+- Shell administrativo;
+- navegação global;
+- reorganização inicial do menu;
+- responsividade básica do Shell;
+- recuperação de senha tratada de forma não enganosa;
+- documentação e roadmap sincronizados.
+
+Checkpoint automatizado final:
+
+```text
+Frontend Checks #97 ✅ typecheck + build
+Backend Tests #329  ✅ 142 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V14 + testdata ✅
+```
+
+Checkpoint manual:
+
+```text
+Login válido/inválido              ✅
+Lembrar de mim                      ✅
+Logout                              ✅
+Sessão única em dois navegadores    ✅
+Shell desktop                       ✅
+Transição desktop ↔ reduzido        ✅
+Menu mobile em viewport reduzida    ✅
+Nova organização da navegação       ✅
+Recuperação de senha                ✅
+```
+
+Pendência transversal preservada, sem bloquear o fechamento do bloco:
+
+- comportamento intermitente em aparelho físico, incluindo perda de acesso ao servidor após desconexão;
+- não reproduzido em viewport reduzida no desktop;
+- manter no CHECKPOINT MOBILE e revalidar em dispositivo físico antes da ETAPA 10 e novamente na ETAPA 14.
+
+Próximo passo:
+
+```text
+BLOCO 2 — Gestão administrativa
+→ começar pelo Dashboard/Central
+→ depois revisar interface por interface
+```
