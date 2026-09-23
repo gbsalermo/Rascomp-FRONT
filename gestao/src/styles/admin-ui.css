@@ -1160,3 +1160,42 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.competition-context-static {
+  min-width: 180px;
+  max-width: 260px;
+  padding: 8px 10px;
+  border: 1px solid #ecd8df;
+  border-radius: 9px;
+  background: #fff;
+  color: #5e2439;
+  font-size: .72rem;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-competition-static {
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .05);
+}
+
+.sidebar-competition-static strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: .76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-competition-static small {
+  color: rgba(255, 255, 255, .5);
+  font-size: .62rem;
+  text-transform: lowercase;
+}
