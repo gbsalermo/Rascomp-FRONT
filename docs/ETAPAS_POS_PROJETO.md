@@ -935,10 +935,10 @@ GESTAO
 Resolução da vigente pelo backend:
 
 ```text
-EM_ANDAMENTO
-→ INSCRICOES_ABERTAS
-→ INSCRICOES_ENCERRADAS
-→ PLANEJADA
+DEV define explicitamente qual edição é VIGENTE
+→ escolha persistida no backend
+→ GESTAO recebe exatamente essa edição
+→ status não escolhe automaticamente outra edição
 ```
 
 Ações operacionais explícitas:
@@ -949,3 +949,24 @@ Ações operacionais explícitas:
 - prorrogar/reabrir inscrições quando permitido.
 
 Proteção de acesso histórico e aplicação da mesma regra aos recursos internos será consolidada progressivamente em 2.4/2.5 e nos blocos competitivos usando `CompetitionContextService`.
+
+
+#### Correção após validação da 2.2
+
+A validação prática mostrou que "vigente" não deve ser inferida pelo status.
+
+Decisão final:
+
+- DEV define explicitamente a edição vigente;
+- essa escolha é global e persistida;
+- ao DEV selecionar/definir uma edição como vigente, GESTAO passa a receber a mesma edição;
+- criar uma edição nova não troca a vigente automaticamente;
+- a troca é uma ação explícita do DEV;
+- V15 adiciona `competitions.vigente`;
+- a migration inicializa um contexto compatível para bancos existentes, mas depois a escolha é explícita;
+- GESTAO não pode finalizar oficialmente a competição;
+- finalização é DEV-only;
+- GESTAO pode abrir inscrições, encerrar inscrições e iniciar a competição vigente;
+- quando a edição está `EM_ANDAMENTO`, GESTAO não recebe ação de finalização.
+
+Próxima migration estrutural após essa decisão: V16+.
