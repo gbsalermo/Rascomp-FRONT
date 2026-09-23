@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
+  Aim,
   ArrowRight,
   Bell,
-  Collection,
+  Connection,
+  Cpu,
   DataBoard,
-  Setting,
+  Flag,
+  Grid,
+  Medal,
   Tickets,
   Timer,
   Trophy,
@@ -36,35 +40,29 @@ const alerts = ref<AdminAlert[]>([])
 const devSections = [
   { label: 'Geral', items: [{ label: 'Dashboard', to: '/', icon: DataBoard }] },
   {
+    label: 'Operação ao vivo',
+    items: [
+      { label: 'Follow Line', to: '/follow-line', icon: Timer },
+      { label: 'Sumô', to: '/sumo', icon: Aim },
+      { label: 'Partidas', to: '/partidas', icon: Flag },
+      { label: 'Resultados', to: '/resultados', icon: Medal }
+    ]
+  },
+  {
     label: 'Competição',
     items: [
       { label: 'Competição', to: '/competicoes', icon: Trophy },
       { label: 'Inscrições', to: '/inscricoes', icon: Tickets },
       { label: 'Equipes', to: '/equipes', icon: User },
-      { label: 'Robôs', to: '/robos', icon: Collection },
-      { label: 'Modalidades', to: '/modalidades', icon: Trophy }
+      { label: 'Robôs', to: '/robos', icon: Cpu },
+      { label: 'Modalidades', to: '/modalidades', icon: Grid },
+      { label: 'Chaves', to: '/chaves', icon: Connection }
     ]
   },
   {
-    label: 'Categorias',
+    label: 'Administração',
     items: [
-      { label: 'Follow Line', to: '/follow-line', icon: Timer },
-      { label: 'Sumô', to: '/sumo', icon: Collection }
-    ]
-  },
-  {
-    label: 'Competição ao vivo',
-    items: [
-      { label: 'Chaves', to: '/chaves', icon: Trophy },
-      { label: 'Partidas', to: '/partidas', icon: Timer },
-      { label: 'Resultados', to: '/resultados', icon: DataBoard }
-    ]
-  },
-  {
-    label: 'Sistema',
-    items: [
-      { label: 'Usuários', to: '/usuarios', icon: User },
-      { label: 'Configurações', to: '/configuracoes', icon: Setting }
+      { label: 'Usuários', to: '/usuarios', icon: User }
     ]
   }
 ]
@@ -87,7 +85,7 @@ const sections = computed(() => {
   if (auth.isParticipant) return participantSections
   if (auth.isMedia) return mediaSections
   if (auth.isDev) return devSections
-  return devSections.filter((section) => section.label !== 'Sistema')
+  return devSections.filter((section) => section.label !== 'Administração')
 })
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
@@ -135,6 +133,19 @@ function isActive(to: string) {
 
 function go(to: string) {
   router.push(to)
+  mobileOpen.value = false
+}
+
+function openMobileMenu() {
+  collapsed.value = false
+  mobileOpen.value = true
+}
+
+function syncResponsiveShell() {
+  if (window.innerWidth <= 980) {
+    collapsed.value = false
+    return
+  }
   mobileOpen.value = false
 }
 
@@ -208,11 +219,16 @@ async function loadAlerts() {
 }
 
 onMounted(async () => {
+  syncResponsiveShell()
+  window.addEventListener('resize', syncResponsiveShell)
+
   if (auth.canOperateCompetition) {
     await competition.load()
     await loadAlerts()
   }
 })
+
+onBeforeUnmount(() => window.removeEventListener('resize', syncResponsiveShell))
 
 watch(() => competition.selectedId, loadAlerts)
 </script>
@@ -267,7 +283,7 @@ watch(() => competition.selectedId, loadAlerts)
     <main class="main-area">
       <header class="topbar admin-topbar-v2">
         <div class="topbar-context">
-          <button class="mobile-menu" aria-label="Abrir menu" @click="mobileOpen = true">☰</button>
+          <button class="mobile-menu" aria-label="Abrir menu" @click="openMobileMenu">☰</button>
           <div>
             <span class="eyebrow">IEEE RAS · UFRB</span>
             <strong>{{ pageTitle }}</strong>
