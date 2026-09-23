@@ -23,7 +23,7 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
-ETAPA 4                                        ⏳ próxima / não iniciada — consolidação do MVP
+ETAPA 4                                        🚧 em andamento — BLOCO 2 implementado / aguardando validação
 Backend — último checkpoint funcional          135 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
@@ -1187,3 +1187,26 @@ Direção aplicada:
 - manter responsividade específica da tela.
 
 A regra de escopo da competição em foco para DEV x GESTAO ainda não foi alterada nesta subetapa; ela será tratada no bloco de Competições/Contexto com backend como fonte de verdade.
+
+
+## ETAPA 4 — BLOCO 2 administrativo
+
+Implementação concluída e aguardando validação manual.
+
+Consolidações:
+
+- Competition focus do DEV separado da Competition vigente global;
+- V15 persiste a competição vigente;
+- GESTAO opera somente a vigente;
+- usuários separados em Organização/Diretoria e Participantes;
+- edição cadastral de contas sem conversão de identidade;
+- nova visão administrativa de Competidores;
+- catálogos de Equipes/Robôs/Competidores contextualizados pela competição;
+- mutações estruturais administrativas DEV-only;
+- fotos de robôs respeitam o contexto de competição para GESTAO;
+- Inscrições consolidadas com aprovação/rejeição/cancelamento/reativação e solicitações de cancelamento;
+- backend aplica o contexto da competição nas operações administrativas.
+
+Checkpoint: Frontend Checks #137 verde; Backend Tests #371 com 155 testes verdes; MySQL/Flyway V15/testdata verde.
+
+O bloco ainda depende de validação prática e das decisões sobre categorias por competição e efeito da desativação de UserAccount PARTICIPANTE sobre Competitor.
