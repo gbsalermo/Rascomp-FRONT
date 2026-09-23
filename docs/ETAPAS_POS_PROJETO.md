@@ -766,7 +766,7 @@ Ordem desta revisão:
 
 ```text
 2.1 Dashboard / Central ✅ validado
-2.2 Competições e contexto da edição 🚧 em andamento
+2.2 Competições e contexto da edição 🚧 implementação pronta / aguardando validação
 2.3 Usuários e permissões administrativas
 2.4 Equipes / competidores / robôs / fotos / modalidades
     - criar visão administrativa própria de Competidores;
@@ -911,3 +911,41 @@ A implementação deve possuir três pontos complementares:
 O Dashboard apenas consumirá a visão unificada de próximas atividades. Ele não será o local principal de edição da agenda.
 
 A implementação estrutural continua alocada no **BLOCO 3C — Chaves / Agenda / Resultados**.
+
+
+### Checkpoint 2.2 — competição vigente
+
+Implementação concluída e aguardando validação prática.
+
+Regra:
+
+```text
+DEV
+→ administra todas as edições
+→ escolhe competição em foco
+→ cria/edita/desativa/reativa
+
+GESTAO
+→ enxerga somente a competição vigente
+→ não troca edição
+→ não cria nem edita estrutura da edição
+→ opera o ciclo da vigente
+```
+
+Resolução da vigente pelo backend:
+
+```text
+EM_ANDAMENTO
+→ INSCRICOES_ABERTAS
+→ INSCRICOES_ENCERRADAS
+→ PLANEJADA
+```
+
+Ações operacionais explícitas:
+- abrir inscrições;
+- encerrar inscrições;
+- iniciar competição;
+- finalizar competição;
+- prorrogar/reabrir inscrições quando permitido.
+
+Proteção de acesso histórico e aplicação da mesma regra aos recursos internos será consolidada progressivamente em 2.4/2.5 e nos blocos competitivos usando `CompetitionContextService`.
