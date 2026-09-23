@@ -21,6 +21,10 @@ export const adminRegistrationApi = {
   },
   updateRegistration: (id: number, payload: Registration) =>
     http.put<Registration>(`/api/v1/inscricoes/${id}`, payload).then((r) => r.data),
+  cancelRegistration: (id: number) =>
+    http.delete(`/api/v1/inscricoes/${id}`).then(() => undefined),
+  reactivateRegistration: (id: number) =>
+    http.patch<Registration>(`/api/v1/inscricoes/${id}/reativar`).then((r) => r.data),
   cancellationRequests: (params?: { competitionId?: number; status?: CancellationRequestStatus }) =>
     http.get<RegistrationCancellationRequest[]>('/api/v1/solicitacoes-cancelamento-inscricao', { params }).then((r) => r.data),
   approveCancellationRequest: (id: number, resposta?: string) =>
