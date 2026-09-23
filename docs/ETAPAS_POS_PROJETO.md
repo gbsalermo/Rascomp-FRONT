@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 concluído e validado; BLOCO 2 — Gestão administrativa em andamento, iniciando por Dashboard/Central. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 concluído e validado; BLOCO 2 com implementação concluída e aguardando validação manual/decisões finais. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -621,7 +621,7 @@ Execução aprovada:
 
 ```text
 BLOCO 1 — Baseline + autenticação + Shell + UX global          ✅ CONCLUÍDO
-BLOCO 2 — Gestão administrativa                               🚧 EM ANDAMENTO
+BLOCO 2 — Gestão administrativa                               🧪 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
 BLOCO 3 — Operação competitiva                                ⏳
 BLOCO 4 — Portal do Participante                              ⏳
 BLOCO 5 — Landing/Galeria atuais                              ⏳
@@ -766,14 +766,14 @@ Ordem desta revisão:
 
 ```text
 2.1 Dashboard / Central ✅ validado
-2.2 Competições e contexto da edição 🚧 implementação pronta / aguardando validação
-2.3 Usuários e permissões administrativas
-2.4 Equipes / competidores / robôs / fotos / modalidades
+2.2 Competições e contexto da edição ✅ implementação consolidada / regressão pendente no fechamento
+2.3 Usuários e permissões administrativas ✅ implementado / aguardando validação
+2.4 Equipes / competidores / robôs / fotos / modalidades ✅ implementado / aguardando validação
     - criar visão administrativa própria de Competidores;
     - permitir navegar Equipe → Competidores;
     - detalhe do competidor deve mostrar equipe e participações/inscrições;
     - robôs relacionados ao competidor devem ser derivados das inscrições em que ele participa, pois o domínio atual não possui Competitor → Robot direto;
-2.5 Inscrições / cancelamentos / reativação
+2.5 Inscrições / cancelamentos / reativação ✅ implementado / aguardando validação
 ```
 
 A revisão será feita interface por interface, preservando backend como fonte de verdade e transformando achados funcionais em testes quando aplicável.
@@ -1001,3 +1001,106 @@ Iniciar competição     → DEV | GESTAO
 Finalizar competição   → DEV
 Definir vigente        → DEV
 ```
+
+
+---
+
+## Checkpoint de implementação do BLOCO 2 — 23/09/2026
+
+A implementação planejada do BLOCO 2 foi concluída. O bloco **não está fechado**: aguarda bateria manual única do usuário e resolução das decisões pendentes abaixo.
+
+### 2.3 — Usuários e permissões
+
+Implementado:
+
+- separação visual entre **Organização / Diretoria** e **Participantes**;
+- busca e filtro de contas internas;
+- criação de conta interna permanece DEV-only;
+- edição cadastral DEV-only de nome, e-mail e telefone para contas internas e PARTICIPANTE;
+- PARTICIPANTE continua identidade separada e nunca é convertido em DEV/GESTAO/MIDIA;
+- mudança de role apenas entre perfis internos;
+- conta autenticada não pode alterar a própria role nem se desativar;
+- backend protege o último DEV ativo;
+- alteração de e-mail invalida a sessão anterior;
+- desativação invalida a sessão da conta;
+- e-mail duplicado continua proibido.
+
+### 2.4 — Equipes, Competidores, Robôs, Fotos e Modalidades
+
+Implementado:
+
+- nova rota/tela administrativa **Competidores**;
+- contexto padrão baseado na competição em foco (DEV) ou vigente (GESTAO);
+- DEV pode alternar para catálogo global quando aplicável;
+- GESTAO não recebe catálogos históricos globais;
+- Equipe → Competidores;
+- detalhe do competidor mostra equipe, instituição, contato, conta PARTICIPANTE vinculada, situação e participações;
+- robôs do competidor são derivados das Registration em que participa;
+- equipes mostram responsável e quantidade de inscrições no contexto;
+- robôs mostram equipe, descrição, inscrições e drawer de fotos;
+- consulta de fotos da GESTAO é validada no contexto da competição;
+- mutações estruturais de Team, Competitor, Robot, CompetitionCategory e RobotImage são DEV-only no namespace administrativo;
+- Portal do Participante continua usando seus endpoints próprios;
+- transferências de competidor/robô/responsabilidade continuam reservadas à ETAPA 5.
+
+### 2.5 — Inscrições, cancelamentos e reativação
+
+Implementado:
+
+- Inscrições abrem no contexto atual;
+- DEV pode trocar apenas o filtro local da tela;
+- GESTAO permanece na competição vigente;
+- listagens globais de inscrições são DEV-only;
+- aprovação/rejeição preservadas;
+- cancelamento direto administrativo de PENDENTE/APROVADA;
+- APROVADA sem atividade competitiva → CANCELADA;
+- APROVADA com atividade competitiva → DESISTENTE;
+- CANCELADA/REJEITADA podem ser reativadas quando a janela/regras permitirem;
+- reativação retorna para PENDENTE e nova análise;
+- solicitações de cancelamento do participante continuam com aprovação/rejeição pela organização;
+- GESTAO só pode analisar inscrições/solicitações da competição vigente;
+- backend aplica CompetitionContextService, não apenas filtros visuais.
+
+### Checkpoint automatizado
+
+```text
+Frontend Checks #137 ✅
+Typecheck ✅
+Build ✅
+
+Backend Tests #371 ✅
+155 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V15 + testdata ✅
+```
+
+### Decisões pendentes para fechar o BLOCO 2
+
+**D1 — Categoria/Modalidade por competição**
+
+O domínio atual mantém `CompetitionCategory` como catálogo global. Não existe relação explícita `Competition ↔ Category`. Assim, a interface "Categorias em uso" deriva as categorias das inscrições existentes.
+
+Decidir entre:
+
+- manter catálogo global e considerar "em uso" somente o que aparece em Registration; ou
+- criar habilitação explícita de categorias por competição, permitindo preparar a edição antes de receber inscrições.
+
+Se for escolhida associação explícita, exige desenho estrutural e migration V16+.
+
+**D2 — Desativação da conta PARTICIPANTE x Competitor**
+
+Implementação atual mantém separação de identidade:
+
+- desativar UserAccount PARTICIPANTE bloqueia login e invalida sessão;
+- não desativa automaticamente o Competitor;
+- não altera equipe, inscrição ou histórico competitivo.
+
+Decidir se essa separação deve permanecer ou se a desativação da conta deve provocar algum efeito automático no Competitor.
+
+**D3 — Quem pode configurar categorias da edição, caso D1 escolha associação explícita**
+
+Mutações estruturais do catálogo global são DEV-only. Se existir habilitação `Competition ↔ Category`, decidir se:
+
+- apenas DEV habilita/desabilita categorias por edição; ou
+- GESTAO pode habilitar categorias globais já cadastradas na competição vigente, sem editar o catálogo estrutural.
+
+O BLOCO 2 só será marcado como concluído após a bateria manual e essas decisões.
