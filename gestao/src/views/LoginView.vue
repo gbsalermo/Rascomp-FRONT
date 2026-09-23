@@ -4,12 +4,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../store'
 
+const REMEMBERED_EMAIL_KEY = 'rascomp.rememberedEmail'
+
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
-const remember = ref(false)
+const rememberedEmail = localStorage.getItem(REMEMBERED_EMAIL_KEY) || ''
+const remember = ref(Boolean(rememberedEmail))
 const currentYear = new Date().getFullYear()
-const form = reactive({ email: '', senha: '' })
+const form = reactive({ email: rememberedEmail, senha: '' })
 
 async function submit() {
   if (!form.email || !form.senha) {
@@ -18,7 +21,12 @@ async function submit() {
   }
 
   try {
-    await auth.login(form.email.trim(), form.senha, remember.value)
+    const normalizedEmail = form.email.trim()
+    await auth.login(normalizedEmail, form.senha, remember.value)
+
+    if (remember.value) localStorage.setItem(REMEMBERED_EMAIL_KEY, normalizedEmail)
+    else localStorage.removeItem(REMEMBERED_EMAIL_KEY)
+
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
     router.replace(redirect)
   } catch (error: any) {
