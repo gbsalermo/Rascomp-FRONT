@@ -221,7 +221,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
       ...item,
       vigente: item.id === updated.id
     }))
-    select(updated.id)
+    return updated
   }
 
   async function load(force = false) {
@@ -232,12 +232,6 @@ export const useCompetitionStore = defineStore('competition-context', () => {
 
       if (auth.isManagement) {
         select(competitions.value.find((item) => item.vigente)?.id)
-        return competitions.value
-      }
-
-      const serverCurrent = competitions.value.find((item) => item.vigente)
-      if (serverCurrent?.id) {
-        select(serverCurrent.id)
         return competitions.value
       }
 
