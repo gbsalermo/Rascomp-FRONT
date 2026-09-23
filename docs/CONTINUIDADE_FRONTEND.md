@@ -703,7 +703,7 @@ líder x membro comum ✅
 
 A validação final de permissões foi incorporada à **ETAPA 15 — Validação final completa**, imediatamente antes do deploy.
 
-A ETAPA 4 está em andamento desde 22/09/2026, atualmente no BLOCO 1.
+A ETAPA 4 está em andamento desde 22/09/2026. O BLOCO 1 foi concluído e validado; o próximo é o BLOCO 2 — Gestão administrativa.
 
 
 ## Responsividade do login — 19/09/2026
@@ -902,3 +902,34 @@ A ETAPA 13 deverá oferecer dois caminhos:
 2. recuperação assistida pelo DEV como fallback, com credencial temporária expirada/uso único, troca obrigatória no primeiro acesso e auditoria.
 
 O DEV nunca define nem conhece a senha definitiva do usuário.
+
+
+## Fechamento do BLOCO 1 — 22/09/2026
+
+O usuário validou o checkpoint final. BLOCO 1 encerrado.
+
+```text
+Frontend Checks #97 ✅
+Backend Tests #329  ✅ 142 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V14 + testdata ✅
+```
+
+Estado manual aprovado:
+
+- autenticação;
+- lembrar e-mail com "Lembrar de mim";
+- logout;
+- sessão única;
+- Shell desktop;
+- transição de breakpoint;
+- menu reduzido;
+- reorganização da navegação;
+- tela de recuperação com orientação temporária adequada.
+
+Pendência transversal:
+- bug/conectividade em celular físico permanece no CHECKPOINT MOBILE.
+
+Próximo passo:
+- BLOCO 2 — Gestão administrativa;
+- iniciar pelo Dashboard/Central;
+- aplicar revisão interface por interface, com sincronização de competição em foco, hierarquia visual e regras administrativas.
