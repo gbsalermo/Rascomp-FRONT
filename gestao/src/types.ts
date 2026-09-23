@@ -30,4 +30,4 @@ export type {
   Registration,
   RegistrationCancellationRequest
 } from './types/registration'
-export type { Team, Robot, RobotImage, Competitor } from './types/catalog'
+export type { Team, Robot, RobotImage, Competitor, CompetitionAdminCatalog } from './types/catalog'
