@@ -1054,16 +1054,7 @@ GESTAO
 → pode prorrogar/reabrir inscrições quando a regra permitir
 ```
 
-A competição vigente é resolvida no backend, priorizando:
-
-```text
-EM_ANDAMENTO
-→ INSCRICOES_ABERTAS
-→ INSCRICOES_ENCERRADAS
-→ PLANEJADA
-```
-
-Dentro do mesmo status, prevalece a edição ativa mais recente pela data de início.
+A competição vigente é uma escolha explícita do DEV, persistida no backend. Status não troca automaticamente a edição vigente.
 
 UX:
 
@@ -1104,3 +1095,18 @@ MySQL + Flyway V14 + testdata ✅
 ```
 
 A 2.2 está pronta para validação prática DEV x GESTAO.
+
+
+### Ajuste pós-validação 2.2 — vigente explícita
+
+O usuário validou que a troca da competição pelo DEV deve definir o contexto global da GESTAO.
+
+Ajustes:
+
+- seletor DEV agora define a edição vigente no backend;
+- drawer usa ação "Definir vigente";
+- GESTAO recebe exatamente a edição marcada;
+- criação de edição não muda a vigente automaticamente;
+- finalização da competição é DEV-only;
+- GESTAO continua podendo abrir/encerrar inscrições e iniciar a competição;
+- V15 persiste a flag `vigente`.
