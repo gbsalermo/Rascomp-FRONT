@@ -1159,3 +1159,31 @@ Checkpoint final do bloco:
 `Frontend Checks #97`, `Backend Tests #329`, 142 testes verdes, MySQL + Flyway V14 + testdata verdes.
 
 Próximo: BLOCO 2 — Gestão administrativa.
+
+
+## ETAPA 4 — BLOCO 2 — Dashboard/Central
+
+BLOCO 2 iniciado pela revisão 2.1 do Dashboard/Central.
+
+Direção aplicada:
+
+- remover o indicador "Progresso do evento" baseado apenas em datas, por ser ambíguo como métrica operacional;
+- remover o bloco separado de "Acesso rápido";
+- transformar métricas principais em cards clicáveis que também servem como atalhos;
+- ampliar de 4 para 6 cards operacionais:
+  - pendências de inscrição;
+  - equipes inscritas;
+  - robôs inscritos;
+  - categorias em uso;
+  - chaves atuais;
+  - partidas concluídas/total;
+- manter "Competição em foco" como contexto principal;
+- adicionar atalhos contextuais para Follow, Sumô e Resultados dentro do card da edição;
+- substituir "Últimas inscrições" por "Atividade e agenda";
+- combinar movimentações recentes de inscrição com próximas partidas agendadas;
+- fazer o Dashboard reagir à troca de `competition.selectedId`;
+- buscar inscrições já filtradas por `competitionId`, reduzindo carregamento global desnecessário;
+- carregar chaves e partidas apenas da competição em foco;
+- manter responsividade específica da tela.
+
+A regra de escopo da competição em foco para DEV x GESTAO ainda não foi alterada nesta subetapa; ela será tratada no bloco de Competições/Contexto com backend como fonte de verdade.
