@@ -376,7 +376,7 @@ Frontend Gestão                ✅ typecheck + build
 Backend                        ✅ 135 testes / 0 falhas / 0 erros / 0 skipped
 SecurityAuthorizationFlowTest  ✅ matriz HTTP
 DemoShowcaseDataInitializerTest ✅ perfis testdata + membro comum
-MySQL + Flyway V13 + testdata  ✅
+MySQL + Flyway V14 + testdata  ✅
 ```
 
 # 5. Segurança
@@ -780,9 +780,9 @@ Estado:
 Baseline consolidado na branch `etapa-4-consolidacao-mvp`:
 
 ```text
-Frontend Checks #84          ✅ typecheck + build
-Backend Tests #316           ✅ 139 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V13 + testdata ✅
+Frontend Checks #91          ✅ typecheck + build
+Backend Tests #325           ✅ 142 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V14 + testdata ✅
 Logins DEV/GESTAO/MIDIA/PARTICIPANTE/MEMBRO ✅
 ```
 
