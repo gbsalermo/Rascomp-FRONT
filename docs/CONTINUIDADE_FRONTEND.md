@@ -1090,3 +1090,17 @@ Backend:
 - janela/histórico de inscrições exigem competição operável.
 
 A mesma política será aplicada aos recursos internos de cada módulo ao revisar 2.4/2.5 e os blocos competitivos, evitando uma checagem duplicada e inconsistente.
+
+
+### Checkpoint técnico 2.2
+
+```text
+Frontend Checks #114 ✅
+Typecheck ✅
+Build ✅
+Backend Tests #342 ✅
+149 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V14 + testdata ✅
+```
+
+A 2.2 está pronta para validação prática DEV x GESTAO.
