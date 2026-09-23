@@ -1005,3 +1005,28 @@ Pendência do BLOCO 2.4:
 - robôs usados nessas inscrições.
 
 Não modelar "robô do competidor" diretamente: no domínio atual Robot pertence à Team; Competitor e Robot se relacionam por Registration.
+
+
+## BLOCO 2.1 — Dashboard/Central validado
+
+O usuário aprovou a reformulação do Dashboard/Central.
+
+Checkpoint:
+
+```text
+Frontend Checks #108 ✅
+Dashboard objetivo e acionável ✅
+card Partidas removido ✅
+agenda parcial de Sumô removida ✅
+```
+
+A agenda futura foi refinada: no Follow a unidade agendada é uma chamada geral da tomada (horário + tomada + pista), com convocação individual de cada inscrição/robô dentro dessa chamada. A ausência na convocação registra perda/ausência da tomada conforme regra já existente.
+
+No Sumô, a unidade agendada é a batalha/partida; rounds permanecem internos à batalha.
+
+A agenda terá:
+- tela unificada em Operação ao vivo;
+- edição contextual em Follow → tomada;
+- edição contextual em Sumô/Partidas → batalha.
+
+Próximo: BLOCO 2.2 — Competições e contexto da edição.
