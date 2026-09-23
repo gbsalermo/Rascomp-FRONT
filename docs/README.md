@@ -34,7 +34,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2  ✅ concluída / validada
 ETAPA 3  ✅ concluída / validada
-ETAPA 4  🚧 em andamento — Consolidação funcional e polimento do MVP — BLOCO 1
+ETAPA 4  🚧 em andamento — BLOCO 1 ✅ concluído / BLOCO 2 próximo
 ```
 
 A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi concluída/validada em 13/09/2026. A ETAPA 3 também está concluída/validada após integração, testes HTTP e validação prática dos perfis.
