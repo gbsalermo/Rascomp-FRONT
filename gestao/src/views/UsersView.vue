@@ -148,7 +148,7 @@ async function saveRole() {
   try {
     const updated = await adminApi.setUserRole(editingUser.value.id, editingRole.value)
     roleDialogOpen.value = false
-    internalFilter.value = updated.role
+    if (updated.role !== 'PARTICIPANTE') internalFilter.value = updated.role
     ElMessage.success(`Permissão alterada para ${roleLabel(updated.role)}.`)
     resetRoleDialog()
     await load()
