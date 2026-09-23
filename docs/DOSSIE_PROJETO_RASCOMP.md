@@ -1136,3 +1136,26 @@ ETAPA 14
 ```
 
 No checkpoint atual, apenas o login recebeu tratamento responsivo dedicado e validação visual específica.
+
+
+## ETAPA 4 — checkpoint 22/09/2026
+
+BLOCO 1 da ETAPA 4 concluído em 22/09/2026.
+
+Consolidações relevantes:
+
+- baseline técnico revalidado;
+- autenticação e sessão revisadas;
+- `Lembrar de mim` preserva e-mail sem persistir senha;
+- política de sessão única adicionada via Flyway V14;
+- Shell administrativo e navegação global revisados;
+- bug de breakpoint desktop/mobile corrigido;
+- navegação reorganizada para priorizar operação ao vivo;
+- recuperação de senha definitiva permanece planejada para ETAPA 13;
+- fallback assistido por DEV previsto com credencial temporária, uso único/expiração e troca obrigatória;
+- celular físico permanece como pendência transversal do checkpoint mobile.
+
+Checkpoint final do bloco:
+`Frontend Checks #97`, `Backend Tests #329`, 142 testes verdes, MySQL + Flyway V14 + testdata verdes.
+
+Próximo: BLOCO 2 — Gestão administrativa.
