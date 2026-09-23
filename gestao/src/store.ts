@@ -136,9 +136,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
-    clearSessionState()
-    hydrated.value = true
+  async function logout() {
+    try {
+      if (token.value) await authApi.logout()
+    } catch {
+      // Mesmo sem resposta do backend, o dispositivo atual deve encerrar a sessão local.
+    } finally {
+      clearSessionState()
+      hydrated.value = true
+    }
   }
 
   if (typeof window !== 'undefined') {
