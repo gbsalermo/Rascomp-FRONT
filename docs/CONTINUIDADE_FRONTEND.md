@@ -822,3 +822,55 @@ A ETAPA 13 deverá validar:
 - testes automatizados de segurança e recuperação.
 
 A ETAPA 14 revisará o hardening desse fluxo e a ETAPA 15 o incluirá na bateria final de falhas e recuperação.
+
+
+## ETAPA 4 — BLOCO 1 — validação prática do usuário 22/09/2026
+
+Resultado do primeiro teste manual:
+
+```text
+Login válido                         ✅
+Login inválido                       ✅
+Lembrar de mim                       ⚠️ e-mail não permanecia após logout
+Logout/login                         ✅
+Dashboard                            ⚠️ revisão de hierarquia/layout pendente
+Sidebar desktop                      ✅
+Competição em foco                   ✅ com regra de escopo a revisar
+Alertas                              ✅
+Navegação geral                      ✅ com reorganização solicitada
+Breakpoint desktop/mobile            ❌ bug de deslocamento do conteúdo
+Menu mobile                          ✅ abre, mas afetado pelo bug do breakpoint
+Responsividade mobile                ✅ base funcional
+Recuperação de senha                 ⚠️ teste local ainda exibiu versão da main
+Sessão simultânea em dois aparelhos  ❌ política ausente
+```
+
+Correções imediatas do BLOCO 1:
+
+- "Lembrar de mim" preserva o e-mail em armazenamento próprio; senha nunca é persistida;
+- Shell força estado expandido ao entrar no mobile e fecha drawer ao voltar ao desktop;
+- CSS mobile passa a fixar explicitamente a sidebar, evitando que ela volte a participar do grid;
+- navegação reorganizada em Geral → Operação ao vivo → Competição → Administração;
+- Chaves movida para Competição;
+- Follow Line, Sumô, Partidas e Resultados agrupados em Operação ao vivo;
+- ícones de Sumô, robôs, modalidades, chaves, partidas e resultados diferenciados;
+- Configurações removida da navegação enquanto não houver função administrativa própria;
+- logout passa a invalidar sessão também no backend;
+- política de sessão única: novo login invalida o token anterior.
+
+Pendências formalizadas para o BLOCO 2:
+
+- revisar Dashboard com prioridade operacional e melhor ocupação da viewport;
+- substituir ou redefinir o indicador de "progresso do evento", hoje calculado apenas pelo período de datas;
+- integrar atalhos importantes aos cards/resumos superiores, evitando acesso rápido somente no rodapé;
+- ampliar "Atividade recente" para eventos além de inscrições;
+- revisar interface por interface a hierarquia, sequência, nomenclatura e densidade visual;
+- sincronizar competição em foco como filtro default nas interfaces relacionadas;
+- definir no backend a regra de troca de competição: DEV pode alternar edições; GESTAO deve operar somente a edição vigente;
+- reformular Usuários em dois contextos claros: Participantes da competição e Organização/Diretoria;
+- revisar edição de dados cadastrais de PARTICIPANTE sem permitir conversão de role;
+- tornar explícitas as regras de desativação: conta atual não se desativa e último DEV ativo é protegido;
+- avaliar uma tela operacional unificada de Partidas que represente tomadas de Follow e batalhas de Sumô;
+- revisar Resultados para destacar vencedores por categoria.
+
+Observação de continuidade: o usuário mencionou um efeito visual definido no início do projeto, mas a especificação exata não foi localizada na documentação canônica nem na continuidade disponível. Não recriar por suposição; reconciliar durante a revisão visual interface por interface.
