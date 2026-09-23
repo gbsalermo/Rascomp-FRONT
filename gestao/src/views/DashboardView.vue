@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Connection, Cpu, Flag, Grid, Tickets, User } from '@element-plus/icons-vue'
+import { Connection, Cpu, Grid, Tickets, User } from '@element-plus/icons-vue'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
-import type { Bracket, Category, Match, Registration } from '../types'
+import type { Bracket, Category, Registration } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
 const auth = useAuthStore()
@@ -15,7 +15,6 @@ const error = ref('')
 const categories = ref<Category[]>([])
 const registrations = ref<Registration[]>([])
 const brackets = ref<Bracket[]>([])
-const matches = ref<Match[]>([])
 
 const activeCompetition = computed(() => competition.selectedCompetition)
 const focusRegistrations = computed(() => registrations.value)
@@ -48,27 +47,6 @@ const sumoCategories = computed(() =>
 const activeBrackets = computed(() =>
   brackets.value.filter((item) => item.ativo !== false && item.atual !== false)
 )
-const finishedMatches = computed(() =>
-  matches.value.filter((item) => item.status === 'FINALIZADA')
-)
-const upcomingMatches = computed(() => {
-  const now = Date.now()
-
-  return [...matches.value]
-    .filter((item) => {
-      if (item.status === 'EM_ANDAMENTO') return true
-      if (!item.dataHora || item.status === 'FINALIZADA') return false
-      const time = new Date(item.dataHora).getTime()
-      return Number.isFinite(time) && time >= now
-    })
-    .sort((a, b) => {
-      if (a.status === 'EM_ANDAMENTO' && b.status !== 'EM_ANDAMENTO') return -1
-      if (b.status === 'EM_ANDAMENTO' && a.status !== 'EM_ANDAMENTO') return 1
-      return new Date(a.dataHora || 0).getTime() - new Date(b.dataHora || 0).getTime()
-    })
-    .slice(0, 3)
-})
-
 const recentRegistrations = computed(() =>
   [...focusRegistrations.value]
     .sort(
@@ -109,7 +87,6 @@ function categoryCount(categoryId: number) {
 function clearCompetitionData() {
   registrations.value = []
   brackets.value = []
-  matches.value = []
 }
 
 async function loadDashboard(forceCompetition = false) {
@@ -141,14 +118,6 @@ async function loadDashboard(forceCompetition = false) {
     categories.value = allCategories
     registrations.value = competitionRegistrations
     brackets.value = competitionBrackets
-
-    const currentBrackets = competitionBrackets.filter(
-      (item) => item.ativo !== false && item.atual !== false
-    )
-    const matchGroups = await Promise.all(
-      currentBrackets.map((item) => adminApi.matches(item.id).catch(() => []))
-    )
-    matches.value = matchGroups.flat()
   } catch (err: any) {
     error.value = err?.response?.data?.message || 'Não foi possível carregar o painel.'
     ElMessage.error(error.value)
@@ -256,15 +225,6 @@ watch(
         <b class="dashboard-card-arrow">→</b>
       </router-link>
 
-      <router-link to="/partidas" class="dashboard-stat-card dashboard-stat-link rubro">
-        <span class="dashboard-stat-icon"><el-icon><Flag /></el-icon></span>
-        <div>
-          <small>Partidas concluídas</small>
-          <strong>{{ finishedMatches.length }}/{{ matches.length }}</strong>
-          <span>{{ upcomingMatches.length }} próxima(s) na agenda</span>
-        </div>
-        <b class="dashboard-card-arrow">→</b>
-      </router-link>
     </section>
 
     <section v-if="activeCompetition" class="dashboard-overview-grid dashboard-overview-grid-v3">
@@ -319,8 +279,8 @@ watch(
       <article class="dashboard-activity-card dashboard-activity-v3">
         <div class="card-heading dashboard-card-heading-v2">
           <div>
-            <span class="eyebrow">Atividade e agenda</span>
-            <h2>O que está acontecendo</h2>
+            <span class="eyebrow">Atividade recente</span>
+            <h2>Movimentações da edição</h2>
           </div>
         </div>
 
@@ -343,27 +303,6 @@ watch(
           <div v-else class="dashboard-empty-state-inline">Nenhuma movimentação de inscrição nesta edição.</div>
         </section>
 
-        <section class="dashboard-activity-section dashboard-agenda-section">
-          <div class="dashboard-activity-section-title">
-            <strong>Próximas partidas</strong>
-            <router-link to="/partidas" class="text-link">Abrir agenda</router-link>
-          </div>
-
-          <div v-if="upcomingMatches.length" class="activity-list-v2 activity-list-compact">
-            <article v-for="item in upcomingMatches" :key="`match-${item.id}`" class="activity-item-v2 dashboard-match-item">
-              <span class="activity-dot activity-match" />
-              <div>
-                <strong>{{ item.robotANome || 'A definir' }} × {{ item.robotBNome || 'A definir' }}</strong>
-                <small>
-                  {{ item.pista || 'Pista a definir' }} ·
-                  {{ item.status === 'EM_ANDAMENTO' ? 'em andamento' : formatDateTime(item.dataHora) }}
-                </small>
-              </div>
-              <StatusBadge :value="item.status || 'AGENDADA'" />
-            </article>
-          </div>
-          <div v-else class="dashboard-empty-state-inline">Nenhuma partida próxima na agenda.</div>
-        </section>
       </article>
     </section>
 
