@@ -160,3 +160,22 @@ MySQL + Flyway V14 + testdata ✅
 ```
 
 O próximo trabalho é o BLOCO 2 — Gestão administrativa, começando pela revisão do Dashboard/Central e seguindo interface por interface.
+
+
+## BLOCO 2 — implementação concluída
+
+A gestão administrativa da ETAPA 4 está implementada e aguardando validação final do usuário.
+
+Inclui:
+
+- contexto DEV foco local x competição vigente global;
+- Usuários separados entre Organização/Diretoria e Participantes;
+- edição cadastral e regras de ativação/permissão;
+- tela própria de Competidores;
+- Equipes/Robôs/Fotos contextualizados;
+- Inscrições com aprovação, cancelamento e reativação;
+- restrições DEV x GESTAO aplicadas também no backend.
+
+Checkpoint: Frontend Checks #137 ✅; Backend Tests #371 ✅ com 155 testes; MySQL/Flyway V15/testdata ✅.
+
+O BLOCO 3 não deve começar antes da validação manual e decisões finais do BLOCO 2.
