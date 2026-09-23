@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
+import { useAuthStore, useCompetitionStore } from '../store'
 import type {
-  Competition,
   Registration,
   RegistrationCancellationRequest,
   RegistrationStatus
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
+const auth = useAuthStore()
+const competition = useCompetitionStore()
+
 const loading = ref(false)
 const reviewingId = ref<number>()
+const registrationActionId = ref<number>()
 const cancellationReviewingId = ref<number>()
-const competitions = ref<Competition[]>([])
 const rows = ref<Registration[]>([])
 const cancellationRequests = ref<RegistrationCancellationRequest[]>([])
 const competitionId = ref<number>()
@@ -32,7 +35,10 @@ const statusOptions: RegistrationStatus[] = [
 ]
 
 const activeCompetition = computed(() =>
-  competitions.value.find((item) => item.id === competitionId.value)
+  competition.competitions.find((item) => item.id === competitionId.value)
+)
+const competitionContextLabel = computed(() =>
+  auth.isDev ? 'Competição filtrada' : 'Competição vigente'
 )
 
 const filtered = computed(() => {
@@ -81,13 +87,8 @@ function formatDateTime(value?: string) {
 async function loadBase() {
   loading.value = true
   try {
-    competitions.value = await adminApi.competitions()
-    const focus =
-      competitions.value.find((c) => c.status === 'EM_ANDAMENTO') ||
-      competitions.value.find((c) => c.status === 'INSCRICOES_ABERTAS') ||
-      competitions.value.find((c) => c.status === 'INSCRICOES_ENCERRADAS') ||
-      competitions.value[0]
-    competitionId.value = focus?.id
+    await competition.load(true)
+    competitionId.value = competition.selectedId || undefined
     await load()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar as inscrições.')
@@ -97,12 +98,16 @@ async function loadBase() {
 }
 
 async function load() {
+  if (!competitionId.value) {
+    rows.value = []
+    cancellationRequests.value = []
+    return
+  }
+
   loading.value = true
   try {
     const [registrationRows, cancellationRows] = await Promise.all([
-      competitionId.value
-        ? adminApi.registrations({ competitionId: competitionId.value })
-        : adminApi.registrations(),
+      adminApi.registrations({ competitionId: competitionId.value }),
       adminApi.cancellationRequests({
         competitionId: competitionId.value,
         status: 'PENDENTE'
@@ -110,6 +115,11 @@ async function load() {
     ])
     rows.value = registrationRows
     cancellationRequests.value = cancellationRows
+
+    if (selected.value) {
+      selected.value = rows.value.find((item) => item.id === selected.value?.id)
+      if (!selected.value) detailsOpen.value = false
+    }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar as inscrições.')
   } finally {
@@ -151,6 +161,61 @@ async function review(row: Registration, next: RegistrationStatus) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar a inscrição.')
   } finally {
     reviewingId.value = undefined
+  }
+}
+
+async function cancelRegistration(row: Registration) {
+  if (!['PENDENTE', 'APROVADA'].includes(row.status)) return
+
+  const approved = row.status === 'APROVADA'
+  try {
+    await ElMessageBox.confirm(
+      approved
+        ? 'Cancelar uma inscrição aprovada preserva o histórico. Se já houver atividade competitiva, o status será DESISTENTE.'
+        : 'Cancelar esta inscrição pendente? Ela poderá ser reativada apenas se a janela de inscrições permitir.',
+      `Cancelar inscrição · ${row.robotNome}`,
+      {
+        type: 'warning',
+        confirmButtonText: 'Confirmar cancelamento',
+        cancelButtonText: 'Voltar'
+      }
+    )
+
+    registrationActionId.value = row.id
+    await adminApi.cancelRegistration(row.id)
+    ElMessage.success('Inscrição cancelada conforme as regras da competição.')
+    await load()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível cancelar a inscrição.')
+  } finally {
+    registrationActionId.value = undefined
+  }
+}
+
+async function reactivateRegistration(row: Registration) {
+  if (!['CANCELADA', 'REJEITADA'].includes(row.status)) return
+
+  try {
+    await ElMessageBox.confirm(
+      'A inscrição voltará para PENDENTE e precisará ser analisada novamente. A reativação só é aceita se a janela de inscrições estiver válida.',
+      `Reativar inscrição · ${row.robotNome}`,
+      {
+        type: 'info',
+        confirmButtonText: 'Reativar',
+        cancelButtonText: 'Cancelar'
+      }
+    )
+
+    registrationActionId.value = row.id
+    await adminApi.reactivateRegistration(row.id)
+    ElMessage.success('Inscrição reativada e devolvida para análise.')
+    await load()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível reativar a inscrição.')
+  } finally {
+    registrationActionId.value = undefined
   }
 }
 
@@ -198,6 +263,15 @@ async function decideCancellation(request: RegistrationCancellationRequest, appr
   }
 }
 
+watch(
+  () => competition.selectedId,
+  (id) => {
+    if (!id || competitionId.value === id) return
+    competitionId.value = id
+    load()
+  }
+)
+
 onMounted(loadBase)
 </script>
 
@@ -207,9 +281,7 @@ onMounted(loadBase)
       <div>
         <span class="eyebrow">Entrada da competição</span>
         <h1>Inscrições</h1>
-        <p class="muted">
-          Analise participantes e robôs antes de liberar a entrada nas modalidades do RRC.
-        </p>
+        <p class="muted">Analise, cancele, reative e acompanhe as inscrições sem perder o histórico competitivo.</p>
       </div>
       <div class="heading-actions">
         <el-button :loading="loading" @click="load">Atualizar</el-button>
@@ -218,7 +290,7 @@ onMounted(loadBase)
 
     <article v-if="activeCompetition" class="registrations-focus-strip">
       <div>
-        <span>Competição selecionada</span>
+        <span>{{ competitionContextLabel }}</span>
         <strong>{{ activeCompetition.nome }}</strong>
       </div>
       <StatusBadge :value="activeCompetition.status || 'PLANEJADA'" />
@@ -277,9 +349,22 @@ onMounted(loadBase)
           clearable
           placeholder="Buscar equipe, robô, categoria ou participante"
         />
-        <el-select v-model="competitionId" placeholder="Competição" @change="load">
-          <el-option v-for="item in competitions" :key="item.id" :label="item.nome" :value="item.id" />
+        <el-select
+          v-if="auth.isDev"
+          v-model="competitionId"
+          placeholder="Competição"
+          @change="load"
+        >
+          <el-option
+            v-for="item in competition.competitions"
+            :key="item.id"
+            :label="item.nome"
+            :value="item.id"
+          />
         </el-select>
+        <div v-else class="competition-context-static">
+          {{ activeCompetition?.nome || 'Nenhuma competição vigente' }}
+        </div>
         <el-select v-model="status" placeholder="Status" clearable>
           <el-option label="Todos" value="" />
           <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
@@ -317,30 +402,29 @@ onMounted(loadBase)
         <el-table-column label="Status" width="145">
           <template #default="{ row }"><StatusBadge :value="row.status" /></template>
         </el-table-column>
-        <el-table-column label="Ações" width="235" fixed="right">
+        <el-table-column label="Ações" width="330" fixed="right">
           <template #default="{ row }">
             <div class="registration-actions">
               <el-button size="small" @click="openDetails(row)">Detalhes</el-button>
               <template v-if="row.status === 'PENDENTE'">
-                <el-button
-                  size="small"
-                  type="success"
-                  plain
-                  :loading="reviewingId === row.id"
-                  @click="review(row, 'APROVADA')"
-                >
-                  Aprovar
-                </el-button>
-                <el-button
-                  size="small"
-                  type="danger"
-                  plain
-                  :loading="reviewingId === row.id"
-                  @click="review(row, 'REJEITADA')"
-                >
-                  Rejeitar
-                </el-button>
+                <el-button size="small" type="success" plain :loading="reviewingId === row.id" @click="review(row, 'APROVADA')">Aprovar</el-button>
+                <el-button size="small" type="danger" plain :loading="reviewingId === row.id" @click="review(row, 'REJEITADA')">Rejeitar</el-button>
               </template>
+              <el-button
+                v-if="['PENDENTE', 'APROVADA'].includes(row.status)"
+                size="small"
+                type="danger"
+                plain
+                :loading="registrationActionId === row.id"
+                @click="cancelRegistration(row)"
+              >Cancelar</el-button>
+              <el-button
+                v-else-if="['CANCELADA', 'REJEITADA'].includes(row.status)"
+                size="small"
+                plain
+                :loading="registrationActionId === row.id"
+                @click="reactivateRegistration(row)"
+              >Reativar</el-button>
             </div>
           </template>
         </el-table-column>
@@ -395,27 +479,26 @@ onMounted(loadBase)
 
         <section class="registration-details-section">
           <h3>Observação</h3>
-          <p class="registration-observation">
-            {{ selected.observacao || 'Nenhuma observação enviada.' }}
-          </p>
+          <p class="registration-observation">{{ selected.observacao || 'Nenhuma observação enviada.' }}</p>
         </section>
 
-        <div v-if="selected.status === 'PENDENTE'" class="registration-review-footer">
+        <div class="registration-review-footer">
+          <template v-if="selected.status === 'PENDENTE'">
+            <el-button type="danger" plain :loading="reviewingId === selected.id" @click="review(selected, 'REJEITADA')">Rejeitar</el-button>
+            <el-button type="success" :loading="reviewingId === selected.id" @click="review(selected, 'APROVADA')">Aprovar inscrição</el-button>
+          </template>
           <el-button
+            v-if="['PENDENTE', 'APROVADA'].includes(selected.status)"
             type="danger"
             plain
-            :loading="reviewingId === selected.id"
-            @click="review(selected, 'REJEITADA')"
-          >
-            Rejeitar
-          </el-button>
+            :loading="registrationActionId === selected.id"
+            @click="cancelRegistration(selected)"
+          >Cancelar inscrição</el-button>
           <el-button
-            type="success"
-            :loading="reviewingId === selected.id"
-            @click="review(selected, 'APROVADA')"
-          >
-            Aprovar inscrição
-          </el-button>
+            v-else-if="['CANCELADA', 'REJEITADA'].includes(selected.status)"
+            :loading="registrationActionId === selected.id"
+            @click="reactivateRegistration(selected)"
+          >Reativar inscrição</el-button>
         </div>
       </div>
     </el-drawer>
