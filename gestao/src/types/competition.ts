@@ -21,6 +21,7 @@ export interface Competition {
   dataFim: string
   status?: CompetitionStatus
   ativo?: boolean
+  vigente?: boolean
   dataCadastro?: string
 }
 
