@@ -256,8 +256,9 @@ watch(() => competition.selectedId, loadAlerts)
       <div class="sidebar-divider" />
 
       <div v-if="auth.canOperateCompetition" class="sidebar-competition-mobile">
-        <span>Competição em foco</span>
+        <span>{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
         <el-select
+          v-if="auth.isDev"
           :model-value="competition.selectedId"
           :loading="competition.loading"
           placeholder="Selecionar competição"
@@ -265,6 +266,10 @@ watch(() => competition.selectedId, loadAlerts)
         >
           <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
         </el-select>
+        <div v-else class="sidebar-competition-static">
+          <strong>{{ competition.selectedCompetition?.nome || 'Nenhuma edição vigente' }}</strong>
+          <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Sem contexto operacional' }}</small>
+        </div>
       </div>
 
       <nav class="nav-list" aria-label="Navegação principal">
@@ -292,10 +297,11 @@ watch(() => competition.selectedId, loadAlerts)
 
         <div v-if="auth.canOperateCompetition" class="topbar-competition-switch">
           <div class="competition-switch-copy">
-            <span>Competição em foco</span>
-            <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Selecione a edição' }}</small>
+            <span>{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
+            <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Sem edição operacional' }}</small>
           </div>
           <el-select
+            v-if="auth.isDev"
             :model-value="competition.selectedId"
             :loading="competition.loading"
             placeholder="Selecionar competição"
@@ -304,6 +310,9 @@ watch(() => competition.selectedId, loadAlerts)
           >
             <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
           </el-select>
+          <div v-else class="competition-context-static">
+            {{ competition.selectedCompetition?.nome || 'Nenhuma edição vigente' }}
+          </div>
         </div>
 
         <div class="topbar-user">
