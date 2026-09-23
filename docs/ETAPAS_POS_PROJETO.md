@@ -441,7 +441,11 @@ Validar e implementar:
 - proteção contra abuso/repetição excessiva da solicitação;
 - canal real de entrega da recuperação, preferencialmente e-mail configurável, sem acoplar o domínio a um fornecedor específico;
 - feedback de sucesso/erro que não permita enumeração de contas;
-- possibilidade de ação administrativa segura para casos excepcionais, sem permitir que DEV visualize ou defina uma senha conhecida para o participante sem política explícita;
+- recuperação assistida pelo DEV como fallback para casos excepcionais: após solicitação do usuário e verificação de identidade pela organização, o DEV pode emitir uma credencial temporária de uso único ou curta duração;
+- a credencial temporária deve expirar, ser invalidada após o primeiro uso e obrigar o usuário a cadastrar e confirmar uma nova senha antes de continuar;
+- a senha definitiva deve ser definida somente pelo usuário e nunca ficar visível para o DEV;
+- a emissão de credencial temporária deve ser auditada com responsável, usuário afetado, data/hora e motivo;
+- o fluxo assistido não substitui a recuperação automática; o caminho preferencial continua sendo recuperação direta por canal configurável, como e-mail;
 - testes automatizados dos casos de expiração, reutilização, conta inativa e token inválido.
 
 Na ETAPA 4, a responsabilidade é apenas garantir que a interface atual não prometa um fluxo inexistente e registrar a pendência. A implementação definitiva fica nesta ETAPA 13 para ser revisada novamente no hardening da ETAPA 14 e exercitada na validação final da ETAPA 15.
@@ -674,3 +678,21 @@ Itens registrados para revisão interface por interface no BLOCO 2:
 - revisão sistemática de cada interface, sequência de ações, nomenclaturas, responsividade e densidade visual.
 
 A ETAPA 4 continua no BLOCO 1 até a repetição prática dos itens corrigidos.
+
+
+### Checkpoint manual complementar do BLOCO 1 — 22/09/2026
+
+Reteste do usuário:
+
+```text
+Lembrar de mim                                  ✅ validado
+Breakpoint desktop → reduzido → desktop         ✅ sem regressão aparente
+Menu mobile em janela reduzida                  ✅
+Organização/ícones da navegação                 ✅ aprovada
+Recuperação de senha                            ⚠️ texto ajustado por UX
+Sessão única em dois navegadores                ✅ validada
+Logout                                          ✅ validado
+Celular físico                                  ⏳ conexão/bug intermitente pendente
+```
+
+O problema observado em aparelho físico, que deixou de conseguir acessar o servidor após a desconexão, não reproduziu na janela responsiva do desktop. Ele permanece registrado no CHECKPOINT MOBILE e deverá ser revalidado em aparelho real antes do fechamento do MVP, além da bateria física da ETAPA 14.
