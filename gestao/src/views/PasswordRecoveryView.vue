@@ -26,12 +26,12 @@ const currentYear = new Date().getFullYear()
         <div class="login-card">
           <header class="login-form-heading">
             <h1>Recuperar senha</h1>
-            <p>Este recurso ainda não está disponível nesta versão do RasComp.</p>
+            <p>Infelizmente, a recuperação automática de senha ainda não está disponível nesta versão do RasComp.</p>
           </header>
 
           <div class="auth-pending-note">
-            <strong>Recuperação ainda indisponível</strong>
-            <span>O backend ainda não possui um fluxo seguro de redefinição de senha. Para evitar uma ação sem efeito, nenhum pedido é enviado por esta tela.</span>
+            <strong>Precisa recuperar seu acesso?</strong>
+            <span>Por enquanto, entre em contato com a organização da competição para receber suporte. A recuperação direta pelo próprio RasComp será disponibilizada em uma etapa futura.</span>
           </div>
 
           <div class="auth-secondary-action">
