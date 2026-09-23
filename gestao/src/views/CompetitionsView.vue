@@ -78,7 +78,7 @@ const nextOperationalStatus = computed<CompetitionStatus | undefined>(() => {
     PLANEJADA: 'INSCRICOES_ABERTAS',
     INSCRICOES_ABERTAS: 'INSCRICOES_ENCERRADAS',
     INSCRICOES_ENCERRADAS: 'EM_ANDAMENTO',
-    EM_ANDAMENTO: 'FINALIZADA'
+    EM_ANDAMENTO: auth.isDev ? 'FINALIZADA' : undefined
   }
 
   return transitions[current]
@@ -232,10 +232,16 @@ function openRegistrationWindowDialog() {
   windowDialog.value = true
 }
 
-function selectEdition(row: Competition) {
+async function selectEdition(row: Competition) {
   if (!row.id) return
-  competition.select(row.id)
-  editionsOpen.value = false
+  try {
+    await competition.defineCurrent(row.id)
+    editionsOpen.value = false
+    ElMessage.success(`${row.nome} agora é a competição vigente.`)
+    await loadFocus()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível definir a competição vigente.')
+  }
 }
 
 async function save() {
@@ -260,8 +266,7 @@ async function save() {
       ElMessage.success('Competição atualizada.')
     } else {
       const created = await adminApi.createCompetition({ ...form })
-      if (created.id) competition.select(created.id)
-      ElMessage.success('Nova edição criada.')
+      ElMessage.success('Nova edição criada. Defina-a como vigente quando estiver pronta para a operação.')
     }
 
     dialog.value = false
@@ -371,7 +376,7 @@ onMounted(load)
       <article class="competition-hub-hero admin-focus-strip" v-loading="focusLoading">
         <div class="competition-hub-identity">
           <div>
-            <span class="eyebrow">{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
+            <span class="eyebrow">Competição vigente</span>
             <h2>{{ activeCompetition.nome }}</h2>
             <p>{{ activeCompetition.descricao || 'Sem descrição cadastrada para esta edição.' }}</p>
           </div>
@@ -484,7 +489,7 @@ onMounted(load)
       <div class="competition-editions-toolbar">
         <div>
           <span class="eyebrow">Histórico e contexto</span>
-          <p>Selecione qual edição será usada como competição em foco no painel.</p>
+          <p>Defina qual edição será a competição vigente para DEV e GESTAO.</p>
         </div>
         <el-button class="brand-button" @click="openCreate">Nova edição</el-button>
       </div>
@@ -499,8 +504,8 @@ onMounted(load)
         </el-table-column>
         <el-table-column label="Ações" width="180" align="right">
           <template #default="{ row }">
-            <el-button v-if="row.id !== competition.selectedId" text @click="selectEdition(row)">Usar como foco</el-button>
-            <span v-else class="competition-current-label">Em foco</span>
+            <el-button v-if="row.id !== competition.selectedId" text @click="selectEdition(row)">Definir vigente</el-button>
+            <span v-else class="competition-current-label">Vigente</span>
             <el-button text @click="openEdit(row)">Editar</el-button>
           </template>
         </el-table-column>
