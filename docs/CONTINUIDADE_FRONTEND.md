@@ -1099,14 +1099,37 @@ A 2.2 está pronta para validação prática DEV x GESTAO.
 
 ### Ajuste pós-validação 2.2 — vigente explícita
 
-O usuário validou que a troca da competição pelo DEV deve definir o contexto global da GESTAO.
+A validação seguinte refinou a regra: foco do DEV e vigente global são conceitos distintos.
 
-Ajustes:
+Ajustes finais:
 
-- seletor DEV agora define a edição vigente no backend;
-- drawer usa ação "Definir vigente";
+- seletor superior do DEV altera apenas sua competição em foco;
+- drawer possui ação separada "Definir vigente";
+- somente "Definir vigente" altera o contexto global da GESTAO;
 - GESTAO recebe exatamente a edição marcada;
 - criação de edição não muda a vigente automaticamente;
 - finalização da competição é DEV-only;
 - GESTAO continua podendo abrir/encerrar inscrições e iniciar a competição;
 - V15 persiste a flag `vigente`.
+
+
+### Semântica final da 2.2
+
+```text
+DEV / foco local
+→ livre para alternar entre edições
+→ não afeta GESTAO
+
+DEV / definir vigente
+→ persiste no backend
+→ altera a edição operacional da GESTAO
+
+GESTAO
+→ sem seletor
+→ somente edição vigente
+→ abrir inscrições ✅
+→ encerrar inscrições ✅
+→ iniciar competição ✅
+→ criar competição ❌
+→ finalizar competição ❌
+```
