@@ -145,3 +145,18 @@ Estado:
 - baseline técnico, autenticação, Shell e UX global são o escopo atual;
 - ETAPA 5 permanece bloqueada;
 - nenhuma nova funcionalidade estrutural deve ser antecipada.
+
+
+## ETAPA 4
+
+O BLOCO 1 da ETAPA 4 foi concluído e validado em 22/09/2026.
+
+Estado técnico final:
+
+```text
+Frontend Checks #97 ✅
+Backend Tests #329  ✅ 142 testes verdes
+MySQL + Flyway V14 + testdata ✅
+```
+
+O próximo trabalho é o BLOCO 2 — Gestão administrativa, começando pela revisão do Dashboard/Central e seguindo interface por interface.
