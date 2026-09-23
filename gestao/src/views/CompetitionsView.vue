@@ -232,13 +232,17 @@ function openRegistrationWindowDialog() {
   windowDialog.value = true
 }
 
-async function selectEdition(row: Competition) {
+function focusEdition(row: Competition) {
+  if (!row.id) return
+  competition.select(row.id)
+  editionsOpen.value = false
+}
+
+async function defineCurrentEdition(row: Competition) {
   if (!row.id) return
   try {
     await competition.defineCurrent(row.id)
-    editionsOpen.value = false
-    ElMessage.success(`${row.nome} agora é a competição vigente.`)
-    await loadFocus()
+    ElMessage.success(`${row.nome} agora é a competição vigente da organização.`)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível definir a competição vigente.')
   }
@@ -376,7 +380,7 @@ onMounted(load)
       <article class="competition-hub-hero admin-focus-strip" v-loading="focusLoading">
         <div class="competition-hub-identity">
           <div>
-            <span class="eyebrow">Competição vigente</span>
+            <span class="eyebrow">{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
             <h2>{{ activeCompetition.nome }}</h2>
             <p>{{ activeCompetition.descricao || 'Sem descrição cadastrada para esta edição.' }}</p>
           </div>
@@ -489,7 +493,7 @@ onMounted(load)
       <div class="competition-editions-toolbar">
         <div>
           <span class="eyebrow">Histórico e contexto</span>
-          <p>Defina qual edição será a competição vigente para DEV e GESTAO.</p>
+          <p>Use o foco para navegar como DEV e defina separadamente qual edição será vigente para a GESTAO.</p>
         </div>
         <el-button class="brand-button" @click="openCreate">Nova edição</el-button>
       </div>
@@ -502,10 +506,14 @@ onMounted(load)
         <el-table-column label="Status" width="165">
           <template #default="{ row }"><StatusBadge :value="row.status || 'PLANEJADA'" /></template>
         </el-table-column>
-        <el-table-column label="Ações" width="180" align="right">
+        <el-table-column label="Ações" width="330" align="right">
           <template #default="{ row }">
-            <el-button v-if="row.id !== competition.selectedId" text @click="selectEdition(row)">Definir vigente</el-button>
+            <el-button v-if="row.id !== competition.selectedId" text @click="focusEdition(row)">Usar como foco</el-button>
+            <span v-else class="competition-current-label">Em foco</span>
+
+            <el-button v-if="!row.vigente" text @click="defineCurrentEdition(row)">Definir vigente</el-button>
             <span v-else class="competition-current-label">Vigente</span>
+
             <el-button text @click="openEdit(row)">Editar</el-button>
           </template>
         </el-table-column>
