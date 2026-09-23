@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 1 ✅ / BLOCO 2 PRÓXIMO
+ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 2
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 concluído e validado; próximo passo autorizado é o BLOCO 2 — Gestão administrativa. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 concluído e validado; BLOCO 2 — Gestão administrativa em andamento, iniciando por Dashboard/Central. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -621,7 +621,7 @@ Execução aprovada:
 
 ```text
 BLOCO 1 — Baseline + autenticação + Shell + UX global          ✅ CONCLUÍDO
-BLOCO 2 — Gestão administrativa                               ⏭️ PRÓXIMO
+BLOCO 2 — Gestão administrativa                               🚧 EM ANDAMENTO
 BLOCO 3 — Operação competitiva                                ⏳
 BLOCO 4 — Portal do Participante                              ⏳
 BLOCO 5 — Landing/Galeria atuais                              ⏳
@@ -754,3 +754,32 @@ BLOCO 2 — Gestão administrativa
 → começar pelo Dashboard/Central
 → depois revisar interface por interface
 ```
+
+
+---
+
+## Início do BLOCO 2 — 22/09/2026
+
+BLOCO 2 autorizado e iniciado.
+
+Ordem desta revisão:
+
+```text
+2.1 Dashboard / Central
+2.2 Competições e contexto da edição
+2.3 Usuários e permissões administrativas
+2.4 Equipes / competidores / robôs / fotos / modalidades
+2.5 Inscrições / cancelamentos / reativação
+```
+
+A revisão será feita interface por interface, preservando backend como fonte de verdade e transformando achados funcionais em testes quando aplicável.
+
+Primeiro alvo: Dashboard/Central, com foco em:
+
+- melhor ocupação da viewport;
+- prioridade ao que exige ação da gestão;
+- cards de dados também funcionando como atalhos;
+- remoção/redefinição de métricas ambíguas;
+- atividade recente mais útil;
+- sincronização com a competição em foco;
+- responsividade da própria tela.
