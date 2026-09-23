@@ -769,6 +769,10 @@ Ordem desta revisão:
 2.2 Competições e contexto da edição
 2.3 Usuários e permissões administrativas
 2.4 Equipes / competidores / robôs / fotos / modalidades
+    - criar visão administrativa própria de Competidores;
+    - permitir navegar Equipe → Competidores;
+    - detalhe do competidor deve mostrar equipe e participações/inscrições;
+    - robôs relacionados ao competidor devem ser derivados das inscrições em que ele participa, pois o domínio atual não possui Competitor → Robot direto;
 2.5 Inscrições / cancelamentos / reativação
 ```
 
@@ -783,3 +787,59 @@ Primeiro alvo: Dashboard/Central, com foco em:
 - atividade recente mais útil;
 - sincronização com a competição em foco;
 - responsividade da própria tela.
+
+
+### Pendência estrutural — Agenda unificada da competição
+
+O Dashboard revelou que "agenda" não pode ser sinônimo de partidas de Sumô.
+
+No domínio atual:
+
+```text
+Sumô
+→ Match
+→ dataHora / pista / ordemExecucao / statusConvocacao
+
+Follow Line
+→ tomada existe como conceito competitivo
+→ NÃO existe agenda/horário/pista/ordem para a tomada
+```
+
+Decisão de planejamento:
+
+- a agenda da competição deve representar atividades competitivas de todas as modalidades;
+- Sumô deve expor batalhas/partidas agendadas;
+- Follow Line deve expor tomadas de tempo agendadas por categoria;
+- uma tomada do Follow é uma atividade coletiva da categoria, não uma "partida" individual;
+- o Dashboard deve consumir uma visão unificada de próximas atividades;
+- enquanto a agenda do Follow não existir, não rotular a lista parcial de Sumô como "Agenda da competição".
+
+Alocação:
+
+- modelagem e operação da agenda competitiva unificada entram no **BLOCO 3C — Chaves / Agenda / Resultados**, pois afetam o domínio operacional;
+- o Dashboard da 2.1 será reconciliado com essa agenda quando o contrato estiver disponível;
+- não criar entidade de agenda duplicada apenas para satisfazer o Dashboard.
+
+### Pendência funcional — Gestão de competidores
+
+O backend já possui `CompetitorController`/`CompetitorService`, incluindo listagem geral, por equipe, busca por id, atualização, desativação e reativação.
+
+O frontend administrativo ainda não possui tela própria de Competidores.
+
+Tratar no **BLOCO 2.4**:
+
+- item/rota própria "Competidores";
+- listagem por competição/equipe quando aplicável;
+- busca e filtro;
+- detalhe do competidor;
+- equipe atual;
+- instituição;
+- contato;
+- conta PARTICIPANTE vinculada quando existir;
+- situação ativo/inativo;
+- inscrições em que participa;
+- robô(s) utilizados nessas inscrições;
+- acesso Equipe → ver competidores;
+- acesso Competidor → ver equipe e participações.
+
+Importante: no modelo atual o competidor pertence diretamente à equipe, mas não possui um robô próprio. A relação Competidor ↔ Robot ocorre através da Registration. A interface não deve inventar ownership direto de robô.
