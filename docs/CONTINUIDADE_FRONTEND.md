@@ -29,7 +29,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
 ETAPA 3   ✅ concluída / validada
-ETAPA 4   🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 1
+ETAPA 4   🚧 EM ANDAMENTO — BLOCO 2 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -703,7 +703,7 @@ líder x membro comum ✅
 
 A validação final de permissões foi incorporada à **ETAPA 15 — Validação final completa**, imediatamente antes do deploy.
 
-A ETAPA 4 está em andamento desde 22/09/2026. O BLOCO 1 foi concluído e validado; o próximo é o BLOCO 2 — Gestão administrativa.
+A ETAPA 4 está em andamento. O BLOCO 1 está concluído; o BLOCO 2 teve sua implementação concluída e aguarda validação manual e decisões finais.
 
 
 ## Responsividade do login — 19/09/2026
@@ -1133,3 +1133,59 @@ GESTAO
 → criar competição ❌
 → finalizar competição ❌
 ```
+
+
+## BLOCO 2 — implementação concluída / aguardando validação
+
+As revisões 2.3, 2.4 e 2.5 foram implementadas na branch `etapa-4-consolidacao-mvp`.
+
+### 2.3 Usuários
+
+- Organização/Diretoria separada de Participantes;
+- busca/filtro;
+- edição de nome/e-mail/telefone;
+- role apenas entre contas internas;
+- PARTICIPANTE não é convertido;
+- auto-desativação bloqueada também no backend;
+- último DEV ativo protegido;
+- alteração de e-mail e desativação invalidam sessão.
+
+### 2.4 Cadastros administrativos
+
+- nova tela/rota Competidores;
+- Equipe → Competidores;
+- detalhe de competidor com participações e robôs derivados das inscrições;
+- Equipes/Robôs/Competidores contextuais à competição;
+- DEV pode consultar catálogo global;
+- GESTAO fica restrita à vigente;
+- fotos de robô consultadas com validação de contexto;
+- mutações estruturais administrativas DEV-only;
+- Modalidades mostra categorias em uso no contexto e catálogo global para DEV.
+
+### 2.5 Inscrições
+
+- contexto sincronizado;
+- DEV pode trocar filtro local;
+- GESTAO permanece na vigente;
+- aprovar/rejeitar;
+- cancelar PENDENTE/APROVADA;
+- CANCELADA/REJEITADA podem voltar para PENDENTE quando a janela permitir;
+- cancelamento aprovado com atividade registrada resulta em DESISTENTE;
+- solicitações de cancelamento preservadas;
+- backend restringe GESTAO à competição vigente.
+
+### Checkpoint automatizado
+
+```text
+Frontend Checks #137 ✅
+Backend Tests #371 ✅ — 155 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V15 + testdata ✅
+```
+
+### Pendências de decisão para o fechamento
+
+1. manter CompetitionCategory global ou criar associação explícita Competition ↔ Category;
+2. decidir se desativar UserAccount PARTICIPANTE deve afetar automaticamente o Competitor vinculado;
+3. se houver associação por competição, definir se GESTAO pode habilitar categorias globais já cadastradas na vigente ou se essa ação permanece DEV-only.
+
+Não avançar para BLOCO 3 antes da validação prática e fechamento explícito do BLOCO 2.
