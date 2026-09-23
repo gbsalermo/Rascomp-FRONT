@@ -765,8 +765,8 @@ BLOCO 2 autorizado e iniciado.
 Ordem desta revisão:
 
 ```text
-2.1 Dashboard / Central
-2.2 Competições e contexto da edição
+2.1 Dashboard / Central ✅ validado
+2.2 Competições e contexto da edição 🚧 em andamento
 2.3 Usuários e permissões administrativas
 2.4 Equipes / competidores / robôs / fotos / modalidades
     - criar visão administrativa própria de Competidores;
@@ -843,3 +843,71 @@ Tratar no **BLOCO 2.4**:
 - acesso Competidor → ver equipe e participações.
 
 Importante: no modelo atual o competidor pertence diretamente à equipe, mas não possui um robô próprio. A relação Competidor ↔ Robot ocorre através da Registration. A interface não deve inventar ownership direto de robô.
+
+
+### Agenda competitiva — contrato funcional definido
+
+A agenda deve representar chamadas competitivas reais, e não apenas partidas de Sumô.
+
+#### Follow Line
+
+A unidade de agenda é uma **chamada geral de tomada**:
+
+```text
+Categoria
+→ Tomada N
+→ data/hora
+→ pista
+→ ordem/posição na agenda
+→ estado da chamada
+```
+
+Dentro dessa chamada geral, as inscrições/robôs da categoria são convocados individualmente para executar sua tomada.
+
+Fluxo operacional esperado:
+
+```text
+Tomada 1 — 09:00 — Pista A
+→ chamar inscrição/robô 1
+→ executa tentativa(s) da tomada
+→ chamar inscrição/robô 2
+→ ...
+→ inscrição não comparece à sua convocação
+→ registrar ausência da tomada
+→ aplicar a consequência já prevista para perda da tomada
+```
+
+A ausência continua sendo registrada no domínio competitivo da tomada, não como partida fictícia.
+
+#### Sumô
+
+A unidade agendada é a **batalha/partida** (`Match`).
+
+Os rounds são internos à partida e não precisam, por padrão, de horário individual na agenda.
+
+#### Onde a agenda será criada e operada
+
+A implementação deve possuir três pontos complementares:
+
+1. **Operação ao vivo → Agenda**
+   - visão unificada de todas as atividades;
+   - Follow + Sumô no mesmo calendário/lista;
+   - data/hora, pista, ordem e estado;
+   - filtros por modalidade/categoria/pista;
+   - principal lugar para organizar/reordenar a programação.
+
+2. **Follow Line → categoria/tomada**
+   - criar/editar a chamada da tomada;
+   - definir data/hora, pista e ordem;
+   - visualizar fila de inscrições/robôs;
+   - convocar individualmente;
+   - registrar ausência da tomada quando aplicável.
+
+3. **Sumô / Partidas**
+   - editar agenda da batalha;
+   - data/hora, dohyo/pista, ordem e convocação;
+   - rounds continuam dentro da batalha.
+
+O Dashboard apenas consumirá a visão unificada de próximas atividades. Ele não será o local principal de edição da agenda.
+
+A implementação estrutural continua alocada no **BLOCO 3C — Chaves / Agenda / Resultados**.
