@@ -37,5 +37,20 @@ export interface Competitor {
   email?: string
   telefone?: string
   teamId?: number
+  teamNome?: string
+  institutionId?: number
+  institutionNome?: string
+  institutionSigla?: string
+  userAccountId?: number
+  userAccountNome?: string
+  ativo?: boolean
+  dataCadastro?: string
   [key: string]: unknown
+}
+
+export interface CompetitionAdminCatalog {
+  competitionId: number
+  teams: Team[]
+  competitors: Competitor[]
+  robots: Robot[]
 }
