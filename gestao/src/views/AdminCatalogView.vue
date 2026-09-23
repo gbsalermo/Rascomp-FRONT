@@ -218,7 +218,9 @@ async function openPhotos(row: Robot) {
   photoDrawerOpen.value = true
   photosLoading.value = true
   try {
-    robotPhotos.value = await adminApi.robotPhotos(row.id)
+    robotPhotos.value = effectiveScope.value === 'COMPETITION' && competition.selectedId
+      ? await adminApi.competitionRobotPhotos(competition.selectedId, row.id)
+      : await adminApi.robotPhotos(row.id)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar as fotos do robô.')
   } finally {
