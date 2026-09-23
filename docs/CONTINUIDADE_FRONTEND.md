@@ -1030,3 +1030,63 @@ A agenda terá:
 - edição contextual em Sumô/Partidas → batalha.
 
 Próximo: BLOCO 2.2 — Competições e contexto da edição.
+
+
+## BLOCO 2.2 — Competições e contexto da edição
+
+Implementação pronta para validação prática.
+
+Regra consolidada:
+
+```text
+DEV
+→ vê todas as edições
+→ pode trocar competição em foco
+→ cria/edita estruturalmente edições
+→ pode operar edição histórica quando necessário
+
+GESTAO
+→ recebe somente a competição vigente
+→ não troca edição
+→ não cria nova edição
+→ não edita dados estruturais da edição
+→ pode operar o ciclo da edição vigente
+→ pode prorrogar/reabrir inscrições quando a regra permitir
+```
+
+A competição vigente é resolvida no backend, priorizando:
+
+```text
+EM_ANDAMENTO
+→ INSCRICOES_ABERTAS
+→ INSCRICOES_ENCERRADAS
+→ PLANEJADA
+```
+
+Dentro do mesmo status, prevalece a edição ativa mais recente pela data de início.
+
+UX:
+
+- seletor de competição permanece para DEV;
+- GESTAO vê contexto fixo "Competição vigente";
+- "Gerenciar / trocar edições" é DEV-only;
+- "Editar dados" é DEV-only;
+- GESTAO e DEV usam ação explícita de avanço operacional:
+  - Planejada → Abrir inscrições;
+  - Inscrições abertas → Encerrar inscrições;
+  - Inscrições encerradas → Iniciar competição;
+  - Em andamento → Finalizar competição;
+- iniciar competição exibe alerta de que novas chaves comuns deixam de ser geradas;
+- finalizar edição avisa que ela deixa de ser a edição operacional vigente.
+
+Backend:
+
+- `CompetitionContextService` centraliza visibilidade e contexto;
+- `GET /api/v1/competicoes` é filtrado por perfil;
+- `GET /api/v1/competicoes/vigente` expõe o contexto resolvido;
+- `GET /api/v1/competicoes/{id}` bloqueia GESTAO fora da vigente;
+- criação/edição estrutural/desativação/reativação são DEV-only;
+- `PATCH /api/v1/competicoes/{id}/status` separa transição operacional de edição estrutural;
+- janela/histórico de inscrições exigem competição operável.
+
+A mesma política será aplicada aos recursos internos de cada módulo ao revisar 2.4/2.5 e os blocos competitivos, evitando uma checagem duplicada e inconsistente.
