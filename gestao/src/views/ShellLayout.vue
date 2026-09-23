@@ -15,7 +15,8 @@ import {
   Tickets,
   Timer,
   Trophy,
-  User
+  User,
+  UserFilled
 } from '@element-plus/icons-vue'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
@@ -54,6 +55,7 @@ const devSections = [
       { label: 'Competição', to: '/competicoes', icon: Trophy },
       { label: 'Inscrições', to: '/inscricoes', icon: Tickets },
       { label: 'Equipes', to: '/equipes', icon: User },
+      { label: 'Competidores', to: '/competidores', icon: UserFilled },
       { label: 'Robôs', to: '/robos', icon: Cpu },
       { label: 'Modalidades', to: '/modalidades', icon: Grid },
       { label: 'Chaves', to: '/chaves', icon: Connection }
@@ -93,6 +95,7 @@ const pageTitle = computed(() => {
     '/competicoes': 'Competição',
     '/inscricoes': 'Inscrições',
     '/equipes': 'Equipes',
+    '/competidores': 'Competidores',
     '/robos': 'Robôs',
     '/modalidades': 'Modalidades',
     '/follow-line': 'Follow Line',
