@@ -841,8 +841,8 @@ Navegação geral                      ✅ com reorganização solicitada
 Breakpoint desktop/mobile            ❌ bug de deslocamento do conteúdo
 Menu mobile                          ✅ abre, mas afetado pelo bug do breakpoint
 Responsividade mobile                ✅ base funcional
-Recuperação de senha                 ⚠️ teste local ainda exibiu versão da main
-Sessão simultânea em dois aparelhos  ❌ política ausente
+Recuperação de senha                 ✅ versão da branch validada; texto refinado
+Sessão simultânea                    ✅ política de sessão única validada em dois navegadores
 ```
 
 Correções imediatas do BLOCO 1:
@@ -874,3 +874,31 @@ Pendências formalizadas para o BLOCO 2:
 - revisar Resultados para destacar vencedores por categoria.
 
 Observação de continuidade: o usuário mencionou um efeito visual definido no início do projeto, mas a especificação exata não foi localizada na documentação canônica nem na continuidade disponível. Não recriar por suposição; reconciliar durante a revisão visual interface por interface.
+
+
+## Reteste complementar do BLOCO 1 — 22/09/2026
+
+Validação manual complementar:
+
+- `Lembrar de mim` validado;
+- transição desktop ↔ janela reduzida validada;
+- menu mobile validado em viewport reduzida;
+- nova organização da navegação aprovada;
+- recuperação de senha exibindo a versão correta da branch;
+- sessão única validada com dois navegadores;
+- logout validado.
+
+Pendência preservada:
+
+- em aparelho físico houve comportamento intermitente: após um bug de navegação/conexão, o celular deixou de alcançar o servidor;
+- o problema não reproduziu na viewport reduzida do desktop;
+- manter no CHECKPOINT MOBILE e revalidar em dispositivo físico antes do fechamento do MVP e novamente na ETAPA 14.
+
+A mensagem de recuperação foi suavizada e agora orienta o usuário a procurar a organização enquanto a recuperação automática ainda não existe.
+
+A ETAPA 13 deverá oferecer dois caminhos:
+
+1. recuperação automática como fluxo principal, por canal configurável;
+2. recuperação assistida pelo DEV como fallback, com credencial temporária expirada/uso único, troca obrigatória no primeiro acesso e auditoria.
+
+O DEV nunca define nem conhece a senha definitiva do usuário.
