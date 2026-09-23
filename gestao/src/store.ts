@@ -193,6 +193,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
 
   function priorityCompetition(items: Competition[]) {
     return (
+      items.find((item) => item.vigente) ||
       items.find((item) => item.status === 'EM_ANDAMENTO') ||
       items.find((item) => item.status === 'INSCRICOES_ABERTAS') ||
       items.find((item) => item.status === 'INSCRICOES_ENCERRADAS') ||
@@ -203,7 +204,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
 
   function select(id?: number | null) {
     if (auth.isManagement) {
-      const vigenteId = priorityCompetition(competitions.value)?.id || null
+      const vigenteId = competitions.value.find((item) => item.vigente)?.id || null
       selectedId.value = vigenteId
     } else {
       selectedId.value = id || null
@@ -213,6 +214,16 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     else localStorage.removeItem(COMPETITION_KEY)
   }
 
+  async function defineCurrent(id: number) {
+    if (!auth.isDev) return
+    const updated = await adminApi.setCurrentCompetition(id)
+    competitions.value = competitions.value.map((item) => ({
+      ...item,
+      vigente: item.id === updated.id
+    }))
+    select(updated.id)
+  }
+
   async function load(force = false) {
     if (competitions.value.length && !force) return competitions.value
     loading.value = true
@@ -220,7 +231,13 @@ export const useCompetitionStore = defineStore('competition-context', () => {
       competitions.value = await adminApi.competitions()
 
       if (auth.isManagement) {
-        select(priorityCompetition(competitions.value)?.id)
+        select(competitions.value.find((item) => item.vigente)?.id)
+        return competitions.value
+      }
+
+      const serverCurrent = competitions.value.find((item) => item.vigente)
+      if (serverCurrent?.id) {
+        select(serverCurrent.id)
         return competitions.value
       }
 
@@ -238,6 +255,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     selectedId,
     selectedCompetition,
     select,
+    defineCurrent,
     load
   }
 })
