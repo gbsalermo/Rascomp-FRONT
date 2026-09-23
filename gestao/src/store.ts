@@ -177,6 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
 })
 
 export const useCompetitionStore = defineStore('competition-context', () => {
+  const auth = useAuthStore()
   const competitions = ref<Competition[]>([])
   const loading = ref(false)
   const selectedId = ref<number | null>(
@@ -201,7 +202,13 @@ export const useCompetitionStore = defineStore('competition-context', () => {
   }
 
   function select(id?: number | null) {
-    selectedId.value = id || null
+    if (auth.isManagement) {
+      const vigenteId = priorityCompetition(competitions.value)?.id || null
+      selectedId.value = vigenteId
+    } else {
+      selectedId.value = id || null
+    }
+
     if (selectedId.value) localStorage.setItem(COMPETITION_KEY, String(selectedId.value))
     else localStorage.removeItem(COMPETITION_KEY)
   }
@@ -211,6 +218,12 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     loading.value = true
     try {
       competitions.value = await adminApi.competitions()
+
+      if (auth.isManagement) {
+        select(priorityCompetition(competitions.value)?.id)
+        return competitions.value
+      }
+
       const selectedStillExists = competitions.value.some((item) => item.id === selectedId.value)
       if (!selectedStillExists) select(priorityCompetition(competitions.value)?.id)
       return competitions.value
