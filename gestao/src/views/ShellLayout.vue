@@ -149,8 +149,8 @@ function syncResponsiveShell() {
   mobileOpen.value = false
 }
 
-function logout() {
-  auth.logout()
+async function logout() {
+  await auth.logout()
   router.push('/login')
 }
 
