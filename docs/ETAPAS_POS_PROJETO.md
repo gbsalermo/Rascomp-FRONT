@@ -633,3 +633,44 @@ Subordem do BLOCO 1:
 5. regressão do bloco + validação prática.
 
 A ETAPA 5 permanece bloqueada até fechamento e validação explícita da ETAPA 4.
+
+
+---
+
+## Checkpoint prático parcial do BLOCO 1 — 22/09/2026
+
+A primeira validação manual encontrou regressões e oportunidades reais de polimento.
+
+Correções incorporadas ao BLOCO 1:
+
+- `Lembrar de mim` passa a preservar o e-mail sem armazenar senha;
+- Shell responsivo corrigido para não deslocar conteúdo ao cruzar o breakpoint;
+- menu mobile força sidebar expandida e fecha corretamente ao retornar ao desktop;
+- navegação reorganizada com Operação ao vivo priorizada;
+- Configurações retirada do menu enquanto não existir configuração própria útil;
+- sessão simultânea tratada com política de uma sessão ativa por conta;
+- V14 introduz `user_accounts.session_version`;
+- novo login invalida sessão anterior;
+- logout invalida a sessão no backend.
+
+Checkpoint automatizado após as correções:
+
+```text
+Frontend Checks #91 ✅ typecheck + build
+Backend Tests #325  ✅ 142 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V14 + testdata ✅
+```
+
+Itens registrados para revisão interface por interface no BLOCO 2:
+
+- Dashboard: hierarquia, ocupação da viewport, cards acionáveis e atividade recente ampliada;
+- redefinir o significado do progresso do evento;
+- sincronização da competição em foco como filtro default;
+- regra de escopo: DEV alterna edições; GESTAO opera apenas a edição vigente, com backend como fonte de verdade;
+- Usuários: separar Participantes de Organização/Diretoria;
+- edição de dados cadastrais de participante sem conversão de role;
+- revisão de Partidas para representar tomadas de Follow e batalhas de Sumô;
+- Resultados orientado a vencedores por categoria;
+- revisão sistemática de cada interface, sequência de ações, nomenclaturas, responsividade e densidade visual.
+
+A ETAPA 4 continua no BLOCO 1 até a repetição prática dos itens corrigidos.
