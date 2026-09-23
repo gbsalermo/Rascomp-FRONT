@@ -959,7 +959,7 @@ Decisão final:
 
 - DEV define explicitamente a edição vigente;
 - essa escolha é global e persistida;
-- ao DEV selecionar/definir uma edição como vigente, GESTAO passa a receber a mesma edição;
+- ao DEV usar a ação explícita **Definir vigente**, GESTAO passa a receber aquela edição; trocar apenas o foco local do DEV não altera o contexto da GESTAO;
 - criar uma edição nova não troca a vigente automaticamente;
 - a troca é uma ação explícita do DEV;
 - V15 adiciona `competitions.vigente`;
@@ -970,3 +970,34 @@ Decisão final:
 - quando a edição está `EM_ANDAMENTO`, GESTAO não recebe ação de finalização.
 
 Próxima migration estrutural após essa decisão: V16+.
+
+
+#### Semântica final — foco x vigente
+
+Para evitar ambiguidade:
+
+```text
+COMPETIÇÃO EM FOCO
+→ contexto local do DEV
+→ serve para navegar/consultar/editar qualquer edição
+→ trocar o foco NÃO altera o que a GESTAO está operando
+
+COMPETIÇÃO VIGENTE
+→ contexto global da organização
+→ definida explicitamente pelo DEV
+→ persistida no backend
+→ é a única edição operacional visível à GESTAO
+```
+
+GESTAO não possui seletor entre edições. A troca de vigente é responsabilidade do DEV.
+
+Permissões de ciclo:
+
+```text
+Criar competição       → DEV
+Abrir inscrições       → DEV | GESTAO
+Encerrar inscrições    → DEV | GESTAO
+Iniciar competição     → DEV | GESTAO
+Finalizar competição   → DEV
+Definir vigente        → DEV
+```
