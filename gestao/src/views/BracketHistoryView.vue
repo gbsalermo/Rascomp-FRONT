@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
-import { useCompetitionStore } from '../store'
+import { useAuthStore, useCompetitionStore } from '../store'
 import type { Bracket } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -10,7 +10,12 @@ interface BracketHistoryRow extends Bracket {
   quantidadePartidas: number
 }
 
+const auth = useAuthStore()
 const competition = useCompetitionStore()
+const competitionContextLabel = computed(() =>
+  auth.isDev ? 'Competição em foco' : 'Competição vigente'
+)
+
 const loading = ref(false)
 const rows = ref<BracketHistoryRow[]>([])
 const categoryFilter = ref<number>()
@@ -116,7 +121,7 @@ onMounted(load)
       <div>
         <span class="eyebrow">Histórico competitivo</span>
         <h1>Chaves</h1>
-        <p class="muted">Consulte a chave vigente e todas as gerações anteriores da competição em foco.</p>
+        <p class="muted">Consulte a chave vigente e todas as gerações anteriores da edição operacional.</p>
       </div>
       <div class="heading-actions">
         <router-link :to="sumoRoute()" class="link-button bracket-generate-button">Gerar nova chave</router-link>
@@ -126,7 +131,7 @@ onMounted(load)
 
     <article class="bracket-focus-card admin-focus-strip">
       <div>
-        <span class="eyebrow">Competição em foco</span>
+        <span class="eyebrow">{{ competitionContextLabel }}</span>
         <h2>{{ competition.selectedCompetition?.nome || 'Nenhuma competição selecionada' }}</h2>
         <p>Uma nova geração substitui apenas a chave vigente. As versões anteriores permanecem preservadas abaixo.</p>
       </div>
