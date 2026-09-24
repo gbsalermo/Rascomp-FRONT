@@ -3,6 +3,7 @@ import type {
   Bracket,
   CompetitionJudge,
   Match,
+  MatchCallStatus,
   MatchJudgeDecision,
   MatchResult,
   RoundSumo,
@@ -37,6 +38,11 @@ export const adminSumoApi = {
   match: (matchId: number) => http.get<Match>(`/api/v1/partidas/${matchId}`).then((r) => r.data),
   matches: (bracketId: number) =>
     http.get<Match[]>('/api/v1/partidas/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
+  updateMatchAgenda: (
+    matchId: number,
+    payload: { dataHora?: string | null; pista?: string | null; ordemExecucao?: number | null; statusConvocacao: MatchCallStatus }
+  ) =>
+    http.patch<Match>(`/api/v1/partidas/${matchId}/agenda`, payload).then((r) => r.data),
   results: (bracketId: number) =>
     http.get<MatchResult[]>('/api/v1/resultados-partida/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
   resolveUnavailableMatch: (matchId: number) =>
