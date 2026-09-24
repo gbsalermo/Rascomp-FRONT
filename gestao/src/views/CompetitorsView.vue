@@ -69,6 +69,9 @@ function applyTeamFromRoute() {
 
 async function load() {
   loading.value = true
+  competitors.value = []
+  teams.value = []
+  registrations.value = []
   try {
     await competition.load()
 
