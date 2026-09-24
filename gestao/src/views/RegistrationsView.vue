@@ -34,6 +34,21 @@ const statusOptions: RegistrationStatus[] = [
   'DESCLASSIFICADA'
 ]
 
+const pendingCancellationRequests = computed(() =>
+  cancellationRequests.value.filter((item) => item.status === 'PENDENTE')
+)
+
+const cancellationHistory = computed(() =>
+  cancellationRequests.value
+    .filter((item) => item.status !== 'PENDENTE')
+    .sort(
+      (a, b) =>
+        new Date(b.reviewedAt || b.dataCadastro || 0).getTime() -
+        new Date(a.reviewedAt || a.dataCadastro || 0).getTime()
+    )
+    .slice(0, 10)
+)
+
 const activeCompetition = computed(() =>
   competition.competitions.find((item) => item.id === competitionId.value)
 )
@@ -109,8 +124,7 @@ async function load() {
     const [registrationRows, cancellationRows] = await Promise.all([
       adminApi.registrations({ competitionId: competitionId.value }),
       adminApi.cancellationRequests({
-        competitionId: competitionId.value,
-        status: 'PENDENTE'
+        competitionId: competitionId.value
       })
     ])
     rows.value = registrationRows
@@ -138,22 +152,41 @@ function selectStatus(next: string) {
 
 async function review(row: Registration, next: RegistrationStatus) {
   const approving = next === 'APROVADA'
-  const action = approving ? 'aprovar' : 'rejeitar'
+  let reviewReason: string | undefined
 
   try {
-    await ElMessageBox.confirm(
-      `Deseja ${action} a inscrição do robô ${row.robotNome}, da equipe ${row.teamNome}?`,
-      approving ? 'Aprovar inscrição' : 'Rejeitar inscrição',
-      {
-        type: approving ? 'success' : 'warning',
-        confirmButtonText: approving ? 'Aprovar' : 'Rejeitar',
-        cancelButtonText: 'Cancelar'
-      }
-    )
+    if (approving) {
+      await ElMessageBox.confirm(
+        `Deseja aprovar a inscrição do robô ${row.robotNome}, da equipe ${row.teamNome}?`,
+        'Aprovar inscrição',
+        {
+          type: 'success',
+          confirmButtonText: 'Aprovar',
+          cancelButtonText: 'Cancelar'
+        }
+      )
+    } else {
+      const result = await ElMessageBox.prompt(
+        'Informe o motivo da rejeição. Essa justificativa ficará registrada na inscrição.',
+        `Rejeitar inscrição · ${row.robotNome}`,
+        {
+          inputType: 'textarea',
+          inputPlaceholder: 'Motivo da rejeição',
+          inputValidator: (value) => value?.trim() ? true : 'Informe o motivo da rejeição.',
+          confirmButtonText: 'Rejeitar inscrição',
+          cancelButtonText: 'Cancelar'
+        }
+      )
+      reviewReason = result.value?.trim()
+    }
 
     reviewingId.value = row.id
-    await adminApi.updateRegistration(row.id, { ...row, status: next })
-    ElMessage.success(approving ? 'Inscrição aprovada.' : 'Inscrição rejeitada.')
+    await adminApi.updateRegistration(row.id, {
+      ...row,
+      status: next,
+      reviewReason
+    })
+    ElMessage.success(approving ? 'Inscrição aprovada.' : 'Inscrição rejeitada com justificativa registrada.')
     detailsOpen.value = false
     await load()
   } catch (error: any) {
@@ -234,11 +267,12 @@ async function decideCancellation(request: RegistrationCancellationRequest, appr
       )
     } else {
       const result = await ElMessageBox.prompt(
-        'Informe, se desejar, a justificativa que ficará registrada para o participante.',
+        'Informe a justificativa que ficará registrada para o participante.',
         'Rejeitar cancelamento',
         {
           inputType: 'textarea',
           inputPlaceholder: 'Justificativa da organização',
+          inputValidator: (value) => value?.trim() ? true : 'Informe a justificativa da rejeição.',
           confirmButtonText: 'Rejeitar solicitação',
           cancelButtonText: 'Voltar'
         }
@@ -296,15 +330,15 @@ onMounted(loadBase)
       <StatusBadge :value="activeCompetition.status || 'PLANEJADA'" />
     </article>
 
-    <article v-if="cancellationRequests.length" class="table-card registrations-table-card" v-loading="loading">
+    <article v-if="pendingCancellationRequests.length" class="table-card registrations-table-card" v-loading="loading">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Cancelamentos</span>
           <h2>Solicitações pendentes</h2>
         </div>
-        <el-tag type="warning" effect="light">{{ cancellationRequests.length }} pendente(s)</el-tag>
+        <el-tag type="warning" effect="light">{{ pendingCancellationRequests.length }} pendente(s)</el-tag>
       </div>
-      <el-table :data="cancellationRequests" empty-text="Nenhuma solicitação pendente">
+      <el-table :data="pendingCancellationRequests" empty-text="Nenhuma solicitação pendente">
         <el-table-column label="Equipe / Robô" min-width="190">
           <template #default="{ row }">
             <div class="registration-main-cell"><strong>{{ row.teamNome }}</strong><span>{{ row.robotNome }}</span></div>
@@ -321,6 +355,48 @@ onMounted(loadBase)
             <div class="registration-actions">
               <el-button size="small" type="success" plain :loading="cancellationReviewingId === row.id" @click="decideCancellation(row, true)">Aprovar</el-button>
               <el-button size="small" type="danger" plain :loading="cancellationReviewingId === row.id" @click="decideCancellation(row, false)">Rejeitar</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </article>
+
+    <article v-if="cancellationHistory.length" class="table-card registrations-table-card" v-loading="loading">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Auditoria</span>
+          <h2>Histórico de cancelamentos</h2>
+        </div>
+        <small class="muted">Últimas {{ cancellationHistory.length }} decisões desta competição</small>
+      </div>
+
+      <el-table :data="cancellationHistory" empty-text="Nenhuma decisão registrada">
+        <el-table-column label="Equipe / Robô" min-width="180">
+          <template #default="{ row }">
+            <div class="registration-main-cell">
+              <strong>{{ row.teamNome }}</strong>
+              <span>{{ row.robotNome }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Solicitação" min-width="220">
+          <template #default="{ row }">
+            <div class="registration-request-cell">
+              <strong>{{ row.requestedByUserNome }}</strong>
+              <span>{{ formatDateTime(row.dataCadastro) }}</span>
+              <span>{{ row.motivo }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Decisão" width="135">
+          <template #default="{ row }"><StatusBadge :value="row.status" /></template>
+        </el-table-column>
+        <el-table-column label="Análise" min-width="210">
+          <template #default="{ row }">
+            <div class="registration-request-cell">
+              <strong>{{ row.reviewedByUserNome || '—' }}</strong>
+              <span>{{ formatDateTime(row.reviewedAt) }}</span>
+              <span>{{ row.resposta || 'Sem observação adicional' }}</span>
             </div>
           </template>
         </el-table-column>
@@ -474,6 +550,7 @@ onMounted(loadBase)
             <div><dt>Enviado em</dt><dd>{{ formatDateTime(selected.dataCadastro) }}</dd></div>
             <div><dt>Revisado por</dt><dd>{{ selected.reviewedByUserNome || '—' }}</dd></div>
             <div><dt>Revisado em</dt><dd>{{ formatDateTime(selected.reviewedAt) }}</dd></div>
+            <div v-if="selected.reviewReason"><dt>Motivo da rejeição</dt><dd>{{ selected.reviewReason }}</dd></div>
           </dl>
         </section>
 
