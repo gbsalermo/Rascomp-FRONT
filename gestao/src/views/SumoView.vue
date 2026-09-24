@@ -236,7 +236,7 @@ async function disqualifyRegistration(row: Registration) {
 
     await adminApi.disqualifyRegistration(row.id, value.trim())
     ElMessage.success('Inscrição desclassificada e decisão registrada no histórico.')
-    await loadContext()
+    await loadCompetition(bracketId.value)
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível desclassificar a inscrição.')
