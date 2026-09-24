@@ -12,4 +12,12 @@ export interface CompetitionCategoryResult {
   pontosA?: number
   pontosB?: number
   finalMatchId?: number
+  resolutionType?: 'RANKING' | 'DECISAO_ORGANIZACAO'
+  resolutionReason?: string
+  resolutionActorNome?: string
+  resolutionAt?: string
+  extraTakeAvailable?: boolean
+  extraTakeActive?: boolean
+  manualDecisionAvailable?: boolean
+  extraTakeNumber?: number
 }
