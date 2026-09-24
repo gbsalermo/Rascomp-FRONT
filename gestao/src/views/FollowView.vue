@@ -66,6 +66,19 @@ const competitionContextLabel = computed(() =>
   auth.isDev ? 'Competição em foco' : 'Competição vigente'
 )
 
+const takeNumbers = computed(() => {
+  if (!config.value) return []
+  const numbers = Array.from({ length: config.value.numeroTomadas }, (_, index) => index + 1)
+  const extra = schedules.value
+    .map((item) => item.tomada)
+    .filter((tomada) => tomada > config.value!.numeroTomadas)
+  return Array.from(new Set([...numbers, ...extra])).sort((a, b) => a - b)
+})
+
+const hasExtraTake = computed(() =>
+  Boolean(config.value && takeNumbers.value.some((tomada) => tomada > config.value!.numeroTomadas))
+)
+
 const registeredTakeCount = computed(() => {
   const keys = new Set(history.value.map((item) => `${item.registrationId}:${item.tomada}`))
   for (const item of absences.value) keys.add(`${item.registrationId}:${item.tomada}`)
@@ -91,6 +104,11 @@ function queryNumber(value: unknown) {
   const raw = Array.isArray(value) ? value[0] : value
   const parsed = Number(raw)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function takeLabel(tomada: number) {
+  if (config.value && tomada > config.value.numeroTomadas) return `Tomada Extra ${tomada}`
+  return `Tomada ${tomada}`
 }
 
 function scheduleForTake(tomada: number) {
@@ -203,7 +221,7 @@ function remainingSlotsFor(registrationId: number) {
   if (!config.value) return 0
   const attempts = attemptsFor(registrationId)
   let remaining = 0
-  for (let tomada = 1; tomada <= config.value.numeroTomadas; tomada++) {
+  for (const tomada of takeNumbers.value) {
     if (isAbsent(registrationId, tomada)) continue
     const count = attempts.filter((item) => item.tomada === tomada).length
     remaining += Math.max(0, config.value.tentativasPorTomada - count)
@@ -215,7 +233,7 @@ function remainingTakesFor(registrationId: number) {
   if (!config.value) return 0
   const attempts = attemptsFor(registrationId)
   let open = 0
-  for (let tomada = 1; tomada <= config.value.numeroTomadas; tomada++) {
+  for (const tomada of takeNumbers.value) {
     if (isAbsent(registrationId, tomada)) continue
     const count = attempts.filter((item) => item.tomada === tomada).length
     if (count < config.value.tentativasPorTomada) open++
@@ -227,14 +245,17 @@ function progressFor(registrationId: number) {
   if (!config.value) return '—'
   const attempts = attemptsFor(registrationId)
   const registrationAbsences = absencesFor(registrationId)
-  let completedTakes = registrationAbsences.length
-  for (let tomada = 1; tomada <= config.value.numeroTomadas; tomada++) {
-    if (registrationAbsences.some((item) => item.tomada === tomada)) continue
+  let completedTakes = 0
+  for (const tomada of takeNumbers.value) {
+    if (registrationAbsences.some((item) => item.tomada === tomada)) {
+      completedTakes++
+      continue
+    }
     const count = attempts.filter((item) => item.tomada === tomada).length
     if (count >= config.value.tentativasPorTomada) completedTakes++
   }
   const absenceText = registrationAbsences.length ? ` · ${registrationAbsences.length} por ausência` : ''
-  return `${completedTakes}/${config.value.numeroTomadas} tomadas encerradas · ${attempts.length} tentativas${absenceText}`
+  return `${completedTakes}/${takeNumbers.value.length} tomadas encerradas · ${attempts.length} tentativas${absenceText}`
 }
 
 async function initialize() {
@@ -435,7 +456,8 @@ onMounted(initialize)
         <strong>{{ config.maxTempoSegundos }} s de tempo máximo</strong>
       </div>
       <div class="follow-config-values">
-        <span><b>{{ config.numeroTomadas }}</b> tomadas</span>
+        <span><b>{{ config.numeroTomadas }}</b> tomadas oficiais</span>
+        <span v-if="hasExtraTake" class="follow-extra-chip"><b>+1</b> Tomada Extra autorizada</span>
         <span><b>{{ config.tentativasPorTomada }}</b> tentativas por tomada</span>
         <span><b>{{ config.numeroCheckpoints }}</b> checkpoints</span>
         <span><b>+{{ config.penalidadePadraoSegundos }} s</b> penalidade sugerida</span>
@@ -454,9 +476,9 @@ onMounted(initialize)
         <el-button @click="openAgendaForCategory">Abrir Agenda</el-button>
       </div>
       <div class="follow-schedule-grid">
-        <article v-for="tomada in config.numeroTomadas" :key="tomada" class="follow-schedule-item">
+        <article v-for="tomada in takeNumbers" :key="tomada" class="follow-schedule-item" :class="{ extra: tomada > config.numeroTomadas }">
           <div>
-            <span class="eyebrow">Tomada {{ tomada }}</span>
+            <span class="eyebrow">{{ takeLabel(tomada) }}</span>
             <strong>{{ formatDateTime(scheduleForTake(tomada)?.dataHora) }}</strong>
             <small>{{ scheduleForTake(tomada)?.pista || 'Pista não definida' }}</small>
           </div>
@@ -616,6 +638,8 @@ onMounted(initialize)
 .follow-ranking-card,.follow-history-card,.follow-schedule-card { overflow: hidden; }
 .follow-schedule-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:0 16px 16px; }
 .follow-schedule-item { display:grid; gap:12px; padding:14px; border:1px solid #eadfe4; border-radius:13px; background:#fcfafb; }
+.follow-schedule-item.extra { border-color:#d9b4c2; background:linear-gradient(145deg,#fff8fa,#fff); }
+.follow-extra-chip { background:#fff0f4 !important; color:#9f0f3b !important; }
 .follow-schedule-item > div:first-child,.follow-schedule-meta { display:grid; gap:3px; }
 .follow-schedule-item strong { color:#36282f; }
 .follow-schedule-item small,.follow-schedule-meta span { color:#83747c; font-size:10px; }
