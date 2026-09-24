@@ -37,6 +37,8 @@ export const adminSumoApi = {
     http.get<Match[]>('/api/v1/partidas/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
   results: (bracketId: number) =>
     http.get<MatchResult[]>('/api/v1/resultados-partida/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
+  resolveUnavailableMatch: (matchId: number) =>
+    http.post<MatchResult>('/api/v1/resultados-partida/resolver-indisponibilidade', null, { params: { matchId } }).then((r) => r.data),
   rounds: (matchId: number) =>
     http.get<RoundSumo[]>('/api/v1/rounds-sumo/por-partida', { params: { matchId } }).then((r) => r.data),
   createRound: (payload: {
