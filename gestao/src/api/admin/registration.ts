@@ -1,7 +1,8 @@
 import type {
   CancellationRequestStatus,
   Registration,
-  RegistrationCancellationRequest
+  RegistrationCancellationRequest,
+  RegistrationStatusHistory
 } from '../../types/registration'
 import { http } from '../http'
 
@@ -25,6 +26,8 @@ export const adminRegistrationApi = {
     http.delete(`/api/v1/inscricoes/${id}`).then(() => undefined),
   reactivateRegistration: (id: number) =>
     http.patch<Registration>(`/api/v1/inscricoes/${id}/reativar`).then((r) => r.data),
+  registrationStatusHistory: (id: number) =>
+    http.get<RegistrationStatusHistory[]>(`/api/v1/inscricoes/${id}/historico-status`).then((r) => r.data),
   cancellationRequests: (params?: { competitionId?: number; status?: CancellationRequestStatus }) =>
     http.get<RegistrationCancellationRequest[]>('/api/v1/solicitacoes-cancelamento-inscricao', { params }).then((r) => r.data),
   approveCancellationRequest: (id: number, resposta?: string) =>
