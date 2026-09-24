@@ -116,6 +116,10 @@ function categoryRegistrationCount(categoryId: number) {
 
 async function load() {
   loading.value = true
+  teams.value = []
+  robots.value = []
+  categories.value = []
+  registrations.value = []
   try {
     await competition.load()
 
