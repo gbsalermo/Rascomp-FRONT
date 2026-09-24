@@ -855,8 +855,55 @@
 }
 
 .admin-focus-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 78px;
+  padding: 16px 20px;
+  border: 1px solid #eadde3;
   border-left: 4px solid #c31549;
+  border-radius: 14px;
   background: linear-gradient(100deg, #fff7f9, #fff 55%);
+}
+
+.admin-focus-strip > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.admin-focus-strip .eyebrow {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.admin-focus-strip strong {
+  display: block;
+  color: #34272e;
+  font-size: .98rem;
+  line-height: 1.35;
+}
+
+.admin-focus-strip > small {
+  max-width: 420px;
+  color: #786b72;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.edition-action-button.el-button {
+  border-color: #d97591;
+  background: #fff7f9;
+  color: #a3113d;
+  font-weight: 750;
+}
+
+.edition-action-button.el-button:hover,
+.edition-action-button.el-button:focus {
+  border-color: #a90f3c;
+  background: #a90f3c;
+  color: #fff;
 }
 
 .settings-grid {
@@ -1226,5 +1273,20 @@
     max-height: 76vh;
     padding-left: 12px;
     padding-right: 12px;
+  }
+}
+
+
+@media (max-width: 680px) {
+  .admin-focus-strip {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+  }
+
+  .admin-focus-strip > small {
+    max-width: none;
+    text-align: left;
   }
 }
