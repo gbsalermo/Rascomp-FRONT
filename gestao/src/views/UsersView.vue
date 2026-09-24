@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { adminApi } from '../api'
 import { useAuthStore } from '../store'
 import type { InternalUserRole, UserAccount, UserRole } from '../types'
@@ -10,12 +10,14 @@ type UserSection = 'ORGANIZACAO' | 'PARTICIPANTES'
 type InternalFilter = 'TODOS' | InternalUserRole
 
 const auth = useAuthStore()
+const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const changingIds = ref<number[]>([])
 const section = ref<UserSection>('ORGANIZACAO')
 const internalFilter = ref<InternalFilter>('TODOS')
 const search = ref('')
+const focusedParticipantId = ref<number>()
 
 const createDialogOpen = ref(false)
 const creating = ref(false)
@@ -71,9 +73,13 @@ const internalUsers = computed(() => [
 ].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')))
 
 const visibleRows = computed(() => {
-  const source = section.value === 'PARTICIPANTES'
+  let source = section.value === 'PARTICIPANTES'
     ? participants.value
     : internalUsers.value.filter((user) => internalFilter.value === 'TODOS' || user.role === internalFilter.value)
+
+  if (section.value === 'PARTICIPANTES' && focusedParticipantId.value) {
+    source = source.filter((user) => user.id === focusedParticipantId.value)
+  }
 
   const term = search.value.trim().toLowerCase()
   if (!term) return source
@@ -249,6 +255,21 @@ async function createInternalUser() {
   }
 }
 
+function applyRouteContext() {
+  const rawParticipantId = Number(route.query.participantId)
+  if (Number.isFinite(rawParticipantId) && rawParticipantId > 0) {
+    section.value = 'PARTICIPANTES'
+    focusedParticipantId.value = rawParticipantId
+    search.value = ''
+    return
+  }
+
+  focusedParticipantId.value = undefined
+  if (route.query.section === 'PARTICIPANTES') {
+    section.value = 'PARTICIPANTES'
+  }
+}
+
 async function load() {
   loading.value = true
   try {
@@ -306,7 +327,11 @@ async function toggleUser(user: UserAccount) {
   }
 }
 
-onMounted(load)
+watch(() => route.query.participantId, applyRouteContext)
+onMounted(async () => {
+  applyRouteContext()
+  await load()
+})
 </script>
 
 <template>
@@ -347,6 +372,14 @@ onMounted(load)
         <el-segmented v-model="section" :options="sectionOptions" />
       </div>
 
+      <el-alert
+        v-if="focusedParticipantId"
+        type="info"
+        :closable="true"
+        title="Exibindo a conta vinculada ao competidor selecionado."
+        style="margin-bottom:12px"
+        @close="focusedParticipantId = undefined"
+      />
       <div class="filter-bar users-filter-bar">
         <el-input v-model="search" clearable placeholder="Buscar por nome, e-mail, telefone ou perfil" />
         <el-select v-if="section === 'ORGANIZACAO'" v-model="internalFilter" style="width: 180px">
