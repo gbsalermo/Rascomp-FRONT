@@ -41,3 +41,4 @@ export type {
   FollowTakeScheduleEntry,
   AgendaActivity
 } from './types/agenda'
+export type { CompetitionCategoryResult } from './types/results'
