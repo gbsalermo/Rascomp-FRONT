@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
-import type { Category, ConfigFollow, FollowAttempt, FollowTakeAbsence, RankingItem, Registration } from '../types'
+import type {
+  Category,
+  ConfigFollow,
+  FollowAttempt,
+  FollowScheduleStatus,
+  FollowTakeAbsence,
+  FollowTakeSchedule,
+  RankingItem,
+  Registration
+} from '../types'
 import FollowTakeHistory from '../components/FollowTakeHistory.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -20,6 +29,17 @@ const ranking = ref<RankingItem[]>([])
 const history = ref<FollowAttempt[]>([])
 const absences = ref<FollowTakeAbsence[]>([])
 const config = ref<ConfigFollow>()
+const schedules = ref<FollowTakeSchedule[]>([])
+const scheduleDialog = ref(false)
+const scheduleSaving = ref(false)
+const editingSchedule = ref<FollowTakeSchedule>()
+const scheduleForm = reactive({
+  tomada: 1,
+  dataHora: '',
+  pista: '',
+  ordemExecucao: undefined as number | undefined,
+  status: 'AGENDADA' as FollowScheduleStatus
+})
 const competitionId = ref<number>()
 const categoryId = ref<number>()
 const registrationDialog = ref(false)
@@ -71,6 +91,91 @@ function queryNumber(value: unknown) {
   const raw = Array.isArray(value) ? value[0] : value
   const parsed = Number(raw)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function scheduleForTake(tomada: number) {
+  return schedules.value.find((item) => item.tomada === tomada)
+}
+
+function formatDateTime(value?: string) {
+  if (!value) return 'Não agendada'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(date)
+}
+
+function scheduleStatusLabel(value?: string) {
+  if (!value) return 'Não agendada'
+  return ({
+    AGENDADA: 'Agendada',
+    EM_CHAMADA: 'Em chamada',
+    EM_ANDAMENTO: 'Em andamento',
+    FINALIZADA: 'Finalizada',
+    ADIADA: 'Adiada',
+    CANCELADA: 'Cancelada'
+  } as Record<string, string>)[value] || value.replaceAll('_', ' ')
+}
+
+function openSchedule(tomada: number) {
+  if (!competitionId.value || !categoryId.value) return
+  const current = scheduleForTake(tomada)
+  editingSchedule.value = current
+  scheduleForm.tomada = tomada
+  scheduleForm.dataHora = current?.dataHora || ''
+  scheduleForm.pista = current?.pista || ''
+  scheduleForm.ordemExecucao = current?.ordemExecucao
+  scheduleForm.status = current?.status || 'AGENDADA'
+  scheduleDialog.value = true
+}
+
+async function saveSchedule() {
+  if (!competitionId.value || !categoryId.value || !scheduleForm.dataHora) {
+    return ElMessage.warning('Informe data e horário da chamada.')
+  }
+
+  scheduleSaving.value = true
+  try {
+    const payload = {
+      id: editingSchedule.value?.id || 0,
+      competitionId: competitionId.value,
+      categoryId: categoryId.value,
+      tomada: scheduleForm.tomada,
+      dataHora: scheduleForm.dataHora,
+      pista: scheduleForm.pista.trim() || undefined,
+      ordemExecucao: scheduleForm.ordemExecucao,
+      status: scheduleForm.status,
+      ativo: true
+    } as FollowTakeSchedule
+
+    if (editingSchedule.value) {
+      await adminApi.updateFollowSchedule(editingSchedule.value.id, payload)
+      ElMessage.success('Chamada da tomada atualizada.')
+    } else {
+      const { id: _id, ...createPayload } = payload
+      await adminApi.createFollowSchedule(createPayload)
+      ElMessage.success('Chamada geral da tomada criada.')
+    }
+
+    scheduleDialog.value = false
+    await loadContext()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar a chamada.')
+  } finally {
+    scheduleSaving.value = false
+  }
+}
+
+function openAgendaForCategory() {
+  router.push({
+    name: 'agenda',
+    query: {
+      ...(competitionId.value ? { competitionId: String(competitionId.value) } : {}),
+      ...(categoryId.value ? { categoryId: String(categoryId.value) } : {})
+    }
+  })
 }
 
 function formatSeconds(value?: number) {
@@ -181,18 +286,20 @@ async function loadContext() {
     ranking.value = []
     history.value = []
     absences.value = []
+    schedules.value = []
     config.value = undefined
     return
   }
 
   loading.value = true
   try {
-    const [regs, rank, attempts, takeAbsences, followConfig] = await Promise.all([
+    const [regs, rank, attempts, takeAbsences, followConfig, takeSchedules] = await Promise.all([
       adminApi.registrations({ competitionId: competitionId.value }),
       adminApi.rankingFollow(competitionId.value, categoryId.value),
       adminApi.followAttempts(competitionId.value, categoryId.value),
       adminApi.followTakeAbsences(competitionId.value, categoryId.value),
-      adminApi.followConfig(categoryId.value)
+      adminApi.followConfig(categoryId.value),
+      adminApi.followSchedulesByCategory(competitionId.value, categoryId.value)
     ])
 
     registrations.value = regs
@@ -200,6 +307,7 @@ async function loadContext() {
     history.value = attempts
     absences.value = takeAbsences
     config.value = followConfig
+    schedules.value = takeSchedules
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar os dados do Follow Line.')
   } finally {
@@ -332,6 +440,36 @@ onMounted(initialize)
       <small>Checkpoints permanecem informativos. O ranking usa apenas tentativas válidas, concluídas e com tempo; uma tomada perdida por ausência não cria tentativas fictícias.</small>
     </article>
 
+    <article v-if="config" class="table-card follow-schedule-card">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Agenda da categoria</span>
+          <h2>Chamadas das tomadas</h2>
+          <p class="muted">Cada tomada possui uma chamada geral. A fila individual é operada pela Agenda unificada.</p>
+        </div>
+        <el-button @click="openAgendaForCategory">Abrir Agenda</el-button>
+      </div>
+      <div class="follow-schedule-grid">
+        <article v-for="tomada in config.numeroTomadas" :key="tomada" class="follow-schedule-item">
+          <div>
+            <span class="eyebrow">Tomada {{ tomada }}</span>
+            <strong>{{ formatDateTime(scheduleForTake(tomada)?.dataHora) }}</strong>
+            <small>{{ scheduleForTake(tomada)?.pista || 'Pista não definida' }}</small>
+          </div>
+          <div class="follow-schedule-meta">
+            <span>{{ scheduleStatusLabel(scheduleForTake(tomada)?.status) }}</span>
+            <small v-if="scheduleForTake(tomada)">
+              {{ scheduleForTake(tomada)?.concluidos || 0 }}/{{ scheduleForTake(tomada)?.totalFila || 0 }} concluídos
+              · {{ scheduleForTake(tomada)?.ausentes || 0 }} ausência(s)
+            </small>
+          </div>
+          <el-button size="small" @click="openSchedule(tomada)">
+            {{ scheduleForTake(tomada) ? 'Editar chamada' : 'Agendar tomada' }}
+          </el-button>
+        </article>
+      </div>
+    </article>
+
     <article class="table-card follow-ranking-card">
       <div class="card-heading">
         <div>
@@ -367,6 +505,44 @@ onMounted(initialize)
         <FollowTakeHistory :attempts="history" :absences="absences" :config="config" :search="historySearch" />
       </div>
     </article>
+
+    <el-dialog v-model="scheduleDialog" title="Chamada geral da tomada" width="min(580px, 94vw)">
+      <div class="form-grid">
+        <div class="span-2 follow-schedule-dialog-context">
+          <span class="eyebrow">{{ categories.find((item) => item.id === categoryId)?.nome }}</span>
+          <strong>Tomada {{ scheduleForm.tomada }}</strong>
+          <small>A chamada organiza horário, pista e ordem; as tentativas continuam sendo registradas na operação Follow.</small>
+        </div>
+        <label class="span-2">Data e horário
+          <el-date-picker
+            v-model="scheduleForm.dataHora"
+            type="datetime"
+            value-format="YYYY-MM-DDTHH:mm:ss"
+            format="DD/MM/YYYY HH:mm"
+            style="width:100%"
+          />
+        </label>
+        <label>Pista
+          <el-input v-model="scheduleForm.pista" maxlength="80" placeholder="Ex.: Pista A" />
+        </label>
+        <label>Ordem geral
+          <el-input-number v-model="scheduleForm.ordemExecucao" :min="1" style="width:100%" />
+        </label>
+        <label class="span-2">Estado
+          <el-select v-model="scheduleForm.status" style="width:100%">
+            <el-option label="Agendada" value="AGENDADA" />
+            <el-option label="Em chamada" value="EM_CHAMADA" />
+            <el-option label="Em andamento" value="EM_ANDAMENTO" />
+            <el-option label="Adiada" value="ADIADA" />
+            <el-option label="Cancelada" value="CANCELADA" />
+          </el-select>
+        </label>
+      </div>
+      <template #footer>
+        <el-button @click="scheduleDialog = false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="scheduleSaving" @click="saveSchedule">Salvar chamada</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="registrationDialog" title="Registrar tomada" width="min(560px, 94vw)">
       <div class="follow-registration-dialog">
@@ -427,7 +603,15 @@ onMounted(initialize)
 .follow-config-values span { padding: 7px 10px; border-radius: 999px; background: #f6f1f4; color: #6f5d66; font-size: 11px; }
 .follow-config-values b,.ranking-position,.ranking-final-time { color: #9f0f3b; }
 .follow-config-strip > small { grid-column: 1 / -1; color: #8b7b83; font-size: 10px; }
-.follow-ranking-card,.follow-history-card { overflow: hidden; }
+.follow-ranking-card,.follow-history-card,.follow-schedule-card { overflow: hidden; }
+.follow-schedule-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:0 16px 16px; }
+.follow-schedule-item { display:grid; gap:12px; padding:14px; border:1px solid #eadfe4; border-radius:13px; background:#fcfafb; }
+.follow-schedule-item > div:first-child,.follow-schedule-meta { display:grid; gap:3px; }
+.follow-schedule-item strong { color:#36282f; }
+.follow-schedule-item small,.follow-schedule-meta span { color:#83747c; font-size:10px; }
+.follow-schedule-meta { padding-top:8px; border-top:1px solid #efe5e9; }
+.follow-schedule-dialog-context { display:grid; gap:3px; padding:12px; border:1px solid #eadfe4; border-radius:12px; background:#fcfafb; }
+.follow-schedule-dialog-context small { color:#7e7077; font-size:10px; line-height:1.45; }
 .follow-history-heading { gap: 18px; align-items: flex-end; }
 .follow-history-search { width: 250px; }
 .follow-history-content { padding: 0 14px 14px; }
@@ -441,6 +625,6 @@ onMounted(initialize)
 .follow-registration-preview span,.follow-registration-preview small { color: #86777f; font-size: 10px; }
 .follow-registration-preview b { color: #9f0f3b; font-size: 24px; }
 .follow-registration-preview > small:last-child { grid-column: 3; margin-top: -10px; }
-@media (max-width: 1080px) { .follow-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .follow-config-strip { grid-template-columns: 1fr; } .follow-config-strip > small { grid-column: auto; } }
+@media (max-width: 1080px) { .follow-schedule-grid { grid-template-columns:1fr; } .follow-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .follow-config-strip { grid-template-columns: 1fr; } .follow-config-strip > small { grid-column: auto; } }
 @media (max-width: 760px) { .follow-context-card { align-items:flex-start; flex-direction:column; } .follow-filter-bar :deep(.el-select) { width:100% !important; } .follow-metrics { grid-template-columns: 1fr; } .follow-history-heading { align-items: stretch; flex-direction: column; } .follow-history-search { width: 100%; } .follow-registration-preview { grid-template-columns: auto 1fr; } .follow-registration-preview b,.follow-registration-preview > small:last-child { grid-column: 2; } }
 </style>
