@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 2
+ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 próximo
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 concluído e validado; BLOCO 2 com implementação concluída e aguardando validação manual/decisões finais. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 e BLOCO 2 concluídos e validados; BLOCO 3 — Operação competitiva é o próximo bloco e ainda não foi iniciado. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -621,8 +621,8 @@ Execução aprovada:
 
 ```text
 BLOCO 1 — Baseline + autenticação + Shell + UX global          ✅ CONCLUÍDO
-BLOCO 2 — Gestão administrativa                               🧪 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
-BLOCO 3 — Operação competitiva                                ⏳
+BLOCO 2 — Gestão administrativa                               ✅ CONCLUÍDO / VALIDADO
+BLOCO 3 — Operação competitiva                                ⏳ PRÓXIMO / NÃO INICIADO
 BLOCO 4 — Portal do Participante                              ⏳
 BLOCO 5 — Landing/Galeria atuais                              ⏳
 BLOCO 6 — Regressão integrada + documentação                  ⏳
@@ -767,13 +767,13 @@ Ordem desta revisão:
 ```text
 2.1 Dashboard / Central ✅ validado
 2.2 Competições e contexto da edição ✅ implementação consolidada / regressão pendente no fechamento
-2.3 Usuários e permissões administrativas ✅ implementado / aguardando validação
-2.4 Equipes / competidores / robôs / fotos / modalidades ✅ implementado / aguardando validação
+2.3 Usuários e permissões administrativas ✅ validado
+2.4 Equipes / competidores / robôs / fotos / modalidades ✅ validado
     - criar visão administrativa própria de Competidores;
     - permitir navegar Equipe → Competidores;
     - detalhe do competidor deve mostrar equipe e participações/inscrições;
     - robôs relacionados ao competidor devem ser derivados das inscrições em que ele participa, pois o domínio atual não possui Competitor → Robot direto;
-2.5 Inscrições / cancelamentos / reativação ✅ implementado / aguardando validação
+2.5 Inscrições / cancelamentos / reativação ✅ validado
 ```
 
 A revisão será feita interface por interface, preservando backend como fonte de verdade e transformando achados funcionais em testes quando aplicável.
@@ -1168,7 +1168,7 @@ Backend Tests #388 ✅
 MySQL + Flyway V16 + testdata ✅
 ```
 
-O BLOCO 2 aguarda apenas o reteste manual concentrado dos itens corrigidos antes do fechamento formal.
+O reteste manual concentrado foi concluído e o BLOCO 2 foi formalmente validado.
 
 
 ---
@@ -1207,7 +1207,7 @@ Backend Tests #414 ✅
 MySQL + Flyway V17 + testdata ✅
 ```
 
-O BLOCO 2 aguarda apenas o reteste manual concentrado desses últimos ajustes para fechamento formal.
+Os últimos ajustes foram validados pelo usuário e o BLOCO 2 está formalmente encerrado.
 
 
 ### Ajuste complementar — detalhe da inscrição
@@ -1223,3 +1223,71 @@ Correção:
 - solicitações antigas continuam visíveis no detalhe mesmo quando não possuem evento correspondente na tabela V17.
 
 Checkpoint: Frontend Checks #168 ✅.
+
+
+---
+
+## Fechamento formal do BLOCO 2 — 23/09/2026
+
+O usuário concluiu a validação manual final e aprovou o fechamento do BLOCO 2.
+
+### Estado
+
+```text
+BLOCO 2 — Gestão administrativa
+✅ CONCLUÍDO
+✅ VALIDADO
+✅ DOCUMENTAÇÃO SINCRONIZADA
+```
+
+### Escopo validado
+
+- Dashboard/Central;
+- Competições e contexto foco/vigente;
+- Usuários e permissões;
+- Organização/Diretoria x Participantes;
+- Equipes;
+- Competidores;
+- Robôs;
+- Fotos;
+- Modalidades;
+- Inscrições;
+- aprovação/rejeição;
+- cancelamento/desistência;
+- reativação;
+- solicitações de cancelamento;
+- auditoria de status V17;
+- permissões DEV/GESTAO/MIDIA/PARTICIPANTE;
+- responsividade dos componentes alterados;
+- contexto administrativo por competição.
+
+### Decisões finais incorporadas
+
+- categorias permanecem catálogo global;
+- administração estrutural de categorias é DEV-only;
+- UserAccount PARTICIPANTE é fonte de verdade do Competitor vinculado para identidade e ativo/inativo;
+- Team/Robot/Registration não sofrem cascata automática;
+- equipe sem competidores ativos gera aviso ao DEV;
+- foco local do DEV é independente da competição vigente global;
+- somente `Definir vigente` altera o contexto operacional da GESTAO;
+- DESISTENTE representa saída após atividade competitiva;
+- DESCLASSIFICADA permanece consequência de regra competitiva e terá complementos no BLOCO 3.
+
+### Checkpoint final
+
+```text
+Frontend Checks #170 ✅
+Backend Tests #415 ✅
+161 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V17 + testdata ✅
+```
+
+### Próximo bloco
+
+```text
+BLOCO 3 — Operação competitiva
+⏳ PRÓXIMO
+⛔ NÃO INICIADO
+```
+
+O início do BLOCO 3 deve ocorrer em novo checkpoint de trabalho, preservando as regras já consolidadas no BLOCO 2.
