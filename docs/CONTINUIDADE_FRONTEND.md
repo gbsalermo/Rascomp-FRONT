@@ -29,7 +29,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
 ETAPA 3   ✅ concluída / validada
-ETAPA 4   🚧 EM ANDAMENTO — BLOCO 2 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
+ETAPA 4   🚧 EM ANDAMENTO — BLOCO 2 ✅ CONCLUÍDO / BLOCO 3 PRÓXIMO
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -703,7 +703,7 @@ líder x membro comum ✅
 
 A validação final de permissões foi incorporada à **ETAPA 15 — Validação final completa**, imediatamente antes do deploy.
 
-A ETAPA 4 está em andamento. O BLOCO 1 está concluído; o BLOCO 2 teve sua implementação concluída e aguarda validação manual e decisões finais.
+A ETAPA 4 está em andamento. BLOCO 1 e BLOCO 2 estão concluídos e validados; BLOCO 3 — Operação competitiva é o próximo e ainda não foi iniciado.
 
 
 ## Responsividade do login — 19/09/2026
@@ -1188,7 +1188,7 @@ MySQL + Flyway V15 + testdata ✅
 2. decidir se desativar UserAccount PARTICIPANTE deve afetar automaticamente o Competitor vinculado;
 3. se houver associação por competição, definir se GESTAO pode habilitar categorias globais já cadastradas na vigente ou se essa ação permanece DEV-only.
 
-Não avançar para BLOCO 3 antes da validação prática e fechamento explícito do BLOCO 2.
+BLOCO 2 validado e encerrado. BLOCO 3 é o próximo checkpoint e ainda não foi iniciado.
 
 
 ## BLOCO 2 — correções após bateria manual
@@ -1222,7 +1222,7 @@ D1: categorias continuam globais.
 D2: UserAccount PARTICIPANTE e Competitor sincronizados; Team/Robot preservados.
 D3: categorias DEV-only.
 
-Aguardando checkpoint CI e reteste concentrado antes do fechamento formal do BLOCO 2.
+Checkpoint CI e reteste concentrado concluídos; BLOCO 2 encerrado.
 
 
 ### Checkpoint pós-correções da bateria manual
@@ -1233,7 +1233,7 @@ Backend Tests #388 ✅ — 161 testes / 0 falhas / 0 erros / 0 skipped
 MySQL + Flyway V16 + testdata ✅
 ```
 
-Resta somente o reteste manual concentrado das correções antes de encerrar o BLOCO 2.
+Reteste manual concluído; BLOCO 2 encerrado.
 
 
 ## BLOCO 2 — acabamento final pós-reteste
@@ -1249,7 +1249,7 @@ Resta somente o reteste manual concentrado das correções antes de encerrar o B
 
 Checkpoint: Frontend Checks #164 ✅; Backend Tests #414 ✅ com 161 testes; MySQL/Flyway V17/testdata ✅.
 
-Aguardando somente reteste manual final do BLOCO 2.
+Reteste manual final concluído; BLOCO 2 validado.
 
 
 ### Detalhe da inscrição — duas auditorias
@@ -1262,3 +1262,25 @@ Após validação final, o detalhe passou a reunir:
 Isso garante que cancelamentos anteriores à V17 também apareçam no detalhe da inscrição sem fabricar transições históricas inexistentes.
 
 Frontend Checks #168 ✅.
+
+
+## Fechamento do BLOCO 2 — 23/09/2026
+
+O usuário validou o reteste final e autorizou o fechamento formal.
+
+Estado:
+
+```text
+BLOCO 1 ✅
+BLOCO 2 ✅ CONCLUÍDO / VALIDADO
+BLOCO 3 ⏳ PRÓXIMO / NÃO INICIADO
+```
+
+Checkpoint final:
+
+- Frontend Checks #170 ✅;
+- Backend Tests #415 ✅;
+- 161 testes backend verdes;
+- MySQL/Flyway V17/testdata ✅.
+
+Não iniciar o BLOCO 3 sem novo checkpoint explícito de execução.
