@@ -1104,3 +1104,75 @@ Mutações estruturais do catálogo global são DEV-only. Se existir habilitaç�
 - GESTAO pode habilitar categorias globais já cadastradas na competição vigente, sem editar o catálogo estrutural.
 
 O BLOCO 2 só será marcado como concluído após a bateria manual e essas decisões.
+
+
+---
+
+## Reteste final do BLOCO 2 — correções 23/09/2026
+
+A validação manual do BLOCO 2 aprovou a maior parte do escopo e revelou correções concentradas em catálogos contextuais, responsividade do gerenciador de edições, auditoria de decisões e dependência PARTICIPANTE ↔ Competitor.
+
+### Correções aplicadas
+
+- `CompetitionAdminCatalogService.buscar()` agora executa em transação read-only para permitir a montagem segura dos DTOs com relações LAZY;
+- Equipes/Robôs/Competidores limpam os dados anteriores antes de carregar novo escopo, evitando manter catálogo global quando o contexto falha;
+- "Gerenciar edições" deixou de usar drawer lateral e passou para modal central responsivo;
+- seletor superior do DEV continua alterando apenas **Competição em foco**;
+- somente a ação explícita **Definir vigente** altera a competição global da GESTAO;
+- rejeição de inscrição passa a exigir e persistir motivo próprio;
+- V16 adiciona `registrations.review_reason`;
+- histórico de solicitações de cancelamento passa a exibir motivo, solicitante, decisão, revisor, data e resposta;
+- rejeitar solicitação de cancelamento exige justificativa;
+- reativação administrativa de CANCELADA/REJEITADA depende do status `INSCRICOES_ABERTAS`, sem bloquear por datas antigas inconsistentes;
+- reativação pelo participante continua respeitando status + janela temporal;
+- conta PARTICIPANTE e Competitor vinculado passam a sincronizar nome, e-mail, telefone e ativo/inativo;
+- ao desativar o último competidor ativo de uma equipe, o sistema informa que a equipe ficou sem competidores ativos;
+- equipe/robôs não são inativados automaticamente: decisão continua com DEV;
+- competidor vinculado a UserAccount não pode ser ativado/desativado diretamente no catálogo; deve ser gerenciado pela conta PARTICIPANTE;
+- reativar PARTICIPANTE é bloqueado se a equipe ou instituição vinculada estiver inativa.
+
+### Decisões D1/D2/D3 encerradas
+
+**D1 — Categorias por competição**
+
+Decisão: manter `CompetitionCategory` como catálogo global.
+
+Justificativa: as competições RasComp usam o mesmo conjunto de categorias. Não será criada relação estrutural Competition ↔ Category nesta etapa.
+
+A interface continua podendo indicar quais categorias estão **em uso** na edição a partir das Registration existentes.
+
+**D2 — UserAccount PARTICIPANTE x Competitor**
+
+Decisão: Competitor vinculado é dependente da conta PARTICIPANTE.
+
+```text
+Editar nome/e-mail/telefone da conta
+→ sincroniza Competitor
+
+Desativar conta PARTICIPANTE
+→ invalida sessão
+→ desativa UserAccount
+→ desativa Competitor vinculado
+→ preserva Team, Robot, Registration e histórico
+
+Se a equipe ficar sem competidores ativos
+→ informar DEV
+→ DEV decide entre recompor a equipe ou inativar equipe/robôs
+```
+
+Não há cascata destrutiva automática para Team/Robot.
+
+**D3 — Gestão das categorias**
+
+Decisão: catálogo de categorias permanece responsabilidade exclusiva de DEV.
+
+GESTAO é perfil de operação ativa da competição e não administra estrutura de categorias.
+
+### DESISTENTE x DESCLASSIFICADA
+
+- `DESISTENTE`: saída/cancelamento após existir atividade competitiva registrada;
+- `DESCLASSIFICADA`: consequência de regra competitiva;
+- Sumô já aplica DESCLASSIFICADA automaticamente quando o robô esgota as tentativas de inspeção sem aprovação;
+- demais casos e eventual desclassificação manual serão tratados no BLOCO 3 — Operação competitiva, com motivo, responsável e contexto operacional.
+
+Próxima migration estrutural após V16: V17+.
