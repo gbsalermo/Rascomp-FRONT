@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi, http } from '../api'
-import { useCompetitionStore } from '../store'
+import { useAuthStore, useCompetitionStore } from '../store'
 import type { Bracket, Match, MatchCallStatus } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -14,6 +14,7 @@ interface MatchRow extends Match {
 }
 
 const route = useRoute()
+const auth = useAuthStore()
 const competition = useCompetitionStore()
 const loading = ref(false)
 const savingAgenda = ref(false)
@@ -21,6 +22,10 @@ const rows = ref<MatchRow[]>([])
 const scopedBracket = ref<Bracket>()
 const agendaDialog = ref(false)
 const editingMatch = ref<MatchRow>()
+const competitionContextLabel = computed(() =>
+  auth.isDev ? 'Competição em foco' : 'Competição vigente'
+)
+
 const agenda = reactive({
   dataHora: '',
   pista: '',
@@ -194,14 +199,14 @@ onMounted(load)
       <div>
         <span class="eyebrow">{{ scopedBracket?.atual === false ? 'Consulta histórica' : 'Competição ao vivo' }}</span>
         <h1>Partidas</h1>
-        <p class="muted">{{ scopedBracket ? `Partidas de ${scopedBracket.nome}.` : 'Agenda operacional das chaves vigentes da competição em foco.' }}</p>
+        <p class="muted">{{ scopedBracket ? `Partidas de ${scopedBracket.nome}.` : 'Agenda operacional das chaves vigentes da edição selecionada.' }}</p>
       </div>
       <div class="heading-actions"><router-link :to="sumoLink" class="link-button">Abrir no Sumô</router-link><el-button @click="load">Atualizar</el-button></div>
     </div>
 
     <article class="feature-card compact admin-focus-strip" :class="{ 'historical-bracket-banner': scopedBracket?.atual === false }">
       <div>
-        <span class="eyebrow">{{ scopedBracket ? (scopedBracket.atual === false ? 'Chave histórica · somente leitura' : 'Chave vigente') : 'Competição em foco' }}</span>
+        <span class="eyebrow">{{ scopedBracket ? (scopedBracket.atual === false ? 'Chave histórica · somente leitura' : 'Chave vigente') : competitionContextLabel }}</span>
         <h2>{{ scopedBracket?.nome || competition.selectedCompetition?.nome || 'Nenhuma competição selecionada' }}</h2>
         <p class="muted">Horário, pista, ordem de execução e convocação podem ser organizados sem alterar rodada, posição ou participantes da árvore.</p>
       </div>
