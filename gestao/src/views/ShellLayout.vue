@@ -6,6 +6,7 @@ import {
   Aim,
   ArrowRight,
   Bell,
+  Calendar,
   Connection,
   Cpu,
   DataBoard,
@@ -43,9 +44,9 @@ const devSections = [
   {
     label: 'Operação ao vivo',
     items: [
+      { label: 'Agenda', to: '/agenda', icon: Calendar },
       { label: 'Follow Line', to: '/follow-line', icon: Timer },
       { label: 'Sumô', to: '/sumo', icon: Aim },
-      { label: 'Partidas', to: '/partidas', icon: Flag },
       { label: 'Resultados', to: '/resultados', icon: Medal }
     ]
   },
@@ -98,6 +99,7 @@ const pageTitle = computed(() => {
     '/competidores': 'Competidores',
     '/robos': 'Robôs',
     '/modalidades': 'Modalidades',
+    '/agenda': 'Agenda',
     '/follow-line': 'Follow Line',
     '/sumo': 'Sumô',
     '/chaves': 'Chaves',
