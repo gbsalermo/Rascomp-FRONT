@@ -52,6 +52,17 @@ const cancellationHistory = computed(() =>
     .slice(0, 10)
 )
 
+const selectedCancellationHistory = computed(() => {
+  if (!selected.value) return []
+  return cancellationRequests.value
+    .filter((item) => item.registrationId === selected.value?.id)
+    .sort(
+      (a, b) =>
+        new Date(b.reviewedAt || b.dataCadastro || 0).getTime() -
+        new Date(a.reviewedAt || a.dataCadastro || 0).getTime()
+    )
+})
+
 const activeCompetition = computed(() =>
   competition.competitions.find((item) => item.id === competitionId.value)
 )
@@ -603,6 +614,34 @@ onMounted(loadBase)
           </el-timeline>
           <p v-else-if="!statusHistoryLoading" class="muted">
             Nenhuma transição auditada ainda. A auditoria detalhada passa a ser registrada a partir da V17.
+          </p>
+        </section>
+
+        <section v-if="selectedCancellationHistory.length" class="registration-details-section">
+          <h3>Solicitações de cancelamento</h3>
+          <div class="registration-cancellation-audit-list">
+            <article
+              v-for="request in selectedCancellationHistory"
+              :key="request.id"
+              class="registration-cancellation-audit-item"
+            >
+              <div class="registration-cancellation-audit-heading">
+                <strong>{{ request.status === 'PENDENTE' ? 'Solicitação pendente' : (request.status === 'APROVADA' ? 'Cancelamento aprovado' : 'Cancelamento rejeitado') }}</strong>
+                <StatusBadge :value="request.status" />
+              </div>
+
+              <dl>
+                <div><dt>Solicitado por</dt><dd>{{ request.requestedByUserNome || '—' }}</dd></div>
+                <div><dt>Solicitado em</dt><dd>{{ formatDateTime(request.dataCadastro) }}</dd></div>
+                <div><dt>Motivo</dt><dd>{{ request.motivo || '—' }}</dd></div>
+                <div v-if="request.status !== 'PENDENTE'"><dt>Analisado por</dt><dd>{{ request.reviewedByUserNome || '—' }}</dd></div>
+                <div v-if="request.status !== 'PENDENTE'"><dt>Analisado em</dt><dd>{{ formatDateTime(request.reviewedAt) }}</dd></div>
+                <div v-if="request.resposta"><dt>Resposta da organização</dt><dd>{{ request.resposta }}</dd></div>
+              </dl>
+            </article>
+          </div>
+          <p class="muted">
+            Este histórico registra a solicitação e a decisão de cancelamento. A linha do tempo acima registra as mudanças de status auditadas pela V17.
           </p>
         </section>
 
