@@ -382,8 +382,8 @@ onMounted(load)
     <div v-if="mode === 'categories' && effectiveScope === 'COMPETITION'" class="callout">
       <strong>Como o RasComp identifica categorias desta edição hoje?</strong>
       <p>
-        A categoria é um cadastro global. Nesta visão aparecem as categorias efetivamente usadas nas inscrições da competição.
-        A associação explícita Categoria ↔ Competição permanece como decisão de modelagem pendente do fechamento deste bloco.
+        O catálogo de categorias é global e administrado pelo DEV. Nesta visão aparecem as categorias efetivamente usadas
+        nas inscrições da competição selecionada.
       </p>
     </div>
 
