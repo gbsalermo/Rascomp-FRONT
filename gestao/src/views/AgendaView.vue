@@ -116,6 +116,20 @@ function statusLabel(value?: string) {
   return labels[value] || value.replaceAll('_', ' ')
 }
 
+function canEditFollowActivity(activity: AgendaActivity) {
+  return activity.tipo === 'FOLLOW_TAKE'
+    && !['FINALIZADA', 'CANCELADA'].includes(activity.status || '')
+}
+
+function canEditMatchActivity(activity: AgendaActivity) {
+  return activity.tipo === 'SUMO_MATCH'
+    && !['EM_ANDAMENTO', 'FINALIZADA', 'CANCELADA', 'BYE'].includes(activity.status || '')
+}
+
+function queueEntryEligible(entry: FollowTakeScheduleEntry) {
+  return entry.registrationStatus === 'APROVADA'
+}
+
 function resetFollowForm() {
   editingFollow.value = undefined
   followForm.categoryId = followCategories.value[0]?.id
@@ -132,6 +146,9 @@ function openNewFollow() {
 }
 
 async function openFollow(activity: AgendaActivity) {
+  if (!canEditFollowActivity(activity)) {
+    return ElMessage.info('Chamada finalizada ou cancelada é somente leitura.')
+  }
   const schedule = await adminApi.followSchedules(activity.competitionId)
     .then((items) => items.find((item) => item.id === activity.sourceId))
   if (!schedule) return ElMessage.error('Chamada Follow não encontrada.')
@@ -182,6 +199,9 @@ async function saveFollow() {
 
 async function openMatch(activity: AgendaActivity) {
   if (!activity.matchId) return
+  if (!canEditMatchActivity(activity)) {
+    return ElMessage.info('A agenda da batalha não pode ser alterada depois do início ou encerramento.')
+  }
   try {
     const match = await adminApi.match(activity.matchId)
     editingMatch.value = match
@@ -251,6 +271,9 @@ async function syncQueue() {
 }
 
 async function updateCall(entry: FollowTakeScheduleEntry, status: FollowCallStatus) {
+  if (!queueEntryEligible(entry)) {
+    return ElMessage.warning('Esta inscrição não está mais apta para a chamada.')
+  }
   try {
     const updated = await adminApi.updateFollowCall(entry.id, {
       ordemConvocacao: entry.ordemConvocacao,
@@ -264,6 +287,9 @@ async function updateCall(entry: FollowTakeScheduleEntry, status: FollowCallStat
 }
 
 async function updateCallOrder(entry: FollowTakeScheduleEntry) {
+  if (!queueEntryEligible(entry)) {
+    return ElMessage.warning('Esta inscrição não está mais apta para a chamada.')
+  }
   try {
     const updated = await adminApi.updateFollowCall(entry.id, {
       ordemConvocacao: entry.ordemConvocacao,
@@ -278,6 +304,9 @@ async function updateCallOrder(entry: FollowTakeScheduleEntry) {
 
 async function operateTake(entry: FollowTakeScheduleEntry) {
   if (!queueSchedule.value) return
+  if (!queueEntryEligible(entry)) {
+    return ElMessage.warning('Esta inscrição não está mais apta para executar a tomada.')
+  }
 
   if (!['EM_APRESENTACAO', 'EM_EXECUCAO'].includes(entry.status)) {
     try {
@@ -451,11 +480,12 @@ onMounted(initialize)
             <div class="agenda-actions">
               <template v-if="row.tipo === 'FOLLOW_TAKE'">
                 <el-button link type="primary" @click="openQueue(row)">Fila</el-button>
-                <el-button link @click="openFollow(row)">Editar</el-button>
+                <el-button v-if="canEditFollowActivity(row)" link @click="openFollow(row)">Editar</el-button>
+                <span v-else class="muted">Somente leitura</span>
               </template>
               <template v-else>
-                <el-button link type="primary" @click="openMatch(row)">Agenda</el-button>
-                <el-button link @click="openArena(row)">Partida</el-button>
+                <el-button v-if="canEditMatchActivity(row)" link type="primary" @click="openMatch(row)">Agenda</el-button>
+                <el-button link @click="openArena(row)">{{ row.status === 'FINALIZADA' ? 'Ver partida' : 'Partida' }}</el-button>
               </template>
             </div>
           </template>
@@ -538,7 +568,11 @@ onMounted(initialize)
           <strong>Tomada {{ queueSchedule.tomada }} · {{ formatDateTime(queueSchedule.dataHora) }}</strong>
           <small>{{ queueSchedule.pista || 'Pista não informada' }}</small>
         </div>
-        <el-button :loading="queueLoading" @click="syncQueue">Sincronizar inscrições</el-button>
+        <el-button
+          :loading="queueLoading"
+          :disabled="['FINALIZADA','CANCELADA'].includes(queueSchedule.status || '')"
+          @click="syncQueue"
+        >Sincronizar inscrições</el-button>
       </div>
 
       <el-table v-loading="queueLoading" :data="queue" empty-text="Fila vazia">
@@ -549,16 +583,22 @@ onMounted(initialize)
         </el-table-column>
         <el-table-column prop="robotNome" label="Robô" min-width="150" />
         <el-table-column prop="teamNome" label="Equipe" min-width="160" />
+        <el-table-column label="Inscrição" width="125">
+          <template #default="{ row }"><StatusBadge :value="row.registrationStatus" /></template>
+        </el-table-column>
         <el-table-column label="Situação" width="145">
           <template #default="{ row }"><span>{{ statusLabel(row.status) }}</span></template>
         </el-table-column>
         <el-table-column label="Ações" min-width="320" align="right">
           <template #default="{ row }">
             <div class="agenda-actions">
-              <el-button v-if="row.status === 'AGUARDANDO'" link type="primary" @click="updateCall(row, 'CONVOCADA')">Convocar</el-button>
-              <el-button v-if="['AGUARDANDO','CONVOCADA'].includes(row.status)" link @click="updateCall(row, 'EM_APRESENTACAO')">Apresentação</el-button>
-              <el-button v-if="!['AUSENTE','CONCLUIDA'].includes(row.status)" link type="success" @click="operateTake(row)">Operar tomada</el-button>
-              <span v-else class="muted">{{ row.status === 'AUSENTE' ? 'Ausente' : 'Concluída' }}</span>
+              <template v-if="queueEntryEligible(row)">
+                <el-button v-if="row.status === 'AGUARDANDO'" link type="primary" @click="updateCall(row, 'CONVOCADA')">Convocar</el-button>
+                <el-button v-if="['AGUARDANDO','CONVOCADA'].includes(row.status)" link @click="updateCall(row, 'EM_APRESENTACAO')">Apresentação</el-button>
+                <el-button v-if="!['AUSENTE','CONCLUIDA'].includes(row.status)" link type="success" @click="operateTake(row)">Operar tomada</el-button>
+                <span v-else class="muted">{{ row.status === 'AUSENTE' ? 'Ausente' : 'Concluída' }}</span>
+              </template>
+              <span v-else class="muted">Inscrição indisponível</span>
             </div>
           </template>
         </el-table-column>
