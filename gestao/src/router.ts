@@ -5,6 +5,7 @@ import RegisterView from './views/RegisterView.vue'
 import PasswordRecoveryView from './views/PasswordRecoveryView.vue'
 import ShellLayout from './views/ShellLayout.vue'
 import DashboardView from './views/DashboardView.vue'
+import AgendaView from './views/AgendaView.vue'
 import CompetitionsView from './views/CompetitionsView.vue'
 import RegistrationsView from './views/RegistrationsView.vue'
 import AdminCatalogView from './views/AdminCatalogView.vue'
@@ -44,6 +45,7 @@ const router = createRouter({
         { path: 'competidores', name: 'competitors-admin', component: CompetitorsView, meta: competitionMeta },
         { path: 'robos', name: 'robots-admin', component: AdminCatalogView, meta: competitionMeta },
         { path: 'modalidades', name: 'modalities-admin', component: AdminCatalogView, meta: competitionMeta },
+        { path: 'agenda', name: 'agenda', component: AgendaView, meta: competitionMeta },
         { path: 'follow-line', name: 'follow', component: FollowView, meta: competitionMeta },
         { path: 'follow-line/tomada/:registrationId', name: 'follow-run', component: FollowRunView, meta: competitionMeta },
         { path: 'sumo', name: 'sumo', component: SumoView, meta: competitionMeta },
