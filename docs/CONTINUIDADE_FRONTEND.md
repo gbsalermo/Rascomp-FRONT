@@ -1250,3 +1250,15 @@ Resta somente o reteste manual concentrado das correções antes de encerrar o B
 Checkpoint: Frontend Checks #164 ✅; Backend Tests #414 ✅ com 161 testes; MySQL/Flyway V17/testdata ✅.
 
 Aguardando somente reteste manual final do BLOCO 2.
+
+
+### Detalhe da inscrição — duas auditorias
+
+Após validação final, o detalhe passou a reunir:
+
+- linha do tempo de status da V17;
+- solicitações/decisões de cancelamento vinculadas pelo `registrationId`.
+
+Isso garante que cancelamentos anteriores à V17 também apareçam no detalhe da inscrição sem fabricar transições históricas inexistentes.
+
+Frontend Checks #168 ✅.
