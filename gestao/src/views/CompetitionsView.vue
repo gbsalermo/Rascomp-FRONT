@@ -516,13 +516,13 @@ onMounted(load)
         </el-table-column>
         <el-table-column label="Ações" width="330" align="right">
           <template #default="{ row }">
-            <el-button v-if="row.id !== competition.selectedId" text @click="focusEdition(row)">Usar como foco</el-button>
+            <el-button v-if="row.id !== competition.selectedId" class="edition-action-button" size="small" @click="focusEdition(row)">Usar como foco</el-button>
             <span v-else class="competition-current-label">Em foco</span>
 
-            <el-button v-if="!row.vigente" text @click="defineCurrentEdition(row)">Definir vigente</el-button>
+            <el-button v-if="!row.vigente" class="edition-action-button" size="small" @click="defineCurrentEdition(row)">Definir vigente</el-button>
             <span v-else class="competition-current-label">Vigente</span>
 
-            <el-button text @click="openEdit(row)">Editar</el-button>
+            <el-button class="edition-action-button" size="small" @click="openEdit(row)">Editar</el-button>
           </template>
         </el-table-column>
       </el-table>
