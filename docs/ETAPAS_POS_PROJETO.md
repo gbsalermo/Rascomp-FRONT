@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 próximo
+ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 em andamento
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 e BLOCO 2 concluídos e validados; BLOCO 3 — Operação competitiva é o próximo bloco e ainda não foi iniciado. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 e BLOCO 2 concluídos e validados; BLOCO 3 — Operação competitiva iniciado em 23/09/2026, começando pela 3A — Follow Line. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -622,7 +622,7 @@ Execução aprovada:
 ```text
 BLOCO 1 — Baseline + autenticação + Shell + UX global          ✅ CONCLUÍDO
 BLOCO 2 — Gestão administrativa                               ✅ CONCLUÍDO / VALIDADO
-BLOCO 3 — Operação competitiva                                ⏳ PRÓXIMO / NÃO INICIADO
+BLOCO 3 — Operação competitiva                                🚧 EM ANDAMENTO — 3A FOLLOW LINE
 BLOCO 4 — Portal do Participante                              ⏳
 BLOCO 5 — Landing/Galeria atuais                              ⏳
 BLOCO 6 — Regressão integrada + documentação                  ⏳
@@ -1291,3 +1291,69 @@ BLOCO 3 — Operação competitiva
 ```
 
 O início do BLOCO 3 deve ocorrer em novo checkpoint de trabalho, preservando as regras já consolidadas no BLOCO 2.
+
+
+---
+
+## Início do BLOCO 3 — Operação competitiva — 23/09/2026
+
+BLOCO 3 autorizado e iniciado após o fechamento formal do BLOCO 2.
+
+### Estrutura interna
+
+```text
+3A — Follow Line
+3B — Sumô
+3C — Chaves / Agenda / Resultados
+```
+
+### 3A — Follow Line
+
+Objetivo:
+
+- revisar operação completa da tomada;
+- alinhar contexto DEV foco local x GESTAO vigente;
+- proteger backend com CompetitionContextService;
+- revisar convocação operacional e ausência;
+- revisar ranking/classificação;
+- revisar histórico/auditoria;
+- revisar navegação e retorno;
+- revisar estados vazios/loading/erro;
+- revisar responsividade desktop/tablet/mobile;
+- preservar o contrato 3 tomadas × 3 tentativas e demais regras competitivas já aprovadas.
+
+A modelagem estrutural da **Agenda Follow** não entra na 3A. Ela permanece na 3C, onde a chamada geral da tomada será criada junto da agenda unificada Follow + Sumô.
+
+### 3B — Sumô
+
+Após validação da 3A:
+
+- inspeção;
+- juízes;
+- rounds;
+- penalidades;
+- WO/falha de inicialização;
+- decisão de juiz;
+- desclassificação e auditoria;
+- contexto de competição;
+- UX/responsividade.
+
+### 3C — Chaves / Agenda / Resultados
+
+Após 3A e 3B:
+
+- chave vigente/histórica;
+- progressão/correção;
+- Agenda unificada;
+- chamada geral de tomada do Follow;
+- convocações individuais;
+- agenda das batalhas de Sumô;
+- pistas/dohyos;
+- ordem operacional;
+- estados de convocação;
+- Resultados por categoria/vencedores;
+- consumo da agenda no Dashboard.
+
+### Regra de execução
+
+Não antecipar a Agenda na 3A/3B. Cada frente deve ser validada antes do fechamento do BLOCO 3.
