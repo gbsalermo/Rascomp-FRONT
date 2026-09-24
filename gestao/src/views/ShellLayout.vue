@@ -171,9 +171,10 @@ async function loadAlerts() {
   alertLoading.value = true
   try {
     const competitionId = competition.selectedId
-    const [registrations, brackets] = await Promise.all([
+    const [registrations, brackets, agenda] = await Promise.all([
       adminApi.registrations({ competitionId }),
-      adminApi.brackets(competitionId).catch(() => [])
+      adminApi.brackets(competitionId).catch(() => []),
+      adminApi.agenda(competitionId).catch(() => [])
     ])
     const nextAlerts: AdminAlert[] = []
     const pending = registrations.filter((item) => item.status === 'PENDENTE')
@@ -187,21 +188,23 @@ async function loadAlerts() {
       })
     }
 
-    const matchGroups = await Promise.all(brackets.map((bracket) => adminApi.matches(bracket.id).catch(() => [])))
-    const matches = matchGroups.flat()
-    const upcoming = matches
-      .filter((match) => match.dataHora && ['AGENDADA', 'EM_ANDAMENTO'].includes(match.status || ''))
-      .map((match) => ({ match, minutes: minutesUntil(match.dataHora!) }))
+    const upcoming = agenda
+      .filter((item) => item.dataHora)
+      .filter((item) => !['FINALIZADA', 'CANCELADA'].includes(item.status || ''))
+      .map((item) => ({ item, minutes: minutesUntil(item.dataHora!) }))
       .filter(({ minutes }) => minutes >= -10 && minutes <= 90)
       .sort((a, b) => a.minutes - b.minutes)
       .slice(0, 4)
 
-    for (const { match, minutes } of upcoming) {
+    for (const { item, minutes } of upcoming) {
+      const follow = item.modalidade === 'FOLLOW_LINE'
       nextAlerts.push({
-        id: `match-${match.id}`,
-        title: minutes <= 0 ? 'Partida em andamento' : `Partida em ${minutes} min`,
-        detail: `${match.robotANome || 'A definir'} × ${match.robotBNome || 'A definir'}`,
-        to: '/partidas',
+        id: `agenda-${item.tipo}-${item.sourceId}`,
+        title: minutes <= 0
+          ? (follow ? 'Tomada em operação' : 'Batalha em operação')
+          : `${follow ? 'Tomada' : 'Batalha'} em ${minutes} min`,
+        detail: `${item.titulo} · ${item.pista || 'pista a definir'}`,
+        to: '/agenda',
         kind: 'match'
       })
     }
