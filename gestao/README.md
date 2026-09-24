@@ -116,7 +116,7 @@ Documentação global: `../docs/README.md`.
 
 ## Roadmap atual
 
-As ETAPAS 0–3 estão concluídas/validadas. A **ETAPA 4 — Consolidação funcional e polimento do MVP** está em andamento desde 22/09/2026, atualmente no **BLOCO 1**. O CMS/Mídia pertence à ETAPA 8; Avisos IN_APP + Telegram à ETAPA 11; deploy à ETAPA 16.
+As ETAPAS 0–3 estão concluídas/validadas. A **ETAPA 4 — Consolidação funcional e polimento do MVP** está em andamento desde 22/09/2026; BLOCOS 1 e 2 foram validados e o **BLOCO 3 está implementado aguardando validação manual final**. O CMS/Mídia pertence à ETAPA 8; Avisos IN_APP + Telegram à ETAPA 11; deploy à ETAPA 16.
 
 
 ## Estado de responsividade mobile
@@ -178,7 +178,7 @@ Inclui:
 
 Checkpoint: Frontend Checks #137 ✅; Backend Tests #371 ✅ com 155 testes; MySQL/Flyway V15/testdata ✅.
 
-O BLOCO 2 foi encerrado. O próximo checkpoint é o BLOCO 3 — Operação competitiva.
+O BLOCO 2 foi encerrado e o BLOCO 3 — Operação competitiva foi implementado integralmente.
 
 
 ### Checkpoint atual
@@ -186,7 +186,21 @@ O BLOCO 2 foi encerrado. O próximo checkpoint é o BLOCO 3 — Operação compe
 ```text
 BLOCO 1 ✅
 BLOCO 2 ✅ CONCLUÍDO / VALIDADO
-BLOCO 3 ⏳ PRÓXIMO / NÃO INICIADO
+BLOCO 3 🧪 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
 ```
 
 Último checkpoint: Frontend Checks #170 ✅; Backend Tests #415 ✅; Flyway V17/testdata ✅.
+
+
+### BLOCO 3 — checkpoint de implementação
+
+```text
+3A Follow Line                 ✅ implementado
+3B Sumô                        ✅ implementado
+3C Chaves/Agenda/Resultados    ✅ implementado
+BLOCO 3                        🧪 aguardando validação manual
+```
+
+Agenda unificada disponível em `/agenda`; Partidas permanece como detalhe das chaves e Resultados consolida vencedores por categoria.
+
+Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅; 166 testes backend; MySQL/Flyway V18/testdata ✅.
