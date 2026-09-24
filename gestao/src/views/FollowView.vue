@@ -119,6 +119,10 @@ function scheduleStatusLabel(value?: string) {
   } as Record<string, string>)[value] || value.replaceAll('_', ' ')
 }
 
+function scheduleEditable(schedule?: FollowTakeSchedule) {
+  return !schedule || !['FINALIZADA', 'CANCELADA'].includes(schedule.status || '')
+}
+
 function openSchedule(tomada: number) {
   if (!competitionId.value || !categoryId.value) return
   const current = scheduleForTake(tomada)
@@ -463,8 +467,14 @@ onMounted(initialize)
               · {{ scheduleForTake(tomada)?.ausentes || 0 }} ausência(s)
             </small>
           </div>
-          <el-button size="small" @click="openSchedule(tomada)">
-            {{ scheduleForTake(tomada) ? 'Editar chamada' : 'Agendar tomada' }}
+          <el-button
+            size="small"
+            :disabled="!scheduleEditable(scheduleForTake(tomada))"
+            @click="openSchedule(tomada)"
+          >
+            {{ !scheduleEditable(scheduleForTake(tomada))
+              ? 'Chamada encerrada'
+              : (scheduleForTake(tomada) ? 'Editar chamada' : 'Agendar tomada') }}
           </el-button>
         </article>
       </div>
