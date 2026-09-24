@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
-import { useCompetitionStore } from '../store'
+import { useAuthStore, useCompetitionStore } from '../store'
 import type {
   Category,
   Competition,
@@ -12,6 +12,7 @@ import type {
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
+const auth = useAuthStore()
 const competition = useCompetitionStore()
 const loading = ref(false)
 const focusLoading = ref(false)
@@ -67,6 +68,29 @@ const registrationWindowActionLabel = computed(() =>
 const allowedStatusOptions = computed<CompetitionStatus[]>(() => {
   if (!editingId.value) return ['PLANEJADA']
   return [originalStatus.value, ...nextStatuses[originalStatus.value]]
+})
+
+const nextOperationalStatus = computed<CompetitionStatus | undefined>(() => {
+  const current = activeCompetition.value?.status
+  if (!current) return undefined
+
+  const transitions: Partial<Record<CompetitionStatus, CompetitionStatus>> = {
+    PLANEJADA: 'INSCRICOES_ABERTAS',
+    INSCRICOES_ABERTAS: 'INSCRICOES_ENCERRADAS',
+    INSCRICOES_ENCERRADAS: 'EM_ANDAMENTO',
+    EM_ANDAMENTO: auth.isDev ? 'FINALIZADA' : undefined
+  }
+
+  return transitions[current]
+})
+
+const nextOperationalActionLabel = computed(() => {
+  const target = nextOperationalStatus.value
+  if (target === 'INSCRICOES_ABERTAS') return 'Abrir inscrições'
+  if (target === 'INSCRICOES_ENCERRADAS') return 'Encerrar inscrições'
+  if (target === 'EM_ANDAMENTO') return 'Iniciar competição'
+  if (target === 'FINALIZADA') return 'Finalizar competição'
+  return ''
 })
 const approvedRegistrations = computed(() =>
   registrations.value.filter((item) => item.status === 'APROVADA')
@@ -208,10 +232,20 @@ function openRegistrationWindowDialog() {
   windowDialog.value = true
 }
 
-function selectEdition(row: Competition) {
+function focusEdition(row: Competition) {
   if (!row.id) return
   competition.select(row.id)
   editionsOpen.value = false
+}
+
+async function defineCurrentEdition(row: Competition) {
+  if (!row.id) return
+  try {
+    await competition.defineCurrent(row.id)
+    ElMessage.success(`${row.nome} agora é a competição vigente da organização.`)
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível definir a competição vigente.')
+  }
 }
 
 async function save() {
@@ -236,8 +270,7 @@ async function save() {
       ElMessage.success('Competição atualizada.')
     } else {
       const created = await adminApi.createCompetition({ ...form })
-      if (created.id) competition.select(created.id)
-      ElMessage.success('Nova edição criada.')
+      ElMessage.success('Nova edição criada. Defina-a como vigente quando estiver pronta para a operação.')
     }
 
     dialog.value = false
@@ -245,6 +278,41 @@ async function save() {
     await loadFocus()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar.')
+  }
+}
+
+async function advanceCompetitionStatus() {
+  const active = activeCompetition.value
+  const target = nextOperationalStatus.value
+  if (!active?.id || !target) return
+
+  const warning = target === 'EM_ANDAMENTO'
+    ? 'Ao iniciar a competição, a geração comum de novas chaves deixa de ser permitida. Confirme que os chaveamentos necessários já foram preparados.'
+    : target === 'FINALIZADA'
+      ? 'Ao finalizar a competição, esta edição deixa de ser a edição operacional vigente da GESTÃO.'
+      : `A competição passará para: ${statusLabels[target]}.`
+
+  try {
+    await ElMessageBox.confirm(
+      warning,
+      nextOperationalActionLabel.value,
+      {
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar',
+        type: 'warning'
+      }
+    )
+  } catch {
+    return
+  }
+
+  try {
+    await adminApi.updateCompetitionStatus(active.id, target)
+    ElMessage.success(`Competição atualizada para: ${statusLabels[target]}.`)
+    await competition.load(true)
+    await loadFocus()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível avançar o status da competição.')
   }
 }
 
@@ -283,15 +351,28 @@ onMounted(load)
       <div>
         <span class="eyebrow">Gestão da edição</span>
         <h1>Competição</h1>
-        <p class="muted">Centralize a operação da edição atualmente selecionada.</p>
+        <p class="muted">
+          {{ auth.isDev
+            ? 'Administre edições e opere a competição em foco.'
+            : 'Opere a competição vigente definida pelo RasComp.' }}
+        </p>
       </div>
       <div class="heading-actions">
-        <el-button @click="editionsOpen = true">Gerenciar / trocar edições</el-button>
+        <el-button v-if="auth.isDev" @click="editionsOpen = true">Gerenciar edições</el-button>
         <el-button v-if="activeCompetition && canChangeRegistrationWindow" @click="openRegistrationWindowDialog">
           {{ registrationWindowActionLabel }}
         </el-button>
-        <el-button v-if="activeCompetition" class="brand-button" @click="openEdit()">Editar competição</el-button>
-        <el-button v-else class="brand-button" @click="openCreate">Nova competição</el-button>
+        <el-button
+          v-if="activeCompetition && nextOperationalStatus"
+          class="brand-button"
+          @click="advanceCompetitionStatus"
+        >
+          {{ nextOperationalActionLabel }}
+        </el-button>
+        <el-button v-if="auth.isDev && activeCompetition" @click="openEdit()">Editar dados</el-button>
+        <el-button v-else-if="auth.isDev && !activeCompetition" class="brand-button" @click="openCreate">
+          Nova competição
+        </el-button>
       </div>
     </div>
 
@@ -299,7 +380,7 @@ onMounted(load)
       <article class="competition-hub-hero admin-focus-strip" v-loading="focusLoading">
         <div class="competition-hub-identity">
           <div>
-            <span class="eyebrow">Competição em foco</span>
+            <span class="eyebrow">{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
             <h2>{{ activeCompetition.nome }}</h2>
             <p>{{ activeCompetition.descricao || 'Sem descrição cadastrada para esta edição.' }}</p>
           </div>
@@ -408,11 +489,19 @@ onMounted(load)
       <el-button class="brand-button" @click="openCreate">Criar competição</el-button>
     </article>
 
-    <el-drawer v-model="editionsOpen" title="Gerenciar edições" size="min(760px, 96vw)" class="competition-editions-drawer">
+    <el-dialog
+      v-if="auth.isDev"
+      v-model="editionsOpen"
+      title="Gerenciar edições"
+      width="min(1100px, 94vw)"
+      class="competition-editions-dialog"
+      align-center
+      destroy-on-close
+    >
       <div class="competition-editions-toolbar">
         <div>
           <span class="eyebrow">Histórico e contexto</span>
-          <p>Selecione qual edição será usada como competição em foco no painel.</p>
+          <p>Use o foco para navegar como DEV e defina separadamente qual edição será vigente para a GESTAO.</p>
         </div>
         <el-button class="brand-button" @click="openCreate">Nova edição</el-button>
       </div>
@@ -425,15 +514,19 @@ onMounted(load)
         <el-table-column label="Status" width="165">
           <template #default="{ row }"><StatusBadge :value="row.status || 'PLANEJADA'" /></template>
         </el-table-column>
-        <el-table-column label="Ações" width="180" align="right">
+        <el-table-column label="Ações" width="330" align="right">
           <template #default="{ row }">
-            <el-button v-if="row.id !== competition.selectedId" text @click="selectEdition(row)">Usar como foco</el-button>
+            <el-button v-if="row.id !== competition.selectedId" class="edition-action-button" size="small" @click="focusEdition(row)">Usar como foco</el-button>
             <span v-else class="competition-current-label">Em foco</span>
-            <el-button text @click="openEdit(row)">Editar</el-button>
+
+            <el-button v-if="!row.vigente" class="edition-action-button" size="small" @click="defineCurrentEdition(row)">Definir vigente</el-button>
+            <span v-else class="competition-current-label">Vigente</span>
+
+            <el-button class="edition-action-button" size="small" @click="openEdit(row)">Editar</el-button>
           </template>
         </el-table-column>
       </el-table>
-    </el-drawer>
+    </el-dialog>
 
     <el-dialog v-model="dialog" :title="editingId ? 'Editar competição' : 'Nova competição'" width="min(620px, 92vw)">
       <div class="form-grid">

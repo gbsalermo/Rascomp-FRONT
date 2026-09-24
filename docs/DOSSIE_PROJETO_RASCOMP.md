@@ -23,7 +23,7 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
-ETAPA 4                                        ⏳ próxima / não iniciada — consolidação do MVP
+ETAPA 4                                        🚧 em andamento — BLOCO 3 implementado / aguardando validação
 Backend — último checkpoint funcional          135 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
@@ -1136,3 +1136,134 @@ ETAPA 14
 ```
 
 No checkpoint atual, apenas o login recebeu tratamento responsivo dedicado e validação visual específica.
+
+
+## ETAPA 4 — checkpoint 22/09/2026
+
+BLOCO 1 da ETAPA 4 concluído em 22/09/2026.
+
+Consolidações relevantes:
+
+- baseline técnico revalidado;
+- autenticação e sessão revisadas;
+- `Lembrar de mim` preserva e-mail sem persistir senha;
+- política de sessão única adicionada via Flyway V14;
+- Shell administrativo e navegação global revisados;
+- bug de breakpoint desktop/mobile corrigido;
+- navegação reorganizada para priorizar operação ao vivo;
+- recuperação de senha definitiva permanece planejada para ETAPA 13;
+- fallback assistido por DEV previsto com credencial temporária, uso único/expiração e troca obrigatória;
+- celular físico permanece como pendência transversal do checkpoint mobile.
+
+Checkpoint final do bloco:
+`Frontend Checks #97`, `Backend Tests #329`, 142 testes verdes, MySQL + Flyway V14 + testdata verdes.
+
+Próximo: BLOCO 2 — Gestão administrativa.
+
+
+## ETAPA 4 — BLOCO 2 — Dashboard/Central
+
+BLOCO 2 iniciado pela revisão 2.1 do Dashboard/Central.
+
+Direção aplicada:
+
+- remover o indicador "Progresso do evento" baseado apenas em datas, por ser ambíguo como métrica operacional;
+- remover o bloco separado de "Acesso rápido";
+- transformar métricas principais em cards clicáveis que também servem como atalhos;
+- ampliar de 4 para 6 cards operacionais:
+  - pendências de inscrição;
+  - equipes inscritas;
+  - robôs inscritos;
+  - categorias em uso;
+  - chaves atuais;
+  - partidas concluídas/total;
+- manter "Competição em foco" como contexto principal;
+- adicionar atalhos contextuais para Follow, Sumô e Resultados dentro do card da edição;
+- substituir "Últimas inscrições" por "Atividade e agenda";
+- combinar movimentações recentes de inscrição com próximas partidas agendadas;
+- fazer o Dashboard reagir à troca de `competition.selectedId`;
+- buscar inscrições já filtradas por `competitionId`, reduzindo carregamento global desnecessário;
+- carregar chaves e partidas apenas da competição em foco;
+- manter responsividade específica da tela.
+
+A regra de escopo da competição em foco para DEV x GESTAO ainda não foi alterada nesta subetapa; ela será tratada no bloco de Competições/Contexto com backend como fonte de verdade.
+
+
+## ETAPA 4 — BLOCO 2 administrativo
+
+Implementação concluída e validação manual aprovada.
+
+Consolidações:
+
+- Competition focus do DEV separado da Competition vigente global;
+- V15 persiste a competição vigente;
+- GESTAO opera somente a vigente;
+- usuários separados em Organização/Diretoria e Participantes;
+- edição cadastral de contas sem conversão de identidade;
+- nova visão administrativa de Competidores;
+- catálogos de Equipes/Robôs/Competidores contextualizados pela competição;
+- mutações estruturais administrativas DEV-only;
+- fotos de robôs respeitam o contexto de competição para GESTAO;
+- Inscrições consolidadas com aprovação/rejeição/cancelamento/reativação e solicitações de cancelamento;
+- backend aplica o contexto da competição nas operações administrativas.
+
+Checkpoint: Frontend Checks #137 verde; Backend Tests #371 com 155 testes verdes; MySQL/Flyway V15/testdata verde.
+
+O bloco ainda depende de validação prática e das decisões sobre categorias por competição e efeito da desativação de UserAccount PARTICIPANTE sobre Competitor.
+
+
+## ETAPA 4 — fechamento do BLOCO 2
+
+BLOCO 2 — Gestão administrativa concluído e validado em 23/09/2026.
+
+Checkpoint final:
+
+- Frontend Checks #170 ✅;
+- Backend Tests #415 ✅;
+- 161 testes verdes;
+- MySQL + Flyway V17 + testdata ✅.
+
+Próximo: BLOCO 3 — Operação competitiva, ainda não iniciado.
+
+
+## ETAPA 4 — BLOCO 3 / 3A Follow Line
+
+BLOCO 3 iniciado em 23/09/2026.
+
+Estrutura:
+
+- 3A Follow Line;
+- 3B Sumô;
+- 3C Chaves / Agenda / Resultados.
+
+Primeiro checkpoint da 3A:
+
+- contexto DEV foco local x GESTAO vigente aplicado ao Follow;
+- backend protegido por CompetitionContextService em tentativas/ausências;
+- ranking administrativo contextualizado;
+- ranking público preservado;
+- FollowView diferencia foco e vigente;
+- fluxo integrado cobre bloqueio da GESTAO fora da vigente.
+
+Checkpoint de código: Frontend Checks #177 ✅; Backend Tests #429 ✅ com 162 testes; MySQL/Flyway V17/testdata ✅.
+
+
+## ETAPA 4 — BLOCO 3 implementado
+
+As frentes 3A Follow Line, 3B Sumô e 3C Chaves/Agenda/Resultados estão implementadas.
+
+Principais entregas:
+
+- contexto foco/vigente aplicado à operação competitiva;
+- Agenda unificada Follow + Sumô;
+- chamada geral e fila de tomadas Follow;
+- V18 para agenda Follow;
+- Dashboard consumindo próximas atividades;
+- desclassificação manual/automática auditada;
+- resolução administrativa de Sumô sem round fictício;
+- Resultados por categoria com campeão Follow apenas após programa completo;
+- chave vigente/histórica, progressão e correção preservadas.
+
+Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅ com 166 testes; MySQL/Flyway V18/testdata ✅.
+
+BLOCO 3 aguarda validação manual final.

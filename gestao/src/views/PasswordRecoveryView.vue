@@ -1,18 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
-
-const email = ref('')
 const currentYear = new Date().getFullYear()
-
-function submit() {
-  if (!email.value.trim()) {
-    ElMessage.warning('Informe o e-mail da conta.')
-    return
-  }
-
-  ElMessage.info('A recuperação de senha será ativada quando o backend disponibilizar esse fluxo.')
-}
 </script>
 
 <template>
@@ -36,39 +23,23 @@ function submit() {
       </section>
 
       <section class="login-form-panel">
-        <form class="login-card" @submit.prevent="submit">
+        <div class="login-card">
           <header class="login-form-heading">
             <h1>Recuperar senha</h1>
-            <p>Informe o e-mail associado à sua conta.</p>
+            <p>Infelizmente, a recuperação automática de senha ainda não está disponível nesta versão do RasComp.</p>
           </header>
 
-          <div class="login-field">
-            <label for="recovery-email">E-mail</label>
-            <el-input
-              id="recovery-email"
-              v-model="email"
-              size="large"
-              type="email"
-              autocomplete="email"
-              placeholder="voce@exemplo.com"
-            />
-          </div>
-
           <div class="auth-pending-note">
-            <strong>Fluxo em preparação</strong>
-            <span>A interface já está pronta, mas o envio de recuperação ainda depende do endpoint de backend.</span>
+            <strong>Precisa recuperar seu acesso?</strong>
+            <span>Por enquanto, entre em contato com a organização da competição para receber suporte. A recuperação direta pelo próprio RasComp será disponibilizada em uma etapa futura.</span>
           </div>
-
-          <el-button class="login-submit" size="large" native-type="submit">
-            Solicitar recuperação
-          </el-button>
 
           <div class="auth-secondary-action">
             <router-link to="/login">← Voltar para o login</router-link>
           </div>
 
           <p class="login-copyright">© {{ currentYear }} RAS UFRB - Todos os direitos reservados</p>
-        </form>
+        </div>
       </section>
     </div>
   </div>

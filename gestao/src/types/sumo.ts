@@ -65,10 +65,12 @@ export interface Match {
   rodada: number
   ordem: number
   registrationAId?: number
+  registrationAStatus?: string
   robotAId?: number
   robotANome?: string
   teamANome?: string
   registrationBId?: number
+  registrationBStatus?: string
   robotBId?: number
   robotBNome?: string
   teamBNome?: string

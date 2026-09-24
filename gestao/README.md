@@ -116,7 +116,7 @@ Documentação global: `../docs/README.md`.
 
 ## Roadmap atual
 
-As ETAPAS 0–3 estão concluídas/validadas. A próxima etapa é a **ETAPA 4 — Consolidação funcional e polimento do MVP**, ainda não iniciada. O CMS/Mídia pertence à ETAPA 8; Avisos IN_APP + Telegram à ETAPA 11; deploy à ETAPA 16.
+As ETAPAS 0–3 estão concluídas/validadas. A **ETAPA 4 — Consolidação funcional e polimento do MVP** está em andamento desde 22/09/2026; BLOCOS 1 e 2 foram validados e o **BLOCO 3 está implementado aguardando validação manual final**. O CMS/Mídia pertence à ETAPA 8; Avisos IN_APP + Telegram à ETAPA 11; deploy à ETAPA 16.
 
 
 ## Estado de responsividade mobile
@@ -128,3 +128,79 @@ As demais telas de `gestao/` ainda devem ser revisadas para uso em celular/table
 Esse trabalho pertence ao **checkpoint transversal de Otimização Mobile do MVP**. Ele começa junto da revisão das telas existentes na ETAPA 4 e acompanha os módulos alterados/criados na PRIORIDADE 1 até ser concluído antes da ETAPA 10.
 
 A ETAPA 14 fará apenas a validação física final em aparelhos reais.
+
+
+## Checkpoint de início da ETAPA 4 — 22/09/2026
+
+Branch de trabalho:
+
+```text
+etapa-4-consolidacao-mvp
+```
+
+Estado:
+
+- ETAPA 4 autorizada e iniciada;
+- BLOCO 1 em andamento;
+- baseline técnico, autenticação, Shell e UX global são o escopo atual;
+- ETAPA 5 permanece bloqueada;
+- nenhuma nova funcionalidade estrutural deve ser antecipada.
+
+
+## ETAPA 4
+
+O BLOCO 1 da ETAPA 4 foi concluído e validado em 22/09/2026.
+
+Estado técnico final:
+
+```text
+Frontend Checks #97 ✅
+Backend Tests #329  ✅ 142 testes verdes
+MySQL + Flyway V14 + testdata ✅
+```
+
+O próximo trabalho é o BLOCO 2 — Gestão administrativa, começando pela revisão do Dashboard/Central e seguindo interface por interface.
+
+
+## BLOCO 2 — implementação concluída
+
+A gestão administrativa da ETAPA 4 foi concluída e validada pelo usuário em 23/09/2026.
+
+Inclui:
+
+- contexto DEV foco local x competição vigente global;
+- Usuários separados entre Organização/Diretoria e Participantes;
+- edição cadastral e regras de ativação/permissão;
+- tela própria de Competidores;
+- Equipes/Robôs/Fotos contextualizados;
+- Inscrições com aprovação, cancelamento e reativação;
+- restrições DEV x GESTAO aplicadas também no backend.
+
+Checkpoint: Frontend Checks #137 ✅; Backend Tests #371 ✅ com 155 testes; MySQL/Flyway V15/testdata ✅.
+
+O BLOCO 2 foi encerrado e o BLOCO 3 — Operação competitiva foi implementado integralmente.
+
+
+### Checkpoint atual
+
+```text
+BLOCO 1 ✅
+BLOCO 2 ✅ CONCLUÍDO / VALIDADO
+BLOCO 3 🧪 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
+```
+
+Último checkpoint: Frontend Checks #170 ✅; Backend Tests #415 ✅; Flyway V17/testdata ✅.
+
+
+### BLOCO 3 — checkpoint de implementação
+
+```text
+3A Follow Line                 ✅ implementado
+3B Sumô                        ✅ implementado
+3C Chaves/Agenda/Resultados    ✅ implementado
+BLOCO 3                        🧪 aguardando validação manual
+```
+
+Agenda unificada disponível em `/agenda`; Partidas permanece como detalhe das chaves e Resultados consolida vencedores por categoria.
+
+Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅; 166 testes backend; MySQL/Flyway V18/testdata ✅.

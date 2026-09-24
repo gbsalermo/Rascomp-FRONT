@@ -3,6 +3,7 @@ import type {
   Bracket,
   CompetitionJudge,
   Match,
+  MatchCallStatus,
   MatchJudgeDecision,
   MatchResult,
   RoundSumo,
@@ -17,6 +18,8 @@ export const adminSumoApi = {
     http.post<SumoInspection>('/api/v1/inspecoes-sumo', payload).then((r) => r.data),
   sumoInspections: (registrationId: number) =>
     http.get<SumoInspection[]>('/api/v1/inspecoes-sumo/por-inscricao', { params: { registrationId } }).then((r) => r.data),
+  sumoInspectionsByContext: (competitionId: number, categoryId: number) =>
+    http.get<SumoInspection[]>('/api/v1/inspecoes-sumo/por-contexto', { params: { competitionId, categoryId } }).then((r) => r.data),
   sumoAptitude: (registrationId: number) =>
     http.get<boolean>('/api/v1/inspecoes-sumo/aptidao', { params: { registrationId } }).then((r) => r.data),
   sumoConfig: (categoryId: number) =>
@@ -35,8 +38,15 @@ export const adminSumoApi = {
   match: (matchId: number) => http.get<Match>(`/api/v1/partidas/${matchId}`).then((r) => r.data),
   matches: (bracketId: number) =>
     http.get<Match[]>('/api/v1/partidas/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
+  updateMatchAgenda: (
+    matchId: number,
+    payload: { dataHora?: string | null; pista?: string | null; ordemExecucao?: number | null; statusConvocacao: MatchCallStatus }
+  ) =>
+    http.patch<Match>(`/api/v1/partidas/${matchId}/agenda`, payload).then((r) => r.data),
   results: (bracketId: number) =>
     http.get<MatchResult[]>('/api/v1/resultados-partida/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
+  resolveUnavailableMatch: (matchId: number) =>
+    http.post<MatchResult>('/api/v1/resultados-partida/resolver-indisponibilidade', null, { params: { matchId } }).then((r) => r.data),
   rounds: (matchId: number) =>
     http.get<RoundSumo[]>('/api/v1/rounds-sumo/por-partida', { params: { matchId } }).then((r) => r.data),
   createRound: (payload: {

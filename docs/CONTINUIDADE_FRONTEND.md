@@ -29,7 +29,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
 ETAPA 3   ✅ concluída / validada
-ETAPA 4   ⏳ próxima / não iniciada — Consolidação funcional e polimento do MVP
+ETAPA 4   🚧 EM ANDAMENTO — BLOCO 3 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -376,7 +376,7 @@ Frontend Gestão                ✅ typecheck + build
 Backend                        ✅ 135 testes / 0 falhas / 0 erros / 0 skipped
 SecurityAuthorizationFlowTest  ✅ matriz HTTP
 DemoShowcaseDataInitializerTest ✅ perfis testdata + membro comum
-MySQL + Flyway V13 + testdata  ✅
+MySQL + Flyway V14 + testdata  ✅
 ```
 
 # 5. Segurança
@@ -588,7 +588,7 @@ ETAPA 3 — matriz de permissões
 ├─ backend                               ✅
 ├─ frontend                              ✅
 ├─ testes automatizados                  ✅
-└─ checkpoint prático dos quatro perfis  🚧 PENDENTE DO USUÁRIO
+└─ checkpoint prático dos quatro perfis  ✅ validado em 19/09/2026
 ```
 
 A ETAPA 4 é a próxima etapa do roadmap, mas só deve ser iniciada após autorização explícita.
@@ -703,7 +703,7 @@ líder x membro comum ✅
 
 A validação final de permissões foi incorporada à **ETAPA 15 — Validação final completa**, imediatamente antes do deploy.
 
-A próxima etapa é a ETAPA 4, ainda não iniciada.
+A ETAPA 4 está em andamento. BLOCO 1 e BLOCO 2 estão concluídos e validados; BLOCO 3 — Operação competitiva é o próximo e ainda não foi iniciado.
 
 
 ## Responsividade do login — 19/09/2026
@@ -756,3 +756,633 @@ A otimização dessas interfaces foi registrada como **checkpoint transversal da
 Ela começa a ser trabalhada conforme as telas forem revisadas na ETAPA 4, continua junto do Portal (ETAPA 7), CMS (ETAPA 8) e Landing/Galeria (ETAPA 9), e precisa estar concluída antes do fechamento do MVP na ETAPA 10.
 
 Os testes físicos em aparelhos reais continuam previstos na ETAPA 14 como hardening final.
+
+
+## Checkpoint de início da ETAPA 4 — 22/09/2026
+
+Branch de trabalho:
+
+```text
+etapa-4-consolidacao-mvp
+```
+
+Estado:
+
+- ETAPA 4 autorizada e iniciada;
+- BLOCO 1 em andamento;
+- baseline técnico, autenticação, Shell e UX global são o escopo atual;
+- ETAPA 5 permanece bloqueada;
+- nenhuma nova funcionalidade estrutural deve ser antecipada.
+
+
+## ETAPA 4 — BLOCO 1 — checkpoint técnico 22/09/2026
+
+Baseline consolidado na branch `etapa-4-consolidacao-mvp`:
+
+```text
+Frontend Checks #91          ✅ typecheck + build
+Backend Tests #325           ✅ 142 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V14 + testdata ✅
+Logins DEV/GESTAO/MIDIA/PARTICIPANTE/MEMBRO ✅
+```
+
+Correções já aplicadas no BLOCO 1:
+
+- remoção de `.bak` e artefatos raiz acidentais do ajuste mobile;
+- `*.bak` adicionado ao `.gitignore`;
+- `VITE_API_URL` voltou a ser configurável, mantendo same-origin/proxy como padrão para acesso local/mobile;
+- mensagem de erro do login não expõe mais diagnóstico técnico;
+- recuperação de senha não simula mais um envio inexistente;
+- sessão expirada passa a redirecionar para o login preservando a rota de retorno;
+- seletor de competição permanece disponível no menu mobile;
+- títulos de Follow/Sumô em rotas operacionais foram ajustados;
+- dropdown de alertas e botão do menu receberam refinamentos para telas pequenas.
+
+Pendência para fechar o BLOCO 1:
+
+- validação prática/visual do usuário em desktop e celular dos fluxos de autenticação e Shell.
+
+
+## Decisão — recuperação de senha
+
+A ETAPA 4 deve apenas garantir que a interface atual não simule um fluxo inexistente. O tratamento definitivo de credenciais foi alocado na **ETAPA 13 — Regras, Ajuda e Segurança**.
+
+A ETAPA 13 deverá validar:
+
+- alteração de senha autenticada;
+- "esqueci minha senha" para usuário não autenticado;
+- resposta neutra para não enumerar contas;
+- token/código de uso único com expiração curta;
+- invalidação após uso ou nova solicitação;
+- canal real de entrega, preferencialmente e-mail configurável;
+- proteção contra abuso;
+- política para sessões antigas após redefinição;
+- tratamento de conta inativa/token inválido;
+- ação administrativa excepcional sem expor senha conhecida;
+- testes automatizados de segurança e recuperação.
+
+A ETAPA 14 revisará o hardening desse fluxo e a ETAPA 15 o incluirá na bateria final de falhas e recuperação.
+
+
+## ETAPA 4 — BLOCO 1 — validação prática do usuário 22/09/2026
+
+Resultado do primeiro teste manual:
+
+```text
+Login válido                         ✅
+Login inválido                       ✅
+Lembrar de mim                       ⚠️ e-mail não permanecia após logout
+Logout/login                         ✅
+Dashboard                            ⚠️ revisão de hierarquia/layout pendente
+Sidebar desktop                      ✅
+Competição em foco                   ✅ com regra de escopo a revisar
+Alertas                              ✅
+Navegação geral                      ✅ com reorganização solicitada
+Breakpoint desktop/mobile            ❌ bug de deslocamento do conteúdo
+Menu mobile                          ✅ abre, mas afetado pelo bug do breakpoint
+Responsividade mobile                ✅ base funcional
+Recuperação de senha                 ✅ versão da branch validada; texto refinado
+Sessão simultânea                    ✅ política de sessão única validada em dois navegadores
+```
+
+Correções imediatas do BLOCO 1:
+
+- "Lembrar de mim" preserva o e-mail em armazenamento próprio; senha nunca é persistida;
+- Shell força estado expandido ao entrar no mobile e fecha drawer ao voltar ao desktop;
+- CSS mobile passa a fixar explicitamente a sidebar, evitando que ela volte a participar do grid;
+- navegação reorganizada em Geral → Operação ao vivo → Competição → Administração;
+- Chaves movida para Competição;
+- Follow Line, Sumô, Partidas e Resultados agrupados em Operação ao vivo;
+- ícones de Sumô, robôs, modalidades, chaves, partidas e resultados diferenciados;
+- Configurações removida da navegação enquanto não houver função administrativa própria;
+- logout passa a invalidar sessão também no backend;
+- política de sessão única: novo login invalida o token anterior.
+
+Pendências formalizadas para o BLOCO 2:
+
+- revisar Dashboard com prioridade operacional e melhor ocupação da viewport;
+- substituir ou redefinir o indicador de "progresso do evento", hoje calculado apenas pelo período de datas;
+- integrar atalhos importantes aos cards/resumos superiores, evitando acesso rápido somente no rodapé;
+- ampliar "Atividade recente" para eventos além de inscrições;
+- revisar interface por interface a hierarquia, sequência, nomenclatura e densidade visual;
+- sincronizar competição em foco como filtro default nas interfaces relacionadas;
+- definir no backend a regra de troca de competição: DEV pode alternar edições; GESTAO deve operar somente a edição vigente;
+- reformular Usuários em dois contextos claros: Participantes da competição e Organização/Diretoria;
+- revisar edição de dados cadastrais de PARTICIPANTE sem permitir conversão de role;
+- tornar explícitas as regras de desativação: conta atual não se desativa e último DEV ativo é protegido;
+- avaliar uma tela operacional unificada de Partidas que represente tomadas de Follow e batalhas de Sumô;
+- revisar Resultados para destacar vencedores por categoria.
+
+Observação de continuidade: o usuário mencionou um efeito visual definido no início do projeto, mas a especificação exata não foi localizada na documentação canônica nem na continuidade disponível. Não recriar por suposição; reconciliar durante a revisão visual interface por interface.
+
+
+## Reteste complementar do BLOCO 1 — 22/09/2026
+
+Validação manual complementar:
+
+- `Lembrar de mim` validado;
+- transição desktop ↔ janela reduzida validada;
+- menu mobile validado em viewport reduzida;
+- nova organização da navegação aprovada;
+- recuperação de senha exibindo a versão correta da branch;
+- sessão única validada com dois navegadores;
+- logout validado.
+
+Pendência preservada:
+
+- em aparelho físico houve comportamento intermitente: após um bug de navegação/conexão, o celular deixou de alcançar o servidor;
+- o problema não reproduziu na viewport reduzida do desktop;
+- manter no CHECKPOINT MOBILE e revalidar em dispositivo físico antes do fechamento do MVP e novamente na ETAPA 14.
+
+A mensagem de recuperação foi suavizada e agora orienta o usuário a procurar a organização enquanto a recuperação automática ainda não existe.
+
+A ETAPA 13 deverá oferecer dois caminhos:
+
+1. recuperação automática como fluxo principal, por canal configurável;
+2. recuperação assistida pelo DEV como fallback, com credencial temporária expirada/uso único, troca obrigatória no primeiro acesso e auditoria.
+
+O DEV nunca define nem conhece a senha definitiva do usuário.
+
+
+## Fechamento do BLOCO 1 — 22/09/2026
+
+O usuário validou o checkpoint final. BLOCO 1 encerrado.
+
+```text
+Frontend Checks #97 ✅
+Backend Tests #329  ✅ 142 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V14 + testdata ✅
+```
+
+Estado manual aprovado:
+
+- autenticação;
+- lembrar e-mail com "Lembrar de mim";
+- logout;
+- sessão única;
+- Shell desktop;
+- transição de breakpoint;
+- menu reduzido;
+- reorganização da navegação;
+- tela de recuperação com orientação temporária adequada.
+
+Pendência transversal:
+- bug/conectividade em celular físico permanece no CHECKPOINT MOBILE.
+
+Próximo passo:
+- BLOCO 2 — Gestão administrativa;
+- iniciar pelo Dashboard/Central;
+- aplicar revisão interface por interface, com sincronização de competição em foco, hierarquia visual e regras administrativas.
+
+
+## ETAPA 4 — BLOCO 2 — Dashboard/Central
+
+BLOCO 2 iniciado pela revisão 2.1 do Dashboard/Central.
+
+Direção aplicada:
+
+- remover o indicador "Progresso do evento" baseado apenas em datas, por ser ambíguo como métrica operacional;
+- remover o bloco separado de "Acesso rápido";
+- transformar métricas principais em cards clicáveis que também servem como atalhos;
+- ampliar de 4 para 6 cards operacionais:
+  - pendências de inscrição;
+  - equipes inscritas;
+  - robôs inscritos;
+  - categorias em uso;
+  - chaves atuais;
+  - partidas concluídas/total;
+- manter "Competição em foco" como contexto principal;
+- adicionar atalhos contextuais para Follow, Sumô e Resultados dentro do card da edição;
+- substituir "Últimas inscrições" por "Atividade e agenda";
+- combinar movimentações recentes de inscrição com próximas partidas agendadas;
+- fazer o Dashboard reagir à troca de `competition.selectedId`;
+- buscar inscrições já filtradas por `competitionId`, reduzindo carregamento global desnecessário;
+- carregar chaves e partidas apenas da competição em foco;
+- manter responsividade específica da tela.
+
+A regra de escopo da competição em foco para DEV x GESTAO ainda não foi alterada nesta subetapa; ela será tratada no bloco de Competições/Contexto com backend como fonte de verdade.
+
+
+### Checkpoint técnico — Dashboard/Central
+
+```text
+Frontend Checks #104 ✅
+Typecheck ✅
+Build ✅
+```
+
+A primeira versão da revisão 2.1 está pronta para validação visual/prática antes de seguir para 2.2 Competições e contexto da edição.
+
+
+### Decisões do BLOCO 2 — Agenda e Competidores
+
+A revisão do Dashboard identificou duas lacunas de produto.
+
+**Agenda competitiva**
+
+- não tratar agenda como sinônimo de `Match` de Sumô;
+- Sumô já possui `dataHora/pista/ordemExecucao/statusConvocacao`;
+- Follow ainda não possui contrato de agendamento de tomada;
+- uma tomada do Follow representa uma atividade geral da categoria, dentro da qual as inscrições executam suas tentativas;
+- o Dashboard não deve exibir uma "agenda" parcial apenas de Sumô;
+- a agenda unificada será tratada no BLOCO 3C e depois consumida pelo Dashboard.
+
+Até lá, o card "Partidas" e a subseção de agenda parcial foram removidos da Central.
+
+**Competidores**
+
+O backend já possui CRUD/consulta de Competitor, inclusive listagem por equipe, mas o frontend administrativo não possui rota/tela dedicada.
+
+Pendência do BLOCO 2.4:
+
+- tela "Competidores";
+- navegação Equipe → Competidores;
+- detalhe de competidor;
+- equipe/instituição;
+- contato e conta PARTICIPANTE vinculada;
+- situação;
+- inscrições/participações;
+- robôs usados nessas inscrições.
+
+Não modelar "robô do competidor" diretamente: no domínio atual Robot pertence à Team; Competitor e Robot se relacionam por Registration.
+
+
+## BLOCO 2.1 — Dashboard/Central validado
+
+O usuário aprovou a reformulação do Dashboard/Central.
+
+Checkpoint:
+
+```text
+Frontend Checks #108 ✅
+Dashboard objetivo e acionável ✅
+card Partidas removido ✅
+agenda parcial de Sumô removida ✅
+```
+
+A agenda futura foi refinada: no Follow a unidade agendada é uma chamada geral da tomada (horário + tomada + pista), com convocação individual de cada inscrição/robô dentro dessa chamada. A ausência na convocação registra perda/ausência da tomada conforme regra já existente.
+
+No Sumô, a unidade agendada é a batalha/partida; rounds permanecem internos à batalha.
+
+A agenda terá:
+- tela unificada em Operação ao vivo;
+- edição contextual em Follow → tomada;
+- edição contextual em Sumô/Partidas → batalha.
+
+Próximo: BLOCO 2.2 — Competições e contexto da edição.
+
+
+## BLOCO 2.2 — Competições e contexto da edição
+
+Implementação pronta para validação prática.
+
+Regra consolidada:
+
+```text
+DEV
+→ vê todas as edições
+→ pode trocar competição em foco
+→ cria/edita estruturalmente edições
+→ pode operar edição histórica quando necessário
+
+GESTAO
+→ recebe somente a competição vigente
+→ não troca edição
+→ não cria nova edição
+→ não edita dados estruturais da edição
+→ pode operar o ciclo da edição vigente
+→ pode prorrogar/reabrir inscrições quando a regra permitir
+```
+
+A competição vigente é uma escolha explícita do DEV, persistida no backend. Status não troca automaticamente a edição vigente.
+
+UX:
+
+- seletor de competição permanece para DEV;
+- GESTAO vê contexto fixo "Competição vigente";
+- "Gerenciar / trocar edições" é DEV-only;
+- "Editar dados" é DEV-only;
+- GESTAO e DEV usam ação explícita de avanço operacional:
+  - Planejada → Abrir inscrições;
+  - Inscrições abertas → Encerrar inscrições;
+  - Inscrições encerradas → Iniciar competição;
+  - Em andamento → Finalizar competição;
+- iniciar competição exibe alerta de que novas chaves comuns deixam de ser geradas;
+- finalizar edição avisa que ela deixa de ser a edição operacional vigente.
+
+Backend:
+
+- `CompetitionContextService` centraliza visibilidade e contexto;
+- `GET /api/v1/competicoes` é filtrado por perfil;
+- `GET /api/v1/competicoes/vigente` expõe o contexto resolvido;
+- `GET /api/v1/competicoes/{id}` bloqueia GESTAO fora da vigente;
+- criação/edição estrutural/desativação/reativação são DEV-only;
+- `PATCH /api/v1/competicoes/{id}/status` separa transição operacional de edição estrutural;
+- janela/histórico de inscrições exigem competição operável.
+
+A mesma política será aplicada aos recursos internos de cada módulo ao revisar 2.4/2.5 e os blocos competitivos, evitando uma checagem duplicada e inconsistente.
+
+
+### Checkpoint técnico 2.2
+
+```text
+Frontend Checks #114 ✅
+Typecheck ✅
+Build ✅
+Backend Tests #342 ✅
+149 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V14 + testdata ✅
+```
+
+A 2.2 está pronta para validação prática DEV x GESTAO.
+
+
+### Ajuste pós-validação 2.2 — vigente explícita
+
+A validação seguinte refinou a regra: foco do DEV e vigente global são conceitos distintos.
+
+Ajustes finais:
+
+- seletor superior do DEV altera apenas sua competição em foco;
+- drawer possui ação separada "Definir vigente";
+- somente "Definir vigente" altera o contexto global da GESTAO;
+- GESTAO recebe exatamente a edição marcada;
+- criação de edição não muda a vigente automaticamente;
+- finalização da competição é DEV-only;
+- GESTAO continua podendo abrir/encerrar inscrições e iniciar a competição;
+- V15 persiste a flag `vigente`.
+
+
+### Semântica final da 2.2
+
+```text
+DEV / foco local
+→ livre para alternar entre edições
+→ não afeta GESTAO
+
+DEV / definir vigente
+→ persiste no backend
+→ altera a edição operacional da GESTAO
+
+GESTAO
+→ sem seletor
+→ somente edição vigente
+→ abrir inscrições ✅
+→ encerrar inscrições ✅
+→ iniciar competição ✅
+→ criar competição ❌
+→ finalizar competição ❌
+```
+
+
+## BLOCO 2 — implementação concluída / aguardando validação
+
+As revisões 2.3, 2.4 e 2.5 foram implementadas na branch `etapa-4-consolidacao-mvp`.
+
+### 2.3 Usuários
+
+- Organização/Diretoria separada de Participantes;
+- busca/filtro;
+- edição de nome/e-mail/telefone;
+- role apenas entre contas internas;
+- PARTICIPANTE não é convertido;
+- auto-desativação bloqueada também no backend;
+- último DEV ativo protegido;
+- alteração de e-mail e desativação invalidam sessão.
+
+### 2.4 Cadastros administrativos
+
+- nova tela/rota Competidores;
+- Equipe → Competidores;
+- detalhe de competidor com participações e robôs derivados das inscrições;
+- Equipes/Robôs/Competidores contextuais à competição;
+- DEV pode consultar catálogo global;
+- GESTAO fica restrita à vigente;
+- fotos de robô consultadas com validação de contexto;
+- mutações estruturais administrativas DEV-only;
+- Modalidades mostra categorias em uso no contexto e catálogo global para DEV.
+
+### 2.5 Inscrições
+
+- contexto sincronizado;
+- DEV pode trocar filtro local;
+- GESTAO permanece na vigente;
+- aprovar/rejeitar;
+- cancelar PENDENTE/APROVADA;
+- CANCELADA/REJEITADA podem voltar para PENDENTE quando a janela permitir;
+- cancelamento aprovado com atividade registrada resulta em DESISTENTE;
+- solicitações de cancelamento preservadas;
+- backend restringe GESTAO à competição vigente.
+
+### Checkpoint automatizado
+
+```text
+Frontend Checks #137 ✅
+Backend Tests #371 ✅ — 155 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V15 + testdata ✅
+```
+
+### Pendências de decisão para o fechamento
+
+1. manter CompetitionCategory global ou criar associação explícita Competition ↔ Category;
+2. decidir se desativar UserAccount PARTICIPANTE deve afetar automaticamente o Competitor vinculado;
+3. se houver associação por competição, definir se GESTAO pode habilitar categorias globais já cadastradas na vigente ou se essa ação permanece DEV-only.
+
+BLOCO 2 validado e encerrado. BLOCO 3 é o próximo checkpoint e ainda não foi iniciado.
+
+
+## BLOCO 2 — correções após bateria manual
+
+Resultados da validação:
+
+- competição/contexto ✅;
+- usuários/permissões ✅;
+- modalidades ✅;
+- inscrições/revisão/cancelamento majoritariamente ✅;
+- permissões MIDIA/PARTICIPANTE ✅;
+- Equipes/Competidores/Robôs apresentaram erro 500 no catálogo contextual;
+- drawer de edições apresentou problemas de responsividade;
+- rejeições precisavam de justificativa auditável;
+- reativação administrativa estava bloqueada por datas mesmo com status INSCRICOES_ABERTAS.
+
+Correções:
+
+- catálogo contextual corrigido no backend com transação;
+- telas limpam dados obsoletos antes de trocar escopo;
+- gerenciador de edições convertido para modal central;
+- motivo de rejeição da inscrição persistido e exibido;
+- histórico de decisões de cancelamento visível;
+- justificativa obrigatória para rejeitar cancelamento;
+- reativação administrativa passa a considerar o status aberto;
+- conta PARTICIPANTE sincroniza dados/ativo com Competitor;
+- aviso quando a equipe fica sem competidores ativos;
+- competidor vinculado é gerenciado pela conta, não pelo catálogo.
+
+D1: categorias continuam globais.
+D2: UserAccount PARTICIPANTE e Competitor sincronizados; Team/Robot preservados.
+D3: categorias DEV-only.
+
+Checkpoint CI e reteste concentrado concluídos; BLOCO 2 encerrado.
+
+
+### Checkpoint pós-correções da bateria manual
+
+```text
+Frontend Checks #149 ✅
+Backend Tests #388 ✅ — 161 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V16 + testdata ✅
+```
+
+Reteste manual concluído; BLOCO 2 encerrado.
+
+
+## BLOCO 2 — acabamento final pós-reteste
+
+Últimos ajustes aplicados:
+
+- cards de contexto das telas Equipes/Competidores/Robôs/Modalidades receberam espaçamento e hierarquia visual próprios, sem alterar os cards de Partidas/Resultados/Chaves;
+- botões do modal Gerenciar edições receberam destaque rubro;
+- Competidores vinculados mostram ação **Gerenciar conta** para DEV, levando diretamente ao PARTICIPANTE correspondente;
+- detalhe da inscrição passa a consumir `GET /api/v1/inscricoes/{id}/historico-status`;
+- linha do tempo apresenta criação, aprovação, rejeição, cancelamento, desistência, reativação e desclassificação;
+- histórico detalhado é registrado a partir da V17.
+
+Checkpoint: Frontend Checks #164 ✅; Backend Tests #414 ✅ com 161 testes; MySQL/Flyway V17/testdata ✅.
+
+Reteste manual final concluído; BLOCO 2 validado.
+
+
+### Detalhe da inscrição — duas auditorias
+
+Após validação final, o detalhe passou a reunir:
+
+- linha do tempo de status da V17;
+- solicitações/decisões de cancelamento vinculadas pelo `registrationId`.
+
+Isso garante que cancelamentos anteriores à V17 também apareçam no detalhe da inscrição sem fabricar transições históricas inexistentes.
+
+Frontend Checks #168 ✅.
+
+
+## Fechamento do BLOCO 2 — 23/09/2026
+
+O usuário validou o reteste final e autorizou o fechamento formal.
+
+Estado:
+
+```text
+BLOCO 1 ✅
+BLOCO 2 ✅ CONCLUÍDO / VALIDADO
+BLOCO 3 ⏳ PRÓXIMO / NÃO INICIADO
+```
+
+Checkpoint final:
+
+- Frontend Checks #170 ✅;
+- Backend Tests #415 ✅;
+- 161 testes backend verdes;
+- MySQL/Flyway V17/testdata ✅.
+
+Não iniciar o BLOCO 3 sem novo checkpoint explícito de execução.
+
+
+## BLOCO 3 — 3A Follow Line — início
+
+BLOCO 3 iniciado em 23/09/2026 pela revisão completa do Follow Line.
+
+Primeiro checkpoint aplicado:
+
+- DEV continua escolhendo uma competição em foco local;
+- GESTAO não recebe seletor livre e opera a vigente;
+- FollowView exibe explicitamente foco/vigente e status da edição;
+- troca de contexto limpa registros/ranking/histórico antes de recarregar;
+- ranking administrativo respeita CompetitionContextService;
+- tentativas e ausências passam a respeitar CompetitionContextService no backend;
+- uma tentativa existente não pode ser transferida para outra Registration por atualização;
+- fluxo integrado cobre bloqueio de GESTAO fora da vigente;
+- ranking público permanece separado e não foi restringido pela regra administrativa.
+
+Checkpoint:
+
+```text
+Frontend Checks #177 ✅
+Backend Tests #429 ✅
+162 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V17 + testdata ✅
+```
+
+Ponto ainda não decidido na 3A:
+
+- o cenário/testdata opera Follow em Competition `EM_ANDAMENTO`, mas o contrato competitivo ainda não contém uma regra explícita dizendo que a API deve bloquear tentativa/ausência em outros status;
+- não endurecer essa regra por inferência antes da validação funcional.
+
+A Agenda estrutural do Follow continua reservada à 3C.
+
+
+## BLOCO 3 — implementação completa
+
+Estado:
+
+```text
+3A Follow Line                 ✅ implementado
+3B Sumô                        ✅ implementado
+3C Chaves/Agenda/Resultados    ✅ implementado
+BLOCO 3                        🧪 aguardando validação manual
+```
+
+Frontend consolidado:
+
+- `FollowView.vue`: contexto foco/vigente + agenda das três tomadas;
+- `FollowRunView.vue`: operação da tomada convocada;
+- `SumoView.vue`: inspeção, juízes, chave e desclassificação operacional;
+- `SumoMatchView.vue`: rounds/penalidades/WO/falha/juiz/resolução administrativa;
+- `AgendaView.vue`: visão unificada Follow + Sumô, filtros, edição, filas e convocação;
+- `BracketHistoryView.vue`: chave vigente/históricas com contexto correto;
+- `MatchesView.vue`: detalhe operacional das batalhas;
+- `ResultsView.vue`: vencedores por categoria;
+- `DashboardView.vue`: próximas atividades vindas da Agenda unificada;
+- `ShellLayout.vue`: Agenda em Operação ao vivo, sem Partidas redundante no menu.
+
+Guardas visuais:
+
+- chamadas finalizadas/canceladas são somente leitura;
+- batalha iniciada/finalizada não oferece edição de agenda;
+- inscrição não aprovada/ativa permanece visível na fila, mas sem ação operacional;
+- DEV usa foco local;
+- GESTAO usa vigente.
+
+Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅ com 166 testes; MySQL/Flyway V18/testdata ✅.
+
+Aguardando somente validação manual final do BLOCO 3.
+
+
+## BLOCO 3 — resolução excepcional do Follow
+
+Decisão de produto fechada:
+
+Se todas as tomadas oficiais terminarem sem tentativa classificável, a organização pode:
+
+1. criar uma **Tomada Extra**, que entra na Agenda como chamada real e no console operacional; ou
+2. definir o vencedor por **decisão da organização**, escolhendo manualmente uma inscrição elegível e registrando justificativa.
+
+Regras de UX:
+
+- checkpoints máximos aparecem apenas como apoio à decisão;
+- não existe seleção automática do vencedor por checkpoints;
+- resultado manual não exibe tempo fictício;
+- decisão mostra justificativa, responsável e data;
+- Tomada Extra aparece separada do formato oficial `numeroTomadas × tentativasPorTomada`;
+- se a extra for aberta, a decisão manual aguarda seu encerramento/cancelamento.
+
+Arquivos principais alterados:
+
+- `ResultsView.vue`;
+- `FollowView.vue`;
+- `FollowRunView.vue`;
+- `api/admin/results.ts`;
+- `api/admin/agenda.ts`;
+- `types/results.ts`.
+
+Checkpoint: Frontend Checks #224 ✅; Backend Tests #517 ✅ com 169 testes; MySQL/Flyway V19/testdata ✅.
+
+Única decisão de produto ainda aberta no BLOCO 3: bloqueio formal de tentativa/ausência Follow fora de Competition `EM_ANDAMENTO`.

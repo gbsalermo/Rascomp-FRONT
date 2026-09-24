@@ -23,6 +23,7 @@ export interface Registration {
   requestedByUserNome?: string
   reviewedByUserNome?: string
   reviewedAt?: string
+  reviewReason?: string
   status: RegistrationStatus
   observacao?: string
   ativo?: boolean
@@ -44,5 +45,27 @@ export interface RegistrationCancellationRequest {
   reviewedByUserNome?: string
   reviewedAt?: string
   resposta?: string
+  dataCadastro?: string
+}
+
+
+export type RegistrationStatusChangeType =
+  | 'CRIACAO'
+  | 'APROVACAO'
+  | 'REJEICAO'
+  | 'CANCELAMENTO'
+  | 'DESISTENCIA'
+  | 'REATIVACAO'
+  | 'DESCLASSIFICACAO'
+
+export interface RegistrationStatusHistory {
+  id: number
+  registrationId: number
+  previousStatus?: RegistrationStatus
+  newStatus: RegistrationStatus
+  changeType: RegistrationStatusChangeType
+  actorUserId?: number
+  actorUserNome?: string
+  reason?: string
   dataCadastro?: string
 }

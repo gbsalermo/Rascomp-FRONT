@@ -3,12 +3,13 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
-import { useCompetitionStore } from '../store'
-import type { Bracket, Category, CompetitionJudge, Match, MatchResult, Registration } from '../types'
+import { useAuthStore, useCompetitionStore } from '../store'
+import type { Bracket, Category, CompetitionJudge, Match, MatchResult, Registration, SumoInspection } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 import TournamentBracket from '../components/TournamentBracket.vue'
 
 const route = useRoute()
+const auth = useAuthStore()
 const competition = useCompetitionStore()
 const loading = ref(false)
 const ready = ref(false)
@@ -18,6 +19,7 @@ const brackets = ref<Bracket[]>([])
 const matches = ref<Match[]>([])
 const results = ref<MatchResult[]>([])
 const judges = ref<CompetitionJudge[]>([])
+const inspections = ref<SumoInspection[]>([])
 const competitionId = ref<number>()
 const categoryId = ref<number>()
 const bracketId = ref<number>()
@@ -47,9 +49,13 @@ const filteredBrackets = computed(() =>
       return dateB - dateA
     })
 )
-const approved = computed(() =>
-  registrations.value.filter((item) => item.status === 'APROVADA' && item.categoryId === categoryId.value)
+const categoryRegistrations = computed(() =>
+  registrations.value.filter((item) => item.categoryId === categoryId.value)
 )
+const approved = computed(() =>
+  categoryRegistrations.value.filter((item) => item.status === 'APROVADA' && item.ativo !== false)
+)
+const competitionContextLabel = computed(() => auth.isDev ? 'Competição em foco' : 'Competição vigente')
 
 function queryNumber(value: unknown) {
   const raw = Array.isArray(value) ? value[0] : value
@@ -69,6 +75,32 @@ function controlModeLabel(category?: Category) {
   return 'Modo não configurado'
 }
 
+function latestInspection(registrationId: number) {
+  return inspections.value
+    .filter((item) => item.registrationId === registrationId)
+    .sort((a, b) => (b.numeroTentativa || 0) - (a.numeroTentativa || 0))[0]
+}
+
+function inspectionStatusLabel(registration: Registration) {
+  if (registration.status === 'DESCLASSIFICADA') return 'Desclassificado'
+  const latest = latestInspection(registration.id)
+  if (!latest) return 'Pendente'
+  return latest.aprovada ? 'APTO' : 'INAPTO'
+}
+
+function inspectionTagType(registration: Registration) {
+  if (registration.status === 'DESCLASSIFICADA') return 'danger'
+  const latest = latestInspection(registration.id)
+  if (!latest) return 'warning'
+  return latest.aprovada ? 'success' : 'danger'
+}
+
+function openInspection(row?: Registration) {
+  resetInspection()
+  inspection.registrationId = row?.id
+  inspectionDialog.value = true
+}
+
 function physicalClassLabel(category?: Category) {
   if (category?.sumoPhysicalClass === 'MINI_500G') return 'Mini 500 g'
   if (category?.sumoPhysicalClass === 'SUMO_3KG') return 'Sumô 3 kg'
@@ -85,9 +117,13 @@ async function initialize() {
     const requestedCategory = queryNumber(route.query.categoryId)
     const requestedBracket = queryNumber(route.query.bracketId)
 
-    const selectedCompetition = competition.competitions.find((item) => item.id === requestedCompetition)
+    const selectedCompetition = auth.isDev
+      ? competition.competitions.find((item) => item.id === requestedCompetition)
+      : undefined
     competitionId.value = selectedCompetition?.id || competition.selectedId || competition.competitions[0]?.id
-    if (competitionId.value && competition.selectedId !== competitionId.value) competition.select(competitionId.value)
+    if (auth.isDev && competitionId.value && competition.selectedId !== competitionId.value) {
+      competition.select(competitionId.value)
+    }
 
     categoryId.value = categories.value.some((item) => item.id === requestedCategory)
       ? requestedCategory
@@ -113,6 +149,12 @@ async function loadCompetition(preferredBracketId?: number) {
   }
 
   loading.value = true
+  brackets.value = []
+  registrations.value = []
+  judges.value = []
+  inspections.value = []
+  matches.value = []
+  results.value = []
   try {
     const [br, regs, competitionJudges] = await Promise.all([
       adminApi.brackets(competitionId.value),
@@ -122,6 +164,10 @@ async function loadCompetition(preferredBracketId?: number) {
     brackets.value = br
     registrations.value = regs
     judges.value = competitionJudges
+
+    if (categoryId.value) {
+      inspections.value = await adminApi.sumoInspectionsByContext(competitionId.value, categoryId.value)
+    }
 
     if (!filteredBrackets.value.some((item) => item.id === bracketId.value)) {
       pickBracket(preferredBracketId)
@@ -171,6 +217,38 @@ async function generate() {
   }
 }
 
+function canDisqualify(row: Registration) {
+  const status = competition.selectedCompetition?.status
+  return row.status === 'APROVADA'
+    && !['FINALIZADA', 'CANCELADA'].includes(status || '')
+}
+
+async function disqualifyRegistration(row: Registration) {
+  if (row.status !== 'APROVADA') return
+
+  try {
+    const { value } = await ElMessageBox.prompt(
+      'Informe o motivo da desclassificação. A decisão será auditada e, se o robô já estiver comprometido em uma partida, a chave será preservada para resolução administrativa.',
+      `Desclassificar · ${row.robotNome}`,
+      {
+        inputType: 'textarea',
+        inputPlaceholder: 'Motivo da desclassificação',
+        inputValidator: (value) => value?.trim() ? true : 'Informe o motivo da desclassificação.',
+        confirmButtonText: 'Desclassificar',
+        cancelButtonText: 'Cancelar',
+        type: 'warning'
+      }
+    )
+
+    await adminApi.disqualifyRegistration(row.id, value.trim())
+    ElMessage.success('Inscrição desclassificada e decisão registrada no histórico.')
+    await loadCompetition(bracketId.value)
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível desclassificar a inscrição.')
+  }
+}
+
 function resetInspection() {
   inspection.registrationId = undefined
   inspection.aprovada = undefined
@@ -193,6 +271,7 @@ async function saveInspection() {
     ElMessage.success(inspection.aprovada ? 'Inspeção registrada como APTO.' : 'Inspeção registrada como INAPTO.')
     inspectionDialog.value = false
     resetInspection()
+    await loadCompetition(bracketId.value)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a inspeção.')
   }
@@ -215,7 +294,7 @@ async function saveJudge() {
 
 watch(competitionId, async (value) => {
   if (!ready.value) return
-  if (value && competition.selectedId !== value) competition.select(value)
+  if (auth.isDev && value && competition.selectedId !== value) competition.select(value)
   bracketId.value = undefined
   await loadCompetition()
 })
@@ -223,6 +302,11 @@ watch(competitionId, async (value) => {
 watch(categoryId, async () => {
   if (!ready.value) return
   pickBracket()
+  if (competitionId.value && categoryId.value) {
+    inspections.value = await adminApi.sumoInspectionsByContext(competitionId.value, categoryId.value)
+  } else {
+    inspections.value = []
+  }
   await loadBracket()
 })
 
@@ -244,7 +328,7 @@ onMounted(initialize)
       </div>
       <div class="heading-actions">
         <el-button @click="judgeDialog = true">Cadastrar juiz</el-button>
-        <el-button @click="inspectionDialog = true">Nova inspeção</el-button>
+        <el-button @click="openInspection()">Nova inspeção</el-button>
         <el-button
           class="brand-button"
           :disabled="!canGenerate"
@@ -254,8 +338,17 @@ onMounted(initialize)
       </div>
     </div>
 
-    <article class="filter-bar">
-      <el-select v-model="competitionId" placeholder="Competição" style="width:280px">
+    <article class="sumo-context-card">
+      <div>
+        <span class="eyebrow">{{ competitionContextLabel }}</span>
+        <strong>{{ currentCompetition?.nome || 'Nenhuma competição selecionada' }}</strong>
+        <small>{{ auth.isDev ? 'O foco do DEV é local e não altera a edição vigente da GESTAO.' : 'A GESTAO opera somente a edição vigente definida pelo DEV.' }}</small>
+      </div>
+      <StatusBadge v-if="currentCompetition?.status" :value="currentCompetition.status" />
+    </article>
+
+    <article class="filter-bar sumo-filter-bar">
+      <el-select v-if="auth.isDev" v-model="competitionId" placeholder="Competição em foco" style="width:280px">
         <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
       </el-select>
       <el-select v-model="categoryId" placeholder="Categoria" style="width:260px">
@@ -285,6 +378,59 @@ onMounted(initialize)
         </p>
       </div>
       <el-tag effect="plain">{{ judges.length }} juiz{{ judges.length === 1 ? '' : 'es' }} ativo{{ judges.length === 1 ? '' : 's' }}</el-tag>
+    </article>
+
+    <article class="table-card sumo-inspection-table">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Preparação competitiva</span>
+          <h2>Inspeção e elegibilidade</h2>
+          <p class="muted">A decisão APTO/INAPTO é humana. Ao esgotar as tentativas sem aprovação, a inscrição é desclassificada pelo backend.</p>
+        </div>
+        <strong>{{ categoryRegistrations.length }} inscrição(ões)</strong>
+      </div>
+      <el-table :data="categoryRegistrations" empty-text="Nenhuma inscrição nesta categoria">
+        <el-table-column prop="robotNome" label="Robô" min-width="160" />
+        <el-table-column prop="teamNome" label="Equipe" min-width="160" />
+        <el-table-column label="Inscrição" width="145">
+          <template #default="{ row }"><StatusBadge :value="row.status" /></template>
+        </el-table-column>
+        <el-table-column label="Inspeção" width="145">
+          <template #default="{ row }">
+            <el-tag :type="inspectionTagType(row)" effect="light">
+              {{ inspectionStatusLabel(row) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Última tentativa" min-width="210">
+          <template #default="{ row }">
+            <span v-if="latestInspection(row.id)">
+              #{{ latestInspection(row.id)?.numeroTentativa || '—' }}
+              <template v-if="latestInspection(row.id)?.pesoMedido"> · {{ latestInspection(row.id)?.pesoMedido }} kg</template>
+            </span>
+            <span v-else>—</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Ações" width="220" align="right">
+          <template #default="{ row }">
+            <div class="sumo-registration-actions">
+              <el-button
+                v-if="row.status === 'APROVADA' && latestInspection(row.id)?.aprovada !== true"
+                size="small"
+                @click="openInspection(row)"
+              >Inspecionar</el-button>
+              <el-button
+                v-if="canDisqualify(row)"
+                size="small"
+                type="danger"
+                plain
+                @click="disqualifyRegistration(row)"
+              >Desclassificar</el-button>
+              <span v-if="row.status === 'DESCLASSIFICADA'" class="muted">Fora da competição</span>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
     </article>
 
     <article
@@ -385,6 +531,13 @@ onMounted(initialize)
 </template>
 
 <style scoped>
+.sumo-registration-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:6px; }
+.sumo-context-card { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:15px 18px; border:1px solid #eadde3; border-left:4px solid #c31549; border-radius:14px; background:linear-gradient(100deg,#fff7f9,#fff 58%); }
+.sumo-context-card > div { display:grid; gap:4px; min-width:0; }
+.sumo-context-card .eyebrow { margin:0; }
+.sumo-context-card strong { color:#34272e; font-size:15px; }
+.sumo-context-card small { color:#7e7077; line-height:1.4; }
+.sumo-inspection-table { overflow:hidden; }
 .sumo-bracket-heading { margin-bottom: 12px; }
 .sumo-bracket-heading p { margin: 4px 0 0; }
 .sumo-rule-card { align-items:center; }
@@ -392,3 +545,8 @@ onMounted(initialize)
 .judge-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
 .generation-hint { color:#8b6d78; font-size:11px; font-weight:700; }
 </style>
+
+@media (max-width: 760px) {
+  .sumo-context-card { align-items:flex-start; flex-direction:column; }
+  .sumo-filter-bar :deep(.el-select) { width:100% !important; }
+}
