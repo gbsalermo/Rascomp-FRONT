@@ -23,7 +23,7 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
-ETAPA 4                                        🚧 em andamento — BLOCO 2 concluído / BLOCO 3 próximo
+ETAPA 4                                        🚧 em andamento — BLOCO 3 / 3A Follow Line
 Backend — último checkpoint funcional          135 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
@@ -1224,3 +1224,25 @@ Checkpoint final:
 - MySQL + Flyway V17 + testdata ✅.
 
 Próximo: BLOCO 3 — Operação competitiva, ainda não iniciado.
+
+
+## ETAPA 4 — BLOCO 3 / 3A Follow Line
+
+BLOCO 3 iniciado em 23/09/2026.
+
+Estrutura:
+
+- 3A Follow Line;
+- 3B Sumô;
+- 3C Chaves / Agenda / Resultados.
+
+Primeiro checkpoint da 3A:
+
+- contexto DEV foco local x GESTAO vigente aplicado ao Follow;
+- backend protegido por CompetitionContextService em tentativas/ausências;
+- ranking administrativo contextualizado;
+- ranking público preservado;
+- FollowView diferencia foco e vigente;
+- fluxo integrado cobre bloqueio da GESTAO fora da vigente.
+
+Checkpoint de código: Frontend Checks #177 ✅; Backend Tests #429 ✅ com 162 testes; MySQL/Flyway V17/testdata ✅.
