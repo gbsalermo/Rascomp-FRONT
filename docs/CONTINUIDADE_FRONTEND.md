@@ -29,7 +29,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
 ETAPA 3   ✅ concluída / validada
-ETAPA 4   🚧 EM ANDAMENTO — BLOCO 2 ✅ CONCLUÍDO / BLOCO 3 PRÓXIMO
+ETAPA 4   🚧 EM ANDAMENTO — BLOCO 3 / 3A FOLLOW LINE
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -1284,3 +1284,36 @@ Checkpoint final:
 - MySQL/Flyway V17/testdata ✅.
 
 Não iniciar o BLOCO 3 sem novo checkpoint explícito de execução.
+
+
+## BLOCO 3 — 3A Follow Line — início
+
+BLOCO 3 iniciado em 23/09/2026 pela revisão completa do Follow Line.
+
+Primeiro checkpoint aplicado:
+
+- DEV continua escolhendo uma competição em foco local;
+- GESTAO não recebe seletor livre e opera a vigente;
+- FollowView exibe explicitamente foco/vigente e status da edição;
+- troca de contexto limpa registros/ranking/histórico antes de recarregar;
+- ranking administrativo respeita CompetitionContextService;
+- tentativas e ausências passam a respeitar CompetitionContextService no backend;
+- uma tentativa existente não pode ser transferida para outra Registration por atualização;
+- fluxo integrado cobre bloqueio de GESTAO fora da vigente;
+- ranking público permanece separado e não foi restringido pela regra administrativa.
+
+Checkpoint:
+
+```text
+Frontend Checks #177 ✅
+Backend Tests #429 ✅
+162 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V17 + testdata ✅
+```
+
+Ponto ainda não decidido na 3A:
+
+- o cenário/testdata opera Follow em Competition `EM_ANDAMENTO`, mas o contrato competitivo ainda não contém uma regra explícita dizendo que a API deve bloquear tentativa/ausência em outros status;
+- não endurecer essa regra por inferência antes da validação funcional.
+
+A Agenda estrutural do Follow continua reservada à 3C.
