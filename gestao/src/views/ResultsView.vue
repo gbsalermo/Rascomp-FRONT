@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
-import type { Bracket, CompetitionCategoryResult } from '../types'
+import type { Bracket, CompetitionCategoryResult, FollowAttempt, Registration } from '../types'
 
 interface ResultRow {
   id: number
@@ -25,6 +25,25 @@ const loading = ref(false)
 const rows = ref<ResultRow[]>([])
 const scopedBracket = ref<Bracket>()
 const categoryResults = ref<CompetitionCategoryResult[]>([])
+
+const extraDialog = ref(false)
+const extraSaving = ref(false)
+const extraTarget = ref<CompetitionCategoryResult>()
+const extraForm = reactive({
+  dataHora: '',
+  pista: '',
+  ordemExecucao: undefined as number | undefined
+})
+
+const manualDialog = ref(false)
+const manualSaving = ref(false)
+const manualTarget = ref<CompetitionCategoryResult>()
+const manualRegistrationId = ref<number>()
+const manualReason = ref('')
+const manualCandidates = ref<Array<{
+  registration: Registration
+  maxCheckpoints: number
+}>>([])
 
 const sumoLink = computed(() =>
   scopedBracket.value
@@ -47,6 +66,9 @@ function formatSeconds(value?: number) {
 function winnerDetail(item: CompetitionCategoryResult) {
   if (item.status !== 'CONCLUIDO') return 'Resultado ainda pendente'
   if (item.modalidade === 'FOLLOW_LINE') {
+    if (item.resolutionType === 'DECISAO_ORGANIZACAO') {
+      return 'Definido por decisão da organização'
+    }
     return `Melhor tempo: ${formatSeconds(item.tempoFinalSegundos)}`
   }
   return item.pontosA != null && item.pontosB != null
@@ -54,10 +76,127 @@ function winnerDetail(item: CompetitionCategoryResult) {
     : 'Campeão da chave atual'
 }
 
+function formatDateTime(value?: string) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(date)
+}
+
 function queryNumber(value: unknown) {
   const raw = Array.isArray(value) ? value[0] : value
   const parsed = Number(raw)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function openExtraTake(item: CompetitionCategoryResult) {
+  extraTarget.value = item
+  extraForm.dataHora = ''
+  extraForm.pista = ''
+  extraForm.ordemExecucao = undefined
+  extraDialog.value = true
+}
+
+async function saveExtraTake() {
+  const item = extraTarget.value
+  if (!item || !competition.selectedId || !item.extraTakeNumber) return
+
+  if (!extraForm.dataHora) {
+    return ElMessage.warning('Informe data e horário da Tomada Extra.')
+  }
+
+  extraSaving.value = true
+  try {
+    await adminApi.createExtraFollowSchedule({
+      competitionId: competition.selectedId,
+      categoryId: item.categoryId,
+      tomada: item.extraTakeNumber,
+      dataHora: extraForm.dataHora,
+      pista: extraForm.pista.trim() || undefined,
+      ordemExecucao: extraForm.ordemExecucao,
+      status: 'AGENDADA',
+      ativo: true
+    })
+    ElMessage.success(`Tomada Extra ${item.extraTakeNumber} criada e adicionada à Agenda.`)
+    extraDialog.value = false
+    await load()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a Tomada Extra.')
+  } finally {
+    extraSaving.value = false
+  }
+}
+
+async function openManualDecision(item: CompetitionCategoryResult) {
+  if (!competition.selectedId) return
+
+  manualTarget.value = item
+  manualRegistrationId.value = undefined
+  manualReason.value = ''
+  manualCandidates.value = []
+
+  try {
+    const [registrations, attempts] = await Promise.all([
+      adminApi.registrations({ competitionId: competition.selectedId }),
+      adminApi.followAttempts(competition.selectedId, item.categoryId)
+    ])
+
+    const byRegistration = new Map<number, FollowAttempt[]>()
+    for (const attempt of attempts) {
+      const list = byRegistration.get(attempt.registrationId) || []
+      list.push(attempt)
+      byRegistration.set(attempt.registrationId, list)
+    }
+
+    manualCandidates.value = registrations
+      .filter((registration) =>
+        registration.categoryId === item.categoryId
+          && registration.status === 'APROVADA'
+          && registration.ativo !== false
+      )
+      .map((registration) => ({
+        registration,
+        maxCheckpoints: Math.max(
+          0,
+          ...(byRegistration.get(registration.id) || []).map((attempt) => attempt.checkpointsAlcancados || 0)
+        )
+      }))
+      .sort((a, b) => b.maxCheckpoints - a.maxCheckpoints || a.registration.id - b.registration.id)
+
+    manualDialog.value = true
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os candidatos do Follow.')
+  }
+}
+
+async function saveManualDecision() {
+  const item = manualTarget.value
+  if (!item || !competition.selectedId || !manualRegistrationId.value) {
+    return ElMessage.warning('Selecione o robô definido pela organização.')
+  }
+  if (!manualReason.value.trim()) {
+    return ElMessage.warning('Informe a justificativa da decisão.')
+  }
+
+  manualSaving.value = true
+  try {
+    await adminApi.defineFollowManualResult({
+      competitionId: competition.selectedId,
+      categoryId: item.categoryId,
+      winnerRegistrationId: manualRegistrationId.value,
+      justificativa: manualReason.value.trim()
+    })
+    ElMessage.success('Resultado do Follow definido e auditado.')
+    manualDialog.value = false
+    await load()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a decisão da organização.')
+  } finally {
+    manualSaving.value = false
+  }
 }
 
 async function load() {
@@ -164,10 +303,40 @@ onMounted(load)
             <strong>{{ item.winnerRobotNome }}</strong>
             <span>{{ item.winnerTeamNome }}</span>
             <em>{{ winnerDetail(item) }}</em>
+            <div v-if="item.resolutionType === 'DECISAO_ORGANIZACAO'" class="follow-manual-result-note">
+              <small>{{ item.resolutionReason }}</small>
+              <span>{{ item.resolutionActorNome || 'Organização' }} · {{ formatDateTime(item.resolutionAt) }}</span>
+            </div>
           </template>
           <template v-else>
             <strong>Campeão ainda não definido</strong>
-            <span>{{ winnerDetail(item) }}</span>
+            <span v-if="item.modalidade === 'FOLLOW_LINE' && item.extraTakeActive">
+              Tomada Extra {{ item.extraTakeNumber }} em disputa.
+            </span>
+            <span v-else>{{ winnerDetail(item) }}</span>
+
+            <div
+              v-if="item.modalidade === 'FOLLOW_LINE' && (item.extraTakeAvailable || item.manualDecisionAvailable)"
+              class="follow-resolution-actions"
+            >
+              <el-button
+                v-if="item.extraTakeAvailable"
+                size="small"
+                class="edition-action-button"
+                @click="openExtraTake(item)"
+              >
+                Criar Tomada Extra
+              </el-button>
+              <el-button
+                v-if="item.manualDecisionAvailable"
+                size="small"
+                type="warning"
+                plain
+                @click="openManualDecision(item)"
+              >
+                Decisão da organização
+              </el-button>
+            </div>
           </template>
           <router-link
             v-if="item.modalidade === 'SUMO' && item.finalMatchId"
@@ -196,11 +365,96 @@ onMounted(load)
         <el-table-column prop="matchId" label="Partida" width="90" />
       </el-table>
     </article>
+
+    <el-dialog v-model="extraDialog" title="Criar Tomada Extra" width="min(560px, 94vw)">
+      <div v-if="extraTarget" class="follow-resolution-dialog">
+        <div class="follow-resolution-context">
+          <span class="eyebrow">{{ extraTarget.categoryNome }}</span>
+          <strong>Tomada Extra {{ extraTarget.extraTakeNumber }}</strong>
+          <small>
+            Esta chamada é excepcional e não altera o formato oficial de tomadas da categoria.
+          </small>
+        </div>
+        <label>Data e horário
+          <el-date-picker
+            v-model="extraForm.dataHora"
+            type="datetime"
+            value-format="YYYY-MM-DDTHH:mm:ss"
+            format="DD/MM/YYYY HH:mm"
+            style="width:100%"
+          />
+        </label>
+        <label>Pista
+          <el-input v-model="extraForm.pista" maxlength="80" placeholder="Ex.: Pista A" />
+        </label>
+        <label>Ordem geral
+          <el-input-number v-model="extraForm.ordemExecucao" :min="1" style="width:100%" />
+        </label>
+      </div>
+      <template #footer>
+        <el-button @click="extraDialog = false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="extraSaving" @click="saveExtraTake">Criar Tomada Extra</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="manualDialog" title="Decisão da organização" width="min(680px, 94vw)">
+      <div v-if="manualTarget" class="follow-resolution-dialog">
+        <div class="follow-resolution-context">
+          <span class="eyebrow">{{ manualTarget.categoryNome }}</span>
+          <strong>Definir vencedor sem tempo classificável</strong>
+          <small>
+            Os checkpoints abaixo servem apenas como apoio. A escolha é administrativa e exige justificativa.
+          </small>
+        </div>
+
+        <el-radio-group v-model="manualRegistrationId" class="follow-manual-candidates">
+          <el-radio
+            v-for="candidate in manualCandidates"
+            :key="candidate.registration.id"
+            :value="candidate.registration.id"
+            border
+          >
+            <span>{{ candidate.registration.robotNome }} · {{ candidate.registration.teamNome }}</span>
+            <small>{{ candidate.maxCheckpoints }} checkpoint(s) alcançado(s)</small>
+          </el-radio>
+        </el-radio-group>
+
+        <label>Justificativa
+          <el-input
+            v-model="manualReason"
+            type="textarea"
+            :rows="4"
+            maxlength="500"
+            show-word-limit
+            placeholder="Explique o critério utilizado pela organização para definir o vencedor."
+          />
+        </label>
+      </div>
+      <template #footer>
+        <el-button @click="manualDialog = false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="manualSaving" @click="saveManualDecision">
+          Registrar decisão
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 
 <style scoped>
+.follow-resolution-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.follow-manual-result-note { display:grid; gap:3px; margin-top:6px; padding:8px 10px; border-radius:10px; background:#f7f1f4; }
+.follow-manual-result-note small { color:#5f5058; line-height:1.4; }
+.follow-manual-result-note span { color:#8a7880; font-size:10px; }
+.follow-resolution-dialog { display:grid; gap:16px; }
+.follow-resolution-dialog > label { display:grid; gap:7px; color:#3a2b33; font-size:12px; font-weight:800; }
+.follow-resolution-context { display:grid; gap:4px; padding:12px 14px; border:1px solid #eadde3; border-radius:12px; background:#fff8fa; }
+.follow-resolution-context .eyebrow { margin:0; }
+.follow-resolution-context small { color:#7d6d75; line-height:1.45; }
+.follow-manual-candidates { display:grid; gap:8px; }
+.follow-manual-candidates :deep(.el-radio) { width:100%; height:auto; min-height:48px; margin:0; padding:10px 12px; }
+.follow-manual-candidates :deep(.el-radio__label) { display:grid; gap:2px; white-space:normal; }
+.follow-manual-candidates small { color:#87777f; font-size:10px; }
 .results-winners-section { display:grid; gap:12px; }
 .category-winners-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .category-winner-card { display:grid; gap:6px; min-height:180px; padding:16px; border:1px solid #e8dce2; border-radius:15px; background:linear-gradient(145deg,#fff,#fff8fa); box-shadow:0 8px 22px rgba(69,23,45,.04); }
