@@ -47,3 +47,25 @@ export interface RegistrationCancellationRequest {
   resposta?: string
   dataCadastro?: string
 }
+
+
+export type RegistrationStatusChangeType =
+  | 'CRIACAO'
+  | 'APROVACAO'
+  | 'REJEICAO'
+  | 'CANCELAMENTO'
+  | 'DESISTENCIA'
+  | 'REATIVACAO'
+  | 'DESCLASSIFICACAO'
+
+export interface RegistrationStatusHistory {
+  id: number
+  registrationId: number
+  previousStatus?: RegistrationStatus
+  newStatus: RegistrationStatus
+  changeType: RegistrationStatusChangeType
+  actorUserId?: number
+  actorUserNome?: string
+  reason?: string
+  dataCadastro?: string
+}
