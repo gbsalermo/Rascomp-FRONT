@@ -270,7 +270,9 @@ async function toggleUser(user: UserAccount) {
   if (!activate) {
     try {
       await ElMessageBox.confirm(
-        `Desativar a conta de ${user.nome}? O acesso será bloqueado, mas histórico e vínculos serão preservados.`,
+        user.role === 'PARTICIPANTE'
+          ? `Desativar a conta de ${user.nome}? A conta e o competidor vinculado serão desativados juntos; equipe, robôs, inscrições e histórico serão preservados.`
+          : `Desativar a conta de ${user.nome}? O acesso será bloqueado, mas histórico e vínculos serão preservados.`,
         'Desativar usuário',
         { confirmButtonText: 'Desativar', cancelButtonText: 'Cancelar', type: 'warning' }
       )
@@ -282,8 +284,21 @@ async function toggleUser(user: UserAccount) {
   markChanging(user.id, true)
   try {
     const updated = await adminApi.setUserActive(user.id, activate)
-    user.ativo = updated.ativo
-    ElMessage.success(activate ? 'Usuário reativado.' : 'Usuário desativado.')
+    Object.assign(user, updated)
+
+    if (user.role === 'PARTICIPANTE' && !activate && updated.teamWithoutActiveCompetitors) {
+      ElMessage.warning(
+        `Conta e competidor desativados. A equipe ${updated.competitorTeamNome || 'vinculada'} ficou sem competidores ativos. Vincule um novo competidor ou avalie depois a situação da equipe e dos robôs.`
+      )
+    } else if (user.role === 'PARTICIPANTE') {
+      ElMessage.success(
+        activate
+          ? 'Conta PARTICIPANTE e competidor vinculados foram reativados.'
+          : 'Conta PARTICIPANTE e competidor vinculados foram desativados.'
+      )
+    } else {
+      ElMessage.success(activate ? 'Usuário reativado.' : 'Usuário desativado.')
+    }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível alterar a situação do usuário.')
   } finally {
@@ -353,6 +368,14 @@ onMounted(load)
         <el-table-column label="Perfil" width="130">
           <template #default="{ row }">{{ roleLabel(row.role) }}</template>
         </el-table-column>
+        <el-table-column v-if="section === 'PARTICIPANTES'" label="Competidor / Equipe" min-width="190">
+          <template #default="{ row }">
+            <div class="registration-main-cell">
+              <strong>{{ row.competitorNome || 'Sem competidor vinculado' }}</strong>
+              <span>{{ row.competitorTeamNome || 'Sem equipe vinculada' }}</span>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="Último acesso" min-width="160">
           <template #default="{ row }">{{ formatDateTime(row.ultimoLogin) }}</template>
         </el-table-column>
@@ -398,7 +421,8 @@ onMounted(load)
       <strong>Identidades não são convertidas.</strong>
       <p>
         PARTICIPANTE continua PARTICIPANTE. DEV, Gestão e Mídia continuam contas internas.
-        A edição cadastral altera nome, e-mail e telefone, nunca a natureza da conta.
+        Nome, e-mail, telefone e situação ativa da conta PARTICIPANTE são sincronizados com o competidor vinculado.
+        Equipes, robôs, inscrições e histórico não são cancelados automaticamente.
       </p>
     </div>
 
