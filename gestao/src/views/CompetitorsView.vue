@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
 import type { Competitor, Registration, Team } from '../types'
@@ -12,6 +12,7 @@ type Scope = 'COMPETITION' | 'ALL'
 const auth = useAuthStore()
 const competition = useCompetitionStore()
 const route = useRoute()
+const router = useRouter()
 
 const loading = ref(false)
 const changingId = ref<number>()
@@ -104,6 +105,17 @@ async function load() {
   } finally {
     loading.value = false
   }
+}
+
+function manageLinkedAccount(row: Competitor) {
+  if (!auth.isDev || !row.userAccountId) return
+  router.push({
+    path: '/usuarios',
+    query: {
+      section: 'PARTICIPANTES',
+      participantId: row.userAccountId
+    }
+  })
 }
 
 function openDetails(row: Competitor) {
@@ -222,9 +234,14 @@ onMounted(load)
             >
               {{ row.ativo === false ? 'Reativar' : 'Desativar' }}
             </el-button>
-            <el-tag v-else-if="auth.isDev && row.userAccountId" type="info" effect="plain">
-              Gerenciado pela conta
-            </el-tag>
+            <el-button
+              v-else-if="auth.isDev && row.userAccountId"
+              size="small"
+              class="edition-action-button"
+              @click="manageLinkedAccount(row)"
+            >
+              Gerenciar conta
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
