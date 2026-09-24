@@ -3,12 +3,14 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
-import { useCompetitionStore } from '../store'
+import { useAuthStore, useCompetitionStore } from '../store'
 import type { Category, ConfigFollow, FollowAttempt, FollowTakeAbsence, RankingItem, Registration } from '../types'
 import FollowTakeHistory from '../components/FollowTakeHistory.vue'
+import StatusBadge from '../components/StatusBadge.vue'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 const competition = useCompetitionStore()
 const loading = ref(false)
 const ready = ref(false)
@@ -34,6 +36,14 @@ const bestTime = computed(() => ranking.value[0]?.tempoFinalSegundos)
 
 const selectedRegistration = computed(() =>
   approved.value.find((item) => item.id === selectedRegistrationId.value)
+)
+
+const contextCompetition = computed(() =>
+  competition.competitions.find((item) => item.id === competitionId.value)
+)
+
+const competitionContextLabel = computed(() =>
+  auth.isDev ? 'Competição em foco' : 'Competição vigente'
 )
 
 const registeredTakeCount = computed(() => {
@@ -120,6 +130,11 @@ function progressFor(registrationId: number) {
 
 async function initialize() {
   loading.value = true
+  registrations.value = []
+  ranking.value = []
+  history.value = []
+  absences.value = []
+  config.value = undefined
   try {
     const [, cats] = await Promise.all([
       competition.load(),
@@ -131,11 +146,11 @@ async function initialize() {
     const requestedCompetition = queryNumber(route.query.competitionId)
     const requestedCategory = queryNumber(route.query.categoryId)
 
-    competitionId.value = competition.competitions.some((item) => item.id === requestedCompetition)
+    competitionId.value = auth.isDev && competition.competitions.some((item) => item.id === requestedCompetition)
       ? requestedCompetition
       : competition.selectedId || competition.competitions[0]?.id
 
-    if (competitionId.value && competition.selectedId !== competitionId.value) {
+    if (auth.isDev && competitionId.value && competition.selectedId !== competitionId.value) {
       competition.select(competitionId.value)
     }
 
@@ -225,7 +240,7 @@ function openSelectedTake() {
 
 watch(competitionId, async (value) => {
   if (!ready.value) return
-  if (value && competition.selectedId !== value) competition.select(value)
+  if (auth.isDev && value && competition.selectedId !== value) competition.select(value)
 
   if (value) {
     const regs = await adminApi.registrations({ competitionId: value })
@@ -260,8 +275,17 @@ onMounted(initialize)
       <el-button class="brand-button" @click="openTakeDialog">Registrar tomada</el-button>
     </div>
 
-    <article class="filter-bar">
-      <el-select v-model="competitionId" placeholder="Competição" style="width:280px">
+    <article class="follow-context-card">
+      <div>
+        <span class="eyebrow">{{ competitionContextLabel }}</span>
+        <strong>{{ contextCompetition?.nome || 'Nenhuma competição selecionada' }}</strong>
+        <small>{{ auth.isDev ? 'O foco é local ao DEV e não altera a competição vigente da GESTAO.' : 'A operação acompanha a competição vigente definida pelo DEV.' }}</small>
+      </div>
+      <StatusBadge v-if="contextCompetition?.status" :value="contextCompetition.status" />
+    </article>
+
+    <article class="filter-bar follow-filter-bar">
+      <el-select v-if="auth.isDev" v-model="competitionId" placeholder="Competição em foco" style="width:280px">
         <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
       </el-select>
       <el-select v-model="categoryId" placeholder="Categoria" style="width:260px">
@@ -385,6 +409,12 @@ onMounted(initialize)
 
 <style scoped>
 .follow-workspace { gap: 18px; }
+.follow-context-card { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:15px 18px; border:1px solid #eadde3; border-left:4px solid #c31549; border-radius:14px; background:linear-gradient(100deg,#fff7f9,#fff 58%); }
+.follow-context-card > div { display:grid; gap:4px; min-width:0; }
+.follow-context-card .eyebrow { margin:0; line-height:1.2; }
+.follow-context-card strong { color:#34272e; font-size:15px; }
+.follow-context-card small { color:#7e7077; line-height:1.4; }
+.follow-filter-bar { align-items:center; }
 .follow-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .follow-metric-card { display: grid; gap: 4px; min-height: 112px; padding: 17px 18px; border: 1px solid #e8dfe4; border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(66, 24, 45, .04); }
 .follow-metric-card span,.follow-metric-card small { color: #83747c; font-size: 11px; }
@@ -412,5 +442,5 @@ onMounted(initialize)
 .follow-registration-preview b { color: #9f0f3b; font-size: 24px; }
 .follow-registration-preview > small:last-child { grid-column: 3; margin-top: -10px; }
 @media (max-width: 1080px) { .follow-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .follow-config-strip { grid-template-columns: 1fr; } .follow-config-strip > small { grid-column: auto; } }
-@media (max-width: 760px) { .follow-metrics { grid-template-columns: 1fr; } .follow-history-heading { align-items: stretch; flex-direction: column; } .follow-history-search { width: 100%; } .follow-registration-preview { grid-template-columns: auto 1fr; } .follow-registration-preview b,.follow-registration-preview > small:last-child { grid-column: 2; } }
+@media (max-width: 760px) { .follow-context-card { align-items:flex-start; flex-direction:column; } .follow-filter-bar :deep(.el-select) { width:100% !important; } .follow-metrics { grid-template-columns: 1fr; } .follow-history-heading { align-items: stretch; flex-direction: column; } .follow-history-search { width: 100%; } .follow-registration-preview { grid-template-columns: auto 1fr; } .follow-registration-preview b,.follow-registration-preview > small:last-child { grid-column: 2; } }
 </style>
