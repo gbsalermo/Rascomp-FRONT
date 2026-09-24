@@ -31,6 +31,10 @@ let presentationEndsAt = 0
 const registrationId = computed(() => Number(route.params.registrationId))
 const competitionId = computed(() => Number(route.query.competitionId))
 const categoryId = computed(() => Number(route.query.categoryId))
+const requestedTake = computed(() => {
+  const parsed = Number(route.query.tomada)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+})
 
 const attempt = reactive({
   tempoSegundos: 0,
@@ -247,7 +251,10 @@ async function load() {
     attempts.value = contextAttempts
     absences.value = contextAbsences
     ranking.value = rank
-    selectedTake.value = firstIncompleteTake()
+    selectedTake.value = requestedTake.value
+      && requestedTake.value <= followConfig.numeroTomadas
+      ? requestedTake.value
+      : firstIncompleteTake()
     resetAttemptForm()
     resetPresentationTimer()
   } catch (error: any) {
