@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Connection, Cpu, Grid, Tickets, User } from '@element-plus/icons-vue'
+import { Calendar, Connection, Cpu, Grid, Tickets, User } from '@element-plus/icons-vue'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
-import type { Bracket, Category, Registration } from '../types'
+import type { AgendaActivity, Bracket, Category, Registration } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
 const auth = useAuthStore()
@@ -15,6 +15,7 @@ const error = ref('')
 const categories = ref<Category[]>([])
 const registrations = ref<Registration[]>([])
 const brackets = ref<Bracket[]>([])
+const agenda = ref<AgendaActivity[]>([])
 
 const activeCompetition = computed(() => competition.selectedCompetition)
 const focusRegistrations = computed(() => registrations.value)
@@ -47,6 +48,16 @@ const sumoCategories = computed(() =>
 const activeBrackets = computed(() =>
   brackets.value.filter((item) => item.ativo !== false && item.atual !== false)
 )
+const upcomingAgenda = computed(() => {
+  const now = Date.now()
+  return agenda.value
+    .filter((item) => item.dataHora)
+    .filter((item) => !['FINALIZADA', 'CANCELADA', 'AUSENTE'].includes(item.status || ''))
+    .filter((item) => new Date(item.dataHora!).getTime() >= now - 2 * 60 * 60 * 1000)
+    .sort((a, b) => new Date(a.dataHora!).getTime() - new Date(b.dataHora!).getTime())
+    .slice(0, 5)
+})
+
 const recentRegistrations = computed(() =>
   [...focusRegistrations.value]
     .sort(
@@ -87,6 +98,7 @@ function categoryCount(categoryId: number) {
 function clearCompetitionData() {
   registrations.value = []
   brackets.value = []
+  agenda.value = []
 }
 
 async function loadDashboard(forceCompetition = false) {
@@ -109,15 +121,17 @@ async function loadDashboard(forceCompetition = false) {
       return
     }
 
-    const [allCategories, competitionRegistrations, competitionBrackets] = await Promise.all([
+    const [allCategories, competitionRegistrations, competitionBrackets, competitionAgenda] = await Promise.all([
       adminApi.categories(),
       adminApi.registrations({ competitionId }),
-      adminApi.brackets(competitionId)
+      adminApi.brackets(competitionId),
+      adminApi.agenda(competitionId)
     ])
 
     categories.value = allCategories
     registrations.value = competitionRegistrations
     brackets.value = competitionBrackets
+    agenda.value = competitionAgenda
   } catch (err: any) {
     error.value = err?.response?.data?.message || 'Não foi possível carregar o painel.'
     ElMessage.error(error.value)
@@ -215,6 +229,16 @@ watch(
         <b class="dashboard-card-arrow">→</b>
       </router-link>
 
+      <router-link to="/agenda" class="dashboard-stat-card dashboard-stat-link rubro-soft">
+        <span class="dashboard-stat-icon"><el-icon><Calendar /></el-icon></span>
+        <div>
+          <small>Atividades agendadas</small>
+          <strong>{{ agenda.length }}</strong>
+          <span>{{ upcomingAgenda.length }} próxima(s) na programação</span>
+        </div>
+        <b class="dashboard-card-arrow">→</b>
+      </router-link>
+
       <router-link to="/chaves" class="dashboard-stat-card dashboard-stat-link">
         <span class="dashboard-stat-icon"><el-icon><Connection /></el-icon></span>
         <div>
@@ -251,6 +275,7 @@ watch(
         </div>
 
         <div class="dashboard-operation-links">
+          <router-link to="/agenda">Abrir Agenda →</router-link>
           <router-link v-if="followCategories.length" to="/follow-line">Operar Follow Line →</router-link>
           <router-link v-if="sumoCategories.length" to="/sumo">Operar Sumô →</router-link>
           <router-link to="/resultados">Ver resultados →</router-link>
@@ -279,10 +304,31 @@ watch(
       <article class="dashboard-activity-card dashboard-activity-v3">
         <div class="card-heading dashboard-card-heading-v2">
           <div>
-            <span class="eyebrow">Atividade recente</span>
-            <h2>Movimentações da edição</h2>
+            <span class="eyebrow">Operação da edição</span>
+            <h2>Agenda e movimentações</h2>
           </div>
         </div>
+
+        <section class="dashboard-activity-section">
+          <div class="dashboard-activity-section-title">
+            <strong>Próximas atividades</strong>
+            <router-link to="/agenda" class="text-link">Abrir agenda</router-link>
+          </div>
+
+          <div v-if="upcomingAgenda.length" class="activity-list-v2 activity-list-compact">
+            <article v-for="item in upcomingAgenda" :key="`${item.tipo}-${item.sourceId}`" class="activity-item-v2">
+              <span class="activity-dot" :class="item.modalidade === 'FOLLOW_LINE' ? 'activity-aprovada' : 'activity-pendente'" />
+              <div>
+                <strong>{{ item.titulo }}</strong>
+                <small>{{ item.categoryNome }} · {{ formatDateTime(item.dataHora) }} · {{ item.pista || 'pista a definir' }}</small>
+              </div>
+              <el-tag :type="item.modalidade === 'FOLLOW_LINE' ? 'success' : 'danger'" effect="light" size="small">
+                {{ item.modalidade === 'FOLLOW_LINE' ? 'Follow' : 'Sumô' }}
+              </el-tag>
+            </article>
+          </div>
+          <div v-else class="dashboard-empty-state-inline">Nenhuma atividade futura agendada.</div>
+        </section>
 
         <section class="dashboard-activity-section">
           <div class="dashboard-activity-section-title">
