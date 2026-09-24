@@ -23,6 +23,9 @@ export const adminAgendaApi = {
   createFollowSchedule: (payload: Omit<FollowTakeSchedule, 'id'>) =>
     http.post<FollowTakeSchedule>('/api/v1/agenda-follow', payload).then((r) => r.data),
 
+  createExtraFollowSchedule: (payload: Omit<FollowTakeSchedule, 'id'>) =>
+    http.post<FollowTakeSchedule>('/api/v1/agenda-follow/tomada-extra', payload).then((r) => r.data),
+
   updateFollowSchedule: (id: number, payload: FollowTakeSchedule) =>
     http.put<FollowTakeSchedule>(`/api/v1/agenda-follow/${id}`, payload).then((r) => r.data),
 
