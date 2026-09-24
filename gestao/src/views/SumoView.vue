@@ -217,6 +217,12 @@ async function generate() {
   }
 }
 
+function canDisqualify(row: Registration) {
+  const status = competition.selectedCompetition?.status
+  return row.status === 'APROVADA'
+    && !['FINALIZADA', 'CANCELADA'].includes(status || '')
+}
+
 async function disqualifyRegistration(row: Registration) {
   if (row.status !== 'APROVADA') return
 
@@ -414,7 +420,7 @@ onMounted(initialize)
                 @click="openInspection(row)"
               >Inspecionar</el-button>
               <el-button
-                v-if="row.status === 'APROVADA'"
+                v-if="canDisqualify(row)"
                 size="small"
                 type="danger"
                 plain
