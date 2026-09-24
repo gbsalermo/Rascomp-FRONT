@@ -1189,3 +1189,37 @@ MySQL + Flyway V15 + testdata ✅
 3. se houver associação por competição, definir se GESTAO pode habilitar categorias globais já cadastradas na vigente ou se essa ação permanece DEV-only.
 
 Não avançar para BLOCO 3 antes da validação prática e fechamento explícito do BLOCO 2.
+
+
+## BLOCO 2 — correções após bateria manual
+
+Resultados da validação:
+
+- competição/contexto ✅;
+- usuários/permissões ✅;
+- modalidades ✅;
+- inscrições/revisão/cancelamento majoritariamente ✅;
+- permissões MIDIA/PARTICIPANTE ✅;
+- Equipes/Competidores/Robôs apresentaram erro 500 no catálogo contextual;
+- drawer de edições apresentou problemas de responsividade;
+- rejeições precisavam de justificativa auditável;
+- reativação administrativa estava bloqueada por datas mesmo com status INSCRICOES_ABERTAS.
+
+Correções:
+
+- catálogo contextual corrigido no backend com transação;
+- telas limpam dados obsoletos antes de trocar escopo;
+- gerenciador de edições convertido para modal central;
+- motivo de rejeição da inscrição persistido e exibido;
+- histórico de decisões de cancelamento visível;
+- justificativa obrigatória para rejeitar cancelamento;
+- reativação administrativa passa a considerar o status aberto;
+- conta PARTICIPANTE sincroniza dados/ativo com Competitor;
+- aviso quando a equipe fica sem competidores ativos;
+- competidor vinculado é gerenciado pela conta, não pelo catálogo.
+
+D1: categorias continuam globais.
+D2: UserAccount PARTICIPANTE e Competitor sincronizados; Team/Robot preservados.
+D3: categorias DEV-only.
+
+Aguardando checkpoint CI e reteste concentrado antes do fechamento formal do BLOCO 2.
