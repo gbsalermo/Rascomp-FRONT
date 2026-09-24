@@ -358,7 +358,7 @@ onMounted(load)
         </p>
       </div>
       <div class="heading-actions">
-        <el-button v-if="auth.isDev" @click="editionsOpen = true">Gerenciar / trocar edições</el-button>
+        <el-button v-if="auth.isDev" @click="editionsOpen = true">Gerenciar edições</el-button>
         <el-button v-if="activeCompetition && canChangeRegistrationWindow" @click="openRegistrationWindowDialog">
           {{ registrationWindowActionLabel }}
         </el-button>
@@ -489,7 +489,15 @@ onMounted(load)
       <el-button class="brand-button" @click="openCreate">Criar competição</el-button>
     </article>
 
-    <el-drawer v-if="auth.isDev" v-model="editionsOpen" title="Gerenciar edições" size="min(760px, 96vw)" class="competition-editions-drawer">
+    <el-dialog
+      v-if="auth.isDev"
+      v-model="editionsOpen"
+      title="Gerenciar edições"
+      width="min(1100px, 94vw)"
+      class="competition-editions-dialog"
+      align-center
+      destroy-on-close
+    >
       <div class="competition-editions-toolbar">
         <div>
           <span class="eyebrow">Histórico e contexto</span>
@@ -518,7 +526,7 @@ onMounted(load)
           </template>
         </el-table-column>
       </el-table>
-    </el-drawer>
+    </el-dialog>
 
     <el-dialog v-model="dialog" :title="editingId ? 'Editar competição' : 'Nova competição'" width="min(620px, 92vw)">
       <div class="form-grid">
