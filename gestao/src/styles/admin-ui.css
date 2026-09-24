@@ -1290,3 +1290,38 @@
     text-align: left;
   }
 }
+
+
+.registration-status-history {
+  margin-top: 12px;
+  padding-left: 4px;
+}
+
+.registration-status-history-entry {
+  display: grid;
+  gap: 7px;
+}
+
+.registration-status-history-entry > strong {
+  color: #35282f;
+  font-size: .9rem;
+}
+
+.registration-status-history-entry > small {
+  color: #80737a;
+  font-size: .74rem;
+}
+
+.registration-status-history-entry > p {
+  margin: 0;
+  color: #62565d;
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+.registration-status-transition {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
