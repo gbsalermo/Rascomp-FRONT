@@ -1234,3 +1234,19 @@ MySQL + Flyway V16 + testdata ✅
 ```
 
 Resta somente o reteste manual concentrado das correções antes de encerrar o BLOCO 2.
+
+
+## BLOCO 2 — acabamento final pós-reteste
+
+Últimos ajustes aplicados:
+
+- cards de contexto das telas Equipes/Competidores/Robôs/Modalidades receberam espaçamento e hierarquia visual próprios, sem alterar os cards de Partidas/Resultados/Chaves;
+- botões do modal Gerenciar edições receberam destaque rubro;
+- Competidores vinculados mostram ação **Gerenciar conta** para DEV, levando diretamente ao PARTICIPANTE correspondente;
+- detalhe da inscrição passa a consumir `GET /api/v1/inscricoes/{id}/historico-status`;
+- linha do tempo apresenta criação, aprovação, rejeição, cancelamento, desistência, reativação e desclassificação;
+- histórico detalhado é registrado a partir da V17.
+
+Checkpoint: Frontend Checks #164 ✅; Backend Tests #414 ✅ com 161 testes; MySQL/Flyway V17/testdata ✅.
+
+Aguardando somente reteste manual final do BLOCO 2.
