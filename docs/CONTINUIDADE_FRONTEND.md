@@ -29,7 +29,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
 ETAPA 3   ✅ concluída / validada
-ETAPA 4   🚧 EM ANDAMENTO — BLOCO 3 / 3A FOLLOW LINE
+ETAPA 4   🚧 EM ANDAMENTO — BLOCO 3 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -1317,3 +1317,40 @@ Ponto ainda não decidido na 3A:
 - não endurecer essa regra por inferência antes da validação funcional.
 
 A Agenda estrutural do Follow continua reservada à 3C.
+
+
+## BLOCO 3 — implementação completa
+
+Estado:
+
+```text
+3A Follow Line                 ✅ implementado
+3B Sumô                        ✅ implementado
+3C Chaves/Agenda/Resultados    ✅ implementado
+BLOCO 3                        🧪 aguardando validação manual
+```
+
+Frontend consolidado:
+
+- `FollowView.vue`: contexto foco/vigente + agenda das três tomadas;
+- `FollowRunView.vue`: operação da tomada convocada;
+- `SumoView.vue`: inspeção, juízes, chave e desclassificação operacional;
+- `SumoMatchView.vue`: rounds/penalidades/WO/falha/juiz/resolução administrativa;
+- `AgendaView.vue`: visão unificada Follow + Sumô, filtros, edição, filas e convocação;
+- `BracketHistoryView.vue`: chave vigente/históricas com contexto correto;
+- `MatchesView.vue`: detalhe operacional das batalhas;
+- `ResultsView.vue`: vencedores por categoria;
+- `DashboardView.vue`: próximas atividades vindas da Agenda unificada;
+- `ShellLayout.vue`: Agenda em Operação ao vivo, sem Partidas redundante no menu.
+
+Guardas visuais:
+
+- chamadas finalizadas/canceladas são somente leitura;
+- batalha iniciada/finalizada não oferece edição de agenda;
+- inscrição não aprovada/ativa permanece visível na fila, mas sem ação operacional;
+- DEV usa foco local;
+- GESTAO usa vigente.
+
+Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅ com 166 testes; MySQL/Flyway V18/testdata ✅.
+
+Aguardando somente validação manual final do BLOCO 3.
