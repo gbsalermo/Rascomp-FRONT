@@ -164,7 +164,7 @@ O próximo trabalho é o BLOCO 2 — Gestão administrativa, começando pela rev
 
 ## BLOCO 2 — implementação concluída
 
-A gestão administrativa da ETAPA 4 está implementada e aguardando validação final do usuário.
+A gestão administrativa da ETAPA 4 foi concluída e validada pelo usuário em 23/09/2026.
 
 Inclui:
 
@@ -178,4 +178,15 @@ Inclui:
 
 Checkpoint: Frontend Checks #137 ✅; Backend Tests #371 ✅ com 155 testes; MySQL/Flyway V15/testdata ✅.
 
-O BLOCO 3 não deve começar antes da validação manual e decisões finais do BLOCO 2.
+O BLOCO 2 foi encerrado. O próximo checkpoint é o BLOCO 3 — Operação competitiva.
+
+
+### Checkpoint atual
+
+```text
+BLOCO 1 ✅
+BLOCO 2 ✅ CONCLUÍDO / VALIDADO
+BLOCO 3 ⏳ PRÓXIMO / NÃO INICIADO
+```
+
+Último checkpoint: Frontend Checks #170 ✅; Backend Tests #415 ✅; Flyway V17/testdata ✅.
