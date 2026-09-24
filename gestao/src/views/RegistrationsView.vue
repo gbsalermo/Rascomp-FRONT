@@ -6,7 +6,8 @@ import { useAuthStore, useCompetitionStore } from '../store'
 import type {
   Registration,
   RegistrationCancellationRequest,
-  RegistrationStatus
+  RegistrationStatus,
+  RegistrationStatusHistory
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -24,6 +25,8 @@ const status = ref<string>('PENDENTE')
 const search = ref('')
 const detailsOpen = ref(false)
 const selected = ref<Registration>()
+const statusHistory = ref<RegistrationStatusHistory[]>([])
+const statusHistoryLoading = ref(false)
 
 const statusOptions: RegistrationStatus[] = [
   'PENDENTE',
@@ -86,6 +89,19 @@ const counts = computed(() => ({
   rejeitada: rows.value.filter((item) => item.status === 'REJEITADA').length
 }))
 
+function statusHistoryActionLabel(item: RegistrationStatusHistory) {
+  const labels: Record<RegistrationStatusHistory['changeType'], string> = {
+    CRIACAO: 'Inscrição criada',
+    APROVACAO: 'Inscrição aprovada',
+    REJEICAO: 'Inscrição rejeitada',
+    CANCELAMENTO: 'Inscrição cancelada',
+    DESISTENCIA: 'Desistência registrada',
+    REATIVACAO: 'Inscrição reativada',
+    DESCLASSIFICACAO: 'Inscrição desclassificada'
+  }
+  return labels[item.changeType]
+}
+
 function formatDateTime(value?: string) {
   if (!value) return '—'
   const date = new Date(value)
@@ -141,9 +157,19 @@ async function load() {
   }
 }
 
-function openDetails(row: Registration) {
+async function openDetails(row: Registration) {
   selected.value = row
   detailsOpen.value = true
+  statusHistory.value = []
+  statusHistoryLoading.value = true
+
+  try {
+    statusHistory.value = await adminApi.registrationStatusHistory(row.id)
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar o histórico da inscrição.')
+  } finally {
+    statusHistoryLoading.value = false
+  }
 }
 
 function selectStatus(next: string) {
@@ -231,7 +257,7 @@ async function reactivateRegistration(row: Registration) {
 
   try {
     await ElMessageBox.confirm(
-      'A inscrição voltará para PENDENTE e precisará ser analisada novamente. A reativação só é aceita se a janela de inscrições estiver válida.',
+      'A inscrição voltará para PENDENTE e precisará ser analisada novamente. A reativação administrativa exige que a competição esteja com inscrições abertas.',
       `Reativar inscrição · ${row.robotNome}`,
       {
         type: 'info',
@@ -552,6 +578,32 @@ onMounted(loadBase)
             <div><dt>Revisado em</dt><dd>{{ formatDateTime(selected.reviewedAt) }}</dd></div>
             <div v-if="selected.reviewReason"><dt>Motivo da rejeição</dt><dd>{{ selected.reviewReason }}</dd></div>
           </dl>
+        </section>
+
+        <section class="registration-details-section" v-loading="statusHistoryLoading">
+          <h3>Histórico de status</h3>
+          <el-timeline v-if="statusHistory.length" class="registration-status-history">
+            <el-timeline-item
+              v-for="item in statusHistory"
+              :key="item.id"
+              :timestamp="formatDateTime(item.dataCadastro)"
+              placement="top"
+            >
+              <div class="registration-status-history-entry">
+                <strong>{{ statusHistoryActionLabel(item) }}</strong>
+                <div class="registration-status-transition">
+                  <StatusBadge v-if="item.previousStatus" :value="item.previousStatus" />
+                  <span v-if="item.previousStatus">→</span>
+                  <StatusBadge :value="item.newStatus" />
+                </div>
+                <small>{{ item.actorUserNome || 'Sistema' }}</small>
+                <p v-if="item.reason">{{ item.reason }}</p>
+              </div>
+            </el-timeline-item>
+          </el-timeline>
+          <p v-else-if="!statusHistoryLoading" class="muted">
+            Nenhuma transição auditada ainda. A auditoria detalhada passa a ser registrada a partir da V17.
+          </p>
         </section>
 
         <section class="registration-details-section">
