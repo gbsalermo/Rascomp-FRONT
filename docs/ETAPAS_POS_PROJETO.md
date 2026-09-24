@@ -1443,15 +1443,70 @@ As três frentes do BLOCO 3 foram implementadas. O bloco **não está formalment
 ```text
 Frontend Checks #213 ✅
 Backend Tests #493 ✅
-166 testes / 0 falhas / 0 erros / 0 skipped
-MySQL + Flyway V18 + testdata ✅
+169 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V19 + testdata ✅
 ```
 
-V1–V18 são imutáveis. Próxima migration estrutural: **V19+**.
+V1–V19 são imutáveis. Próxima migration estrutural: **V20+**.
 
 ### Decisões deixadas para o fechamento manual
 
 1. **Janela operacional do Follow:** o backend hoje exige inscrição ativa/aprovada e contexto autorizado, mas não força `Competition.status == EM_ANDAMENTO`. Decidir se tentativas/ausências devem ser bloqueadas fora de `EM_ANDAMENTO`.
-2. **Follow sem tentativa classificável:** se todas as tomadas forem encerradas mas nenhum robô possuir tentativa válida/classificável, o resultado continua `PENDENTE`. Decidir se deve existir estado explícito como `SEM_VENCEDOR`.
+2. **Follow sem tentativa classificável — RESOLVIDO:** ao encerrar o programa normal sem nenhuma tentativa classificável, o resultado não escolhe vencedor automaticamente. A organização decide entre criar uma **Tomada Extra** excepcional ou registrar uma **decisão administrativa** escolhendo o robô que chegou mais perto de completar o percurso.
 
 Após a bateria manual final e essas decisões, o BLOCO 3 poderá ser marcado como CONCLUÍDO/VALIDADO.
+
+
+### Decisão 2 do fechamento — Follow sem tentativa classificável — RESOLVIDA
+
+Contrato aprovado em 24/09/2026:
+
+```text
+programa normal encerrado
++
+nenhuma tentativa válida/classificável
+
+→ resultado continua pendente
+→ a organização escolhe UMA saída:
+
+A) Tomada Extra
+   → chamada competitiva real
+   → agenda/horário/pista/fila
+   → número excepcional = numeroTomadas + 1
+   → não altera ConfigFollow.numeroTomadas
+   → aceita tentativas/ausência apenas após autorização explícita
+   → se produzir tentativa classificável, ranking normal define o vencedor
+
+OU
+
+B) Decisão da organização
+   → DEV/GESTAO escolhe uma Registration elegível
+   → checkpoints máximos podem ser exibidos como evidência de apoio
+   → o sistema NÃO escolhe automaticamente por checkpoints
+   → justificativa obrigatória
+   → responsável e data/hora auditados
+   → não inventa tempo classificável
+```
+
+Se uma Tomada Extra já tiver sido aberta, a decisão administrativa só fica disponível após essa chamada ser encerrada/cancelada e continuar sem tentativa classificável.
+
+Implementação:
+
+- V19 cria `follow_manual_results`;
+- `FollowResolutionService` centraliza elegibilidade de Tomada Extra/decisão;
+- `POST /api/v1/agenda-follow/tomada-extra`;
+- `POST /api/v1/resultados-competicao/follow/decisao-organizacao`;
+- Resultados oferece as duas ações quando elegíveis;
+- Follow/console/Agenda reconhecem a Tomada Extra sem alterar o formato oficial da categoria;
+- Resultado manual guarda vencedor, responsável, justificativa e data/hora.
+
+Checkpoint:
+
+```text
+Frontend Checks #224 ✅
+Backend Tests #517 ✅
+169 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V19 + testdata ✅
+```
+
+Resta apenas a decisão 1 do fechamento manual do BLOCO 3: definir se tentativa/ausência de Follow deve ser bloqueada pelo backend quando a Competition não estiver `EM_ANDAMENTO`.
