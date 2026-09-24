@@ -1153,7 +1153,7 @@ GESTAO é perfil de operação ativa da competição e não administra estrutura
 - Sumô já aplica DESCLASSIFICADA automaticamente quando o robô esgota as tentativas de inspeção sem aprovação;
 - demais casos e eventual desclassificação manual serão tratados no BLOCO 3 — Operação competitiva, com motivo, responsável e contexto operacional.
 
-Próxima migration estrutural após V16: V17+.
+Próxima migration estrutural após V17: V18+.
 
 
 ### Checkpoint automatizado pós-correções
@@ -1169,3 +1169,42 @@ MySQL + Flyway V16 + testdata ✅
 ```
 
 O BLOCO 2 aguarda apenas o reteste manual concentrado dos itens corrigidos antes do fechamento formal.
+
+
+---
+
+## Acabamento final do BLOCO 2 — 23/09/2026
+
+Após o segundo reteste manual, foram aplicados os últimos ajustes de UX e auditoria:
+
+- espaçamento do card **Competição em foco/vigente** corrigido especificamente em Equipes, Competidores, Robôs e Modalidades;
+- ações **Usar como foco**, **Definir vigente** e **Editar** do modal Gerenciar edições ganharam destaque rubro;
+- competidor vinculado a UserAccount PARTICIPANTE continua sendo gerenciado pela conta, inclusive para DEV;
+- a tela Competidores agora oferece **Gerenciar conta**, abrindo Usuários → Participantes já filtrado na conta vinculada;
+- V17 cria `registration_status_history`;
+- o detalhe da inscrição exibe linha do tempo auditável de:
+  - criação;
+  - aprovação;
+  - rejeição;
+  - cancelamento;
+  - desistência;
+  - reativação;
+  - desclassificação;
+- cada evento guarda status anterior/novo, tipo, responsável quando disponível, motivo e data;
+- cancelamento originado por solicitação do participante propaga o motivo original para a auditoria;
+- desclassificação automática do Sumô por limite de inspeções também gera evento;
+- dados anteriores à V17 não recebem transições históricas inventadas; a auditoria detalhada começa a partir da implantação da V17.
+
+### Checkpoint automatizado
+
+```text
+Frontend Checks #164 ✅
+Typecheck ✅
+Build ✅
+
+Backend Tests #414 ✅
+161 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V17 + testdata ✅
+```
+
+O BLOCO 2 aguarda apenas o reteste manual concentrado desses últimos ajustes para fechamento formal.
