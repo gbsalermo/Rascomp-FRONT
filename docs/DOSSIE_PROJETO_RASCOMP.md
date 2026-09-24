@@ -23,7 +23,7 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
-ETAPA 4                                        🚧 em andamento — BLOCO 2 implementado / aguardando validação
+ETAPA 4                                        🚧 em andamento — BLOCO 2 concluído / BLOCO 3 próximo
 Backend — último checkpoint funcional          135 testes / 0 falhas / 0 erros / 0 skipped
 Frontend Gestão                                typecheck + build ✅
 Banco ativo                                    MySQL
@@ -1191,7 +1191,7 @@ A regra de escopo da competição em foco para DEV x GESTAO ainda não foi alter
 
 ## ETAPA 4 — BLOCO 2 administrativo
 
-Implementação concluída e aguardando validação manual.
+Implementação concluída e validação manual aprovada.
 
 Consolidações:
 
@@ -1210,3 +1210,17 @@ Consolidações:
 Checkpoint: Frontend Checks #137 verde; Backend Tests #371 com 155 testes verdes; MySQL/Flyway V15/testdata verde.
 
 O bloco ainda depende de validação prática e das decisões sobre categorias por competição e efeito da desativação de UserAccount PARTICIPANTE sobre Competitor.
+
+
+## ETAPA 4 — fechamento do BLOCO 2
+
+BLOCO 2 — Gestão administrativa concluído e validado em 23/09/2026.
+
+Checkpoint final:
+
+- Frontend Checks #170 ✅;
+- Backend Tests #415 ✅;
+- 161 testes verdes;
+- MySQL + Flyway V17 + testdata ✅.
+
+Próximo: BLOCO 3 — Operação competitiva, ainda não iniciado.
