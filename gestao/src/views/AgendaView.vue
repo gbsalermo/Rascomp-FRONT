@@ -269,8 +269,21 @@ async function updateCallOrder(entry: FollowTakeScheduleEntry) {
   }
 }
 
-function operateTake(entry: FollowTakeScheduleEntry) {
+async function operateTake(entry: FollowTakeScheduleEntry) {
   if (!queueSchedule.value) return
+
+  if (!['EM_APRESENTACAO', 'EM_EXECUCAO'].includes(entry.status)) {
+    try {
+      const updated = await adminApi.updateFollowCall(entry.id, {
+        ordemConvocacao: entry.ordemConvocacao,
+        status: 'EM_APRESENTACAO'
+      })
+      Object.assign(entry, updated)
+    } catch (error: any) {
+      return ElMessage.error(error?.response?.data?.message || 'Não foi possível iniciar a apresentação.')
+    }
+  }
+
   queueDialog.value = false
   router.push({
     name: 'follow-run',
