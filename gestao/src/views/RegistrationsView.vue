@@ -263,6 +263,36 @@ async function cancelRegistration(row: Registration) {
   }
 }
 
+async function disqualifyRegistration(row: Registration) {
+  if (row.status !== 'APROVADA') return
+
+  try {
+    const result = await ElMessageBox.prompt(
+      'Informe o motivo da desclassificação. A inscrição permanecerá no histórico e a decisão será auditada.',
+      `Desclassificar · ${row.robotNome}`,
+      {
+        inputType: 'textarea',
+        inputPlaceholder: 'Motivo da desclassificação',
+        inputValidator: (value) => value?.trim() ? true : 'Informe o motivo da desclassificação.',
+        confirmButtonText: 'Desclassificar',
+        cancelButtonText: 'Cancelar',
+        type: 'warning'
+      }
+    )
+
+    registrationActionId.value = row.id
+    await adminApi.disqualifyRegistration(row.id, result.value.trim())
+    ElMessage.success('Inscrição desclassificada e decisão registrada no histórico.')
+    detailsOpen.value = false
+    await load()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível desclassificar a inscrição.')
+  } finally {
+    registrationActionId.value = undefined
+  }
+}
+
 async function reactivateRegistration(row: Registration) {
   if (!['CANCELADA', 'REJEITADA'].includes(row.status)) return
 
@@ -515,7 +545,7 @@ onMounted(loadBase)
         <el-table-column label="Status" width="145">
           <template #default="{ row }"><StatusBadge :value="row.status" /></template>
         </el-table-column>
-        <el-table-column label="Ações" width="330" fixed="right">
+        <el-table-column label="Ações" width="420" fixed="right">
           <template #default="{ row }">
             <div class="registration-actions">
               <el-button size="small" @click="openDetails(row)">Detalhes</el-button>
@@ -523,6 +553,14 @@ onMounted(loadBase)
                 <el-button size="small" type="success" plain :loading="reviewingId === row.id" @click="review(row, 'APROVADA')">Aprovar</el-button>
                 <el-button size="small" type="danger" plain :loading="reviewingId === row.id" @click="review(row, 'REJEITADA')">Rejeitar</el-button>
               </template>
+              <el-button
+                v-if="row.status === 'APROVADA'"
+                size="small"
+                type="warning"
+                plain
+                :loading="registrationActionId === row.id"
+                @click="disqualifyRegistration(row)"
+              >Desclassificar</el-button>
               <el-button
                 v-if="['PENDENTE', 'APROVADA'].includes(row.status)"
                 size="small"
@@ -655,6 +693,13 @@ onMounted(loadBase)
             <el-button type="danger" plain :loading="reviewingId === selected.id" @click="review(selected, 'REJEITADA')">Rejeitar</el-button>
             <el-button type="success" :loading="reviewingId === selected.id" @click="review(selected, 'APROVADA')">Aprovar inscrição</el-button>
           </template>
+          <el-button
+            v-if="selected.status === 'APROVADA'"
+            type="warning"
+            plain
+            :loading="registrationActionId === selected.id"
+            @click="disqualifyRegistration(selected)"
+          >Desclassificar</el-button>
           <el-button
             v-if="['PENDENTE', 'APROVADA'].includes(selected.status)"
             type="danger"
