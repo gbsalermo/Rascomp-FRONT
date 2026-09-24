@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 em andamento
+ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 implementado / aguardando validação
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 e BLOCO 2 concluídos e validados; BLOCO 3 — Operação competitiva iniciado em 23/09/2026, começando pela 3A — Follow Line. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 e BLOCO 2 concluídos e validados; BLOCO 3 — Operação competitiva com 3A/3B/3C implementados e aguardando validação manual final. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -622,7 +622,7 @@ Execução aprovada:
 ```text
 BLOCO 1 — Baseline + autenticação + Shell + UX global          ✅ CONCLUÍDO
 BLOCO 2 — Gestão administrativa                               ✅ CONCLUÍDO / VALIDADO
-BLOCO 3 — Operação competitiva                                🚧 EM ANDAMENTO — 3A FOLLOW LINE
+BLOCO 3 — Operação competitiva                                🧪 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
 BLOCO 4 — Portal do Participante                              ⏳
 BLOCO 5 — Landing/Galeria atuais                              ⏳
 BLOCO 6 — Regressão integrada + documentação                  ⏳
@@ -1357,3 +1357,101 @@ Após 3A e 3B:
 ### Regra de execução
 
 Não antecipar a Agenda na 3A/3B. Cada frente deve ser validada antes do fechamento do BLOCO 3.
+
+
+---
+
+## Implementação completa do BLOCO 3 — 24/09/2026
+
+As três frentes do BLOCO 3 foram implementadas. O bloco **não está formalmente encerrado** até a validação manual do usuário.
+
+### 3A — Follow Line ✅ implementado
+
+- contexto DEV = foco local / GESTAO = competição vigente;
+- `CompetitionContextService` aplicado a tentativas, ausências e ranking administrativo;
+- operação 3 tomadas × 3 tentativas preservada;
+- cronômetro, penalidade, checkpoints e estados válidos preservados;
+- ausência por convocação continua sem criar tentativas fictícias;
+- histórico/auditoria preservados;
+- chamada geral da tomada integrada à operação quando existe Agenda;
+- operação aberta pela fila respeita a tomada convocada;
+- fila é atualizada automaticamente para execução/conclusão/ausência;
+- resultados do Follow só declaram vencedor quando o programa de todos os participantes ativos/aprovados está encerrado;
+- ranking parcial continua visível durante a prova.
+
+### 3B — Sumô ✅ implementado
+
+- inspeção humana APTO/INAPTO;
+- tentativa máxima de inspeção com desclassificação automática auditada;
+- desclassificação manual com motivo obrigatório e auditoria;
+- ação de desclassificação disponível também no console do Sumô;
+- juízes por competição;
+- rounds regulares;
+- penalidades;
+- SUICIDIO/WO;
+- falha de inicialização justificada;
+- rounds extras justificados;
+- decisão final de juiz;
+- resolução administrativa de partida quando exatamente um participante fica DESCLASSIFICADO/DESISTENTE;
+- nenhuma resolução administrativa cria round fictício;
+- contexto DEV/GESTAO protegido no backend;
+- partida encerrada passa a aparecer como FINALIZADA na Agenda.
+
+### 3C — Chaves / Agenda / Resultados ✅ implementado
+
+- chave vigente e histórico;
+- geração/regeneração preservando as regras já aprovadas;
+- BYE;
+- progressão;
+- correção protegida;
+- Agenda unificada em **Operação ao vivo → Agenda**;
+- V18 cria `follow_take_schedules` e `follow_take_schedule_entries`;
+- Follow agenda uma chamada geral por categoria/tomada;
+- fila individual de inscrições por chamada;
+- convocação individual;
+- horário, pista e ordem operacional;
+- Sumô reutiliza `Match.dataHora/pista/ordemExecucao/statusConvocacao`;
+- rodadas futuras `AGUARDANDO_PARTICIPANTES` não aparecem como atividade real da Agenda;
+- chamadas Follow encerradas são somente leitura;
+- fila preserva registros indisponíveis para histórico, mas não permite operá-los;
+- Dashboard consome a Agenda unificada;
+- Resultados consolida vencedores por categoria;
+- Follow não declara campeão enquanto existirem tomadas abertas;
+- Sumô usa o vencedor da final da chave atual;
+- Partidas permanece como detalhe operacional das chaves e não como item principal do Dashboard/sidebar.
+
+### Testes integrados adicionados/expandidos
+
+`CompetitionOperationFlowTest` cobre:
+
+- criação de chamada Follow;
+- fila automática;
+- bloqueio de conclusão manual da convocação;
+- conclusão da tomada sincronizando fila/chamada;
+- ausência sincronizando fila/chamada sem tentativa fictícia;
+- ranking parcial sem declarar campeão;
+- campeão Follow somente após programa completo;
+- Agenda Sumô ocultando rodada futura sem participantes;
+- agenda de batalha;
+- desclassificação auditada;
+- resolução administrativa sem round fictício;
+- Agenda refletindo batalha FINALIZADA;
+- vencedor de Sumô refletido em Resultados.
+
+### Checkpoint automatizado
+
+```text
+Frontend Checks #213 ✅
+Backend Tests #493 ✅
+166 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V18 + testdata ✅
+```
+
+V1–V18 são imutáveis. Próxima migration estrutural: **V19+**.
+
+### Decisões deixadas para o fechamento manual
+
+1. **Janela operacional do Follow:** o backend hoje exige inscrição ativa/aprovada e contexto autorizado, mas não força `Competition.status == EM_ANDAMENTO`. Decidir se tentativas/ausências devem ser bloqueadas fora de `EM_ANDAMENTO`.
+2. **Follow sem tentativa classificável:** se todas as tomadas forem encerradas mas nenhum robô possuir tentativa válida/classificável, o resultado continua `PENDENTE`. Decidir se deve existir estado explícito como `SEM_VENCEDOR`.
+
+Após a bateria manual final e essas decisões, o BLOCO 3 poderá ser marcado como CONCLUÍDO/VALIDADO.
