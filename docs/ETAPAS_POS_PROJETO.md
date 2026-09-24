@@ -1073,37 +1073,15 @@ Backend Tests #371 ✅
 MySQL + Flyway V15 + testdata ✅
 ```
 
-### Decisões pendentes para fechar o BLOCO 2
+### Decisões de produto do BLOCO 2 — RESOLVIDAS
 
-**D1 — Categoria/Modalidade por competição**
+D1, D2 e D3 foram decididas na validação de 23/09/2026:
 
-O domínio atual mantém `CompetitionCategory` como catálogo global. Não existe relação explícita `Competition ↔ Category`. Assim, a interface "Categorias em uso" deriva as categorias das inscrições existentes.
+- **D1:** `CompetitionCategory` permanece catálogo global; não criar `Competition ↔ Category`;
+- **D2:** UserAccount PARTICIPANTE e Competitor vinculado sincronizam identidade e ativo/inativo; Team/Robot/Registration são preservados e a ausência de competidores ativos gera aviso ao DEV;
+- **D3:** administração do catálogo de categorias permanece DEV-only.
 
-Decidir entre:
-
-- manter catálogo global e considerar "em uso" somente o que aparece em Registration; ou
-- criar habilitação explícita de categorias por competição, permitindo preparar a edição antes de receber inscrições.
-
-Se for escolhida associação explícita, exige desenho estrutural e migration V16+.
-
-**D2 — Desativação da conta PARTICIPANTE x Competitor**
-
-Implementação atual mantém separação de identidade:
-
-- desativar UserAccount PARTICIPANTE bloqueia login e invalida sessão;
-- não desativa automaticamente o Competitor;
-- não altera equipe, inscrição ou histórico competitivo.
-
-Decidir se essa separação deve permanecer ou se a desativação da conta deve provocar algum efeito automático no Competitor.
-
-**D3 — Quem pode configurar categorias da edição, caso D1 escolha associação explícita**
-
-Mutações estruturais do catálogo global são DEV-only. Se existir habilitação `Competition ↔ Category`, decidir se:
-
-- apenas DEV habilita/desabilita categorias por edição; ou
-- GESTAO pode habilitar categorias globais já cadastradas na competição vigente, sem editar o catálogo estrutural.
-
-O BLOCO 2 só será marcado como concluído após a bateria manual e essas decisões.
+Os detalhes e consequências estão registrados no checkpoint de reteste abaixo.
 
 
 ---
@@ -1176,3 +1154,18 @@ GESTAO é perfil de operação ativa da competição e não administra estrutura
 - demais casos e eventual desclassificação manual serão tratados no BLOCO 3 — Operação competitiva, com motivo, responsável e contexto operacional.
 
 Próxima migration estrutural após V16: V17+.
+
+
+### Checkpoint automatizado pós-correções
+
+```text
+Frontend Checks #149 ✅
+Typecheck ✅
+Build ✅
+
+Backend Tests #388 ✅
+161 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V16 + testdata ✅
+```
+
+O BLOCO 2 aguarda apenas o reteste manual concentrado dos itens corrigidos antes do fechamento formal.
