@@ -1223,3 +1223,14 @@ D2: UserAccount PARTICIPANTE e Competitor sincronizados; Team/Robot preservados.
 D3: categorias DEV-only.
 
 Aguardando checkpoint CI e reteste concentrado antes do fechamento formal do BLOCO 2.
+
+
+### Checkpoint pós-correções da bateria manual
+
+```text
+Frontend Checks #149 ✅
+Backend Tests #388 ✅ — 161 testes / 0 falhas / 0 erros / 0 skipped
+MySQL + Flyway V16 + testdata ✅
+```
+
+Resta somente o reteste manual concentrado das correções antes de encerrar o BLOCO 2.
