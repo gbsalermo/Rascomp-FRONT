@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
@@ -18,6 +18,7 @@ import StatusBadge from '../components/StatusBadge.vue'
 
 const auth = useAuthStore()
 const competition = useCompetitionStore()
+const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
@@ -73,6 +74,12 @@ const filteredActivities = computed(() =>
     return true
   })
 )
+
+function queryNumber(value: unknown) {
+  const raw = Array.isArray(value) ? value[0] : value
+  const parsed = Number(raw)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
 
 function formatDateTime(value?: string) {
   if (!value) return 'Não agendada'
@@ -331,7 +338,23 @@ async function initialize() {
   try {
     const [, cats] = await Promise.all([competition.load(), adminApi.categories()])
     categories.value = cats.filter((item) => item.ativo !== false)
-    competitionId.value = competition.selectedId || competition.competitions[0]?.id
+    const requestedCompetition = queryNumber(route.query.competitionId)
+    const requestedCategory = queryNumber(route.query.categoryId)
+
+    competitionId.value = auth.isDev
+      && requestedCompetition
+      && competition.competitions.some((item) => item.id === requestedCompetition)
+      ? requestedCompetition
+      : competition.selectedId || competition.competitions[0]?.id
+
+    if (requestedCategory && categories.value.some((item) => item.id === requestedCategory)) {
+      categoryFilter.value = requestedCategory
+    }
+
+    if (auth.isDev && competitionId.value && competition.selectedId !== competitionId.value) {
+      competition.select(competitionId.value)
+    }
+
     await loadAgenda()
   } finally {
     loading.value = false
