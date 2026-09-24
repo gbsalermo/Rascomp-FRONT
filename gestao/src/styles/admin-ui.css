@@ -1330,3 +1330,30 @@
   flex-wrap: wrap;
   gap: 7px;
 }
+
+
+.registration-cancellation-audit-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.registration-cancellation-audit-item {
+  padding: 12px 14px;
+  border: 1px solid #eadde3;
+  border-radius: 12px;
+  background: #fffafb;
+}
+
+.registration-cancellation-audit-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.registration-cancellation-audit-heading > strong {
+  color: #3c2b33;
+  font-size: .88rem;
+}
