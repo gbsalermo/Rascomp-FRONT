@@ -217,6 +217,32 @@ async function generate() {
   }
 }
 
+async function disqualifyRegistration(row: Registration) {
+  if (row.status !== 'APROVADA') return
+
+  try {
+    const { value } = await ElMessageBox.prompt(
+      'Informe o motivo da desclassificação. A decisão será auditada e, se o robô já estiver comprometido em uma partida, a chave será preservada para resolução administrativa.',
+      `Desclassificar · ${row.robotNome}`,
+      {
+        inputType: 'textarea',
+        inputPlaceholder: 'Motivo da desclassificação',
+        inputValidator: (value) => value?.trim() ? true : 'Informe o motivo da desclassificação.',
+        confirmButtonText: 'Desclassificar',
+        cancelButtonText: 'Cancelar',
+        type: 'warning'
+      }
+    )
+
+    await adminApi.disqualifyRegistration(row.id, value.trim())
+    ElMessage.success('Inscrição desclassificada e decisão registrada no histórico.')
+    await loadContext()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível desclassificar a inscrição.')
+  }
+}
+
 function resetInspection() {
   inspection.registrationId = undefined
   inspection.aprovada = undefined
@@ -379,13 +405,23 @@ onMounted(initialize)
             <span v-else>—</span>
           </template>
         </el-table-column>
-        <el-table-column label="Ação" width="125" align="right">
+        <el-table-column label="Ações" width="220" align="right">
           <template #default="{ row }">
-            <el-button
-              v-if="row.status === 'APROVADA' && latestInspection(row.id)?.aprovada !== true"
-              size="small"
-              @click="openInspection(row)"
-            >Inspecionar</el-button>
+            <div class="sumo-registration-actions">
+              <el-button
+                v-if="row.status === 'APROVADA' && latestInspection(row.id)?.aprovada !== true"
+                size="small"
+                @click="openInspection(row)"
+              >Inspecionar</el-button>
+              <el-button
+                v-if="row.status === 'APROVADA'"
+                size="small"
+                type="danger"
+                plain
+                @click="disqualifyRegistration(row)"
+              >Desclassificar</el-button>
+              <span v-if="row.status === 'DESCLASSIFICADA'" class="muted">Fora da competição</span>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -489,6 +525,7 @@ onMounted(initialize)
 </template>
 
 <style scoped>
+.sumo-registration-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:6px; }
 .sumo-context-card { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:15px 18px; border:1px solid #eadde3; border-left:4px solid #c31549; border-radius:14px; background:linear-gradient(100deg,#fff7f9,#fff 58%); }
 .sumo-context-card > div { display:grid; gap:4px; min-width:0; }
 .sumo-context-card .eyebrow { margin:0; }
