@@ -1208,3 +1208,18 @@ MySQL + Flyway V17 + testdata ✅
 ```
 
 O BLOCO 2 aguarda apenas o reteste manual concentrado desses últimos ajustes para fechamento formal.
+
+
+### Ajuste complementar — detalhe da inscrição
+
+A validação manual mostrou que o **Histórico de cancelamentos** aparecia na tela principal, mas não dentro dos Detalhes da própria inscrição.
+
+Correção:
+
+- Detalhes da inscrição agora exibem duas auditorias complementares:
+  1. **Histórico de status** — transições persistidas em `registration_status_history` a partir da V17;
+  2. **Solicitações de cancelamento** — registros de `RegistrationCancellationRequest`, incluindo registros anteriores à V17.
+- não é feito backfill fictício de status;
+- solicitações antigas continuam visíveis no detalhe mesmo quando não possuem evento correspondente na tabela V17.
+
+Checkpoint: Frontend Checks #168 ✅.
