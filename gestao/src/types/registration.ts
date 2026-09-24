@@ -23,6 +23,7 @@ export interface Registration {
   requestedByUserNome?: string
   reviewedByUserNome?: string
   reviewedAt?: string
+  reviewReason?: string
   status: RegistrationStatus
   observacao?: string
   ativo?: boolean
