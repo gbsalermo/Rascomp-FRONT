@@ -213,7 +213,7 @@ onMounted(load)
           <template #default="{ row }">
             <el-button size="small" plain @click="openDetails(row)">Detalhes</el-button>
             <el-button
-              v-if="auth.isDev"
+              v-if="auth.isDev && !row.userAccountId"
               size="small"
               :type="row.ativo === false ? 'success' : 'danger'"
               plain
@@ -222,6 +222,9 @@ onMounted(load)
             >
               {{ row.ativo === false ? 'Reativar' : 'Desativar' }}
             </el-button>
+            <el-tag v-else-if="auth.isDev && row.userAccountId" type="info" effect="plain">
+              Gerenciado pela conta
+            </el-tag>
           </template>
         </el-table-column>
       </el-table>
@@ -231,6 +234,7 @@ onMounted(load)
       <strong>Competidor e robô não possuem vínculo de propriedade direto.</strong>
       <p>
         Os robôs abaixo são exibidos a partir das inscrições em que o competidor participa.
+        Competidores vinculados a uma conta PARTICIPANTE têm nome, contato e situação sincronizados pela gestão de Usuários.
         Transferências entre equipes continuam reservadas ao fluxo administrativo auditável da ETAPA 5.
       </p>
     </div>
