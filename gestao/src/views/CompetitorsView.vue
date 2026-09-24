@@ -182,7 +182,7 @@ onMounted(load)
       </div>
     </div>
 
-    <div v-if="effectiveScope === 'COMPETITION'" class="admin-focus-strip">
+    <div v-if="effectiveScope === 'COMPETITION'" class="admin-focus-strip catalog-focus-strip">
       <div>
         <span class="eyebrow">{{ competitionLabel }}</span>
         <strong>{{ competition.selectedCompetition?.nome || 'Nenhuma competição selecionada' }}</strong>
