@@ -1354,3 +1354,35 @@ Guardas visuais:
 Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅ com 166 testes; MySQL/Flyway V18/testdata ✅.
 
 Aguardando somente validação manual final do BLOCO 3.
+
+
+## BLOCO 3 — resolução excepcional do Follow
+
+Decisão de produto fechada:
+
+Se todas as tomadas oficiais terminarem sem tentativa classificável, a organização pode:
+
+1. criar uma **Tomada Extra**, que entra na Agenda como chamada real e no console operacional; ou
+2. definir o vencedor por **decisão da organização**, escolhendo manualmente uma inscrição elegível e registrando justificativa.
+
+Regras de UX:
+
+- checkpoints máximos aparecem apenas como apoio à decisão;
+- não existe seleção automática do vencedor por checkpoints;
+- resultado manual não exibe tempo fictício;
+- decisão mostra justificativa, responsável e data;
+- Tomada Extra aparece separada do formato oficial `numeroTomadas × tentativasPorTomada`;
+- se a extra for aberta, a decisão manual aguarda seu encerramento/cancelamento.
+
+Arquivos principais alterados:
+
+- `ResultsView.vue`;
+- `FollowView.vue`;
+- `FollowRunView.vue`;
+- `api/admin/results.ts`;
+- `api/admin/agenda.ts`;
+- `types/results.ts`.
+
+Checkpoint: Frontend Checks #224 ✅; Backend Tests #517 ✅ com 169 testes; MySQL/Flyway V19/testdata ✅.
+
+Única decisão de produto ainda aberta no BLOCO 3: bloqueio formal de tentativa/ausência Follow fora de Competition `EM_ANDAMENTO`.
