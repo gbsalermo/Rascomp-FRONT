@@ -55,6 +55,11 @@ const queueDialog = ref(false)
 const queueSchedule = ref<FollowTakeSchedule>()
 const queue = ref<FollowTakeScheduleEntry[]>([])
 
+const queueEditable = computed(() =>
+  Boolean(queueSchedule.value)
+    && !['FINALIZADA', 'CANCELADA'].includes(queueSchedule.value?.status || '')
+)
+
 const followCategories = computed(() =>
   categories.value.filter((item) => item.modalidade === 'FOLLOW_LINE' && item.ativo !== false)
 )
@@ -570,7 +575,7 @@ onMounted(initialize)
         </div>
         <el-button
           :loading="queueLoading"
-          :disabled="['FINALIZADA','CANCELADA'].includes(queueSchedule.status || '')"
+          :disabled="!queueEditable"
           @click="syncQueue"
         >Sincronizar inscrições</el-button>
       </div>
@@ -592,13 +597,13 @@ onMounted(initialize)
         <el-table-column label="Ações" min-width="320" align="right">
           <template #default="{ row }">
             <div class="agenda-actions">
-              <template v-if="queueEntryEligible(row)">
+              <template v-if="queueEditable && queueEntryEligible(row)">
                 <el-button v-if="row.status === 'AGUARDANDO'" link type="primary" @click="updateCall(row, 'CONVOCADA')">Convocar</el-button>
                 <el-button v-if="['AGUARDANDO','CONVOCADA'].includes(row.status)" link @click="updateCall(row, 'EM_APRESENTACAO')">Apresentação</el-button>
                 <el-button v-if="!['AUSENTE','CONCLUIDA'].includes(row.status)" link type="success" @click="operateTake(row)">Operar tomada</el-button>
                 <span v-else class="muted">{{ row.status === 'AUSENTE' ? 'Ausente' : 'Concluída' }}</span>
               </template>
-              <span v-else class="muted">Inscrição indisponível</span>
+              <span v-else class="muted">{{ !queueEditable ? 'Somente leitura' : 'Inscrição indisponível' }}</span>
             </div>
           </template>
         </el-table-column>
