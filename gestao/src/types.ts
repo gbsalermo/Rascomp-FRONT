@@ -27,7 +27,9 @@ export type {
 export type {
   RegistrationStatus,
   CancellationRequestStatus,
+  RegistrationStatusChangeType,
   Registration,
-  RegistrationCancellationRequest
+  RegistrationCancellationRequest,
+  RegistrationStatusHistory
 } from './types/registration'
 export type { Team, Robot, RobotImage, Competitor, CompetitionAdminCatalog } from './types/catalog'
