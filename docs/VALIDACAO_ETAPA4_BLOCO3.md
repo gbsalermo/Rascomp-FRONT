@@ -47,6 +47,25 @@ Este documento registra a bateria manual do BLOCO 3 e evita repetir testes já v
 - Não permitir criação duplicada de chamada para a mesma competição + categoria + tomada.
 - Não permitir tentativa "zerada" gerada apenas pelo clique em registrar.
 
+## 3. Correções já aplicadas após a bateria
+
+- troca de foco DEV no Follow agora reage ao seletor global sem exigir F5/troca de tela;
+- tentativa concluída com tempo zero é bloqueada no frontend e no backend;
+- iniciar o cronômetro da tentativa interrompe o temporizador de espera da chamada;
+- botões rápidos do console Follow foram ampliados;
+- fila da Agenda ganhou largura adequada + proteção para overflow horizontal;
+- fila da Agenda ganhou ação direta **Ausente/recusou**, consumindo a tomada sem tentativa fictícia;
+- nomenclatura de "Apresentação" foi simplificada para **espera após chamada**;
+- criação duplicada de chamada pela Agenda é interceptada também na UI;
+- estados competitivos da chamada (`EM_CHAMADA`, `EM_ANDAMENTO`, `FINALIZADA`) deixam de ser escolhas manuais no formulário comum; ficam derivados do fluxo;
+- data/hora ganhou controle maior e "Ordem geral" foi renomeada para **Ordem na agenda (opcional)**.
+
+Permanecem como decisão/escopo posterior:
+
+- correção/refação excepcional de tentativa: ação DEV auditável, alinhada à ETAPA 5;
+- pódio 1º/2º/3º: Follow pode usar ranking; Sumô ainda precisa de regra explícita para o 3º lugar;
+- janela operacional do Follow fora de `EM_ANDAMENTO`: validar no teste 23.
+
 ## 3. Cenário único de dados para continuar a bateria
 
 O profile `testdata` passa a usar banco próprio:
