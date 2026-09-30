@@ -1386,3 +1386,28 @@ Arquivos principais alterados:
 Checkpoint: Frontend Checks #224 ✅; Backend Tests #517 ✅ com 169 testes; MySQL/Flyway V19/testdata ✅.
 
 Única decisão de produto ainda aberta no BLOCO 3: bloqueio formal de tentativa/ausência Follow fora de Competition `EM_ANDAMENTO`.
+
+
+## Checkpoint manual do BLOCO 3 — 29/09/2026
+
+A validação manual foi registrada em `docs/VALIDACAO_ETAPA4_BLOCO3.md`.
+
+Estado:
+
+- testes 2, 5–9, 12, 13, 15 e 16 validados;
+- testes 1, 3, 4, 10, 11 e 14 encontraram ajustes/bugs de UX ou operação;
+- testes 17–23 não foram concluídos por falta de cenário claro/dados disponíveis;
+- testes 24–56 ainda não executados.
+
+Achados principais:
+
+- troca de foco DEV não atualiza imediatamente a tela;
+- modal da fila corta ações;
+- ausência precisa estar disponível na fila/Agenda;
+- campo de data/hora e botões operacionais estão pequenos;
+- UI oferece tentativa de nova chamada da mesma tomada mesmo com unicidade no backend;
+- cronômetro de apresentação deve parar ao iniciar a operação/presença;
+- clique em registrar tentativa pode criar tentativa zerada sem execução real;
+- resultados precisam evoluir para pódio 1º/2º/3º, com regra ainda a fechar para o 3º lugar do Sumô.
+
+A próxima execução usa um único cenário no banco dedicado `rascomp_b3_validation`.
