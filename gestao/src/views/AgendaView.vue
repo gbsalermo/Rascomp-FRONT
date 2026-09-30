@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
 import type {
@@ -113,7 +113,7 @@ function statusLabel(value?: string) {
     CONVOCADA: 'Convocada',
     PRONTA: 'Pronta',
     AGUARDANDO: 'Aguardando',
-    EM_APRESENTACAO: 'Em apresentação',
+    EM_APRESENTACAO: 'Em espera',
     EM_EXECUCAO: 'Em execução',
     CONCLUIDA: 'Concluída',
     AUSENTE: 'Ausente'
@@ -189,6 +189,16 @@ async function saveFollow() {
       await adminApi.updateFollowSchedule(editingFollow.value.id, payload)
       ElMessage.success('Chamada do Follow atualizada.')
     } else {
+      const existing = await adminApi.followSchedules(competitionId.value)
+      const duplicate = existing.find((item) =>
+        item.categoryId === followForm.categoryId
+          && item.tomada === followForm.tomada
+          && item.ativo !== false
+      )
+      if (duplicate) {
+        return ElMessage.warning('Já existe uma chamada para esta categoria e tomada. Edite a chamada existente na Agenda.')
+      }
+
       const { id: _id, ...createPayload } = payload
       await adminApi.createFollowSchedule(createPayload)
       ElMessage.success('Chamada geral da tomada criada.')
@@ -288,6 +298,39 @@ async function updateCall(entry: FollowTakeScheduleEntry, status: FollowCallStat
     await loadAgenda()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar a convocação.')
+  }
+}
+
+async function markQueueAbsence(entry: FollowTakeScheduleEntry) {
+  if (!queueSchedule.value || !queueEntryEligible(entry)) return
+
+  try {
+    await ElMessageBox.confirm(
+      `Marcar ${entry.robotNome} como ausente/recusou a Tomada ${queueSchedule.value.tomada}? A tomada será consumida sem criar tentativa fictícia.`,
+      'Registrar ausência/recusa',
+      {
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar',
+        type: 'warning'
+      }
+    )
+  } catch {
+    return
+  }
+
+  queueLoading.value = true
+  try {
+    await adminApi.markFollowTakeAbsence({
+      registrationId: entry.registrationId,
+      tomada: queueSchedule.value.tomada,
+      observacao: 'Ausência/recusa registrada diretamente pela fila da Agenda.'
+    })
+    ElMessage.success('Tomada registrada como ausência/recusa.')
+    await Promise.all([loadQueue(), loadAgenda()])
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a ausência/recusa.')
+  } finally {
+    queueLoading.value = false
   }
 }
 
@@ -509,12 +552,12 @@ onMounted(initialize)
           <el-input-number v-model="followForm.tomada" :min="1" :max="3" :disabled="Boolean(editingFollow)" style="width:100%" />
         </label>
         <label class="span-2">Data e horário
-          <el-date-picker v-model="followForm.dataHora" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" format="DD/MM/YYYY HH:mm" style="width:100%" />
+          <el-date-picker v-model="followForm.dataHora" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" format="DD/MM/YYYY HH:mm" size="large" style="width:100%" />
         </label>
         <label>Pista
           <el-input v-model="followForm.pista" maxlength="80" placeholder="Ex.: Pista A" />
         </label>
-        <label>Ordem geral
+        <label>Ordem na agenda (opcional)
           <el-input-number v-model="followForm.ordemExecucao" :min="1" style="width:100%" />
         </label>
         <label class="span-2">Estado da chamada
@@ -542,12 +585,12 @@ onMounted(initialize)
           <small>Rodada {{ editingMatch.rodada }} · posição {{ editingMatch.ordem }}</small>
         </div>
         <label class="span-2">Data e horário
-          <el-date-picker v-model="matchForm.dataHora" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" format="DD/MM/YYYY HH:mm" style="width:100%" />
+          <el-date-picker v-model="matchForm.dataHora" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" format="DD/MM/YYYY HH:mm" size="large" style="width:100%" />
         </label>
         <label>Pista / Dohyo
           <el-input v-model="matchForm.pista" maxlength="80" />
         </label>
-        <label>Ordem geral
+        <label>Ordem na agenda (opcional)
           <el-input-number v-model="matchForm.ordemExecucao" :min="1" style="width:100%" />
         </label>
         <label class="span-2">Convocação
@@ -566,7 +609,7 @@ onMounted(initialize)
       </template>
     </el-dialog>
 
-    <el-dialog v-model="queueDialog" title="Fila da tomada" width="min(860px, 96vw)">
+    <el-dialog v-model="queueDialog" title="Fila da tomada" width="min(1180px, 98vw)">
       <div v-if="queueSchedule" class="agenda-queue-head">
         <div>
           <span class="eyebrow">{{ queueSchedule.categoryNome }}</span>
@@ -580,7 +623,8 @@ onMounted(initialize)
         >Sincronizar inscrições</el-button>
       </div>
 
-      <el-table v-loading="queueLoading" :data="queue" empty-text="Fila vazia">
+      <div class="agenda-queue-table-wrap">
+      <el-table v-loading="queueLoading" :data="queue" empty-text="Fila vazia" class="agenda-queue-table">
         <el-table-column label="#" width="90">
           <template #default="{ row }">
             <el-input-number v-model="row.ordemConvocacao" :min="1" size="small" controls-position="right" @change="updateCallOrder(row)" />
@@ -599,7 +643,8 @@ onMounted(initialize)
             <div class="agenda-actions">
               <template v-if="queueEditable && queueEntryEligible(row)">
                 <el-button v-if="row.status === 'AGUARDANDO'" link type="primary" @click="updateCall(row, 'CONVOCADA')">Convocar</el-button>
-                <el-button v-if="['AGUARDANDO','CONVOCADA'].includes(row.status)" link @click="updateCall(row, 'EM_APRESENTACAO')">Apresentação</el-button>
+                <el-button v-if="['AGUARDANDO','CONVOCADA'].includes(row.status)" link @click="updateCall(row, 'EM_APRESENTACAO')">Iniciar espera</el-button>
+                <el-button v-if="!['AUSENTE','CONCLUIDA'].includes(row.status)" link type="danger" @click="markQueueAbsence(row)">Ausente/recusou</el-button>
                 <el-button v-if="!['AUSENTE','CONCLUIDA'].includes(row.status)" link type="success" @click="operateTake(row)">Operar tomada</el-button>
                 <span v-else class="muted">{{ row.status === 'AUSENTE' ? 'Ausente' : 'Concluída' }}</span>
               </template>
@@ -608,6 +653,7 @@ onMounted(initialize)
           </template>
         </el-table-column>
       </el-table>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -631,6 +677,8 @@ onMounted(initialize)
 .agenda-queue-head { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; }
 .agenda-queue-head > div { display:grid; gap:3px; }
 .agenda-queue-head small { color:#7e7077; }
+.agenda-queue-table-wrap { width:100%; overflow-x:auto; }
+.agenda-queue-table { min-width:1040px; }
 @media (max-width:760px) {
   .agenda-context-card,.agenda-queue-head { align-items:flex-start; flex-direction:column; }
   .agenda-filter-bar :deep(.el-select),.agenda-filter-bar :deep(.el-input) { width:100% !important; }
