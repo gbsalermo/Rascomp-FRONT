@@ -756,3 +756,11 @@ A otimização dessas interfaces foi registrada como **checkpoint transversal da
 Ela começa a ser trabalhada conforme as telas forem revisadas na ETAPA 4, continua junto do Portal (ETAPA 7), CMS (ETAPA 8) e Landing/Galeria (ETAPA 9), e precisa estar concluída antes do fechamento do MVP na ETAPA 10.
 
 Os testes físicos em aparelhos reais continuam previstos na ETAPA 14 como hardening final.
+
+
+## Decisões de roadmap registradas — 29/09/2026
+
+- ETAPA 5: prever inclusão manual excepcional de robôs/competidores por DEV e operação auditável para encerrar/cancelar uma chave e gerar outra quando necessário.
+- ETAPA 6: Futebol de Robôs terá cronômetro operacional com referência de 2 minutos e placar por gols, integrados ao resultado oficial.
+- Pós-produção: avaliar Follow Pro/Júnior; até confirmação da competição, Follow permanece categoria única.
+- Estas decisões devem permanecer sincronizadas com o roadmap canônico, contrato competitivo e documentação do backend.
