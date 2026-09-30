@@ -175,6 +175,8 @@ function resetAttemptTimer() {
 
 function startAttemptTimer() {
   if (attemptRunning.value || !nextAttemptNumber.value) return
+  clearPresentationTimer()
+  presentationStarted.value = false
   attemptStartedAt = Date.now() - attemptElapsedMs.value
   attemptRunning.value = true
   attemptTimer = setInterval(() => {
@@ -316,6 +318,10 @@ async function saveAttempt() {
 
   if (attemptRunning.value) stopAttemptTimer()
 
+  if (attempt.concluida && (!Number.isFinite(attempt.tempoSegundos) || attempt.tempoSegundos <= 0)) {
+    return ElMessage.warning('Inicie o cronômetro ou informe um tempo maior que zero antes de registrar a tentativa.')
+  }
+
   saving.value = true
   try {
     const concluida = attempt.concluida
@@ -344,7 +350,7 @@ async function markTakeAbsence() {
 
   try {
     await ElMessageBox.confirm(
-      `O tempo de apresentação da tomada ${selectedTake.value} terminou. Marcar ${registration.value.robotNome} como ausente nesta tomada?`,
+      `O tempo de espera após chamada da tomada ${selectedTake.value} terminou. Marcar ${registration.value.robotNome} como ausente nesta tomada?`,
       'Perder tomada por ausência',
       { confirmButtonText: 'Marcar ausência', cancelButtonText: 'Cancelar', type: 'warning' }
     )
@@ -460,7 +466,7 @@ onBeforeUnmount(() => {
 
         <div v-if="selectedAbsence" class="follow-absence-card">
           <strong>Tomada perdida por ausência</strong>
-          <span>{{ selectedAbsence.observacao || 'Participante não compareceu dentro do tempo de apresentação.' }}</span>
+          <span>{{ selectedAbsence.observacao || 'Participante não compareceu dentro do tempo de espera após chamada.' }}</span>
           <small>Registrado por {{ selectedAbsence.registradoPorNome || 'Organização' }} · {{ formatDate(selectedAbsence.dataCadastro) }}</small>
         </div>
         <div v-else-if="takeAttempts.length" class="follow-attempt-list">
@@ -500,7 +506,7 @@ onBeforeUnmount(() => {
         <template v-else-if="nextAttemptNumber">
           <div v-if="takeAttempts.length === 0" class="follow-presentation-card">
             <div>
-              <span>Apresentação</span>
+              <span>Espera após chamada</span>
               <strong>{{ presentationRemaining }} s</strong>
               <small>Limite configurado: {{ config.tempoApresentacaoSegundos }} s</small>
             </div>
@@ -533,9 +539,9 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="follow-quick-actions">
-            <el-button size="small" @click="applyDidNotStopPenalty">Não parou (+{{ config.penalidadePadraoSegundos }} s)</el-button>
-            <el-button size="small" @click="attempt.valida = false">Invalidar</el-button>
-            <el-button size="small" @click="markNotCompleted">Não concluiu</el-button>
+            <el-button @click="applyDidNotStopPenalty">Não parou (+{{ config.penalidadePadraoSegundos }} s)</el-button>
+            <el-button @click="attempt.valida = false">Invalidar</el-button>
+            <el-button @click="markNotCompleted">Não concluiu</el-button>
           </div>
 
           <div class="follow-console-flags">
