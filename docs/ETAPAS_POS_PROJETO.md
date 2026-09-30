@@ -179,6 +179,13 @@ Critério de saída:
 - checkpoint prático aprovado.
 
 ## ETAPA 5 — Ajustes Gerais DEV + auditoria
+### Decisões adicionadas — 29/09/2026
+
+- DEV poderá adicionar manualmente robôs/competidores em situações excepcionais de operação, sem transformar a área em CRUD genérico;
+- DEV terá operação explícita para encerrar/cancelar a chave vigente e gerar uma nova quando uma correção estrutural excepcional exigir isso;
+- essas operações devem ser restritas a DEV, exigir motivo e gerar auditoria com responsável, data/hora e antes/depois;
+- a regeneração excepcional não deve apagar silenciosamente histórico competitivo já produzido.
+
 
 **Objetivo:** oferecer manutenção administrativa segura sem criar editor genérico de banco.
 
@@ -204,6 +211,13 @@ Ações críticas devem registrar, quando aplicável:
 Não criar console SQL nem CRUD genérico de tabelas.
 
 ## ETAPA 6 — Futebol de Robôs
+### Operação de partida definida — 29/09/2026
+
+- interface operacional com cronômetro de partida, tomando **2 minutos** como duração padrão/referência da competição e mantendo a duração configurável até confirmação do regulamento;
+- placar por gols para Time A x Time B durante o período da partida;
+- controles de iniciar, pausar e resetar cronômetro, além de ajuste controlado de gols;
+- resultado oficial deve ser persistido no backend e integrado ao histórico/progressão; o cronômetro do frontend é ferramenta operacional, seguindo o princípio já usado no Follow.
+
 
 **Objetivo:** implementar a modalidade competitiva que ainda altera o domínio estrutural.
 
@@ -364,6 +378,11 @@ A ETAPA 14 não cria a experiência mobile; ela apenas faz a validação física
 ---
 
 # 6. PRIORIDADE 2 — Adições, testes e portabilidade
+## Pós-produção — possível subdivisão do Follow
+
+Decisão pendente, fora do MVP atual: avaliar suporte a subcategorias **Follow Pro** e **Follow Júnior**. A modelagem deve seguir o conceito de categoria/subcategoria configurável, semelhante à separação competitiva de modos do Sumô, sem assumir que a divisão existirá em toda edição. Enquanto não houver confirmação da competição, **Follow permanece categoria única** e nenhuma regra atual deve depender de Pro/Júnior.
+
+
 
 ## ETAPA 11 — Avisos IN_APP + integração Telegram
 
