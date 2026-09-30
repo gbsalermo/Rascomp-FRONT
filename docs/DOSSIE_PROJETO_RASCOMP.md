@@ -1136,3 +1136,8 @@ ETAPA 14
 ```
 
 No checkpoint atual, apenas o login recebeu tratamento responsivo dedicado e validação visual específica.
+
+
+## Decisões competitivas futuras — 29/09/2026
+
+O planejamento passa a registrar: ferramentas DEV auditáveis para inclusão manual excepcional de robôs/competidores e fechamento/cancelamento de chave com geração de nova chave (ETAPA 5); cronômetro operacional de Futebol de Robôs com 2 minutos como referência atual/configurável e placar por gols integrado ao resultado oficial (ETAPA 6); e possível divisão Follow Pro/Júnior somente em pós-produção, pendente de confirmação da competição, mantendo Follow como categoria única no MVP.
