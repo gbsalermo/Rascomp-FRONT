@@ -51,6 +51,14 @@ Exemplos de adaptações próprias já aprovadas:
 ---
 
 # 2. Categorias competitivas
+## Decisões futuras registradas — 29/09/2026
+
+- **Follow Pro/Júnior:** possibilidade de subcategorias apenas para pós-produção e condicionada à confirmação da competição. Até lá, Follow é categoria única.
+- **Futebol de Robôs:** partida terá placar por gols e cronômetro operacional; 2 minutos é a referência atual de duração, mas deve permanecer configurável até confirmação do regulamento da edição.
+- **Correção estrutural excepcional de chave:** futura ferramenta DEV poderá encerrar/cancelar a chave vigente e gerar outra, sempre de forma explícita e auditável, sem apagar silenciosamente histórico já produzido.
+- **Inclusão manual excepcional:** futura ferramenta DEV poderá adicionar robôs/competidores manualmente quando a operação do evento exigir correção administrativa, com motivo e auditoria.
+
+
 
 ## 2.1 Modalidades técnicas do backend
 
