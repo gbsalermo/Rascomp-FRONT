@@ -638,7 +638,7 @@ onMounted(initialize)
         <el-table-column label="Situação" width="145">
           <template #default="{ row }"><span>{{ statusLabel(row.status) }}</span></template>
         </el-table-column>
-        <el-table-column label="Ações" min-width="320" align="right">
+        <el-table-column label="Ações" min-width="400" align="right">
           <template #default="{ row }">
             <div class="agenda-actions">
               <template v-if="queueEditable && queueEntryEligible(row)">
