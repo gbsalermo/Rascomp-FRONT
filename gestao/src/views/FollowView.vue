@@ -394,6 +394,11 @@ watch(categoryId, async () => {
   await loadContext()
 })
 
+watch(() => competition.selectedId, async (value) => {
+  if (!ready.value || !auth.isDev || !value || value === competitionId.value) return
+  competitionId.value = value
+})
+
 onMounted(initialize)
 </script>
 
@@ -461,7 +466,7 @@ onMounted(initialize)
         <span><b>{{ config.tentativasPorTomada }}</b> tentativas por tomada</span>
         <span><b>{{ config.numeroCheckpoints }}</b> checkpoints</span>
         <span><b>+{{ config.penalidadePadraoSegundos }} s</b> penalidade sugerida</span>
-        <span><b>{{ config.tempoApresentacaoSegundos }} s</b> apresentação</span>
+        <span><b>{{ config.tempoApresentacaoSegundos }} s</b> espera após chamada</span>
       </div>
       <small>Checkpoints permanecem informativos. O ranking usa apenas tentativas válidas, concluídas e com tempo; uma tomada perdida por ausência não cria tentativas fictícias.</small>
     </article>
@@ -551,23 +556,23 @@ onMounted(initialize)
             type="datetime"
             value-format="YYYY-MM-DDTHH:mm:ss"
             format="DD/MM/YYYY HH:mm"
+            size="large"
             style="width:100%"
           />
         </label>
         <label>Pista
           <el-input v-model="scheduleForm.pista" maxlength="80" placeholder="Ex.: Pista A" />
         </label>
-        <label>Ordem geral
+        <label>Ordem na agenda (opcional)
           <el-input-number v-model="scheduleForm.ordemExecucao" :min="1" style="width:100%" />
         </label>
-        <label class="span-2">Estado
+        <label class="span-2">Estado administrativo
           <el-select v-model="scheduleForm.status" style="width:100%">
             <el-option label="Agendada" value="AGENDADA" />
-            <el-option label="Em chamada" value="EM_CHAMADA" />
-            <el-option label="Em andamento" value="EM_ANDAMENTO" />
             <el-option label="Adiada" value="ADIADA" />
             <el-option label="Cancelada" value="CANCELADA" />
           </el-select>
+          <small>Em chamada, em andamento e finalizada são atualizados automaticamente pelo fluxo da fila.</small>
         </label>
       </div>
       <template #footer>
