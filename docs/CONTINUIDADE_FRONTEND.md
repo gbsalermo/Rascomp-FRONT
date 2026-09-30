@@ -1411,3 +1411,15 @@ Achados principais:
 - resultados precisam evoluir para pódio 1º/2º/3º, com regra ainda a fechar para o 3º lugar do Sumô.
 
 A próxima execução usa um único cenário no banco dedicado `rascomp_b3_validation`.
+
+
+### Correções aplicadas após a bateria manual — 29/09/2026
+
+- Follow reage à troca global de foco DEV sem F5;
+- tentativa concluída com tempo zero é bloqueada também no backend;
+- cronômetro de tentativa interrompe a espera da chamada;
+- fila da Agenda ampliada, com overflow seguro e ação direta Ausente/recusou;
+- duplicidade de chamada da mesma tomada é barrada também na UI;
+- formulário de chamada deixa estados competitivos como automáticos;
+- data/hora e ações receberam melhor área de interação;
+- "Apresentação" foi substituída na UX por "espera após chamada".
