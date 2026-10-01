@@ -160,6 +160,25 @@ const availablePersonalRegistrationCompetitions = computed(() => {
   return availableCompetitions.value.filter((item) => !registeredCompetitionIds.has(item.id))
 })
 
+const availableRobotRegistrationCompetitions = computed(() => {
+  const initiatedCompetitionIds = new Set(
+    personalRegistrations.value
+      .filter((item) => ['PENDENTE', 'APROVADA'].includes(item.status))
+      .map((item) => item.competitionId)
+  )
+  return availableCompetitions.value.filter((item) => initiatedCompetitionIds.has(item.id))
+})
+
+const robotRegistrationUnlockMessage = computed(() => {
+  if (!availableCompetitions.value.length) {
+    return 'Não há competição com inscrições abertas neste momento.'
+  }
+  if (!availableRobotRegistrationCompetitions.value.length) {
+    return 'Faça sua inscrição acima para liberar a inscrição dos robôs. Não é necessário esperar a aprovação da Gestão.'
+  }
+  return 'Inscreva um robô em uma categoria e acompanhe a aprovação dele.'
+})
+
 const availableRegistrationCategories = computed(() => {
   if (!registrationForm.competitionId || !registrationForm.robotId) return []
 
@@ -558,8 +577,12 @@ function openRegistrationDialog() {
     ElMessage.info('Não há competição com inscrições abertas neste momento.')
     return
   }
+  if (!availableRobotRegistrationCompetitions.value.length) {
+    ElMessage.info('Faça sua inscrição primeiro. Assim que ela for enviada, mesmo PENDENTE, a inscrição dos robôs será liberada.')
+    return
+  }
 
-  registrationForm.competitionId = availableCompetitions.value[0]?.id
+  registrationForm.competitionId = availableRobotRegistrationCompetitions.value[0]?.id
   registrationForm.robotId = robots.value[0]?.id
   registrationForm.observacao = ''
   robotRegistrationReceipt.value = undefined
@@ -924,8 +947,12 @@ onMounted(loadTeams)
         <div class="participant-section-heading">
           <div><span class="eyebrow">Robôs</span><h2>{{ isTeamLeader ? 'Inscrições dos robôs da equipe' : 'Inscrições dos meus robôs' }}</h2></div>
           <div class="participant-section-actions">
-            <span class="muted">Inscreva um robô em uma categoria e acompanhe a aprovação dele.</span>
-            <el-button class="brand-button" :disabled="!robots.length || !availableCompetitions.length" @click="openRegistrationDialog">
+            <span class="muted">{{ robotRegistrationUnlockMessage }}</span>
+            <el-button
+              class="brand-button"
+              :disabled="!robots.length || !availableRobotRegistrationCompetitions.length"
+              @click="openRegistrationDialog"
+            >
               Inscrever robô
             </el-button>
           </div>
@@ -1254,14 +1281,14 @@ onMounted(loadTeams)
       <div class="registration-flow-dialog">
         <div class="participant-flow-note">
           <strong>Inscrição do robô</strong>
-          <span>Escolha o robô, a categoria e quem realmente competirá com ele. Esta inscrição é separada da sua inscrição individual.</span>
+          <span>Sua inscrição individual já foi iniciada, então você pode cadastrar o robô sem esperar a aprovação da Gestão. A aprovação do robô continua separada e só acontece depois da aprovação dos competidores selecionados.</span>
         </div>
 
         <div class="form-grid">
           <label class="span-2">Competição com inscrições abertas
             <el-select v-model="registrationForm.competitionId" style="width:100%" @change="onRegistrationCompetitionChange">
               <el-option
-                v-for="competition in availableCompetitions"
+                v-for="competition in availableRobotRegistrationCompetitions"
                 :key="competition.id"
                 :label="`${competition.nome} · inscrições até ${competition.fimInscricoes}`"
                 :value="competition.id"
