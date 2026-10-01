@@ -38,6 +38,8 @@ interface SumoOverview {
   lastResult?: MatchResult
   nextMatch?: Match
   bracketName?: string
+  statusLabel?: string
+  placement?: 'CAMPEAO' | 'VICE' | 'TERCEIRO' | 'ELIMINADO' | 'EM_DISPUTA' | 'INSCRITO'
 }
 
 const auth = useAuthStore()
@@ -48,6 +50,8 @@ const registrationActionId = ref<number>()
 const loadingAvailableTeams = ref(false)
 const teamDialog = ref(false)
 const joinDialog = ref(false)
+const robotDialog = ref(false)
+const creatingRobot = ref(false)
 const teams = ref<Team[]>([])
 const teamId = ref<number>()
 const competitors = ref<Competitor[]>([])
@@ -58,7 +62,16 @@ const institutions = ref<Array<{ id: number; nome: string; sigla?: string }>>([]
 const availableTeams = ref<PublicTeamOption[]>([])
 const teamSearch = ref('')
 const selectedJoinTeamId = ref<number>()
-const teamForm = reactive({ nome: '', institutionId: undefined as number | undefined })
+const teamForm = reactive({
+  nome: '',
+  institutionMode: 'existing' as 'existing' | 'new',
+  institutionId: undefined as number | undefined,
+  institutionNome: '',
+  institutionSigla: '',
+  institutionCidade: '',
+  institutionEstado: ''
+})
+const robotForm = reactive({ nome: '', descricao: '' })
 const photoMap = ref<Record<number, RobotImage[]>>({})
 const followMap = ref<Record<number, FollowOverview>>({})
 const sumoMap = ref<Record<number, SumoOverview>>({})
@@ -216,29 +229,130 @@ async function loadRegistrationOverview(registration: Registration) {
   const lastMatch = completed.at(-1)
   const lastResult = lastMatch ? ownResults.find((result) => result.matchId === lastMatch.id) : undefined
 
+  const eliminationMatches = matches.filter((match) => match.tipoPartida !== 'TERCEIRO_LUGAR')
+  const finalMatch = [...eliminationMatches].sort((a, b) => b.rodada - a.rodada || a.ordem - b.ordem)[0]
+  const finalResult = finalMatch ? results.find((result) => result.matchId === finalMatch.id) : undefined
+  const thirdMatch = matches.find((match) => match.tipoPartida === 'TERCEIRO_LUGAR')
+  const thirdResult = thirdMatch ? results.find((result) => result.matchId === thirdMatch.id) : undefined
+
+  let placement: SumoOverview['placement'] = 'INSCRITO'
+  let statusLabel = 'Inscrito'
+
+  if (finalMatch && finalResult?.winnerRegistrationId === registration.id) {
+    placement = 'CAMPEAO'
+    statusLabel = 'CAMPEÃO'
+  } else if (
+    finalMatch
+      && finalResult
+      && [finalMatch.registrationAId, finalMatch.registrationBId].includes(registration.id)
+  ) {
+    placement = 'VICE'
+    statusLabel = 'VICE-CAMPEÃO'
+  } else if (thirdMatch && thirdResult?.winnerRegistrationId === registration.id) {
+    placement = 'TERCEIRO'
+    statusLabel = '3º LUGAR'
+  } else if (
+    thirdMatch
+      && thirdResult
+      && [thirdMatch.registrationAId, thirdMatch.registrationBId].includes(registration.id)
+  ) {
+    placement = 'ELIMINADO'
+    statusLabel = 'Eliminado'
+  } else if (nextMatch) {
+    placement = 'EM_DISPUTA'
+    statusLabel = 'Na chave'
+  } else if (losses > 0) {
+    placement = 'ELIMINADO'
+    statusLabel = 'Eliminado'
+  }
+
   sumoMap.value = {
     ...sumoMap.value,
-    [registration.id]: { wins, losses, nextMatch, lastMatch, lastResult, bracketName: bracket.nome }
+    [registration.id]: {
+      wins,
+      losses,
+      nextMatch,
+      lastMatch,
+      lastResult,
+      bracketName: bracket.nome,
+      placement,
+      statusLabel
+    }
   }
 }
 
 async function createTeam() {
-  if (!teamForm.nome.trim() || !teamForm.institutionId) {
-    ElMessage.warning('Informe o nome da equipe e a instituição.')
-    return
+  if (!teamForm.nome.trim()) {
+    return ElMessage.warning('Informe o nome da equipe.')
   }
+
+  if (teamForm.institutionMode === 'existing' && !teamForm.institutionId) {
+    return ElMessage.warning('Selecione a instituição ou cadastre uma nova.')
+  }
+
+  if (teamForm.institutionMode === 'new'
+      && (!teamForm.institutionNome.trim() || !teamForm.institutionSigla.trim())) {
+    return ElMessage.warning('Informe o nome e a sigla da instituição.')
+  }
+
   creatingTeam.value = true
   try {
-    await participantApi.createTeam({ nome: teamForm.nome.trim(), institutionId: teamForm.institutionId })
-    ElMessage.success('Equipe criada. Você é o responsável por ela.')
+    let institutionId = teamForm.institutionId
+
+    if (teamForm.institutionMode === 'new') {
+      const institution = await participantApi.createInstitution({
+        nome: teamForm.institutionNome.trim(),
+        sigla: teamForm.institutionSigla.trim(),
+        cidade: teamForm.institutionCidade.trim() || undefined,
+        estado: teamForm.institutionEstado.trim() || undefined,
+        ativo: true
+      })
+      institutionId = institution.id
+    }
+
+    await participantApi.createTeam({
+      nome: teamForm.nome.trim(),
+      institutionId: institutionId!
+    })
+
+    ElMessage.success('Equipe criada. Sua conta também foi vinculada como competidor da equipe.')
     teamDialog.value = false
-    teamForm.nome = ''
-    teamForm.institutionId = undefined
+    Object.assign(teamForm, {
+      nome: '',
+      institutionMode: 'existing',
+      institutionId: undefined,
+      institutionNome: '',
+      institutionSigla: '',
+      institutionCidade: '',
+      institutionEstado: ''
+    })
     await loadTeams()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a equipe.')
   } finally {
     creatingTeam.value = false
+  }
+}
+
+async function createRobot() {
+  if (!teamId.value || !robotForm.nome.trim()) {
+    return ElMessage.warning('Informe o nome do robô.')
+  }
+  creatingRobot.value = true
+  try {
+    await participantApi.createRobot(teamId.value, {
+      nome: robotForm.nome.trim(),
+      descricao: robotForm.descricao.trim() || undefined
+    })
+    ElMessage.success('Robô cadastrado na sua equipe.')
+    robotDialog.value = false
+    robotForm.nome = ''
+    robotForm.descricao = ''
+    await loadTeam()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível cadastrar o robô.')
+  } finally {
+    creatingRobot.value = false
   }
 }
 
@@ -390,7 +504,12 @@ onMounted(loadTeams)
         </div>
 
         <div v-if="approvedRegistrations.length" class="participation-grid">
-          <article v-for="registration in approvedRegistrations" :key="registration.id" class="participation-card">
+          <article
+            v-for="registration in approvedRegistrations"
+            :key="registration.id"
+            class="participation-card"
+            :class="{ 'participant-champion-card': sumoMap[registration.id]?.placement === 'CAMPEAO' }"
+          >
             <header>
               <div class="participation-photo">
                 <img
@@ -407,6 +526,12 @@ onMounted(loadTeams)
               </div>
               <StatusBadge :value="registration.status" />
             </header>
+
+            <div v-if="sumoMap[registration.id]?.placement === 'CAMPEAO'" class="participant-champion-banner">
+              <span>CAMPEÃO</span>
+              <strong>{{ registration.categoryNome }}</strong>
+              <small>{{ registration.competitionNome }}</small>
+            </div>
 
             <template v-if="followMap[registration.id]">
               <div class="participant-performance">
@@ -439,7 +564,7 @@ onMounted(loadTeams)
               <div class="participant-performance sumo">
                 <div><span>Vitórias</span><strong>{{ sumoMap[registration.id]?.wins ?? 0 }}</strong></div>
                 <div><span>Derrotas</span><strong>{{ sumoMap[registration.id]?.losses ?? 0 }}</strong></div>
-                <div class="highlight"><span>Situação</span><strong>{{ sumoMap[registration.id]?.nextMatch ? 'Na chave' : (sumoMap[registration.id]?.wins ? 'Aguardando chave' : 'Inscrito') }}</strong></div>
+                <div class="highlight"><span>Situação</span><strong>{{ sumoMap[registration.id]?.statusLabel || 'Inscrito' }}</strong></div>
               </div>
               <div v-if="sumoMap[registration.id]?.lastMatch" class="participant-last-match">
                 <span>Última partida</span>
@@ -468,11 +593,14 @@ onMounted(loadTeams)
       <section class="participant-section">
         <div class="participant-section-heading">
           <div><span class="eyebrow">Equipe</span><h2>{{ isTeamLeader ? 'Robôs da equipe' : 'Meus robôs' }}</h2></div>
-          <span class="muted">
-            {{ isTeamLeader
-              ? 'Como líder, você visualiza e administra todos os robôs da equipe.'
-              : 'Aqui aparecem somente os robôs das inscrições em que você participa.' }}
-          </span>
+          <div class="participant-section-actions">
+            <span class="muted">
+              {{ isTeamLeader
+                ? 'Cadastre os robôs da equipe antes de enviá-los para inscrição.'
+                : 'Aqui aparecem somente os robôs das inscrições em que você participa.' }}
+            </span>
+            <el-button v-if="isTeamLeader" class="brand-button" @click="robotDialog = true">Cadastrar robô</el-button>
+          </div>
         </div>
         <div class="robot-gallery">
           <article v-for="robot in robots" :key="robot.id" class="robot-gallery-card">
@@ -545,12 +673,49 @@ onMounted(loadTeams)
       <div class="form-grid">
         <label class="span-2">Nome da equipe<el-input v-model="teamForm.nome" maxlength="120" placeholder="Ex.: Team Vespa" /></label>
         <label class="span-2">Instituição
-          <el-select v-model="teamForm.institutionId" filterable placeholder="Selecione" style="width:100%">
+          <el-radio-group v-model="teamForm.institutionMode">
+            <el-radio-button value="existing">Já está cadastrada</el-radio-button>
+            <el-radio-button value="new">Cadastrar instituição</el-radio-button>
+          </el-radio-group>
+        </label>
+
+        <label v-if="teamForm.institutionMode === 'existing'" class="span-2">Buscar instituição existente
+          <el-select v-model="teamForm.institutionId" filterable placeholder="Digite nome ou sigla" style="width:100%">
             <el-option v-for="institution in institutions" :key="institution.id" :label="institution.sigla ? `${institution.sigla} — ${institution.nome}` : institution.nome" :value="institution.id" />
           </el-select>
         </label>
+
+        <template v-else>
+          <label class="span-2">Nome da instituição
+            <el-input v-model="teamForm.institutionNome" maxlength="150" placeholder="Ex.: Universidade Federal do Recôncavo da Bahia" />
+          </label>
+          <label>Sigla
+            <el-input v-model="teamForm.institutionSigla" maxlength="20" placeholder="Ex.: UFRB" />
+          </label>
+          <label>Cidade <small class="muted">(opcional)</small>
+            <el-input v-model="teamForm.institutionCidade" maxlength="100" />
+          </label>
+          <label>Estado <small class="muted">(opcional)</small>
+            <el-input v-model="teamForm.institutionEstado" maxlength="2" placeholder="BA" />
+          </label>
+        </template>
       </div>
       <template #footer><el-button @click="teamDialog=false">Cancelar</el-button><el-button class="brand-button" :loading="creatingTeam" @click="createTeam">Criar equipe</el-button></template>
+    </el-dialog>
+
+    <el-dialog v-model="robotDialog" title="Cadastrar robô" width="min(520px, 92vw)">
+      <div class="form-grid">
+        <label class="span-2">Nome do robô
+          <el-input v-model="robotForm.nome" maxlength="120" placeholder="Ex.: Vespa" />
+        </label>
+        <label class="span-2">Descrição <small class="muted">(opcional)</small>
+          <el-input v-model="robotForm.descricao" type="textarea" :rows="3" maxlength="500" />
+        </label>
+      </div>
+      <template #footer>
+        <el-button @click="robotDialog = false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="creatingRobot" @click="createRobot">Cadastrar robô</el-button>
+      </template>
     </el-dialog>
 
     <el-dialog v-model="joinDialog" title="Encontrar minha equipe" width="min(620px, 94vw)">
@@ -626,4 +791,11 @@ onMounted(loadTeams)
 .join-team-option b { color:#9f0f3b; font-size:10px; }
 @media (max-width:1050px) { .participant-summary-grid,.participation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .robot-gallery,.participant-lower-grid { grid-template-columns:1fr; } }
 @media (max-width:680px) { .participant-summary-grid,.participation-grid { grid-template-columns:1fr; } .participant-section-heading,.take-progress-copy { align-items:flex-start; flex-direction:column; } .robot-gallery-card { grid-template-columns:82px 1fr; } .robot-gallery-image { width:82px; height:70px; } .robot-photo-upload { grid-column:1 / -1; } .participant-performance { grid-template-columns:1fr; } .participant-take-row { grid-template-columns:1fr 1fr; } }
+
+.participant-section-actions { display:flex; align-items:center; gap:12px; }
+.participant-champion-card { border-color:#c9952f; box-shadow:0 12px 34px rgba(151,103,13,.12); }
+.participant-champion-banner { display:grid; gap:2px; padding:14px 16px; border-radius:14px; background:linear-gradient(135deg,#fff8dc,#fff3b7); border:1px solid #e3c46e; }
+.participant-champion-banner span { color:#7f5a00; font-size:12px; font-weight:950; letter-spacing:.14em; }
+.participant-champion-banner strong { color:#3d2b00; font-size:22px; }
+.participant-champion-banner small { color:#765d1b; }
 </style>
