@@ -13,7 +13,8 @@ import type {
   Registration,
   Robot,
   RobotImage,
-  Team
+  Team,
+  TeamMembershipRequest
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -52,6 +53,9 @@ const teamDialog = ref(false)
 const joinDialog = ref(false)
 const robotDialog = ref(false)
 const creatingRobot = ref(false)
+const inviteDialog = ref(false)
+const invitingMember = ref(false)
+const membershipActionId = ref<number>()
 const teams = ref<Team[]>([])
 const teamId = ref<number>()
 const competitors = ref<Competitor[]>([])
@@ -62,6 +66,8 @@ const institutions = ref<Array<{ id: number; nome: string; sigla?: string }>>([]
 const availableTeams = ref<PublicTeamOption[]>([])
 const teamSearch = ref('')
 const selectedJoinTeamId = ref<number>()
+const myMemberships = ref<TeamMembershipRequest[]>([])
+const teamMemberships = ref<TeamMembershipRequest[]>([])
 const teamForm = reactive({
   nome: '',
   institutionMode: 'existing' as 'existing' | 'new',
@@ -72,6 +78,7 @@ const teamForm = reactive({
   institutionEstado: ''
 })
 const robotForm = reactive({ nome: '', descricao: '' })
+const inviteForm = reactive({ email: '', mensagem: '' })
 const photoMap = ref<Record<number, RobotImage[]>>({})
 const followMap = ref<Record<number, FollowOverview>>({})
 const sumoMap = ref<Record<number, SumoOverview>>({})
@@ -82,6 +89,19 @@ const isTeamLeader = computed(() =>
 )
 const approvedRegistrations = computed(() => registrations.value.filter((item) => item.status === 'APROVADA'))
 const pendingRegistrations = computed(() => registrations.value.filter((item) => item.status === 'PENDENTE'))
+const pendingInvites = computed(() =>
+  myMemberships.value.filter((item) => item.requestType === 'CONVITE' && item.status === 'PENDENTE')
+)
+const pendingJoinRequests = computed(() =>
+  teamMemberships.value.filter((item) => item.requestType === 'SOLICITACAO' && item.status === 'PENDENTE')
+)
+const pendingJoinTeamIds = computed(() =>
+  new Set(
+    myMemberships.value
+      .filter((item) => item.requestType === 'SOLICITACAO' && item.status === 'PENDENTE')
+      .map((item) => item.teamId)
+  )
+)
 const filteredAvailableTeams = computed(() => {
   const query = teamSearch.value.trim().toLocaleLowerCase('pt-BR')
   if (!query) return availableTeams.value
@@ -127,9 +147,14 @@ function completedTakes(registrationId: number) {
 async function loadTeams() {
   loading.value = true
   try {
-    const [teamRows, institutionRows] = await Promise.all([participantApi.teams(), participantApi.institutions()])
+    const [teamRows, institutionRows, membershipRows] = await Promise.all([
+      participantApi.teams(),
+      participantApi.institutions(),
+      participantApi.myTeamMemberships()
+    ])
     teams.value = teamRows
     institutions.value = institutionRows
+    myMemberships.value = membershipRows
     if (!teamId.value || !teams.value.some((item) => item.id === teamId.value)) teamId.value = teams.value[0]?.id
     await loadTeam()
   } catch (error: any) {
@@ -156,6 +181,10 @@ async function loadTeam() {
       participantApi.robots(teamId.value),
       participantApi.registrations(teamId.value)
     ])
+
+    teamMemberships.value = isTeamLeader.value
+      ? await participantApi.teamMemberships(teamId.value)
+      : []
 
     const photoEntries = await Promise.all(
       robots.value.map(async (robot) => [robot.id, await participantApi.robotPhotos(robot.id).catch(() => [])] as const)
@@ -450,10 +479,74 @@ async function openJoinDialog() {
   }
 }
 
-function requestJoin() {
+async function requestJoin() {
   const selected = availableTeams.value.find((item) => item.id === selectedJoinTeamId.value)
   if (!selected) return ElMessage.warning('Selecione uma equipe para solicitar entrada.')
-  ElMessage.info(`Solicitação para ${selected.nome}: fluxo de convite/adesão permanece no backlog do portal.`)
+  if (pendingJoinTeamIds.value.has(selected.id)) {
+    return ElMessage.info('Você já possui uma solicitação pendente para esta equipe.')
+  }
+
+  try {
+    await participantApi.requestTeamJoin(selected.id, {})
+    ElMessage.success(`Solicitação enviada para ${selected.nome}. Aguarde a aprovação do líder.`)
+    joinDialog.value = false
+    myMemberships.value = await participantApi.myTeamMemberships()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível solicitar entrada na equipe.')
+  }
+}
+
+async function inviteMember() {
+  if (!teamId.value || !inviteForm.email.trim()) {
+    return ElMessage.warning('Informe o e-mail da conta PARTICIPANTE.')
+  }
+  invitingMember.value = true
+  try {
+    await participantApi.inviteTeamMember(teamId.value, {
+      email: inviteForm.email.trim(),
+      mensagem: inviteForm.mensagem.trim() || undefined
+    })
+    ElMessage.success('Convite enviado. O participante precisa aceitar no próprio Portal.')
+    inviteDialog.value = false
+    inviteForm.email = ''
+    inviteForm.mensagem = ''
+    teamMemberships.value = await participantApi.teamMemberships(teamId.value)
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível enviar o convite.')
+  } finally {
+    invitingMember.value = false
+  }
+}
+
+async function respondInvite(item: TeamMembershipRequest, accept: boolean) {
+  membershipActionId.value = item.id
+  try {
+    if (accept) await participantApi.acceptTeamInvite(item.id)
+    else await participantApi.rejectTeamInvite(item.id)
+
+    ElMessage.success(accept ? 'Convite aceito. Você agora faz parte da equipe.' : 'Convite recusado.')
+    await loadTeams()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível processar o convite.')
+  } finally {
+    membershipActionId.value = undefined
+  }
+}
+
+async function reviewJoinRequest(item: TeamMembershipRequest, approve: boolean) {
+  if (!teamId.value) return
+  membershipActionId.value = item.id
+  try {
+    if (approve) await participantApi.approveTeamJoin(item.id)
+    else await participantApi.rejectTeamJoin(item.id)
+
+    ElMessage.success(approve ? 'Participante adicionado à equipe.' : 'Solicitação recusada.')
+    await loadTeam()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a solicitação.')
+  } finally {
+    membershipActionId.value = undefined
+  }
 }
 
 watch(teamId, loadTeam)
@@ -478,6 +571,28 @@ onMounted(loadTeams)
         </template>
       </div>
     </div>
+
+    <section v-if="pendingInvites.length" class="participant-invite-stack">
+      <article v-for="invite in pendingInvites" :key="invite.id" class="participant-invite-card">
+        <div>
+          <span class="eyebrow">Convite para equipe</span>
+          <h3>{{ invite.teamNome }}</h3>
+          <p>{{ invite.institutionSigla ? invite.institutionSigla + ' — ' : '' }}{{ invite.institutionNome }}</p>
+          <small v-if="invite.mensagem">{{ invite.mensagem }}</small>
+        </div>
+        <div class="participant-invite-actions">
+          <el-button
+            :loading="membershipActionId === invite.id"
+            @click="respondInvite(invite, false)"
+          >Recusar</el-button>
+          <el-button
+            class="brand-button"
+            :loading="membershipActionId === invite.id"
+            @click="respondInvite(invite, true)"
+          >Aceitar convite</el-button>
+        </div>
+      </article>
+    </section>
 
     <article v-if="!teams.length && !loading" class="participant-empty-onboarding">
       <span class="eyebrow">Primeiro acesso</span>
@@ -660,7 +775,36 @@ onMounted(loadTeams)
           </el-table>
         </article>
         <article class="table-card">
-          <div class="card-heading"><div><span class="eyebrow">Equipe</span><h2>Competidores</h2></div></div>
+          <div class="card-heading">
+            <div><span class="eyebrow">Equipe</span><h2>Competidores</h2></div>
+            <el-button v-if="isTeamLeader" class="brand-button" @click="inviteDialog = true">Adicionar integrante</el-button>
+          </div>
+
+          <div v-if="isTeamLeader && pendingJoinRequests.length" class="participant-join-requests">
+            <div class="section-mini-heading">
+              <div><span class="eyebrow">Solicitações de entrada</span><strong>{{ pendingJoinRequests.length }} pendente(s)</strong></div>
+            </div>
+            <div v-for="request in pendingJoinRequests" :key="request.id" class="participant-join-request">
+              <div>
+                <strong>{{ request.participantNome }}</strong>
+                <small>{{ request.participantEmail }}</small>
+              </div>
+              <div>
+                <el-button
+                  size="small"
+                  :loading="membershipActionId === request.id"
+                  @click="reviewJoinRequest(request, false)"
+                >Recusar</el-button>
+                <el-button
+                  size="small"
+                  type="success"
+                  :loading="membershipActionId === request.id"
+                  @click="reviewJoinRequest(request, true)"
+                >Aprovar</el-button>
+              </div>
+            </div>
+          </div>
+
           <el-table :data="competitors" empty-text="Nenhum competidor">
             <el-table-column prop="nome" label="Nome" />
             <el-table-column prop="email" label="E-mail" min-width="180" />
@@ -703,6 +847,25 @@ onMounted(loadTeams)
       <template #footer><el-button @click="teamDialog=false">Cancelar</el-button><el-button class="brand-button" :loading="creatingTeam" @click="createTeam">Criar equipe</el-button></template>
     </el-dialog>
 
+    <el-dialog v-model="inviteDialog" title="Adicionar integrante" width="min(540px, 92vw)">
+      <div class="form-grid">
+        <div class="span-2 participant-flow-note">
+          <strong>Convite pela conta do participante</strong>
+          <span>Digite o e-mail usado no cadastro. O integrante só entra na equipe depois de aceitar o convite.</span>
+        </div>
+        <label class="span-2">E-mail da conta PARTICIPANTE
+          <el-input v-model="inviteForm.email" type="email" maxlength="150" placeholder="participante@email.com" />
+        </label>
+        <label class="span-2">Mensagem <small class="muted">(opcional)</small>
+          <el-input v-model="inviteForm.mensagem" type="textarea" :rows="3" maxlength="500" />
+        </label>
+      </div>
+      <template #footer>
+        <el-button @click="inviteDialog = false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="invitingMember" @click="inviteMember">Enviar convite</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="robotDialog" title="Cadastrar robô" width="min(520px, 92vw)">
       <div class="form-grid">
         <label class="span-2">Nome do robô
@@ -725,7 +888,7 @@ onMounted(loadTeams)
         <div class="join-team-results">
           <button v-for="team in filteredAvailableTeams" :key="team.id" type="button" class="join-team-option" :class="{ selected: selectedJoinTeamId === team.id }" @click="selectedJoinTeamId=team.id">
             <span><strong>{{ team.nome }}</strong><small>{{ team.institutionSigla ? `${team.institutionSigla} — ` : '' }}{{ team.institutionNome }}</small></span>
-            <b>{{ selectedJoinTeamId === team.id ? 'Selecionada' : 'Escolher' }}</b>
+            <b>{{ pendingJoinTeamIds.has(team.id) ? 'Solicitação pendente' : (selectedJoinTeamId === team.id ? 'Selecionada' : 'Escolher') }}</b>
           </button>
         </div>
       </div>
@@ -798,4 +961,18 @@ onMounted(loadTeams)
 .participant-champion-banner span { color:#7f5a00; font-size:12px; font-weight:950; letter-spacing:.14em; }
 .participant-champion-banner strong { color:#3d2b00; font-size:22px; }
 .participant-champion-banner small { color:#765d1b; }
+
+.participant-invite-stack { display:grid; gap:10px; }
+.participant-invite-card { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:16px 18px; border:1px solid #dcc5cf; border-radius:15px; background:#fff7fa; }
+.participant-invite-card h3 { margin:3px 0; color:#33252c; }
+.participant-invite-card p,.participant-invite-card small { margin:0; color:#786970; }
+.participant-invite-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.participant-join-requests { display:grid; gap:8px; margin:0 14px 12px; padding:12px; border-radius:12px; background:#faf6f8; border:1px solid #eadde3; }
+.participant-join-request { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0; border-top:1px solid #eee2e7; }
+.participant-join-request:first-of-type { border-top:0; }
+.participant-join-request > div:first-child { display:grid; gap:2px; }
+.participant-join-request small { color:#82747b; }
+.participant-flow-note { display:grid; gap:4px; padding:11px 13px; border-radius:11px; background:#faf6f8; border:1px solid #eadde3; }
+.participant-flow-note span { color:#786a71; font-size:12px; line-height:1.4; }
+@media (max-width:680px) { .participant-invite-card,.participant-join-request { align-items:flex-start; flex-direction:column; } }
 </style>
