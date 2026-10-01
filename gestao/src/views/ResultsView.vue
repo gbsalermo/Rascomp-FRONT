@@ -39,6 +39,8 @@ const manualDialog = ref(false)
 const manualSaving = ref(false)
 const manualTarget = ref<CompetitionCategoryResult>()
 const manualRegistrationId = ref<number>()
+const manualSecondRegistrationId = ref<number>()
+const manualThirdRegistrationId = ref<number>()
 const manualReason = ref('')
 const manualCandidates = ref<Array<{
   registration: Registration
@@ -135,6 +137,8 @@ async function openManualDecision(item: CompetitionCategoryResult) {
 
   manualTarget.value = item
   manualRegistrationId.value = undefined
+  manualSecondRegistrationId.value = undefined
+  manualThirdRegistrationId.value = undefined
   manualReason.value = ''
   manualCandidates.value = []
 
@@ -175,7 +179,21 @@ async function openManualDecision(item: CompetitionCategoryResult) {
 async function saveManualDecision() {
   const item = manualTarget.value
   if (!item || !competition.selectedId || !manualRegistrationId.value) {
-    return ElMessage.warning('Selecione o robô definido pela organização.')
+    return ElMessage.warning('Selecione o campeão definido pela organização.')
+  }
+  if (manualCandidates.value.length >= 2 && !manualSecondRegistrationId.value) {
+    return ElMessage.warning('Selecione também o vice-campeão.')
+  }
+  if (manualCandidates.value.length >= 3 && !manualThirdRegistrationId.value) {
+    return ElMessage.warning('Selecione também o terceiro lugar.')
+  }
+  const podiumIds = [
+    manualRegistrationId.value,
+    manualSecondRegistrationId.value,
+    manualThirdRegistrationId.value
+  ].filter((value): value is number => Boolean(value))
+  if (new Set(podiumIds).size !== podiumIds.length) {
+    return ElMessage.warning('Cada posição do pódio deve usar um robô diferente.')
   }
   if (!manualReason.value.trim()) {
     return ElMessage.warning('Informe a justificativa da decisão.')
@@ -187,6 +205,8 @@ async function saveManualDecision() {
       competitionId: competition.selectedId,
       categoryId: item.categoryId,
       winnerRegistrationId: manualRegistrationId.value,
+      secondRegistrationId: manualSecondRegistrationId.value,
+      thirdRegistrationId: manualThirdRegistrationId.value,
       justificativa: manualReason.value.trim()
     })
     ElMessage.success('Resultado do Follow definido e auditado.')
@@ -296,13 +316,34 @@ onMounted(load)
             <el-tag :type="item.modalidade === 'FOLLOW_LINE' ? 'success' : 'danger'" effect="light">
               {{ item.modalidade === 'FOLLOW_LINE' ? 'Follow Line' : 'Sumô' }}
             </el-tag>
-            <span>{{ item.status === 'CONCLUIDO' ? 'Definido' : 'Pendente' }}</span>
+            <span>{{ item.status === 'CONCLUIDO' ? 'Pódio definido' : (item.status === 'PARCIAL' ? 'Pódio em andamento' : 'Pendente') }}</span>
           </div>
           <small>{{ item.categoryNome }}</small>
-          <template v-if="item.status === 'CONCLUIDO'">
-            <span class="results-champion-label">CAMPEÃO</span>
-            <strong class="results-champion-name">{{ item.winnerRobotNome }}</strong>
-            <span>{{ item.winnerTeamNome }}</span>
+          <template v-if="item.winnerRobotNome">
+            <div class="results-podium">
+              <div class="podium-position podium-first">
+                <span>1º · CAMPEÃO</span>
+                <strong>{{ item.winnerRobotNome }}</strong>
+                <small>{{ item.winnerTeamNome }}</small>
+                <em v-if="item.modalidade === 'FOLLOW_LINE' && item.tempoFinalSegundos != null">{{ formatSeconds(item.tempoFinalSegundos) }}</em>
+              </div>
+              <div v-if="item.secondRobotNome" class="podium-position">
+                <span>2º · VICE-CAMPEÃO</span>
+                <strong>{{ item.secondRobotNome }}</strong>
+                <small>{{ item.secondTeamNome }}</small>
+                <em v-if="item.modalidade === 'FOLLOW_LINE' && item.secondTempoFinalSegundos != null">{{ formatSeconds(item.secondTempoFinalSegundos) }}</em>
+              </div>
+              <div v-if="item.thirdRobotNome" class="podium-position">
+                <span>3º LUGAR</span>
+                <strong>{{ item.thirdRobotNome }}</strong>
+                <small>{{ item.thirdTeamNome }}</small>
+                <em v-if="item.modalidade === 'FOLLOW_LINE' && item.thirdTempoFinalSegundos != null">{{ formatSeconds(item.thirdTempoFinalSegundos) }}</em>
+              </div>
+              <div v-else-if="item.modalidade === 'SUMO' && item.thirdPlaceMatchId" class="podium-position pending-position">
+                <span>3º LUGAR</span>
+                <strong>Aguardando disputa</strong>
+              </div>
+            </div>
             <em>{{ winnerDetail(item) }}</em>
             <div v-if="item.resolutionType === 'DECISAO_ORGANIZACAO'" class="follow-manual-result-note">
               <small>{{ item.resolutionReason }}</small>
@@ -339,11 +380,18 @@ onMounted(load)
               </el-button>
             </div>
           </template>
-          <router-link
-            v-if="item.modalidade === 'SUMO' && item.finalMatchId"
-            :to="{ name: 'sumo-match', params: { matchId: String(item.finalMatchId) } }"
-            class="text-link"
-          >Ver final</router-link>
+          <div v-if="item.modalidade === 'SUMO' && (item.finalMatchId || item.thirdPlaceMatchId)" class="results-match-links">
+            <router-link
+              v-if="item.finalMatchId"
+              :to="{ name: 'sumo-match', params: { matchId: String(item.finalMatchId) } }"
+              class="text-link"
+            >Ver final</router-link>
+            <router-link
+              v-if="item.thirdPlaceMatchId"
+              :to="{ name: 'sumo-match', params: { matchId: String(item.thirdPlaceMatchId) } }"
+              class="text-link"
+            >Disputa de 3º</router-link>
+          </div>
           <router-link
             v-else-if="item.modalidade === 'FOLLOW_LINE'"
             :to="{ name: 'follow', query: { categoryId: String(item.categoryId), competitionId: String(competition.selectedId || '') } }"
@@ -404,21 +452,42 @@ onMounted(load)
           <span class="eyebrow">{{ manualTarget.categoryNome }}</span>
           <strong>Definir vencedor sem tempo classificável</strong>
           <small>
-            Os checkpoints abaixo servem apenas como apoio. A escolha é administrativa e exige justificativa.
+            Os checkpoints servem apenas como apoio. A organização define 1º, 2º e 3º lugar, com justificativa e sem criar tempos fictícios.
           </small>
         </div>
 
-        <el-radio-group v-model="manualRegistrationId" class="follow-manual-candidates">
-          <el-radio
-            v-for="candidate in manualCandidates"
-            :key="candidate.registration.id"
-            :value="candidate.registration.id"
-            border
-          >
-            <span>{{ candidate.registration.robotNome }} · {{ candidate.registration.teamNome }}</span>
-            <small>{{ candidate.maxCheckpoints }} checkpoint(s) alcançado(s)</small>
-          </el-radio>
-        </el-radio-group>
+        <div class="follow-manual-podium-selects">
+          <label>1º · Campeão
+            <el-select v-model="manualRegistrationId" filterable style="width:100%">
+              <el-option
+                v-for="candidate in manualCandidates"
+                :key="`first-${candidate.registration.id}`"
+                :value="candidate.registration.id"
+                :label="`${candidate.registration.robotNome} · ${candidate.maxCheckpoints} checkpoint(s)`"
+              />
+            </el-select>
+          </label>
+          <label v-if="manualCandidates.length >= 2">2º · Vice-campeão
+            <el-select v-model="manualSecondRegistrationId" filterable style="width:100%">
+              <el-option
+                v-for="candidate in manualCandidates"
+                :key="`second-${candidate.registration.id}`"
+                :value="candidate.registration.id"
+                :label="`${candidate.registration.robotNome} · ${candidate.maxCheckpoints} checkpoint(s)`"
+              />
+            </el-select>
+          </label>
+          <label v-if="manualCandidates.length >= 3">3º lugar
+            <el-select v-model="manualThirdRegistrationId" filterable style="width:100%">
+              <el-option
+                v-for="candidate in manualCandidates"
+                :key="`third-${candidate.registration.id}`"
+                :value="candidate.registration.id"
+                :label="`${candidate.registration.robotNome} · ${candidate.maxCheckpoints} checkpoint(s)`"
+              />
+            </el-select>
+          </label>
+        </div>
 
         <label>Justificativa
           <el-input
@@ -473,4 +542,16 @@ onMounted(load)
 
 .results-champion-label { display:inline-flex; width:max-content; padding:5px 9px; border-radius:999px; background:#9f0f3b; color:#fff; font-size:10px; font-weight:950; letter-spacing:.12em; }
 .results-champion-name { font-size:22px !important; color:#2b2026; }
+
+.results-podium { display:grid; gap:8px; margin:8px 0; }
+.podium-position { display:grid; gap:2px; padding:9px 10px; border-radius:10px; background:#faf7f8; border:1px solid #eee1e6; }
+.podium-position > span { color:#8e6d79; font-size:9px; font-weight:950; letter-spacing:.08em; }
+.podium-position strong { font-size:14px; }
+.podium-position small { color:#75666d; }
+.podium-first { border-color:#d6a1b5; background:#fff4f7; }
+.podium-first > span { color:#9f0f3b; }
+.pending-position { opacity:.72; }
+.results-match-links { display:flex; flex-wrap:wrap; gap:12px; }
+.follow-manual-podium-selects { display:grid; gap:10px; }
+.follow-manual-podium-selects label { display:grid; gap:5px; font-size:12px; font-weight:800; color:#4e3d45; }
 </style>
