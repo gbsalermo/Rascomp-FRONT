@@ -11,6 +11,7 @@ import type {
   FollowAttempt,
   Match,
   MatchResult,
+  ParticipantCompetitionRegistration,
   RankingItem,
   Registration,
   Robot,
@@ -58,6 +59,10 @@ const robotDialog = ref(false)
 const creatingRobot = ref(false)
 const registrationDialog = ref(false)
 const creatingRegistration = ref(false)
+const personalRegistrationDialog = ref(false)
+const creatingPersonalRegistration = ref(false)
+const personalRegistrationReceipt = ref<File>()
+const robotRegistrationReceipt = ref<File>()
 const responsibleDialog = ref(false)
 const responsibleSaving = ref(false)
 const responsibleRobot = ref<Robot>()
@@ -70,6 +75,7 @@ const teamId = ref<number>()
 const competitors = ref<Competitor[]>([])
 const robots = ref<Robot[]>([])
 const registrations = ref<Registration[]>([])
+const personalRegistrations = ref<ParticipantCompetitionRegistration[]>([])
 const competitions = ref<Competition[]>([])
 const categories = ref<Category[]>([])
 const cancellationPendingIds = ref<Set<number>>(new Set())
@@ -94,6 +100,10 @@ const registrationForm = reactive({
   categoryId: undefined as number | undefined,
   robotId: undefined as number | undefined,
   competitorIds: [] as number[],
+  observacao: ''
+})
+const personalRegistrationForm = reactive({
+  competitionId: undefined as number | undefined,
   observacao: ''
 })
 const inviteForm = reactive({ email: '', mensagem: '' })
@@ -143,6 +153,15 @@ const availableCompetitions = computed(() => {
       && competition.fimInscricoes >= today
   )
 })
+const availablePersonalRegistrationCompetitions = computed(() => {
+  const registeredCompetitionIds = new Set(
+    personalRegistrations.value
+      .filter((item) => item.status !== 'CANCELADA')
+      .map((item) => item.competitionId)
+  )
+  return availableCompetitions.value.filter((item) => !registeredCompetitionIds.has(item.id))
+})
+
 const availableRegistrationCategories = computed(() => {
   if (!registrationForm.competitionId || !registrationForm.robotId) return []
 
@@ -216,18 +235,20 @@ function completedTakes(registrationId: number) {
 async function loadTeams() {
   loading.value = true
   try {
-    const [teamRows, institutionRows, membershipRows, competitionRows, categoryRows] = await Promise.all([
+    const [teamRows, institutionRows, membershipRows, competitionRows, categoryRows, personalRows] = await Promise.all([
       participantApi.teams(),
       participantApi.institutions(),
       participantApi.myTeamMemberships(),
       publicApi.competitions(),
-      publicApi.categories()
+      publicApi.categories(),
+      participantApi.personalRegistrations().catch(() => [])
     ])
     teams.value = teamRows
     institutions.value = institutionRows
     myMemberships.value = membershipRows
     competitions.value = competitionRows
     categories.value = categoryRows
+    personalRegistrations.value = personalRows
     if (!teamId.value || !teams.value.some((item) => item.id === teamId.value)) teamId.value = teams.value[0]?.id
     await loadTeam()
   } catch (error: any) {
@@ -543,6 +564,7 @@ function openRegistrationDialog() {
   registrationForm.competitionId = availableCompetitions.value[0]?.id
   registrationForm.robotId = robots.value[0]?.id
   registrationForm.observacao = ''
+  robotRegistrationReceipt.value = undefined
   syncRegistrationCompetitors(registrationForm.robotId)
   refreshRegistrationCategory()
   registrationDialog.value = true
@@ -556,7 +578,10 @@ async function submitRegistration() {
     return ElMessage.warning('Selecione competição, categoria e robô.')
   }
   if (!registrationForm.competitorIds.length) {
-    return ElMessage.warning('Selecione ao menos um competidor para esta inscrição.')
+    return ElMessage.warning('Selecione ao menos um responsável pelo robô para esta inscrição.')
+  }
+  if (!robotRegistrationReceipt.value) {
+    return ElMessage.warning('Envie o comprovante da inscrição do robô.')
   }
 
   creatingRegistration.value = true
@@ -567,7 +592,7 @@ async function submitRegistration() {
       robotId: registrationForm.robotId,
       competitorIds: registrationForm.competitorIds,
       observacao: registrationForm.observacao.trim() || undefined
-    })
+    }, robotRegistrationReceipt.value)
     ElMessage.success('Inscrição enviada. Aguardando aprovação da organização.')
     registrationDialog.value = false
     await loadTeam()
@@ -575,6 +600,51 @@ async function submitRegistration() {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível enviar a inscrição.')
   } finally {
     creatingRegistration.value = false
+  }
+}
+
+function onRobotRegistrationReceiptSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  robotRegistrationReceipt.value = input.files?.[0]
+}
+
+function openPersonalRegistrationDialog() {
+  if (!availablePersonalRegistrationCompetitions.value.length) {
+    ElMessage.info('Você já possui inscrição pessoal nas competições atualmente abertas.')
+    return
+  }
+  personalRegistrationForm.competitionId = availablePersonalRegistrationCompetitions.value[0]?.id
+  personalRegistrationForm.observacao = ''
+  personalRegistrationReceipt.value = undefined
+  personalRegistrationDialog.value = true
+}
+
+function onPersonalRegistrationReceiptSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  personalRegistrationReceipt.value = input.files?.[0]
+}
+
+async function submitPersonalRegistration() {
+  if (!personalRegistrationForm.competitionId) {
+    return ElMessage.warning('Selecione a competição.')
+  }
+  if (!personalRegistrationReceipt.value) {
+    return ElMessage.warning('Envie o comprovante da sua inscrição.')
+  }
+
+  creatingPersonalRegistration.value = true
+  try {
+    await participantApi.createPersonalRegistration({
+      competitionId: personalRegistrationForm.competitionId,
+      observacao: personalRegistrationForm.observacao.trim() || undefined
+    }, personalRegistrationReceipt.value)
+    ElMessage.success('Inscrição pessoal enviada. Aguardando aprovação da organização.')
+    personalRegistrationDialog.value = false
+    personalRegistrations.value = await participantApi.personalRegistrations()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível enviar sua inscrição pessoal.')
+  } finally {
+    creatingPersonalRegistration.value = false
   }
 }
 
@@ -803,6 +873,53 @@ onMounted(loadTeams)
         <article><span>Robôs</span><strong>{{ robots.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'vinculados a mim' }}</small></article>
         <article><span>Inscrições aprovadas</span><strong>{{ approvedRegistrations.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'minhas' }}</small></article>
         <article class="attention"><span>Pendentes</span><strong>{{ pendingRegistrations.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'minhas' }}</small></article>
+      </section>
+
+      <section class="participant-section">
+        <div class="participant-section-heading">
+          <div>
+            <span class="eyebrow">Participante</span>
+            <h2>Minha inscrição pessoal</h2>
+          </div>
+          <div class="participant-section-actions">
+            <span class="muted">Sua inscrição é independente da equipe e das inscrições dos robôs.</span>
+            <el-button
+              class="brand-button"
+              :disabled="!availablePersonalRegistrationCompetitions.length"
+              @click="openPersonalRegistrationDialog"
+            >
+              Nova inscrição pessoal
+            </el-button>
+          </div>
+        </div>
+
+        <div v-if="personalRegistrations.length" class="personal-registration-list">
+          <article v-for="item in personalRegistrations" :key="item.id" class="personal-registration-card">
+            <div>
+              <span class="eyebrow">{{ item.competitionNome }}</span>
+              <strong>{{ item.competitorNome }}</strong>
+              <small>{{ item.teamNome }}</small>
+            </div>
+            <div class="personal-registration-meta">
+              <StatusBadge :value="item.status" />
+              <small v-if="item.comprovanteDisponivel">Comprovante: {{ item.comprovanteNome || 'enviado' }}</small>
+              <small v-if="item.status === 'PENDENTE'">Aguardando aprovação da organização.</small>
+              <small v-if="item.status === 'REJEITADA' && item.reviewReason">{{ item.reviewReason }}</small>
+            </div>
+            <div v-if="item.robots?.length" class="personal-registration-robots">
+              <b>Robôs associados a você</b>
+              <span v-for="robot in item.robots" :key="`${robot.robotId}-${robot.registrationId || 0}-${robot.categoryId || 0}`">
+                {{ robot.robotNome }}
+                <template v-if="robot.categoryNome"> · {{ robot.categoryNome }} · {{ robot.registrationStatus }}</template>
+                <template v-else> · ainda sem inscrição nesta competição</template>
+              </span>
+            </div>
+          </article>
+        </div>
+        <div v-else class="participant-flow-note">
+          <strong>Você ainda não enviou uma inscrição pessoal.</strong>
+          <span>Entrar em uma equipe e ser responsável por robôs não depende desta aprovação. A aprovação pessoal é exigida para validar sua participação na competição.</span>
+        </div>
       </section>
 
       <section class="participant-section">
@@ -1090,11 +1207,56 @@ onMounted(loadTeams)
       </template>
     </el-dialog>
 
+    <el-dialog v-model="personalRegistrationDialog" title="Minha inscrição na competição" width="min(620px, 94vw)">
+      <div class="registration-flow-dialog">
+        <div class="participant-flow-note">
+          <strong>Inscrição pessoal</strong>
+          <span>Esta aprovação é separada da sua equipe e dos robôs. Depois da análise do comprovante, você ficará habilitado como participante desta competição.</span>
+        </div>
+        <div class="form-grid">
+          <label class="span-2">Competição com inscrições abertas
+            <el-select v-model="personalRegistrationForm.competitionId" style="width:100%">
+              <el-option
+                v-for="competition in availablePersonalRegistrationCompetitions"
+                :key="competition.id"
+                :label="`${competition.nome} · inscrições até ${competition.fimInscricoes}`"
+                :value="competition.id"
+              />
+            </el-select>
+          </label>
+          <label class="span-2">Observação <small class="muted">(opcional)</small>
+            <el-input v-model="personalRegistrationForm.observacao" type="textarea" :rows="3" maxlength="500" />
+          </label>
+          <label class="span-2 registration-receipt-field">
+            Comprovante da inscrição
+            <input
+              type="file"
+              accept=".pdf,image/jpeg,image/png,image/webp"
+              @change="onPersonalRegistrationReceiptSelected"
+            />
+            <small class="muted">
+              PDF, JPG, PNG ou WEBP · até 10 MB.
+              {{ personalRegistrationReceipt?.name || 'Nenhum arquivo selecionado.' }}
+            </small>
+          </label>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="personalRegistrationDialog = false">Cancelar</el-button>
+        <el-button
+          class="brand-button"
+          :loading="creatingPersonalRegistration"
+          :disabled="!personalRegistrationForm.competitionId || !personalRegistrationReceipt"
+          @click="submitPersonalRegistration"
+        >Enviar minha inscrição</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="registrationDialog" title="Nova inscrição" width="min(680px, 94vw)">
       <div class="registration-flow-dialog">
         <div class="participant-flow-note">
           <strong>Fluxo normal de inscrição</strong>
-          <span>A inscrição nasce PENDENTE. A organização aprova ou rejeita; somente a aprovação torna o robô participante oficial da competição.</span>
+          <span>A inscrição do robô nasce PENDENTE e possui aprovação própria. Na aprovação, todos os competidores escolhidos precisam ser responsáveis pelo robô e estar pessoalmente APROVADOS nesta competição.</span>
         </div>
 
         <div class="form-grid">
@@ -1138,24 +1300,36 @@ onMounted(loadTeams)
           <div class="span-2 registration-competitors-block">
             <div class="registration-competitors-copy">
               <strong>Competidores desta inscrição</strong>
-              <span>Os responsáveis permanentes pelo robô vêm pré-selecionados. Você pode ajustar a composição usando membros ativos da mesma equipe.</span>
+              <span>Somente responsáveis permanentes deste robô podem compor a inscrição. Você pode escolher um ou vários entre eles.</span>
             </div>
             <el-checkbox-group v-model="registrationForm.competitorIds" class="registration-competitor-options">
               <el-checkbox
-                v-for="competitor in competitors.filter((item) => item.ativo !== false)"
+                v-for="competitor in competitors.filter((item) => item.ativo !== false && responsibleCompetitorSet.has(item.id))"
                 :key="competitor.id"
                 :value="competitor.id"
                 border
               >
                 <span>{{ competitor.nome }}</span>
-                <small v-if="responsibleCompetitorSet.has(competitor.id)">Responsável pelo robô</small>
-                <small v-else-if="competitor.email">{{ competitor.email }}</small>
+                <small>Responsável pelo robô</small>
               </el-checkbox>
             </el-checkbox-group>
           </div>
 
           <label class="span-2">Observação <small class="muted">(opcional)</small>
             <el-input v-model="registrationForm.observacao" type="textarea" :rows="3" maxlength="500" />
+          </label>
+
+          <label class="span-2 registration-receipt-field">
+            Comprovante da inscrição do robô
+            <input
+              type="file"
+              accept=".pdf,image/jpeg,image/png,image/webp"
+              @change="onRobotRegistrationReceiptSelected"
+            />
+            <small class="muted">
+              PDF, JPG, PNG ou WEBP · até 10 MB.
+              {{ robotRegistrationReceipt?.name || 'Nenhum arquivo selecionado.' }}
+            </small>
           </label>
         </div>
       </div>
@@ -1233,6 +1407,18 @@ onMounted(loadTeams)
 </template>
 
 <style scoped>
+.personal-registration-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.personal-registration-card { display:grid; gap:12px; padding:16px; border:1px solid #e7dde2; border-radius:15px; background:#fff; }
+.personal-registration-card > div:first-child { display:grid; gap:3px; }
+.personal-registration-card strong { color:#30242a; }
+.personal-registration-card small { color:#81737a; }
+.personal-registration-meta,.personal-registration-robots { display:grid; gap:6px; }
+.personal-registration-robots { padding-top:10px; border-top:1px solid #eee3e8; }
+.personal-registration-robots b { color:#5f4b55; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+.personal-registration-robots span { color:#75656d; font-size:11px; }
+.registration-receipt-field { display:grid; gap:7px; }
+.registration-receipt-field input[type="file"] { padding:10px; border:1px dashed #cbaeb9; border-radius:10px; background:#fff; }
+@media (max-width:680px) { .personal-registration-list { grid-template-columns:1fr; } }
 .participant-dashboard { gap: 20px; }
 .participant-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
 .participant-summary-grid article { display:grid; gap:4px; padding:17px 18px; border:1px solid #eadfe5; border-radius:14px; background:#fff; }
