@@ -472,3 +472,16 @@ onMounted(load)
     </el-dialog>
   </div>
 </template>
+
+<style scoped>
+.bracket-preview-section { display:grid; gap:14px; }
+.bracket-preview-heading { align-items:flex-start; }
+.bracket-generation-reason { margin:8px 0 0; font-size:12px; color:#6f6067; }
+.bracket-inline-button { border:0; background:transparent; padding:0; cursor:pointer; }
+.bracket-generation-form { display:grid; gap:14px; }
+.bracket-generation-form label { display:grid; gap:6px; font-size:12px; font-weight:800; color:#4e3d45; }
+.bracket-generation-warning { display:grid; gap:5px; padding:12px 14px; border-radius:12px; background:#fff7e8; border:1px solid #efd59a; }
+.bracket-generation-warning span { color:#765f36; font-size:12px; line-height:1.45; }
+.bracket-result-audit { margin-top:16px; padding:14px; border:1px solid #eee1e6; border-radius:14px; background:#fff; }
+.corrected-result-note { color:#8a5b00; font-size:11px; font-weight:700; line-height:1.4; }
+</style>
