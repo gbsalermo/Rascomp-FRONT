@@ -1,6 +1,6 @@
 # RasComp — Roadmap Pós-Projeto
 
-Última revisão: **19/09/2026**
+Última revisão: **30/09/2026**
 
 Este é o **único documento canônico para ordem de execução, prioridade, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 implementado / aguardando validação
+ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 em correções finais / aguardando re-smoke
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 e BLOCO 2 concluídos e validados; BLOCO 3 — Operação competitiva com 3A/3B/3C implementados e aguardando validação manual final. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 e BLOCO 2 concluídos e validados; a bateria 1–56 do BLOCO 3 foi percorrida e as correções finais estão em implementação/re-smoke. Depois do BLOCO 3 resta o BLOCO 4 — Portal do Participante atual — e o smoke geral de encerramento da ETAPA 4. A Landing/Galeria recebe apenas smoke básico aqui; o trabalho completo permanece na ETAPA 9. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -153,7 +153,7 @@ Executar uma revisão funcional e visual do produto existente:
 - Sumô completo;
 - chaves, BYE, agenda, progressão, correção e histórico;
 - Portal do Participante atual, líder e membro;
-- Landing/Galeria no estado atual;
+- smoke básico da Landing/Galeria atual, sem polimento profundo ou duplicação da ETAPA 9;
 - estados vazios, loading, erros e feedbacks;
 - consistência de nomenclatura e textos;
 - navegação e retorno entre fluxos;
@@ -622,9 +622,9 @@ Execução aprovada:
 ```text
 BLOCO 1 — Baseline + autenticação + Shell + UX global          ✅ CONCLUÍDO
 BLOCO 2 — Gestão administrativa                               ✅ CONCLUÍDO / VALIDADO
-BLOCO 3 — Operação competitiva                                🧪 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
-BLOCO 4 — Portal do Participante                              ⏳
-BLOCO 5 — Landing/Galeria atuais                              ⏳
+BLOCO 3 — Operação competitiva                                🛠️ CORREÇÕES FINAIS / AGUARDANDO RE-SMOKE
+BLOCO 4 — Portal do Participante atual                        ⏳
+FECHAMENTO — Smoke geral do sistema + Landing/Galeria básica  ⏳
 BLOCO 6 — Regressão integrada + documentação                  ⏳
 ```
 
@@ -1510,3 +1510,50 @@ MySQL + Flyway V19 + testdata ✅
 ```
 
 Resta apenas a decisão 1 do fechamento manual do BLOCO 3: definir se tentativa/ausência de Follow deve ser bloqueada pelo backend quando a Competition não estiver `EM_ANDAMENTO`.
+
+
+## Correções finais do BLOCO 3 — 30/09/2026
+
+A bateria manual 1–56 foi concluída e gerou uma rodada concentrada de correções antes do re-smoke.
+
+Entraram no BLOCO 3, por serem necessidades operacionais imediatas do cliente:
+
+- pódio oficial 1º/2º/3º em Resultados;
+- Follow normal/extra: pódio derivado do ranking;
+- Follow sem tempo classificável: decisão administrativa passa a registrar pódio ordenado e auditado;
+- Sumô: disputa automática de 3º lugar entre os dois perdedores das semifinais;
+- estado competitivo derivado `ELIMINADO` sem converter a inscrição em `DESCLASSIFICADA`;
+- tela Chaves mais independente: árvore, histórico, geração/regeneração e auditoria no próprio módulo;
+- correção excepcional de vencedor pelo DEV, com justificativa, auditoria e bloqueio se a dependência seguinte já iniciou;
+- BYE explicitado como avanço automático;
+- Resultados com histórico de partidas do Sumô + tomadas/tentativas do Follow, filtrável por categoria;
+- campeões/pódio já definidos passam a aparecer também no Dashboard;
+- hardening do carregamento da arena para evitar loading indefinido.
+
+### Entrada manual / robô avulso — necessidade do cliente incorporada
+
+Fluxo aprovado e implementado:
+
+```text
+participante cria a própria conta PARTICIPANTE
+→ DEV abre Inscrições > Adicionar robô avulso
+→ seleciona a conta do participante
+→ associa/cria o Competitor na equipe correta
+→ cria o Robot vinculado à equipe
+→ cria Registration APROVADA com histórico ENTRADA_MANUAL
+```
+
+Regras:
+
+- operação exclusiva do DEV;
+- justificativa obrigatória;
+- não reabre inscrições públicas;
+- a conta PARTICIPANTE deve existir e estar ativa;
+- se já existir Competitor para a conta, o vínculo de equipe é respeitado;
+- Follow: o novo robô pode ser sincronizado nas próximas chamadas e tomar tempo normalmente;
+- Sumô: a inscrição é criada, mas a inspeção APTO continua obrigatória;
+- depois da inspeção, o DEV pode gerar uma nova chave pelo módulo Chaves;
+- se a competição já estiver `EM_ANDAMENTO`, a regeneração é excepcional, exige justificativa e arquiva a chave anterior;
+- a regeneração excepcional continua **bloqueada se a chave vigente já possuir disputa competitiva real**; não se apaga nem reescreve uma chave já disputada.
+
+Essa implementação antecipa apenas essa necessidade concreta. A ETAPA 5 continua responsável pelas demais operações gerais DEV e auditoria.
