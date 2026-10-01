@@ -148,3 +148,36 @@ Selecionar competidores da mesma equipe
 A criação de equipe não depende de uma lista fechada de instituições. O usuário pode selecionar uma instituição existente ou cadastrar a própria instituição informando nome/sigla e dados opcionais.
 
 O cadastro manual DEV de participante/robô é exceção operacional. Ele nunca deve permitir escolher uma equipe arbitrária: a equipe é derivada do `Competitor` já associado à conta PARTICIPANTE.
+
+
+## Responsabilidade por robô — regra canônica para o BLOCO 4
+
+O robô pertence à equipe, mas pode possuir **um ou mais competidores responsáveis**.
+
+Modelo conceitual:
+
+```text
+Team
+ ├─ Competitor
+ └─ Robot
+      └─ RobotResponsible (N:N)
+           └─ Competitor
+```
+
+Regras:
+- líder da equipe administra todos os robôs, independentemente de ser responsável;
+- ser líder **não** torna automaticamente o usuário responsável por todos os robôs;
+- competidor comum visualiza em **Meus robôs** os robôs em que está associado como responsável;
+- um robô pode ter 1, 2, 3 ou mais responsáveis da mesma equipe;
+- responsabilidade pelo robô é vínculo estável da equipe;
+- participação em uma inscrição é vínculo específico da competição e permanece em `RegistrationCompetitor`;
+- ao criar uma inscrição, os responsáveis do robô podem vir pré-selecionados, mas a composição daquela inscrição pode ser ajustada segundo a regra da categoria.
+
+Fluxo principal de entrada em equipe:
+1. líder busca a conta do participante por login/e-mail;
+2. envia convite;
+3. participante aceita;
+4. sistema cria `Competitor` vinculado à conta e à equipe;
+5. líder pode associá-lo a robôs existentes ou novos.
+
+Também deve existir o caminho inverso: participante encontra uma equipe e solicita entrada; o aceite do líder produz o mesmo vínculo.
