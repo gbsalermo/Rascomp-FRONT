@@ -25,10 +25,11 @@ ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
 ETAPA 4                                        🚧 em andamento — BLOCO 4 / Portal do Participante
 BLOCO 3 — Operação competitiva                 ✅ concluído / validado
-BLOCO 4.1 — Equipe e associação                ✅ implementado / aguardando validação prática consolidada
-BLOCO 4.2 — Responsáveis por robô              🚧 base funcional implementada
-BLOCO 4.3 — Inscrição normal pelo Portal       ⏳ próximo
-Backend/Frontend                               revalidar suíte/build após alterações mais recentes do BLOCO 4
+BLOCO 4.1 — Equipe e associação                ✅ implementado
+BLOCO 4.2 — Responsáveis por robô              ✅ base funcional implementada
+BLOCO 4.3 — Inscrição normal pelo Portal       🧪 implementado / aguardando validação manual
+BLOCO 4.4 — Polimento + bateria final           ⏳ não iniciado
+Backend/Frontend                               revalidar suíte/build após alterações do BLOCO 4.3
 Banco ativo                                    MySQL
 Migrations                                     V1–V24
 Próxima migration estrutural                   V25+
@@ -886,7 +887,40 @@ A solução deve permitir inscrição legítima sem robô próprio conforme moda
 
 # 20. Portal participante e identificação competitiva
 
-ETAPA 7 completa equipe, integrantes, robôs, inscrições, desempenho e acompanhamento. Avisos entram depois na ETAPA 11.
+A consolidação básica do Portal foi antecipada no **BLOCO 4 da ETAPA 4** para tornar o MVP atual utilizável antes da expansão da ETAPA 7.
+
+Modelo consolidado:
+
+```text
+UserAccount PARTICIPANTE
+→ Competitor
+→ Team
+
+Team
+→ Robot
+→ RobotResponsible (N:N Robot ↔ Competitor)
+
+Registration
+→ Competition + Category + Team + Robot
+→ competidores específicos daquela inscrição
+→ PENDENTE → APROVADA/REJEITADA
+```
+
+Regras:
+- líder administra todos os robôs e inscrições da equipe;
+- membro comum administra os robôs pelos quais é responsável;
+- responsabilidade permanente por robô não é igual à composição de `Registration.competitors`;
+- responsáveis permanentes servem apenas como pré-seleção no wizard de inscrição;
+- o participante pode ajustar a composição da Registration entre competidores ativos da mesma equipe;
+- criar Robot não exige aprovação;
+- Registration normal nasce `PENDENTE`;
+- somente `APROVADA` é participação oficial e aparece nas projeções públicas/competitivas;
+- GESTAO continua aprovando/rejeitando pelo fluxo administrativo existente;
+- entrada manual DEV permanece contingência operacional e não substitui o Portal.
+
+O BLOCO 4.3 implementou esse fluxo normal. O BLOCO 4.4 permanece não iniciado até a validação manual.
+
+A ETAPA 7 completa/refina equipe, integrantes, robôs, inscrições, desempenho e acompanhamento. Avisos entram depois na ETAPA 11.
 
 Decisão aprovada: cada **Registration aprovada** terá identificador competitivo curto.
 
