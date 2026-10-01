@@ -4,6 +4,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { assetUrl, http, participantApi, publicApi } from '../api'
 import { useAuthStore } from '../store'
 import type {
+  Category,
+  Competition,
   Competitor,
   ConfigFollow,
   FollowAttempt,
@@ -54,6 +56,8 @@ const teamDialog = ref(false)
 const joinDialog = ref(false)
 const robotDialog = ref(false)
 const creatingRobot = ref(false)
+const registrationDialog = ref(false)
+const creatingRegistration = ref(false)
 const responsibleDialog = ref(false)
 const responsibleSaving = ref(false)
 const responsibleRobot = ref<Robot>()
@@ -66,6 +70,8 @@ const teamId = ref<number>()
 const competitors = ref<Competitor[]>([])
 const robots = ref<Robot[]>([])
 const registrations = ref<Registration[]>([])
+const competitions = ref<Competition[]>([])
+const categories = ref<Category[]>([])
 const cancellationPendingIds = ref<Set<number>>(new Set())
 const institutions = ref<Array<{ id: number; nome: string; sigla?: string }>>([])
 const availableTeams = ref<PublicTeamOption[]>([])
@@ -83,6 +89,13 @@ const teamForm = reactive({
   institutionEstado: ''
 })
 const robotForm = reactive({ nome: '', descricao: '' })
+const registrationForm = reactive({
+  competitionId: undefined as number | undefined,
+  categoryId: undefined as number | undefined,
+  robotId: undefined as number | undefined,
+  competitorIds: [] as number[],
+  observacao: ''
+})
 const inviteForm = reactive({ email: '', mensagem: '' })
 const photoMap = ref<Record<number, RobotImage[]>>({})
 const responsibleMap = ref<Record<number, RobotResponsible[]>>({})
@@ -108,6 +121,56 @@ const pendingJoinTeamIds = computed(() =>
       .map((item) => item.teamId)
   )
 )
+const manageableRobotIds = computed(() => new Set(robots.value.map((robot) => robot.id)))
+const responsibleCompetitorSet = computed(() => new Set(
+  registrationForm.robotId
+    ? (responsibleMap.value[registrationForm.robotId] || []).map((item) => item.competitorId)
+    : []
+))
+const availableCompetitions = computed(() => {
+  const now = new Date()
+  const today = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0')
+  ].join('-')
+
+  return competitions.value.filter((competition) =>
+    competition.id != null
+      && competition.ativo !== false
+      && competition.status === 'INSCRICOES_ABERTAS'
+      && competition.inicioInscricoes <= today
+      && competition.fimInscricoes >= today
+  )
+})
+const availableRegistrationCategories = computed(() => {
+  if (!registrationForm.competitionId || !registrationForm.robotId) return []
+
+  const sameRobotRegistrations = registrations.value.filter((registration) =>
+    registration.competitionId === registrationForm.competitionId
+      && registration.robotId === registrationForm.robotId
+  )
+  const duplicateCategoryIds = new Set(sameRobotRegistrations.map((registration) => registration.categoryId))
+  const categoryById = new Map(categories.value.map((category) => [category.id, category]))
+  const committedSumoCategories = sameRobotRegistrations
+    .filter((registration) => ['PENDENTE', 'APROVADA'].includes(registration.status))
+    .map((registration) => categoryById.get(registration.categoryId))
+    .filter((category): category is Category => Boolean(category?.modalidade === 'SUMO'))
+
+  const hasUnclassifiedSumo = committedSumoCategories.some((category) => !category.sumoPhysicalClass)
+  const committedSumoClasses = new Set(
+    committedSumoCategories
+      .map((category) => category.sumoPhysicalClass)
+      .filter((value): value is NonNullable<Category['sumoPhysicalClass']> => Boolean(value))
+  )
+
+  return categories.value.filter((category) => {
+    if (category.ativo === false || duplicateCategoryIds.has(category.id)) return false
+    if (category.modalidade !== 'SUMO') return true
+    if (hasUnclassifiedSumo) return false
+    return committedSumoClasses.size === 0 || Boolean(category.sumoPhysicalClass && committedSumoClasses.has(category.sumoPhysicalClass))
+  })
+})
 const filteredAvailableTeams = computed(() => {
   const query = teamSearch.value.trim().toLocaleLowerCase('pt-BR')
   if (!query) return availableTeams.value
@@ -153,14 +216,18 @@ function completedTakes(registrationId: number) {
 async function loadTeams() {
   loading.value = true
   try {
-    const [teamRows, institutionRows, membershipRows] = await Promise.all([
+    const [teamRows, institutionRows, membershipRows, competitionRows, categoryRows] = await Promise.all([
       participantApi.teams(),
       participantApi.institutions(),
-      participantApi.myTeamMemberships()
+      participantApi.myTeamMemberships(),
+      publicApi.competitions(),
+      publicApi.categories()
     ])
     teams.value = teamRows
     institutions.value = institutionRows
     myMemberships.value = membershipRows
+    competitions.value = competitionRows
+    categories.value = categoryRows
     if (!teamId.value || !teams.value.some((item) => item.id === teamId.value)) teamId.value = teams.value[0]?.id
     await loadTeam()
   } catch (error: any) {
@@ -204,19 +271,19 @@ async function loadTeam() {
     photoMap.value = Object.fromEntries(photoEntries)
     responsibleMap.value = Object.fromEntries(responsibleEntries)
 
-    if (isTeamLeader.value) {
-      const cancellationEntries = await Promise.all(
-        approvedRegistrations.value.map(async (registration) => [
+    const cancellationEntries = await Promise.all(
+      approvedRegistrations.value
+        .filter(canManageRegistration)
+        .map(async (registration) => [
           registration.id,
           await participantApi.registrationCancellationRequests(registration.id).catch(() => [])
         ] as const)
-      )
-      cancellationPendingIds.value = new Set(
-        cancellationEntries
-          .filter(([, requests]) => requests.some((request) => request.status === 'PENDENTE'))
-          .map(([registrationId]) => registrationId)
-      )
-    }
+    )
+    cancellationPendingIds.value = new Set(
+      cancellationEntries
+        .filter(([, requests]) => requests.some((request) => request.status === 'PENDENTE'))
+        .map(([registrationId]) => registrationId)
+    )
 
     await Promise.all(approvedRegistrations.value.map(loadRegistrationOverview))
   } catch (error: any) {
@@ -423,6 +490,91 @@ async function createRobot() {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível cadastrar o robô.')
   } finally {
     creatingRobot.value = false
+  }
+}
+
+function canManageRegistration(registration: Registration) {
+  return manageableRobotIds.value.has(registration.robotId)
+}
+
+function categoryOptionLabel(category: Category) {
+  if (category.modalidade === 'FOLLOW_LINE') return `${category.nome} · Follow Line`
+  const physical = category.sumoPhysicalClass === 'MINI_500G' ? 'Mini 500 g'
+    : category.sumoPhysicalClass === 'SUMO_3KG' ? 'Sumô 3 kg'
+      : 'classe não definida'
+  const control = category.sumoControlMode === 'AUTONOMO' ? 'Autônomo'
+    : category.sumoControlMode === 'RC' ? 'RC'
+      : 'controle não definido'
+  return `${category.nome} · ${physical} · ${control}`
+}
+
+function syncRegistrationCompetitors(robotId?: number) {
+  registrationForm.competitorIds = robotId
+    ? (responsibleMap.value[robotId] || []).map((item) => item.competitorId)
+    : []
+}
+
+function refreshRegistrationCategory() {
+  registrationForm.categoryId = availableRegistrationCategories.value[0]?.id
+}
+
+function onRegistrationCompetitionChange() {
+  refreshRegistrationCategory()
+}
+
+function onRegistrationRobotChange(robotId?: number) {
+  syncRegistrationCompetitors(robotId)
+  refreshRegistrationCategory()
+}
+
+function openRegistrationDialog() {
+  if (!teamId.value) return
+  if (!robots.value.length) {
+    ElMessage.warning(isTeamLeader.value
+      ? 'Cadastre um robô antes de criar uma inscrição.'
+      : 'Você precisa ser responsável por um robô antes de criar uma inscrição.')
+    return
+  }
+  if (!availableCompetitions.value.length) {
+    ElMessage.info('Não há competição com inscrições abertas neste momento.')
+    return
+  }
+
+  registrationForm.competitionId = availableCompetitions.value[0]?.id
+  registrationForm.robotId = robots.value[0]?.id
+  registrationForm.observacao = ''
+  syncRegistrationCompetitors(registrationForm.robotId)
+  refreshRegistrationCategory()
+  registrationDialog.value = true
+}
+
+async function submitRegistration() {
+  if (!teamId.value
+      || !registrationForm.competitionId
+      || !registrationForm.categoryId
+      || !registrationForm.robotId) {
+    return ElMessage.warning('Selecione competição, categoria e robô.')
+  }
+  if (!registrationForm.competitorIds.length) {
+    return ElMessage.warning('Selecione ao menos um competidor para esta inscrição.')
+  }
+
+  creatingRegistration.value = true
+  try {
+    await participantApi.createRegistration(teamId.value, {
+      competitionId: registrationForm.competitionId,
+      categoryId: registrationForm.categoryId,
+      robotId: registrationForm.robotId,
+      competitorIds: registrationForm.competitorIds,
+      observacao: registrationForm.observacao.trim() || undefined
+    })
+    ElMessage.success('Inscrição enviada. Aguardando aprovação da organização.')
+    registrationDialog.value = false
+    await loadTeam()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível enviar a inscrição.')
+  } finally {
+    creatingRegistration.value = false
   }
 }
 
@@ -656,7 +808,19 @@ onMounted(loadTeams)
       <section class="participant-section">
         <div class="participant-section-heading">
           <div><span class="eyebrow">Competição</span><h2>{{ isTeamLeader ? 'Participação da equipe' : 'Minha participação' }}</h2></div>
-          <span class="muted">Acompanhe o que já aconteceu e o que ainda falta.</span>
+          <div class="participant-section-actions">
+            <span class="muted">Acompanhe o que já aconteceu e o que ainda falta.</span>
+            <el-button class="brand-button" :disabled="!robots.length || !availableCompetitions.length" @click="openRegistrationDialog">
+              Nova inscrição
+            </el-button>
+          </div>
+        </div>
+
+        <div v-if="pendingRegistrations.length" class="participant-registration-pending-banner">
+          <div>
+            <strong>Aguardando aprovação da organização</strong>
+            <span>{{ pendingRegistrations.length }} inscrição(ões) pendente(s). O robô só entra oficialmente na competição após aprovação.</span>
+          </div>
         </div>
 
         <div v-if="approvedRegistrations.length" class="participation-grid">
@@ -794,9 +958,17 @@ onMounted(loadTeams)
             <el-table-column prop="competitionNome" label="Competição" min-width="170" />
             <el-table-column prop="categoryNome" label="Categoria" min-width="160" />
             <el-table-column prop="robotNome" label="Robô" min-width="120" />
-            <el-table-column label="Status" width="130"><template #default="{ row }"><StatusBadge :value="row.status" /></template></el-table-column>
-            <el-table-column v-if="isTeamLeader" label="Ação" min-width="190" align="right">
+            <el-table-column label="Status" min-width="210">
               <template #default="{ row }">
+                <div class="registration-status-cell">
+                  <StatusBadge :value="row.status" />
+                  <small v-if="row.status === 'PENDENTE'">Aguardando aprovação da organização</small>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="Ação" min-width="190" align="right">
+              <template #default="{ row }">
+                <template v-if="canManageRegistration(row)">
                 <el-button
                   v-if="row.status === 'PENDENTE'"
                   size="small"
@@ -821,6 +993,7 @@ onMounted(loadTeams)
                   :loading="registrationActionId === row.id"
                   @click="reactivateRegistration(row)"
                 >Reativar</el-button>
+                </template>
               </template>
             </el-table-column>
           </el-table>
@@ -914,6 +1087,86 @@ onMounted(loadTeams)
       <template #footer>
         <el-button @click="inviteDialog = false">Cancelar</el-button>
         <el-button class="brand-button" :loading="invitingMember" @click="inviteMember">Enviar convite</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="registrationDialog" title="Nova inscrição" width="min(680px, 94vw)">
+      <div class="registration-flow-dialog">
+        <div class="participant-flow-note">
+          <strong>Fluxo normal de inscrição</strong>
+          <span>A inscrição nasce PENDENTE. A organização aprova ou rejeita; somente a aprovação torna o robô participante oficial da competição.</span>
+        </div>
+
+        <div class="form-grid">
+          <label class="span-2">Competição com inscrições abertas
+            <el-select v-model="registrationForm.competitionId" style="width:100%" @change="onRegistrationCompetitionChange">
+              <el-option
+                v-for="competition in availableCompetitions"
+                :key="competition.id"
+                :label="`${competition.nome} · inscrições até ${competition.fimInscricoes}`"
+                :value="competition.id"
+              />
+            </el-select>
+          </label>
+
+          <label class="span-2">Robô
+            <el-select v-model="registrationForm.robotId" style="width:100%" @change="onRegistrationRobotChange">
+              <el-option v-for="robot in robots.filter((item) => item.ativo !== false)" :key="robot.id" :label="robot.nome" :value="robot.id" />
+            </el-select>
+            <small class="muted">{{ isTeamLeader ? 'Como líder, você pode inscrever qualquer robô da equipe.' : 'Você pode inscrever apenas robôs pelos quais é responsável.' }}</small>
+          </label>
+
+          <label class="span-2">Categoria compatível
+            <el-select v-model="registrationForm.categoryId" style="width:100%" placeholder="Selecione a categoria">
+              <el-option
+                v-for="category in availableRegistrationCategories"
+                :key="category.id"
+                :label="categoryOptionLabel(category)"
+                :value="category.id"
+              />
+            </el-select>
+          </label>
+
+          <el-alert
+            v-if="registrationForm.robotId && !availableRegistrationCategories.length"
+            class="span-2"
+            type="info"
+            :closable="false"
+            title="Nenhuma categoria disponível para este robô nesta competição. Verifique inscrições existentes ou reative uma inscrição cancelada quando aplicável."
+          />
+
+          <div class="span-2 registration-competitors-block">
+            <div class="registration-competitors-copy">
+              <strong>Competidores desta inscrição</strong>
+              <span>Os responsáveis permanentes pelo robô vêm pré-selecionados. Você pode ajustar a composição usando membros ativos da mesma equipe.</span>
+            </div>
+            <el-checkbox-group v-model="registrationForm.competitorIds" class="registration-competitor-options">
+              <el-checkbox
+                v-for="competitor in competitors.filter((item) => item.ativo !== false)"
+                :key="competitor.id"
+                :value="competitor.id"
+                border
+              >
+                <span>{{ competitor.nome }}</span>
+                <small v-if="responsibleCompetitorSet.has(competitor.id)">Responsável pelo robô</small>
+                <small v-else-if="competitor.email">{{ competitor.email }}</small>
+              </el-checkbox>
+            </el-checkbox-group>
+          </div>
+
+          <label class="span-2">Observação <small class="muted">(opcional)</small>
+            <el-input v-model="registrationForm.observacao" type="textarea" :rows="3" maxlength="500" />
+          </label>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="registrationDialog = false">Cancelar</el-button>
+        <el-button
+          class="brand-button"
+          :loading="creatingRegistration"
+          :disabled="!registrationForm.categoryId || !registrationForm.competitorIds.length"
+          @click="submitRegistration"
+        >Enviar inscrição</el-button>
       </template>
     </el-dialog>
 
@@ -1038,6 +1291,20 @@ onMounted(loadTeams)
 @media (max-width:680px) { .participant-summary-grid,.participation-grid { grid-template-columns:1fr; } .participant-section-heading,.take-progress-copy { align-items:flex-start; flex-direction:column; } .robot-gallery-card { grid-template-columns:82px 1fr; } .robot-gallery-image { width:82px; height:70px; } .robot-photo-upload { grid-column:1 / -1; } .participant-performance { grid-template-columns:1fr; } .participant-take-row { grid-template-columns:1fr 1fr; } }
 
 .participant-section-actions { display:flex; align-items:center; gap:12px; }
+.participant-registration-pending-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; border:1px solid #ead6bf; border-radius:13px; background:#fffaf2; }
+.participant-registration-pending-banner > div { display:grid; gap:3px; }
+.participant-registration-pending-banner strong { color:#7d4c13; }
+.participant-registration-pending-banner span { color:#806d57; font-size:12px; }
+.registration-status-cell { display:grid; gap:5px; justify-items:start; }
+.registration-status-cell small { color:#8a735e; font-size:10px; line-height:1.25; }
+.registration-flow-dialog { display:grid; gap:14px; }
+.registration-competitors-block { display:grid; gap:10px; }
+.registration-competitors-copy { display:grid; gap:3px; }
+.registration-competitors-copy span { color:#786a71; font-size:12px; line-height:1.4; }
+.registration-competitor-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.registration-competitor-options .el-checkbox { margin:0; height:auto; padding:10px 12px; }
+.registration-competitor-options .el-checkbox__label { display:grid; gap:2px; }
+.registration-competitor-options small { color:#81737a; font-size:10px; }
 .participant-champion-card { border-color:#c9952f; box-shadow:0 12px 34px rgba(151,103,13,.12); }
 .participant-champion-banner { display:grid; gap:2px; padding:14px 16px; border-radius:14px; background:linear-gradient(135deg,#fff8dc,#fff3b7); border:1px solid #e3c46e; }
 .participant-champion-banner span { color:#7f5a00; font-size:12px; font-weight:950; letter-spacing:.14em; }
@@ -1056,7 +1323,7 @@ onMounted(loadTeams)
 .participant-join-request small { color:#82747b; }
 .participant-flow-note { display:grid; gap:4px; padding:11px 13px; border-radius:11px; background:#faf6f8; border:1px solid #eadde3; }
 .participant-flow-note span { color:#786a71; font-size:12px; line-height:1.4; }
-@media (max-width:680px) { .participant-invite-card,.participant-join-request { align-items:flex-start; flex-direction:column; } }
+@media (max-width:680px) { .participant-invite-card,.participant-join-request { align-items:flex-start; flex-direction:column; } .participant-section-actions { align-items:flex-start; flex-direction:column; } .registration-competitor-options { grid-template-columns:1fr; } }
 
 .robot-gallery-actions { display:grid; gap:8px; justify-items:stretch; }
 .robot-responsible-summary { display:grid; gap:2px; margin-top:5px; }

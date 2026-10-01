@@ -54,6 +54,13 @@ export const participantApi = {
     http.patch<RobotImage>(`/api/v1/participante/robos/${robotId}/fotos/${imageId}/principal`).then((r) => r.data),
   deleteRobotPhoto: (robotId: number, imageId: number) => http.delete(`/api/v1/participante/robos/${robotId}/fotos/${imageId}`),
   registrations: (teamId: number) => http.get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`).then((r) => r.data),
+  createRegistration: (teamId: number, payload: {
+    competitionId: number
+    categoryId: number
+    robotId: number
+    competitorIds: number[]
+    observacao?: string
+  }) => http.post<Registration>(`/api/v1/participante/equipes/${teamId}/inscricoes`, payload).then((r) => r.data),
   cancelRegistration: (registrationId: number) => http.delete(`/api/v1/participante/inscricoes/${registrationId}`),
   reactivateRegistration: (registrationId: number) =>
     http.patch<Registration>(`/api/v1/participante/inscricoes/${registrationId}/reativar`).then((r) => r.data),
