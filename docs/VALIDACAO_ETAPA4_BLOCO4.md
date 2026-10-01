@@ -346,6 +346,18 @@ Esperado:
 
 ## Grupo B — inscrição pessoal
 
+### Teste 4.1 — robô bloqueado antes da inscrição pessoal
+
+Antes de enviar **Minha inscrição**, conferir **Inscrever robô**.
+
+Esperado:
+
+- botão bloqueado;
+- interface informa que primeiro é necessário enviar a inscrição individual;
+- nenhuma espera de aprovação é exigida nesta etapa.
+
+
+
 ### Teste 5 — Membro envia inscrição pessoal
 
 Como `membro.b4`:
@@ -359,6 +371,7 @@ Esperado:
 
 - nasce `PENDENTE`;
 - comprovante aparece como enviado;
+- **Inscrever robô** é liberado imediatamente, sem esperar aprovação da GESTAO;
 - associação com equipe e Vespa permanece normal;
 - nenhum Robot é aprovado automaticamente.
 
@@ -737,3 +750,32 @@ Contratos e telas foram preparados para:
 - bloqueio visual de aprovação com dependências pendentes.
 
 **Checkpoint automatizado ainda não está marcado como verde:** os heads atuais não geraram execução nova de GitHub Actions até este momento. A validação real será feita antes do fechamento do 4.3.
+
+
+### Sequenciamento obrigatório — inscrição pessoal antes do robô
+
+Para garantir cadastro separado e em ordem sem obrigar o participante a aguardar análise administrativa:
+
+```text
+1. PARTICIPANTE envia Minha inscrição
+   → ParticipantCompetitionRegistration = PENDENTE
+
+2. A existência da inscrição pessoal PENDENTE ou APROVADA
+   → libera Inscrever robô
+
+3. PARTICIPANTE envia Registration do Robot
+   → Registration = PENDENTE
+
+4. GESTAO analisa
+   → primeiro aprova as pessoas
+   → depois pode aprovar o Robot
+```
+
+Regras:
+
+- antes de existir inscrição pessoal `PENDENTE` ou `APROVADA` na Competition, o botão de inscrição de Robot fica bloqueado;
+- não é necessário aguardar a aprovação pessoal para criar a inscrição do Robot;
+- cada competidor selecionado na composição do Robot precisa ao menos possuir inscrição pessoal `PENDENTE` ou `APROVADA` na mesma Competition;
+- para aprovar o Robot, todos os competidores selecionados precisam estar pessoalmente `APROVADOS`;
+- inscrição pessoal `REJEITADA` ou `CANCELADA` não libera nova inscrição de Robot;
+- o backend repete todas essas validações, independentemente da interface.
