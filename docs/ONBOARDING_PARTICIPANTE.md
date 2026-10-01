@@ -224,3 +224,17 @@ Regras:
 - a organização não escolhe os responsáveis internos do robô: ela aprova a inscrição competitiva.
 
 A entrada manual DEV permanece exceção operacional e pode criar uma `Registration` aprovada diretamente com justificativa/auditoria.
+
+
+## Implementação BLOCO 4 — checkpoint inicial
+
+Implementado:
+- fluxo real de convite/aceite;
+- fluxo real de solicitação/aprovação;
+- vínculo automático UserAccount → Competitor → Team;
+- estrutura persistida de responsáveis por robô;
+- criador como responsável inicial;
+- edição de responsáveis pelo líder;
+- visibilidade "Meus robôs" baseada em responsabilidade.
+
+Próximo: validar 4.1/4.2 e então consolidar 4.3 — inscrição normal pelo Portal com aprovação da GESTAO.
