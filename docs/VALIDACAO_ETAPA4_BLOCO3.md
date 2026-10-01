@@ -401,3 +401,12 @@ Passa para o **BLOCO 4 — Portal do Participante**:
 - onboarding de instituição/equipe/robô e acabamento do Portal.
 
 Estado do BLOCO 3 após re-smoke: falta apenas revalidar o fluxo **robô avulso Sumô** que não foi reportado explicitamente na rodada final e rodar build/testes após as últimas correções.
+
+
+## BLOCO 3 — FECHADO
+
+Em 01/10/2026, após o re-smoke e validação do fluxo de robô avulso, o usuário confirmou avanço para o BLOCO 4.
+
+Estado final: **✅ CONCLUÍDO / VALIDADO**.
+
+Descobertas relacionadas ao Portal do Participante foram transferidas formalmente para o BLOCO 4 e não reabrem o escopo competitivo.
