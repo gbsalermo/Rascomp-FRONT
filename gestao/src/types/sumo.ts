@@ -67,6 +67,7 @@ export interface Match {
   categoryNome?: string
   rodada: number
   ordem: number
+  tipoPartida?: 'ELIMINATORIA' | 'TERCEIRO_LUGAR'
   registrationAId?: number
   registrationAStatus?: string
   robotAId?: number
