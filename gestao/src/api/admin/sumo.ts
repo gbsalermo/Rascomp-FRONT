@@ -35,6 +35,8 @@ export const adminSumoApi = {
     http.get<Bracket[]>('/api/v1/chaveamentos/por-competicao', { params: { competitionId } }).then((r) => r.data),
   generateBracket: (competitionId: number, categoryId: number) =>
     http.post<Bracket>('/api/v1/chaveamentos/gerar', null, { params: { competitionId, categoryId } }).then((r) => r.data),
+  regenerateBracketExceptional: (payload: { competitionId: number; categoryId: number; justificativa: string }) =>
+    http.post<Bracket>('/api/v1/chaveamentos/regenerar-excepcional', payload).then((r) => r.data),
   match: (matchId: number) => http.get<Match>(`/api/v1/partidas/${matchId}`).then((r) => r.data),
   matches: (bracketId: number) =>
     http.get<Match[]>('/api/v1/partidas/por-chaveamento', { params: { bracketId } }).then((r) => r.data),
