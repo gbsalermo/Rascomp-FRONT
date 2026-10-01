@@ -899,3 +899,16 @@ onMounted(loadBase)
     </el-drawer>
   </div>
 </template>
+
+<style scoped>
+.manual-entry-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.manual-entry-form label { display:grid; gap:6px; color:#4e3d45; font-size:12px; font-weight:800; }
+.manual-entry-form .span-2 { grid-column:1 / -1; }
+.manual-entry-note,.manual-entry-warning { display:grid; gap:4px; padding:12px 14px; border-radius:12px; background:#fbf6f8; border:1px solid #ecdce3; }
+.manual-entry-note { grid-column:1 / -1; }
+.manual-entry-note span,.manual-entry-warning span { color:#75656c; font-size:12px; line-height:1.45; }
+@media (max-width:760px) {
+  .manual-entry-form { grid-template-columns:1fr; }
+  .manual-entry-form .span-2 { grid-column:auto; }
+}
+</style>
