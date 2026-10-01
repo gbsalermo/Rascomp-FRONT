@@ -30,7 +30,11 @@ export type {
   RegistrationStatusChangeType,
   Registration,
   RegistrationCancellationRequest,
-  RegistrationStatusHistory
+  RegistrationStatusHistory,
+  ParticipantCompetitionRegistrationStatus,
+  ParticipantRobotLink,
+  ParticipantCompetitionRegistration,
+  RegistrationCompetitorContext
 } from './types/registration'
 export type { Team, Robot, RobotImage, Competitor, CompetitionAdminCatalog } from './types/catalog'
 
