@@ -154,3 +154,109 @@ O BLOCO 3 só será marcado como **CONCLUÍDO / VALIDADO** após:
 - definição da regra de 3º lugar no Sumô;
 - testes automatizados e profile `testdata` verdes;
 - documentação sincronizada.
+
+
+## 6. Fechamento da bateria 1–56 — 30/09/2026
+
+A bateria manual inteira foi percorrida. O BLOCO 3 ainda não é marcado como concluído porque os testes revelaram ajustes estruturais antes do re-smoke final.
+
+### 17–22 — Follow excepcional
+
+- 17 ✅ cenário sem resultado classificável;
+- 18 ✅ Tomada Extra;
+- 19 ✅ fila da Tomada Extra;
+- 20 ✅ resolução por ranking após Tomada Extra;
+- 21 ✅ decisão da organização;
+- 22 ✅ decisão manual bloqueada com Tomada Extra aberta.
+
+### Explicação do seletor de Follow
+
+O seletor que mostra `B3 · Follow Operação` e `B3 · Follow Exceção` é **seletor de categoria**, não de competição.
+
+No seed de QA existem duas categorias Follow dentro da mesma competição apenas para separar cenários:
+
+- `B3 · Follow Operação` — fluxo normal;
+- `B3 · Follow Exceção` — cenário preparado para Tomada Extra/decisão administrativa.
+
+Em produção, o mesmo controle selecionará as categorias reais da competição. Os nomes B3 são exclusivamente de teste.
+
+### 23 — janela operacional do Follow
+
+O teste demonstrou que uma competição `FINALIZADA` ainda aceitava tentativa Follow. Isso foi classificado como bug.
+
+Regra fechada:
+
+`Tentativa / ausência Follow → somente Competition.status == EM_ANDAMENTO`.
+
+Backend corrigido em tentativa e ausência, com testes automatizados específicos.
+
+### 24–38 — Sumô
+
+Todos os fluxos principais foram validados. Ajustes derivados:
+
+- inspeção deve permitir informar peso em **g ou kg**; backend continua persistindo kg;
+- exibição de peso deve ser intuitiva para a classe física;
+- área de juízes deve ser visível, não escondida apenas no modal de cadastro;
+- status de convocação da batalha deve aparecer na arena e ficar claro que é estado operacional, não resultado competitivo;
+- partida finalizada deve exibir seu status mesmo sem ação de reagendamento.
+
+Correções de UX já aplicadas: seletor g/kg, formatação do peso, área visível de juízes e status de chamada na arena.
+
+### 39–44 — Chaves
+
+Validados geração, BYE e progressão. Pendências estruturais:
+
+- BYE deve dizer explicitamente que o robô avançou automaticamente; ajuste visual aplicado;
+- robô que perdeu deve aparecer competitivamente como **ELIMINADO**, sem mudar o status cadastral da Registration;
+- Chaves precisa ganhar independência do módulo Sumô: gerar/regenerar com segurança, visualizar a árvore, consultar/operar partidas e histórico sem redirecionar toda ação para Sumô;
+- correção extrema de partida/resultado deve existir para DEV, com motivo obrigatório, auditoria e bloqueio quando a dependência seguinte já tiver atividade competitiva.
+
+### 45–56 — Agenda, Resultados, permissões e smoke
+
+A bateria foi validada com ressalvas:
+
+- Agenda: incluir ação explícita para limpar filtros — aplicado;
+- Resultados: campeão precisa ser visualmente inequívoco — rótulo `CAMPEÃO` aplicado;
+- Resultados deve evoluir de “lista de resultados” para **pódio oficial por categoria + histórico competitivo filtrável**;
+- Dashboard deve poder destacar campeões já definidos;
+- histórico Follow deve ser consultável em Resultados, assim como o histórico de partidas do Sumô;
+- clique em partida da chave ocasionalmente fica em loading indefinido; tratar como bug de robustez e reproduzir no re-smoke.
+
+## 7. Regra oficial de pódio definida no fechamento
+
+### Follow Line
+
+1. fluxo normal ou Tomada Extra com tentativas classificáveis:
+   - 1º, 2º e 3º = três primeiras posições do ranking oficial;
+2. cenário sem qualquer tentativa classificável:
+   - a decisão da organização deve evoluir de “escolher campeão” para **definir pódio ordenado**;
+   - 1º, 2º e 3º distintos entre inscrições elegíveis, conforme quantidade disponível;
+   - justificativa obrigatória;
+   - responsável + data/hora auditados;
+   - checkpoints podem servir como evidência, nunca como decisão automática;
+   - nenhum tempo fictício é criado.
+
+### Sumô
+
+- **Campeão:** vencedor da final;
+- **Vice-campeão:** perdedor da final;
+- **3º lugar:** vencedor de uma partida específica de terceiro lugar;
+- essa partida é criada junto com a estrutura da chave;
+- os **dois perdedores das semifinais** alimentam automaticamente a partida de 3º lugar;
+- a partida de 3º lugar segue a mesma operação de uma batalha normal do Sumô;
+- Resultados só considera o pódio completo quando final e disputa de 3º lugar estiverem resolvidas.
+
+## 8. Estado de fechamento do BLOCO 3
+
+Execução da bateria manual: **CONCLUÍDA (1–56 percorridos)**.
+
+BLOCO 3: **AGUARDANDO CORREÇÕES + RE-SMOKE**, principalmente:
+
+1. pódio completo Follow/Sumô;
+2. partida de 3º lugar do Sumô;
+3. Resultados orientado a pódio + histórico filtrável;
+4. independência da interface Chaves;
+5. correção excepcional DEV auditável;
+6. estado competitivo “Eliminado” derivado da chave;
+7. loading ocasional ao abrir partida;
+8. revalidação rápida dos ajustes.
