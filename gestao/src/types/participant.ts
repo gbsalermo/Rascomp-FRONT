@@ -24,3 +24,16 @@ export interface TeamMembershipRequest {
   reviewedAt?: string
   dataCadastro?: string
 }
+
+
+export interface RobotResponsible {
+  id: number
+  robotId: number
+  robotNome: string
+  competitorId: number
+  competitorNome: string
+  competitorEmail?: string
+  userAccountId?: number
+  ativo: boolean
+  dataCadastro?: string
+}
