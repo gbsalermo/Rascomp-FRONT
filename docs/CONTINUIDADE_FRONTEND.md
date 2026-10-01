@@ -1504,3 +1504,18 @@ Aplicado:
 Pendente para BLOCO 4:
 - implementar solicitação real de ingresso em equipe existente + aprovação/reprovação pelo responsável;
 - aprovação deve criar Competitor vinculado à conta.
+
+
+## Fronteira BLOCO 3 → BLOCO 4 — 30/09/2026
+
+O domínio de operação competitiva do BLOCO 3 está congelado. Convites, ingresso em equipe e responsabilidade de robôs passam ao BLOCO 4.
+
+BLOCO 4 deve consolidar:
+- convite/aceite e solicitação/aprovação de ingresso em equipe;
+- `PARTICIPANTE → Competitor → Team`;
+- vínculo N:N `Robot ↔ Competitor responsável`;
+- visibilidade "Meus robôs" por responsabilidade, enquanto o líder administra todos;
+- associação de responsáveis pelo líder ao criar/editar robôs;
+- inscrição usando os responsáveis como sugestão inicial, sem confundir responsabilidade permanente com competidores daquela Registration.
+
+O cadastro manual DEV permanece apenas como contingência operacional descoberta no BLOCO 3.
