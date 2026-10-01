@@ -10,6 +10,8 @@ export const adminResultsApi = {
     competitionId: number
     categoryId: number
     winnerRegistrationId: number
+    secondRegistrationId?: number
+    thirdRegistrationId?: number
     justificativa: string
   }) =>
     http.post('/api/v1/resultados-competicao/follow/decisao-organizacao', payload).then((r) => r.data)
