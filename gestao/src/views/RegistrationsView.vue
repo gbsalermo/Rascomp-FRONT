@@ -705,9 +705,9 @@ onMounted(loadBase)
         </label>
 
         <div v-if="manualForm.participantUserId" class="manual-entry-team-readonly">
-          <span>Equipe associada</span>
+          <span>Equipe do participante</span>
           <strong>{{ manualUsers.find((item) => item.id === manualForm.participantUserId)?.competitorTeamNome || '—' }}</strong>
-          <small>A equipe vem do vínculo competitivo da conta e não pode ser trocada neste fluxo.</small>
+          <small>Definida automaticamente pelo vínculo do participante com a equipe.</small>
         </div>
 
         <label>Categoria
@@ -898,6 +898,10 @@ onMounted(loadBase)
 .manual-entry-form .span-2 { grid-column:1 / -1; }
 .manual-entry-note,.manual-entry-warning { display:grid; gap:4px; padding:12px 14px; border-radius:12px; background:#fbf6f8; border:1px solid #ecdce3; }
 .manual-entry-note { grid-column:1 / -1; }
+.manual-entry-team-readonly { display:grid; gap:3px; padding:10px 12px; border-radius:10px; background:#faf7f8; border:1px solid #eadfe3; }
+.manual-entry-team-readonly span { color:#806d75; font-size:11px; font-weight:800; }
+.manual-entry-team-readonly strong { color:#382a31; font-size:14px; }
+.manual-entry-team-readonly small { color:#7d6d74; line-height:1.35; }
 .manual-entry-note span,.manual-entry-warning span { color:#75656c; font-size:12px; line-height:1.45; }
 @media (max-width:760px) {
   .manual-entry-form { grid-template-columns:1fr; }
