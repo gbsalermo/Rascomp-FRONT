@@ -1,6 +1,6 @@
 # RasComp — Índice da Documentação
 
-Última revisão: **22/09/2026**
+Última revisão: **01/10/2026**
 
 Este é o ponto de entrada para qualquer pessoa ou IA que precise entender ou continuar o RasComp.
 
@@ -27,14 +27,18 @@ A documentação foi revisada para evitar roadmaps paralelos, snapshots de demon
    → checkpoint vivo do backend
 ```
 
-Estado oficial em 13/09/2026:
+Estado oficial em 01/10/2026:
 
 ```text
 ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2  ✅ concluída / validada
 ETAPA 3  ✅ concluída / validada
-ETAPA 4  🚧 em andamento — BLOCO 3 implementado / aguardando validação
+ETAPA 4  🚧 em andamento
+  BLOCO 1 ✅
+  BLOCO 2 ✅
+  BLOCO 3 ✅ concluído / validado
+  BLOCO 4 🚧 Portal do Participante — 4.1 implementado / 4.2 base implementada / 4.3 próximo
 ```
 
 A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi concluída/validada em 13/09/2026. A ETAPA 3 também está concluída/validada após integração, testes HTTP e validação prática dos perfis.
@@ -173,8 +177,8 @@ EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
 
 ```text
 Banco ativo                           MySQL
-Migrations                            V1–V13 imutáveis
-Próxima migration                     V14+
+Migrations                            V1–V24 aplicadas por evolução incremental
+Próxima migration                     V25+
 Roles atuais                          DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                               ✅ concluída / validada
 ETAPA 1                               ✅ contrato + correções + fluxos integrados concluídos
@@ -226,9 +230,28 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 12. parar no checkpoint e aguardar validação
 ```
 
-No estado atual, as **ETAPAS 0–3 estão encerradas/validadas**. A **ETAPA 4 — Consolidação funcional e polimento do MVP** está em andamento; os **BLOCOS 1 e 2 estão concluídos/validados** e o **BLOCO 3 — Operação competitiva** está totalmente implementado, aguardando apenas validação manual final.
+No estado atual, as **ETAPAS 0–3 estão encerradas/validadas**. A **ETAPA 4 — Consolidação funcional e polimento do MVP** está em andamento; os **BLOCOS 1, 2 e 3 estão concluídos/validados** e o **BLOCO 4 — Portal do Participante** está em andamento. O 4.1 (equipe/associação) está implementado, a base funcional do 4.2 (responsáveis por robô) está implementada e o próximo foco é o 4.3 — inscrição normal pelo Portal com aprovação da GESTAO.
 
 ## Checkpoint pessoal opcional
 
 `CHECKPOINT_ASSINATURA_PESSOAL.md`
 → acabamento autoral opcional, sem etapa própria; se adotado, é preparado no fechamento da ETAPA 15 antes do deploy final da ETAPA 16.
+
+
+## Checkpoint Portal do Participante — 01/10/2026
+
+Regras canônicas atuais:
+
+- conta `PARTICIPANTE` associada a equipe possui `Competitor` correspondente;
+- líder pode convidar conta PARTICIPANTE por e-mail; participante aceita/recusa;
+- participante também pode solicitar entrada; líder aprova/recusa;
+- aceite/aprovação converge para `UserAccount → Competitor → Team`;
+- `Robot` pertence à equipe e possui responsáveis N:N via `RobotResponsible`;
+- líder administra todos os robôs da equipe;
+- membro comum vê/gerencia os robôs pelos quais é responsável;
+- criador do robô vira responsável inicial;
+- cadastro de robô não exige aprovação organizacional;
+- participação competitiva depende de `Registration PENDENTE → GESTAO aprova → APROVADA`;
+- V24 introduziu `team_membership_requests` e `robot_responsibles`.
+
+Próximo sub-bloco: **4.3 — inscrição normal pelo Portal**.
