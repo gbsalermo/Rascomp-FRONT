@@ -7,11 +7,77 @@ Status:
 ```text
 4.1 — Equipe e associação          ✅ implementado
 4.2 — Responsáveis por robô        ✅ base funcional implementada
-4.3 — Inscrição pelo Portal        🧪 implementado / AGUARDANDO VALIDAÇÃO MANUAL
-4.4 — Polimento + bateria final    ⏳ NÃO INICIADO
+4.3 — Inscrições participante/robô 🚧 REVISÃO DE DOMÍNIO EM IMPLEMENTAÇÃO
+4.4 — Polimento + bateria final     ⏳ NÃO INICIADO
 ```
 
-Este documento é o checklist prático do BLOCO 4. O checkpoint atual deve validar **somente o 4.3** antes de autorizar 4.4.
+Este documento é o checklist prático do BLOCO 4. O 4.3 foi reaberto em 01/10/2026 após o fechamento do fluxo real de inscrições. A bateria anterior de inscrição direta do robô fica suspensa até a implementação das duas inscrições independentes e das novas dependências de aprovação. **Não iniciar 4.4 antes da validação do novo 4.3.**
+
+---
+
+# 0. Regra canônica revisada — 01/10/2026
+
+O BLOCO 4.3 passa a tratar **duas inscrições independentes**:
+
+```text
+Competitor + Competition
+→ inscrição pessoal
+→ dados + comprovante
+→ PENDENTE
+→ GESTAO aprova/rejeita
+```
+
+e:
+
+```text
+Robot + Competition + Category
+→ inscrição do robô
+→ 1+ competidores que sejam RobotResponsible daquele Robot
+→ dados + comprovante
+→ PENDENTE
+→ GESTAO aprova/rejeita
+```
+
+Regras congeladas:
+
+- associação `UserAccount PARTICIPANTE → Competitor → Team` independe da inscrição na competição;
+- associação `Robot ↔ RobotResponsible` também independe da inscrição na competição;
+- criar/cadastrar um Robot não requer aprovação da GESTAO;
+- a inscrição pessoal do competidor requer aprovação, normalmente condicionada à conferência do pagamento;
+- a inscrição do Robot também requer aprovação própria, normalmente condicionada à conferência do pagamento;
+- `Registration.competitors` deve ser subconjunto dos `RobotResponsible` ativos daquele Robot;
+- líder da Team pode administrar o cadastro do Robot, porém **não se torna competidor elegível daquele Robot automaticamente**;
+- para aparecer como competidor de uma Registration, o líder também precisa estar explicitamente associado como `RobotResponsible`;
+- o participante pode enviar a inscrição do Robot enquanto sua inscrição pessoal ainda está `PENDENTE`;
+- a GESTAO só pode transformar a inscrição do Robot em `APROVADA` quando todos os competidores escolhidos naquela Registration possuírem inscrição pessoal `APROVADA` na mesma Competition;
+- inscrição pessoal aprovada torna o Competitor elegível na edição, mas não o associa automaticamente a nenhum Robot;
+- inscrição de Robot aprovada torna aquele Robot oficialmente inscrito na Category/Competition, com a composição validada;
+- o fluxo manual DEV permanece contingência excepcional e deve preservar/auditar as relações reais em vez de criar combinações sem vínculo.
+
+## Aprovação administrativa cruzada
+
+A tela da GESTAO deve tornar as relações visíveis nos dois sentidos.
+
+Ao analisar **uma inscrição pessoal**, exibir:
+
+- Competitor;
+- Team;
+- status/comprovante da inscrição pessoal;
+- Robots em que esse Competitor é `RobotResponsible`;
+- inscrições desses Robots na mesma Competition e seus respectivos status.
+
+Ao analisar **uma inscrição de Robot**, exibir:
+
+- Robot;
+- Team;
+- Category;
+- comprovante/status da inscrição do Robot;
+- competidores selecionados;
+- para cada competidor, status da inscrição pessoal na mesma Competition.
+
+A interface deve destacar dependências pendentes e impedir uma aprovação incoerente. Exemplo: a GESTAO não pode aprovar a inscrição de um Robot com um competidor que não seja responsável por ele ou cuja inscrição pessoal ainda não esteja aprovada.
+
+A relação visual é auxiliar; o **backend deve repetir todas essas validações no momento da aprovação**.
 
 ---
 
@@ -321,31 +387,33 @@ Esperado:
 
 ---
 
-# 4. Critério de aprovação do 4.3
+# 4. Critério de aprovação do 4.3 — REVISADO
 
-Marcar 4.3 como validado somente se:
+A bateria antiga não deve ser usada como aceite final. O novo 4.3 só poderá ser marcado como validado quando, além dos comportamentos anteriores ainda aplicáveis, estiver comprovado que:
 
 ```text
-[ ] membro responsável consegue inscrever seu robô
-[ ] membro não consegue administrar robô de que não é responsável
-[ ] líder consegue administrar todos os robôs da equipe
-[ ] responsáveis do robô vêm pré-selecionados
-[ ] composição da Registration é ajustável sem alterar RobotResponsible
-[ ] Registration nasce PENDENTE
-[ ] mensagem "Aguardando aprovação da organização" está clara
-[ ] GESTAO aprova/rejeita no fluxo existente
-[ ] PENDENTE não é participação oficial
-[ ] APROVADA passa a alimentar projeções/fluxos oficiais
-[ ] duplicidade é bloqueada
-[ ] competitor fora da equipe é bloqueado
-[ ] incompatibilidade física Sumô continua bloqueada
-[ ] cancelamento/reactivação continuam coerentes
-[ ] nenhuma regressão visual impeditiva foi encontrada
+[ ] participante consegue enviar sua própria inscrição na Competition
+[ ] inscrição pessoal nasce PENDENTE e possui comprovante/dados necessários
+[ ] vínculo com Team independe da inscrição pessoal
+[ ] vínculo RobotResponsible independe da inscrição pessoal
+[ ] Robot pode ser cadastrado sem aprovação administrativa própria de cadastro
+[ ] inscrição do Robot possui aprovação independente
+[ ] Registration.competitors contém somente RobotResponsible do Robot
+[ ] líder não entra automaticamente como competidor de qualquer Robot
+[ ] Robot Registration pode ser enviada enquanto inscrição pessoal está PENDENTE
+[ ] Robot Registration só pode ser APROVADA se todos os seus competidores estiverem APROVADOS pessoalmente na mesma Competition
+[ ] GESTAO vê os Robots associados ao analisar um Competitor
+[ ] GESTAO vê os Competitors associados ao analisar um Robot
+[ ] status cruzados aparecem de forma clara na aprovação
+[ ] backend bloqueia aprovação incoerente mesmo com request adulterado
+[ ] comprovante da pessoa e comprovante do Robot permanecem independentes
+[ ] APROVADA pessoal não aprova Robot automaticamente
+[ ] APROVADA do Robot não aprova Competitor automaticamente
+[ ] auditoria preserva quem aprovou/rejeitou e motivo
+[ ] fluxo manual DEV continua excepcional e auditável
 ```
 
-Se qualquer item falhar, corrigir dentro do 4.3 e repetir o teste afetado.
-
-**Não iniciar 4.4 antes da confirmação manual do usuário.**
+**Não iniciar 4.4 antes desta validação.**
 
 ---
 
