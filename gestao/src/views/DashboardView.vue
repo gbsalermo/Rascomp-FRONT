@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 import { Calendar, Connection, Cpu, Grid, Tickets, User } from '@element-plus/icons-vue'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
-import type { AgendaActivity, Bracket, Category, Registration } from '../types'
+import type { AgendaActivity, Bracket, Category, CompetitionCategoryResult, Registration } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
 const auth = useAuthStore()
@@ -16,6 +16,7 @@ const categories = ref<Category[]>([])
 const registrations = ref<Registration[]>([])
 const brackets = ref<Bracket[]>([])
 const agenda = ref<AgendaActivity[]>([])
+const categoryResults = ref<CompetitionCategoryResult[]>([])
 
 const activeCompetition = computed(() => competition.selectedCompetition)
 const focusRegistrations = computed(() => registrations.value)
@@ -47,6 +48,9 @@ const sumoCategories = computed(() =>
 )
 const activeBrackets = computed(() =>
   brackets.value.filter((item) => item.ativo !== false && item.atual !== false)
+)
+const definedChampions = computed(() =>
+  categoryResults.value.filter((item) => Boolean(item.winnerRobotNome))
 )
 const upcomingAgenda = computed(() => {
   const now = Date.now()
@@ -99,6 +103,7 @@ function clearCompetitionData() {
   registrations.value = []
   brackets.value = []
   agenda.value = []
+  categoryResults.value = []
 }
 
 async function loadDashboard(forceCompetition = false) {
@@ -121,17 +126,19 @@ async function loadDashboard(forceCompetition = false) {
       return
     }
 
-    const [allCategories, competitionRegistrations, competitionBrackets, competitionAgenda] = await Promise.all([
+    const [allCategories, competitionRegistrations, competitionBrackets, competitionAgenda, competitionResults] = await Promise.all([
       adminApi.categories(),
       adminApi.registrations({ competitionId }),
       adminApi.brackets(competitionId),
-      adminApi.agenda(competitionId)
+      adminApi.agenda(competitionId),
+      adminApi.competitionResults(competitionId)
     ])
 
     categories.value = allCategories
     registrations.value = competitionRegistrations
     brackets.value = competitionBrackets
     agenda.value = competitionAgenda
+    categoryResults.value = competitionResults
   } catch (err: any) {
     error.value = err?.response?.data?.message || 'Não foi possível carregar o painel.'
     ElMessage.error(error.value)
@@ -249,6 +256,29 @@ watch(
         <b class="dashboard-card-arrow">→</b>
       </router-link>
 
+    </section>
+
+    <section v-if="definedChampions.length" class="dashboard-champions-section">
+      <div class="section-mini-heading">
+        <div>
+          <span class="eyebrow">Pódio da edição</span>
+          <strong>Campeões já definidos</strong>
+        </div>
+        <router-link to="/resultados" class="text-link">Ver resultados completos →</router-link>
+      </div>
+
+      <div class="dashboard-champions-grid">
+        <article v-for="item in definedChampions" :key="item.categoryId" class="dashboard-champion-card">
+          <div>
+            <span>{{ item.modalidade === 'FOLLOW_LINE' ? 'Follow Line' : 'Sumô' }}</span>
+            <small>{{ item.categoryNome }}</small>
+          </div>
+          <strong>CAMPEÃO · {{ item.winnerRobotNome }}</strong>
+          <small>{{ item.winnerTeamNome }}</small>
+          <p v-if="item.secondRobotNome">2º {{ item.secondRobotNome }}<template v-if="item.thirdRobotNome"> · 3º {{ item.thirdRobotNome }}</template></p>
+          <p v-else-if="item.modalidade === 'SUMO' && item.status === 'PARCIAL'">Pódio ainda em disputa.</p>
+        </article>
+      </div>
     </section>
 
     <section v-if="activeCompetition" class="dashboard-overview-grid dashboard-overview-grid-v3">
