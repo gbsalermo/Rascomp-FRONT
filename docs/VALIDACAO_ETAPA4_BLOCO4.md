@@ -5,147 +5,187 @@
 Status:
 
 ```text
-4.1 — Equipe e associação          ✅ implementado
-4.2 — Responsáveis por robô        ✅ base funcional implementada
-4.3 — Inscrições participante/robô 🚧 REVISÃO DE DOMÍNIO EM IMPLEMENTAÇÃO
-4.4 — Polimento + bateria final     ⏳ NÃO INICIADO
+4.1 — Equipe e associação            ✅ implementado
+4.2 — Responsáveis por robô          ✅ base funcional implementada
+4.3 — Inscrições participante/robô   🧪 implementação principal pronta / AGUARDANDO BUILD + VALIDAÇÃO
+4.4 — Polimento + bateria final      ⏳ NÃO INICIADO
 ```
 
-Este documento é o checklist prático do BLOCO 4. O 4.3 foi reaberto em 01/10/2026 após o fechamento do fluxo real de inscrições. A bateria anterior de inscrição direta do robô fica suspensa até a implementação das duas inscrições independentes e das novas dependências de aprovação. **Não iniciar 4.4 antes da validação do novo 4.3.**
+O 4.3 foi reaberto em 01/10/2026 antes da validação manual para refletir o fluxo real de pagamento e aprovação.
+
+**Não iniciar 4.4 antes da validação do novo 4.3.**
 
 ---
 
-# 0. Regra canônica revisada — 01/10/2026
+# 1. Regra canônica do 4.3
 
-O BLOCO 4.3 passa a tratar **duas inscrições independentes**:
+Existem duas inscrições independentes por competição.
+
+## 1.1 Inscrição pessoal
 
 ```text
-Competitor + Competition
-→ inscrição pessoal
+UserAccount PARTICIPANTE
+→ Competitor da Team
+→ Competition
 → dados + comprovante
 → PENDENTE
 → GESTAO aprova/rejeita
+→ APROVADA = pessoa habilitada naquela edição
 ```
 
-e:
+Pertencer à Team **não depende** desta inscrição.
+
+Ser responsável por um Robot **não depende** desta inscrição.
+
+## 1.2 Inscrição do robô
 
 ```text
-Robot + Competition + Category
-→ inscrição do robô
-→ 1+ competidores que sejam RobotResponsible daquele Robot
+Robot
+→ Competition
+→ Category
+→ 1..N RobotResponsible selecionados
 → dados + comprovante
 → PENDENTE
 → GESTAO aprova/rejeita
+→ APROVADA = Robot oficialmente inscrito
 ```
 
-Regras congeladas:
+Para a inscrição do Robot ser APROVADA:
 
-- associação `UserAccount PARTICIPANTE → Competitor → Team` independe da inscrição na competição;
-- associação `Robot ↔ RobotResponsible` também independe da inscrição na competição;
-- criar/cadastrar um Robot não requer aprovação da GESTAO;
-- a inscrição pessoal do competidor requer aprovação, normalmente condicionada à conferência do pagamento;
-- a inscrição do Robot também requer aprovação própria, normalmente condicionada à conferência do pagamento;
-- `Registration.competitors` deve ser subconjunto dos `RobotResponsible` ativos daquele Robot;
-- líder da Team pode administrar o cadastro do Robot, porém **não se torna competidor elegível daquele Robot automaticamente**;
-- para aparecer como competidor de uma Registration, o líder também precisa estar explicitamente associado como `RobotResponsible`;
-- o participante pode enviar a inscrição do Robot enquanto sua inscrição pessoal ainda está `PENDENTE`;
-- a GESTAO só pode transformar a inscrição do Robot em `APROVADA` quando todos os competidores escolhidos naquela Registration possuírem inscrição pessoal `APROVADA` na mesma Competition;
-- inscrição pessoal aprovada torna o Competitor elegível na edição, mas não o associa automaticamente a nenhum Robot;
-- inscrição de Robot aprovada torna aquele Robot oficialmente inscrito na Category/Competition, com a composição validada;
-- o fluxo manual DEV permanece contingência excepcional e deve preservar/auditar as relações reais em vez de criar combinações sem vínculo.
+```text
+1. existe pelo menos um competidor selecionado;
+2. todos os selecionados são RobotResponsible ativos do Robot;
+3. todos possuem inscrição pessoal APROVADA na mesma Competition;
+4. o comprovante do Robot existe;
+5. demais regras de Registration continuam válidas.
+```
 
-## Aprovação administrativa cruzada
-
-A tela da GESTAO deve tornar as relações visíveis nos dois sentidos.
-
-Ao analisar **uma inscrição pessoal**, exibir:
-
-- Competitor;
-- Team;
-- status/comprovante da inscrição pessoal;
-- Robots em que esse Competitor é `RobotResponsible`;
-- inscrições desses Robots na mesma Competition e seus respectivos status.
-
-Ao analisar **uma inscrição de Robot**, exibir:
-
-- Robot;
-- Team;
-- Category;
-- comprovante/status da inscrição do Robot;
-- competidores selecionados;
-- para cada competidor, status da inscrição pessoal na mesma Competition.
-
-A interface deve destacar dependências pendentes e impedir uma aprovação incoerente. Exemplo: a GESTAO não pode aprovar a inscrição de um Robot com um competidor que não seja responsável por ele ou cuja inscrição pessoal ainda não esteja aprovada.
-
-A relação visual é auxiliar; o **backend deve repetir todas essas validações no momento da aprovação**.
+A inscrição do Robot **pode ser enviada enquanto as inscrições pessoais ainda estão PENDENTE**. O bloqueio ocorre na aprovação.
 
 ---
 
-
-
-### Cardinalidade N:N Robot ↔ Competitor
-
-A relação de responsabilidade é obrigatoriamente **muitos-para-muitos**:
+# 2. Cardinalidade N:N — regra obrigatória
 
 ```text
-1 Robot
-→ 1..N RobotResponsible
-
-1 Competitor
-→ 0..N Robots como RobotResponsible
+1 Robot      → 1..N RobotResponsible
+1 Competitor → 0..N Robots
 ```
 
-Exemplos válidos:
+Exemplo do cenário de QA:
 
 ```text
-Vespa
-→ Gabriel
-→ João
-→ Maria
+B4 · Vespa
+├─ Membro B4
+└─ Apoio B4
 
-Gabriel
-→ Vespa
-→ Atlas
-→ LineBot
+Apoio B4
+├─ B4 · Vespa
+└─ B4 · Atlas
 ```
 
-As exigências de aprovação definem apenas o mínimo necessário para uma participação válida; elas **não limitam** Robot a um único Competitor nem Competitor a um único Robot.
+Logo, a bateria precisa provar simultaneamente:
 
-Regras de alteração posterior:
+- um Robot com vários responsáveis;
+- um Competitor responsável por vários Robots.
 
-- um Robot já cadastrado pode receber novos `RobotResponsible`;
-- um Competitor pode ser associado como responsável a vários Robots da própria Team;
-- adicionar/remover `RobotResponsible` altera a responsabilidade permanente, mas **não deve reescrever automaticamente** `Registration.competitors` de uma inscrição já criada;
-- uma `Registration` já `APROVADA` não perde aprovação apenas porque outro responsável permanente foi adicionado ao Robot;
-- para o novo responsável passar a compor aquela inscrição competitiva, ele precisa ser incluído explicitamente na `Registration`;
-- se a composição de uma Registration já aprovada for alterada, a alteração precisa voltar para análise da GESTAO antes de a nova composição ser considerada oficial;
-- a nova pessoa incluída na Registration precisa ser `RobotResponsible` e possuir inscrição pessoal `APROVADA` na mesma Competition;
-- remover responsabilidade permanente de alguém que ainda compõe uma Registration ativa deve ser bloqueado ou exigir regularização explícita, evitando uma Registration oficial apontar para pessoa que deixou de ser responsável pelo Robot.
-
-Portanto:
+## 2.1 Responsabilidade permanente x composição competitiva
 
 ```text
 RobotResponsible
 = vínculo permanente N:N
 
 Registration.competitors
-= recorte competitivo daquele Robot naquela Competition/Category
+= recorte dos responsáveis que competirão
+  com aquele Robot naquela Competition/Category
+```
+
+Adicionar um novo responsável permanente **não altera automaticamente** uma Registration existente.
+
+Remover um responsável usado por Registration `PENDENTE` ou `APROVADA` é bloqueado até regularização da inscrição.
+
+---
+
+# 3. Liderança da equipe
+
+O líder pode administrar todos os Robots da Team:
+
+- visualizar;
+- editar;
+- configurar responsáveis;
+- iniciar inscrição de qualquer Robot da equipe.
+
+Porém:
+
+```text
+ser líder
+≠
+ser RobotResponsible
+```
+
+Se o líder quiser constar como competidor de um Robot, precisa ser explicitamente associado como `RobotResponsible`.
+
+Uma requisição adulterada tentando colocar o líder na Registration sem esse vínculo deve ser rejeitada pelo backend.
+
+---
+
+# 4. Aprovação cruzada na GESTAO
+
+## Ao analisar participante
+
+Exibir:
+
+- Competitor;
+- Team;
+- comprovante;
+- status da inscrição pessoal;
+- Robots pelos quais ele é responsável;
+- inscrições desses Robots na mesma Competition e seus status.
+
+## Ao analisar Robot
+
+Exibir:
+
+- Robot;
+- Team;
+- Category;
+- comprovante;
+- competidores selecionados;
+- indicação de que cada competidor é RobotResponsible;
+- status da inscrição pessoal de cada competidor.
+
+A interface ajuda a leitura, mas o backend é a fonte de verdade.
+
+Exemplo obrigatório de bloqueio:
+
+```text
+Vespa PENDENTE
+├─ Membro B4 → inscrição pessoal APROVADA
+└─ Apoio B4  → inscrição pessoal PENDENTE
+
+Resultado:
+❌ Vespa NÃO pode ser aprovado
 ```
 
 ---
 
-# 1. Cenário de QA do 4.3
+# 5. Cenário testdata
 
-O profile backend `testdata` foi dedicado ao Portal e usa um banco separado:
+Banco dedicado:
 
 ```text
 rascomp_b4_validation
 ```
 
-Initializer ativo:
+Initializer:
 
 ```text
 Block4PortalValidationDataInitializer
+```
+
+Senha de todas as contas:
+
+```text
+Rascomp@2026
 ```
 
 Contas:
@@ -153,50 +193,67 @@ Contas:
 ```text
 DEV
 dev.b4@rascomp.local
-Rascomp@2026
 
 GESTAO
 gestao.b4@rascomp.local
-Rascomp@2026
 
 PARTICIPANTE — líder
 lider.b4@rascomp.local
-Rascomp@2026
 
-PARTICIPANTE — membro comum
+PARTICIPANTE — membro
 membro.b4@rascomp.local
-Rascomp@2026
+
+PARTICIPANTE — apoio
+apoio.b4@rascomp.local
 ```
 
-Cenário:
+Equipe:
 
 ```text
-Competition
-ETAPA 4 · BLOCO 4.3 · INSCRIÇÕES
-status = INSCRICOES_ABERTAS
-janela = relativa ao dia atual
-
-Team
 B4 · Equipe Portal
+```
 
-Robots
+Robôs:
+
+```text
 B4 · Vespa
-→ responsáveis: Membro B4 + Apoio B4
+→ Membro B4
+→ Apoio B4
 
 B4 · Atlas
-→ sem responsabilidade permanente do membro comum
+→ Apoio B4
+```
 
-Categories
+Isso significa:
+
+```text
+Membro B4 → 1 Robot
+Apoio B4  → 2 Robots
+Líder B4  → administra 2 Robots, mas não é responsável por nenhum no seed
+```
+
+Categorias:
+
+```text
 B4 · Follow Line
 B4 · Mini Sumô RC
 B4 · Sumô 3 kg RC
 ```
 
-Nenhuma `Registration` é criada pelo seed. O objetivo é que a primeira inscrição nasça pelo Portal.
+Competition:
+
+```text
+ETAPA 4 · BLOCO 4.3 · INSCRIÇÕES
+status = INSCRICOES_ABERTAS
+vigente = true
+janela relativa ao dia atual
+```
+
+Nenhuma inscrição pessoal e nenhuma Registration de Robot são pré-criadas.
 
 ---
 
-# 2. Subir o cenário
+# 6. Subir o cenário à noite
 
 Backend:
 
@@ -205,24 +262,33 @@ cd rascomp
 SPRING_PROFILES_ACTIVE=testdata mvn spring-boot:run
 ```
 
-No Windows, a variável pode ser configurada pelo terminal usado normalmente no projeto antes de executar o Maven.
+Git Bash no Windows:
 
-Frontend Gestão:
+```bash
+export SPRING_PROFILES_ACTIVE=testdata
+mvn spring-boot:run
+```
+
+Frontend:
 
 ```bash
 cd gestao
 npm run dev -- --host 0.0.0.0
 ```
 
-O profile `testdata` preserva o initializer do BLOCO 3 no código, mas o deixa desativado. Para repetir a bateria totalmente do zero, recriar somente o banco dedicado `rascomp_b4_validation`.
+Para repetir a bateria totalmente do zero, recriar somente o banco:
+
+```text
+rascomp_b4_validation
+```
 
 ---
 
-# 3. Bateria manual obrigatória — 4.3
+# 7. Bateria manual revisada — 4.3
 
-## 4.3.1 — Visibilidade líder x membro
+## Grupo A — N:N e permissões
 
-### Teste 1 — membro comum
+### Teste 1 — membro
 
 Login:
 
@@ -232,13 +298,37 @@ membro.b4@rascomp.local
 
 Esperado:
 
-- entra no Portal do Participante;
-- equipe exibida = `B4 · Equipe Portal`;
-- em **Meus robôs** aparece `B4 · Vespa`;
-- `B4 · Atlas` não aparece;
-- botão **Nova inscrição** está disponível.
+- equipe `B4 · Equipe Portal`;
+- vê `B4 · Vespa`;
+- não vê `B4 · Atlas`;
+- pode administrar Vespa.
 
-### Teste 2 — líder
+### Teste 2 — apoio com vários robôs
+
+Login:
+
+```text
+apoio.b4@rascomp.local
+```
+
+Esperado:
+
+- vê Vespa;
+- vê Atlas;
+- comprova Competitor → vários Robots.
+
+### Teste 3 — Vespa com vários responsáveis
+
+Abrir responsáveis de Vespa como líder.
+
+Esperado:
+
+- Membro B4;
+- Apoio B4;
+- ambos ativos;
+- comprova Robot → vários Competitors.
+
+### Teste 4 — líder administra sem ser responsável
 
 Login:
 
@@ -248,46 +338,50 @@ lider.b4@rascomp.local
 
 Esperado:
 
-- vê `B4 · Vespa`;
-- vê `B4 · Atlas`;
-- pode abrir **Nova inscrição** para qualquer um dos dois.
+- vê Vespa e Atlas;
+- administra ambos;
+- não aparece automaticamente como responsável permanente.
 
 ---
 
-## 4.3.2 — Nova inscrição como membro responsável
+## Grupo B — inscrição pessoal
 
-### Teste 3 — competição disponível
+### Teste 5 — Membro envia inscrição pessoal
 
-Como `membro.b4`, abrir **Nova inscrição**.
+Como `membro.b4`:
 
-Esperado:
-
-- aparece `ETAPA 4 · BLOCO 4.3 · INSCRIÇÕES`;
-- competição fora de janela/sem inscrições abertas não deve ser oferecida;
-- robô disponível = `B4 · Vespa`.
-
-### Teste 4 — responsáveis pré-selecionados
-
-Selecionar `B4 · Vespa`.
+1. abrir **Minha inscrição pessoal**;
+2. selecionar a Competition aberta;
+3. enviar PDF/JPG/PNG/WEBP válido;
+4. enviar.
 
 Esperado:
 
-- `Membro B4` vem pré-selecionado;
-- `Apoio B4` vem pré-selecionado;
-- os dois aparecem identificados como responsáveis pelo robô;
-- outros competidores ativos da equipe podem ser adicionados/removidos da composição da inscrição.
+- nasce `PENDENTE`;
+- comprovante aparece como enviado;
+- associação com equipe e Vespa permanece normal;
+- nenhum Robot é aprovado automaticamente.
 
-Importante:
+### Teste 6 — Apoio envia inscrição pessoal
+
+Repetir como:
 
 ```text
-RobotResponsible ≠ Registration.competitors
+apoio.b4@rascomp.local
 ```
 
-Alterar a seleção desta inscrição **não pode alterar** os responsáveis permanentes do robô.
+Esperado:
 
-### Teste 5 — enviar Follow
+- inscrição pessoal `PENDENTE`;
+- continuam visíveis Vespa + Atlas.
 
-Selecionar:
+---
+
+## Grupo C — inscrição do Robot antes da aprovação pessoal
+
+### Teste 7 — Membro inicia inscrição de Vespa
+
+Como `membro.b4`:
 
 ```text
 Competition = ETAPA 4 · BLOCO 4.3 · INSCRIÇÕES
@@ -295,21 +389,50 @@ Robot       = B4 · Vespa
 Category    = B4 · Follow Line
 ```
 
-Ajustar os competidores se desejar e enviar.
+Esperado:
+
+- Membro B4 pré-selecionado;
+- Apoio B4 pré-selecionado;
+- somente responsáveis permanentes de Vespa aparecem como opções;
+- usuário pode escolher um ou os dois;
+- não aparece Líder B4 como opção enquanto ele não for RobotResponsible.
+
+### Teste 8 — enviar Vespa com dois competidores
+
+Manter:
+
+```text
+Membro B4
+Apoio B4
+```
+
+Enviar comprovante do Robot.
 
 Esperado:
 
-- sucesso;
-- Registration criada como `PENDENTE`;
-- Portal mostra **Aguardando aprovação da organização**;
-- ela aparece em **Minhas inscrições**;
-- ela ainda **não** aparece como participação oficial/aprovada.
+- Registration = `PENDENTE`;
+- comprovante disponível;
+- mensagem de espera da organização;
+- ainda não aparece como participação oficial.
+
+### Teste 9 — independência dos comprovantes
+
+Conferir:
+
+- comprovante pessoal do Membro;
+- comprovante pessoal do Apoio;
+- comprovante da inscrição de Vespa.
+
+Esperado:
+
+- três registros independentes;
+- aprovar um não altera o status dos outros.
 
 ---
 
-## 4.3.3 — Aprovação administrativa existente
+## Grupo D — Gestão e aprovação cruzada
 
-### Teste 6 — GESTAO encontra a pendência
+### Teste 10 — fila dos participantes
 
 Login:
 
@@ -317,189 +440,300 @@ Login:
 gestao.b4@rascomp.local
 ```
 
-Esperado:
-
-- a Registration enviada pelo Portal aparece no fluxo administrativo de inscrições;
-- organização consegue aprovar ou rejeitar pelo fluxo já existente;
-- nenhuma tela separada de "aprovação do robô" existe ou é necessária.
-
-### Teste 7 — aprovar
-
-Aprovar a inscrição do Teste 5.
+Na tela Inscrições:
 
 Esperado:
 
-- status = `APROVADA`;
-- solicitante/revisão permanecem auditáveis;
-- a Registration passa a ser participação oficial;
-- ao voltar ao Portal, ela aparece entre inscrições aprovadas;
-- em Follow, passa a estar disponível nos fluxos que consomem inscrições aprovadas.
+- seção **Inscrições dos participantes**;
+- Membro B4 = PENDENTE;
+- Apoio B4 = PENDENTE;
+- comprovantes abríveis.
+
+### Teste 11 — visão Competitor → Robots
+
+Na linha do Membro:
+
+Esperado:
+
+```text
+Membro B4
+→ Vespa
+→ Follow Line / PENDENTE
+```
+
+Na linha do Apoio:
+
+Esperado:
+
+```text
+Apoio B4
+→ Vespa
+→ Follow Line / PENDENTE
+
+→ Atlas
+→ ainda sem inscrição nessa Competition
+```
+
+### Teste 12 — visão Robot → Competitors
+
+Abrir detalhes de Vespa.
+
+Esperado:
+
+```text
+Membro B4
+→ Responsável pelo robô
+→ Inscrição pessoal PENDENTE
+
+Apoio B4
+→ Responsável pelo robô
+→ Inscrição pessoal PENDENTE
+```
+
+### Teste 13 — tentar aprovar Vespa cedo demais
+
+Com ambos ainda PENDENTE, tentar aprovar Vespa.
+
+Esperado:
+
+- frontend avisa dependências;
+- aprovação não é enviada quando detectável;
+- request forçado diretamente também é rejeitado pelo backend;
+- Vespa continua PENDENTE.
+
+### Teste 14 — aprovar somente Membro
+
+Aprovar inscrição pessoal de Membro B4.
+
+Esperado:
+
+```text
+Membro B4 → APROVADA
+Apoio B4  → PENDENTE
+Vespa     → PENDENTE
+```
+
+Tentar aprovar Vespa novamente.
+
+Esperado: bloqueado por Apoio B4.
+
+### Teste 15 — aprovar Apoio
+
+Aprovar Apoio B4.
+
+Esperado:
+
+```text
+Membro B4 → APROVADA
+Apoio B4  → APROVADA
+Vespa     → PENDENTE
+```
+
+Nenhuma aprovação do Robot ocorre automaticamente.
+
+### Teste 16 — aprovar Vespa
+
+Agora aprovar Vespa.
+
+Esperado:
+
+- Vespa = `APROVADA`;
+- revisão auditável;
+- passa a aparecer nos fluxos oficiais;
+- API pública/Follow passa a considerar a inscrição aprovada.
 
 ---
 
-## 4.3.4 — Integridade e permissões
+## Grupo E — integridade da relação
 
-### Teste 8 — duplicidade
+### Teste 17 — adicionar novo responsável depois da aprovação
 
-Tentar criar novamente:
+Como líder, adicionar Líder B4 como responsável permanente de Vespa.
 
-```text
-mesma Competition
-mesma Category
-mesmo Robot
-```
+Esperado:
+
+- Vespa passa a possuir três responsáveis permanentes;
+- Registration já aprovada continua com a composição original Membro + Apoio;
+- status da Registration continua APROVADA;
+- novo responsável não entra silenciosamente na composição competitiva.
+
+### Teste 18 — remover responsável usado pela Registration
+
+Tentar remover Membro ou Apoio da responsabilidade permanente de Vespa.
 
 Esperado:
 
 - operação bloqueada;
-- não nasce segunda Registration.
+- mensagem pede regularização da inscrição;
+- Registration ativa não fica apontando para pessoa sem responsabilidade no Robot.
 
-### Teste 9 — membro não administra Atlas
+### Teste 19 — líder tenta competir com Atlas sem responsabilidade
 
-Como `membro.b4`:
-
-- `B4 · Atlas` não aparece na lista de robôs do wizard;
-- o membro não deve conseguir administrar uma inscrição de Atlas por acesso direto/manipulação de request.
-
-Esperado no backend: acesso negado.
-
-### Teste 10 — líder administra Atlas
-
-Como `lider.b4`, criar uma inscrição para `B4 · Atlas`.
+Como líder, abrir inscrição de Atlas.
 
 Esperado:
 
-- permitido mesmo que o líder não seja `RobotResponsible` permanente daquele robô;
-- liderança concede administração da equipe, não responsabilidade permanente.
+- o líder pode administrar/iniciar o fluxo;
+- composição oferece apenas RobotResponsible de Atlas;
+- no seed, Apoio B4;
+- Líder B4 não entra automaticamente.
 
-### Teste 11 — composição da Registration não altera responsáveis
+Se request adulterado adicionar Líder B4 sem responsabilidade:
 
-Depois de criar uma Registration para Vespa com composição diferente da pré-seleção:
-
-Esperado:
-
-- seção **Responsáveis** de Vespa continua com os mesmos vínculos permanentes;
-- participantes específicos da Registration refletem apenas aquela inscrição.
-
-### Teste 12 — ao menos um competidor
-
-No wizard, remover todos os competidores.
-
-Esperado:
-
-- frontend impede envio;
-- backend também rejeitaria payload vazio.
-
-### Teste 13 — competidor de outra equipe
-
-Não deve existir opção visual para escolher pessoa de outra equipe.
-
-Se o request for adulterado:
-
-- backend deve rejeitar o competitor fora da Team da Registration.
+- backend rejeita.
 
 ---
 
-## 4.3.5 — Compatibilidade Sumô
+## Grupo F — proteções existentes
 
-### Teste 14 — classe física
+### Teste 20 — ao menos um competidor
 
-Para o mesmo robô e Competition:
-
-1. criar inscrição `B4 · Mini Sumô RC`;
-2. enquanto ela estiver PENDENTE ou após ficar APROVADA, tentar usar `B4 · Sumô 3 kg RC`.
+Remover todos os responsáveis selecionados da inscrição.
 
 Esperado:
 
-- opção incompatível deve ser filtrada quando o contexto já permite inferir a incompatibilidade;
-- se for forçada via request, backend bloqueia;
-- o mesmo robô não pode competir em Mini 500 g e 3 kg na mesma edição.
+- frontend bloqueia;
+- backend também bloqueia payload vazio.
 
----
+### Teste 21 — competidor não responsável
 
-## 4.3.6 — Cancelamento/reactivação preservados
-
-### Teste 15 — cancelar PENDENTE
-
-Criar uma Registration ainda PENDENTE e cancelar pelo Portal.
+Forçar ID de um Competitor da mesma Team que não seja RobotResponsible daquele Robot.
 
 Esperado:
 
-- status = `CANCELADA`;
-- não vira participação oficial.
+- backend bloqueia mesmo pertencendo à equipe.
 
-### Teste 16 — reativar CANCELADA
+### Teste 22 — competidor de outra Team
 
-Com inscrições ainda abertas, reativar.
+Forçar ID externo.
 
 Esperado:
 
-- volta para `PENDENTE`;
-- volta a aguardar análise da organização;
-- não volta diretamente para `APROVADA`.
+- backend bloqueia.
 
----
+### Teste 23 — duplicidade
 
-# 4. Critério de aprovação do 4.3 — REVISADO
-
-A bateria antiga não deve ser usada como aceite final. O novo 4.3 só poderá ser marcado como validado quando, além dos comportamentos anteriores ainda aplicáveis, estiver comprovado que:
+Tentar repetir:
 
 ```text
-[ ] participante consegue enviar sua própria inscrição na Competition
-[ ] inscrição pessoal nasce PENDENTE e possui comprovante/dados necessários
-[ ] vínculo com Team independe da inscrição pessoal
-[ ] vínculo RobotResponsible independe da inscrição pessoal
-[ ] Robot pode ser cadastrado sem aprovação administrativa própria de cadastro
-[ ] inscrição do Robot possui aprovação independente
-[ ] Registration.competitors contém somente RobotResponsible do Robot
-[ ] líder não entra automaticamente como competidor de qualquer Robot
-[ ] Robot Registration pode ser enviada enquanto inscrição pessoal está PENDENTE
-[ ] Robot Registration só pode ser APROVADA se todos os seus competidores estiverem APROVADOS pessoalmente na mesma Competition
-[ ] GESTAO vê os Robots associados ao analisar um Competitor
-[ ] GESTAO vê os Competitors associados ao analisar um Robot
-[ ] status cruzados aparecem de forma clara na aprovação
-[ ] backend bloqueia aprovação incoerente mesmo com request adulterado
-[ ] comprovante da pessoa e comprovante do Robot permanecem independentes
-[ ] APROVADA pessoal não aprova Robot automaticamente
-[ ] APROVADA do Robot não aprova Competitor automaticamente
-[ ] auditoria preserva quem aprovou/rejeitou e motivo
-[ ] fluxo manual DEV continua excepcional e auditável
-[ ] um Robot pode possuir múltiplos RobotResponsible
-[ ] um Competitor pode ser responsável por múltiplos Robots
-[ ] adicionar responsável permanente não altera automaticamente Registration.competitors
-[ ] Registration APROVADA não perde aprovação apenas por ganhar novo responsável permanente
-[ ] alterar a composição competitiva de Registration APROVADA exige nova análise
-[ ] não é permitido manter Registration ativa com competidor que deixou de ser RobotResponsible sem regularização explícita
+Competition + Category + Robot
 ```
 
-**Não iniciar 4.4 antes desta validação.**
+Esperado:
+
+- segunda Registration não é criada.
+
+### Teste 24 — incompatibilidade física Sumô
+
+Para o mesmo Robot/Competition:
+
+1. criar Mini Sumô RC;
+2. tentar Sumô 3 kg RC.
+
+Esperado:
+
+- combinação incompatível filtrada no frontend quando possível;
+- backend é barreira definitiva.
+
+### Teste 25 — cancelamento/reactivação do Robot
+
+Registration PENDENTE:
+
+```text
+cancelar
+→ CANCELADA
+→ reativar enquanto inscrições abertas
+→ PENDENTE
+```
+
+Nunca retorna diretamente para APROVADA.
 
 ---
 
-# 5. Cobertura automatizada adicionada no 4.3
+# 8. Checklist de aceite do 4.3
 
-Backend:
+```text
+[ ] inscrição pessoal existe separada da inscrição do Robot
+[ ] comprovante pessoal funciona
+[ ] comprovante do Robot funciona
+[ ] associação com Team independe da inscrição pessoal
+[ ] RobotResponsible independe da inscrição pessoal
+[ ] Robot possui múltiplos responsáveis
+[ ] Competitor possui múltiplos Robots
+[ ] líder administra Robot sem virar responsável automaticamente
+[ ] somente RobotResponsible pode compor Registration.competitors
+[ ] Registration possui pelo menos um competidor
+[ ] Robot Registration pode nascer enquanto pessoais estão PENDENTE
+[ ] Robot não pode ser APROVADO com competidor pessoalmente PENDENTE
+[ ] todos os competidores precisam estar pessoalmente APROVADOS
+[ ] GESTAO vê Competitor → Robots
+[ ] GESTAO vê Robot → Competitors
+[ ] comprovantes/status aparecem na análise
+[ ] aprovar pessoa não aprova Robot
+[ ] aprovar Robot não aprova pessoa
+[ ] adicionar responsável não reescreve Registration existente
+[ ] remover responsável usado por Registration ativa é bloqueado
+[ ] request adulterado não burla responsabilidade
+[ ] request adulterado não burla aprovação pessoal
+[ ] duplicidade permanece bloqueada
+[ ] incompatibilidade Sumô permanece bloqueada
+[ ] PENDENTE não entra nos fluxos oficiais
+[ ] APROVADA entra nos fluxos oficiais
+[ ] cancelamento/reactivação do Robot permanece coerente
+[ ] nenhuma regressão visual impeditiva
+```
 
-- membro responsável pode enviar inscrição sem ser líder;
-- membro sem responsabilidade não pode administrar inscrição do robô;
-- membro responsável pode administrar inscrição do robô;
-- listagem do membro reúne inscrições em que ele participa e inscrições dos robôs sob sua responsabilidade sem duplicar;
-- regras existentes de `RegistrationService` continuam cobrindo `PENDENTE`, equipe dos competidores, duplicidade, janela e compatibilidade.
+**Somente depois desse aceite o 4.3 pode ser encerrado.**
 
-CI/testdata:
+---
 
-- sobe MySQL + Flyway + profile `testdata`;
-- valida login líder/membro/GESTAO;
-- valida que membro vê apenas Vespa e líder vê os dois robôs;
-- cria Registration real pelo endpoint do Portal;
-- exige `PENDENTE`;
-- confirma que PENDENTE não aparece na API pública;
-- tenta duplicidade e exige bloqueio;
-- aprova como GESTAO;
-- confirma que APROVADA passa a aparecer na API pública.
+# 9. Cobertura automatizada preparada
 
-Frontend:
+## Unitários/fluxo
 
-- workflow continua responsável por `vue-tsc --noEmit` + `vite build`.
+Foram adicionadas/adaptadas coberturas para:
 
-O checkpoint de CI só deve ser marcado verde após a execução real dos workflows nos commits do 4.3.
+- criação de inscrição pessoal PENDENTE com comprovante;
+- aprovação da inscrição pessoal pela GESTAO;
+- bloqueio quando falta aprovação pessoal;
+- inscrição de Robot exigindo RobotResponsible;
+- Portal exigindo comprovante;
+- bloqueio da remoção de RobotResponsible usado por Registration ativa;
+- fluxo integrado de Registration atualizado para comprovante + aprovação pessoal.
+
+## MySQL/testdata
+
+O job `portal-testdata` foi preparado para executar:
+
+```text
+Membro → 1 Robot
+Apoio  → 2 Robots
+Vespa  → 2 responsáveis
+```
+
+Depois:
+
+1. Membro envia inscrição pessoal PENDENTE;
+2. Apoio envia inscrição pessoal PENDENTE;
+3. Membro envia Vespa com os dois responsáveis + comprovante;
+4. tentativa precoce de aprovar Vespa deve falhar;
+5. duplicidade deve falhar;
+6. GESTAO aprova Membro;
+7. GESTAO aprova Apoio;
+8. contexto do Robot deve mostrar 2 responsáveis + 2 APROVADAS;
+9. GESTAO aprova Vespa;
+10. somente então Vespa aparece na API pública.
+
+## Frontend
+
+Contratos e telas foram preparados para:
+
+- `Minha inscrição pessoal`;
+- upload do comprovante pessoal;
+- upload do comprovante do Robot;
+- fila de inscrições pessoais na GESTAO;
+- visualização Competitor → Robots;
+- visualização Robot → Competitors;
+- bloqueio visual de aprovação com dependências pendentes.
+
+**Checkpoint automatizado ainda não está marcado como verde:** os heads atuais não geraram execução nova de GitHub Actions até este momento. A validação real será feita antes do fechamento do 4.3.
