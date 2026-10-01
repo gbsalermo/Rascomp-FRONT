@@ -133,6 +133,18 @@ const controlModeLabel = computed(() => {
   return 'Modo não configurado'
 })
 
+function withLoadTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 15000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      window.setTimeout(
+        () => reject(new Error(`Tempo limite ao carregar ${label}. Tente novamente.`)),
+        timeoutMs
+      )
+    )
+  ])
+}
+
 function phaseLabel(round: number) {
   return `Rodada ${round}`
 }
@@ -260,16 +272,19 @@ async function load() {
   }
   loading.value = true
   try {
-    const detail = await adminApi.match(matchId.value)
+    const detail = await withLoadTimeout(adminApi.match(matchId.value), 'a partida')
     match.value = detail
     if (!detail.categoryId) throw new Error('A partida não possui categoria associada.')
 
-    const [sumoConfig, sumoRounds, sumoCategories, competitionJudges] = await Promise.all([
-      adminApi.sumoConfig(detail.categoryId),
-      adminApi.rounds(detail.id),
-      adminApi.categories('SUMO'),
-      detail.competitionId ? adminApi.judges(detail.competitionId) : Promise.resolve([] as CompetitionJudge[])
-    ])
+    const [sumoConfig, sumoRounds, sumoCategories, competitionJudges] = await withLoadTimeout(
+      Promise.all([
+        adminApi.sumoConfig(detail.categoryId),
+        adminApi.rounds(detail.id),
+        adminApi.categories('SUMO'),
+        detail.competitionId ? adminApi.judges(detail.competitionId) : Promise.resolve([] as CompetitionJudge[])
+      ]),
+      'dados da arena'
+    )
     config.value = sumoConfig
     rounds.value = [...sumoRounds].sort((a, b) => a.numeroRound - b.numeroRound)
     category.value = sumoCategories.find((item) => item.id === detail.categoryId)
@@ -364,6 +379,17 @@ async function saveJudgeDecision() {
 }
 
 function goBack() {
+  if (route.query.from === 'chaves') {
+    router.push({
+      path: '/chaves',
+      query: {
+        ...(route.query.competitionId ? { competitionId: route.query.competitionId } : {}),
+        ...(route.query.bracketId ? { bracketId: route.query.bracketId } : {})
+      }
+    })
+    return
+  }
+
   if (route.query.bracketId || route.query.categoryId || route.query.competitionId) {
     router.push({
       name: 'sumo',
