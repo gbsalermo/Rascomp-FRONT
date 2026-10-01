@@ -70,12 +70,6 @@ function pickBracket(preferredId?: number) {
   bracketId.value = preferred?.id || options.find((item) => item.atual !== false)?.id || options[0]?.id
 }
 
-function controlModeLabel(category?: Category) {
-  if (category?.sumoControlMode === 'AUTONOMO') return 'Autônomo'
-  if (category?.sumoControlMode === 'RC') return 'R/C'
-  return 'Modo não configurado'
-}
-
 function latestInspection(registrationId: number) {
   return inspections.value
     .filter((item) => item.registrationId === registrationId)
@@ -172,12 +166,6 @@ function formatInspectionWeight(value?: number) {
     return `${Math.round(Number(value) * 1000)} g`
   }
   return `${Number(value).toFixed(3)} kg`
-}
-
-function physicalClassLabel(category?: Category) {
-  if (category?.sumoPhysicalClass === 'MINI_500G') return 'Mini 500 g'
-  if (category?.sumoPhysicalClass === 'SUMO_3KG') return 'Sumô 3 kg'
-  return 'Classe não configurada'
 }
 
 async function initialize() {
@@ -641,7 +629,6 @@ onMounted(initialize)
 .sumo-inspection-table { overflow:hidden; }
 .sumo-bracket-heading { margin-bottom: 12px; }
 .sumo-bracket-heading p { margin: 4px 0 0; }
-.sumo-rule-card { align-items:center; }
 .inspection-hint { margin:0; padding:10px 12px; border-radius:10px; background:#f8f3f5; color:#6f6067; font-size:12px; line-height:1.5; }
 .judge-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
 .visible-judge-list { padding: 0 16px 16px; }
