@@ -659,9 +659,10 @@ onMounted(initialize)
 .visible-judge-list { padding: 0 16px 16px; }
 .inspection-weight-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; }
 .generation-hint { color:#8b6d78; font-size:11px; font-weight:700; }
-</style>
-
 @media (max-width: 760px) {
   .sumo-context-card { align-items:flex-start; flex-direction:column; }
   .sumo-filter-bar :deep(.el-select) { width:100% !important; }
 }
+</style>
+
+
