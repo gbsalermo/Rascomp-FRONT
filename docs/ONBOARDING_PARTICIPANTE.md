@@ -181,3 +181,46 @@ Fluxo principal de entrada em equipe:
 5. líder pode associá-lo a robôs existentes ou novos.
 
 Também deve existir o caminho inverso: participante encontra uma equipe e solicita entrada; o aceite do líder produz o mesmo vínculo.
+
+
+## Cadastro de robô x aprovação competitiva — regra canônica do BLOCO 4
+
+Não confundir **existência do robô na equipe** com **participação do robô em uma competição**.
+
+Fluxo oficial:
+
+```text
+PARTICIPANTE associado a uma equipe
+        ↓
+cria/cadastra robô da equipe
+        ↓
+robô existe no catálogo da equipe
+        ↓
+participante escolhe competição/categoria disponível
+        ↓
+seleciona um robô da equipe pelo qual possui responsabilidade/permissão
+        ↓
+envia Registration
+        ↓
+Registration = PENDENTE
+        ↓
+GESTAO aprova/rejeita
+        ↓
+APROVADA → robô oficialmente alocado naquela competição/categoria
+```
+
+Regras:
+
+- criar um `Robot` **não exige aprovação da organização**;
+- o que exige aprovação da organização é a `Registration`;
+- enquanto a inscrição estiver `PENDENTE`, o robô não é participante oficial daquela competição;
+- somente após `APROVADA` o robô passa a integrar operação, filas, chave, ranking e resultados da competição;
+- um mesmo robô pode existir no catálogo da equipe sem estar inscrito em competição alguma;
+- o mesmo robô pode participar de diferentes edições/categorias conforme as regras e inscrições aprovadas;
+- participante líder ou membro competitivo da equipe pode cadastrar robô conforme permissão do Portal;
+- ao criar um robô, o criador pode ser associado como responsável inicial; o líder da equipe pode administrar os responsáveis;
+- líder continua com visão administrativa de todos os robôs da equipe;
+- membro comum vê como "Meus robôs" os robôs pelos quais é responsável;
+- a organização não escolhe os responsáveis internos do robô: ela aprova a inscrição competitiva.
+
+A entrada manual DEV permanece exceção operacional e pode criar uma `Registration` aprovada diretamente com justificativa/auditoria.
