@@ -372,3 +372,32 @@ A ordem corrigida do re-smoke mantém primeiro todos os fluxos que dependem de `
 - testes 11 e 12 validados.
 
 O fluxo de solicitação para ingressar em equipe existente permanece parte do BLOCO 4/Portal do Participante; quando aprovado, deve criar o vínculo Competitor automaticamente, seguindo a regra canônica acima.
+
+
+## Congelamento de escopo do BLOCO 3 — 30/09/2026
+
+O BLOCO 3 fica restrito à **operação competitiva**.
+
+Permanece no BLOCO 3:
+- Follow, Sumô, Agenda, Chaves e Resultados;
+- pódio, disputa de 3º lugar, BYE e histórico;
+- correção excepcional DEV de resultado/chave;
+- entrada manual DEV de robô/participante como contingência operacional;
+- integridade e bloqueios de estado;
+- smoke final das interfaces competitivas.
+
+Não expandir o BLOCO 3 com domínio novo do Portal do Participante.
+
+Passa para o **BLOCO 4 — Portal do Participante**:
+- convite de integrante iniciado pelo líder;
+- aceite/recusa do participante;
+- solicitação do participante para ingressar em equipe;
+- criação automática do vínculo `UserAccount PARTICIPANTE → Competitor → Team` após associação;
+- modelo de responsáveis por robô (`Robot ↔ Competitor`, N:N);
+- líder visualiza/administra todos os robôs da equipe;
+- membro comum vê como "Meus robôs" somente os robôs pelos quais é responsável;
+- líder cadastra/edita robô e associa um ou mais responsáveis;
+- inscrição pode pré-selecionar os responsáveis do robô, mantendo `RegistrationCompetitor` como vínculo específico daquela competição;
+- onboarding de instituição/equipe/robô e acabamento do Portal.
+
+Estado do BLOCO 3 após re-smoke: falta apenas revalidar o fluxo **robô avulso Sumô** que não foi reportado explicitamente na rodada final e rodar build/testes após as últimas correções.
