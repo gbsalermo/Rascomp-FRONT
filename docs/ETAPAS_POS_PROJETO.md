@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 em correções finais / aguardando re-smoke
+ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 concluído / BLOCO 4 em andamento
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1 e BLOCO 2 concluídos e validados; a bateria 1–56 do BLOCO 3 foi percorrida e as correções finais estão em implementação/re-smoke. Depois do BLOCO 3 resta o BLOCO 4 — Portal do Participante atual — e o smoke geral de encerramento da ETAPA 4. A Landing/Galeria recebe apenas smoke básico aqui; o trabalho completo permanece na ETAPA 9. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1, BLOCO 2 e BLOCO 3 concluídos/validados. BLOCO 4 — Portal do Participante — em andamento. Depois do BLOCO 4 resta apenas o smoke geral de encerramento da ETAPA 4. A Landing/Galeria recebe somente smoke básico aqui; o trabalho completo permanece na ETAPA 9. Não avançar para a ETAPA 5 sem confirmação explícita.**
 
 ---
 
@@ -171,6 +171,46 @@ Para impedir que a ETAPA 4 volte a crescer como um roadmap paralelo:
 - **BLOCO 4 — Portal do Participante:** consolida o fluxo básico de equipe/participante necessário para o produto atual, incluindo convite/aceite, associação automática a Competitor, responsáveis por robô e visibilidade "Meus robôs".
 - recursos avançados do Portal permanecem na **ETAPA 7**.
 - Landing/Galeria continuam apenas no smoke geral; implementação/polimento completo permanece na **ETAPA 9**.
+
+### BLOCO 4 — Portal do Participante 🚧 EM ANDAMENTO
+
+Escopo congelado em quatro sub-blocos:
+
+**4.1 — Equipe e associação**
+- líder envia convite por e-mail/login da conta PARTICIPANTE;
+- participante aceita/recusa;
+- participante pode solicitar entrada em equipe existente;
+- líder aprova/rejeita;
+- aceite/aprovação cria automaticamente `UserAccount PARTICIPANTE → Competitor → Team`;
+- uma conta PARTICIPANTE possui um único vínculo competitivo de equipe.
+
+**4.2 — Responsáveis por robô**
+- `Robot` continua pertencendo à equipe;
+- vínculo N:N `Robot ↔ Competitor responsável`;
+- quem cadastra o robô vira responsável inicial;
+- líder administra todos os robôs e pode alterar responsáveis;
+- membro comum vê/edita somente os robôs pelos quais é responsável.
+
+**4.3 — Portal e inscrições**
+- cadastro normal de robô pelo participante associado à equipe;
+- seleção de competição/categoria disponível;
+- seleção do robô e competidores;
+- inscrição criada como `PENDENTE`;
+- GESTAO aprova/rejeita;
+- somente `APROVADA` aloca oficialmente o robô à competição;
+- responsáveis do robô servem como sugestão inicial para os competidores da inscrição.
+
+**4.4 — Polimento + validação**
+- estados vazios/loading/erro;
+- líder x membro;
+- responsividade básica;
+- bateria manual do Portal;
+- smoke final da ETAPA 4.
+
+Checkpoint inicial:
+- V24 cria convites/solicitações de equipe e responsáveis por robô;
+- 4.1 implementado backend + frontend, aguardando validação;
+- base funcional de 4.2 implementada, aguardando validação.
 
 ### Relação da ETAPA 4 com o eixo mobile
 
