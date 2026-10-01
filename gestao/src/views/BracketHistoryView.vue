@@ -65,6 +65,11 @@ const currentCompetitionStatus = computed(() => competition.selectedCompetition?
 const canGenerateCommon = computed(() => currentCompetitionStatus.value === 'INSCRICOES_ENCERRADAS')
 const canGenerateExceptional = computed(() => auth.isDev && currentCompetitionStatus.value === 'EM_ANDAMENTO')
 
+function choosePreviewBracket(id?: number) {
+  const item = rows.value.find((row) => row.id === id)
+  if (item) selectPreview(item)
+}
+
 async function selectPreview(item: BracketHistoryRow) {
   previewBracketId.value = item.id
   try {
@@ -342,7 +347,22 @@ onMounted(load)
             <span v-if="previewBracket.generatedByUserNome"> · {{ previewBracket.generatedByUserNome }}</span>
           </p>
         </div>
-        <StatusBadge :value="previewBracket.status || 'GERADO'" />
+        <div class="bracket-preview-switcher">
+          <el-select
+            v-model="previewBracketId"
+            placeholder="Trocar chave"
+            style="width:min(360px, 100%)"
+            @change="choosePreviewBracket"
+          >
+            <el-option
+              v-for="item in rows"
+              :key="item.id"
+              :label="`${item.atual !== false ? 'Atual' : 'Histórica'} · ${item.categoryNome || item.nome} · #${item.id}`"
+              :value="item.id"
+            />
+          </el-select>
+          <StatusBadge :value="previewBracket.status || 'GERADO'" />
+        </div>
       </div>
       <TournamentBracket
         :matches="previewMatches"
