@@ -19,9 +19,9 @@ Equipe pronta
     ↓
 Nova inscrição
     ├── competição/categoria
-    ├── robô
-    ├── 1 competidor responsável
-    └── 0..N competidores de suporte
+    ├── robô gerenciável pelo participante
+    ├── responsáveis permanentes pré-selecionados
+    └── competidores daquela Registration ajustáveis
 ```
 
 ## Conta
@@ -63,13 +63,7 @@ líder recebe solicitação
     └── rejeitar
 ```
 
-A busca visual já pode usar `/api/v1/public/equipes`, que expõe apenas dados sanitizados de identificação. A criação e decisão da solicitação dependem da evolução pós-Swagger descrita no backend em:
-
-```text
-rascomp/docs/POS_SWAGGER_USUARIOS_EQUIPES_INSCRICAO.md
-```
-
-Não substituir esse fluxo futuro por duplicação manual de dados de usuário.
+A busca visual usa `/api/v1/public/equipes`, que expõe apenas dados sanitizados de identificação. O fluxo real de solicitação/convite já está implementado no BLOCO 4.1 e converge para o mesmo vínculo competitivo, sem duplicação manual de dados de usuário.
 
 ## Participação competitiva
 
@@ -81,46 +75,62 @@ Regra revisada em 30/09/2026:
 - contas de gestão interna continuam separadas e não viram competidores;
 - a inscrição competitiva continua sendo a associação do robô + categoria + competidores daquela equipe.
 
-Experiência desejada:
+Experiência implementada no BLOCO 4.3:
 
 ```text
 Nova inscrição
     ↓
-selecionar competição
+selecionar competição com inscrições abertas
     ↓
-selecionar categoria
+selecionar robô gerenciável
     ↓
-selecionar robô existente OU cadastrar robô dentro do fluxo
+selecionar categoria compatível
     ↓
-selecionar 1 RESPONSÁVEL
+responsáveis permanentes vêm pré-selecionados
     ↓
-selecionar 0..N SUPORTES
+ajustar competidores específicos da Registration
     ↓
 confirmar
+    ↓
+Registration = PENDENTE
 ```
 
-### Responsável e suporte
+### Responsabilidade permanente x composição da Registration
 
-`RESPONSAVEL` e `SUPORTE` são papéis da pessoa naquela inscrição/robô, não tipos permanentes de usuário.
+Não existe papel persistido `RESPONSAVEL/SUPORTE` dentro da Registration atual.
+
+São conceitos diferentes:
+
+```text
+RobotResponsible
+→ vínculo permanente Robot ↔ Competitor
+→ define responsabilidade cotidiana pelo robô
+
+Registration.competitors
+→ composição daquela inscrição específica
+→ pode ser ajustada entre competidores ativos da mesma equipe
+```
 
 Exemplo:
 
 ```text
 Robot Vespa
-├── Gabriel — RESPONSAVEL
-├── João    — SUPORTE
-└── Maria   — SUPORTE
+responsáveis permanentes: Gabriel + João
+
+Registration Vespa / Follow
+competidores: Gabriel + Maria
 ```
 
-A mesma pessoa pode assumir outro papel em outra inscrição quando a regra da competição permitir.
-
-Um mesmo robô pode possuir dois, três ou mais integrantes associados. Isso representa melhor equipes acadêmicas em que várias pessoas desenvolvem e operam o mesmo robô.
+João continua responsável permanente pelo robô mesmo sem participar daquela Registration. Maria participa daquela inscrição sem virar responsável permanente do robô.
 
 ## Robô
 
-O `Robot` continua persistente no backend, mas o frontend não precisa exigir uma tela isolada de cadastro antes da inscrição.
+O `Robot` continua persistente no backend. No BLOCO 4.3, o participante cadastra o robô pelo Portal e depois o seleciona no fluxo de **Nova inscrição**.
 
-O robô pode ser cadastrado dentro do wizard de inscrição e, após persistido, seu `robotId` é usado na `Registration`.
+- líder visualiza/administra todos os robôs da equipe;
+- membro comum visualiza e inscreve apenas robôs pelos quais é responsável;
+- quem cria um robô vira responsável inicial;
+- o cadastro do robô não depende de aprovação organizacional.
 
 ## Recuperação de senha
 
@@ -226,15 +236,24 @@ Regras:
 A entrada manual DEV permanece exceção operacional e pode criar uma `Registration` aprovada diretamente com justificativa/auditoria.
 
 
-## Implementação BLOCO 4 — checkpoint inicial
+## Implementação BLOCO 4 — checkpoint 01/10/2026
 
 Implementado:
-- fluxo real de convite/aceite;
-- fluxo real de solicitação/aprovação;
-- vínculo automático UserAccount → Competitor → Team;
-- estrutura persistida de responsáveis por robô;
-- criador como responsável inicial;
-- edição de responsáveis pelo líder;
-- visibilidade "Meus robôs" baseada em responsabilidade.
+- 4.1: fluxo real de convite/aceite;
+- 4.1: fluxo real de solicitação/aprovação;
+- 4.1: vínculo automático UserAccount → Competitor → Team;
+- 4.2: estrutura persistida de responsáveis por robô;
+- 4.2: criador como responsável inicial;
+- 4.2: edição de responsáveis pelo líder;
+- 4.2: visibilidade "Meus robôs" baseada em responsabilidade;
+- 4.3: listagem de competições com inscrições abertas no Portal;
+- 4.3: líder inscreve qualquer robô da equipe e membro comum inscreve robôs sob sua responsabilidade;
+- 4.3: responsáveis permanentes vêm pré-selecionados;
+- 4.3: composição da Registration pode ser ajustada entre competidores ativos da mesma equipe;
+- 4.3: envio cria Registration `PENDENTE`;
+- 4.3: Portal informa explicitamente **Aguardando aprovação da organização**;
+- 4.3: aprovação/rejeição continua no fluxo administrativo existente;
+- 4.3: somente Registration `APROVADA` é exposta como participação oficial;
+- 4.3: duplicidade, janela, ownership e compatibilidade continuam validados no backend.
 
-Próximo: validar 4.1/4.2 e então consolidar 4.3 — inscrição normal pelo Portal com aprovação da GESTAO.
+Estado: **4.3 implementado e aguardando validação manual. 4.4 não iniciado.**
