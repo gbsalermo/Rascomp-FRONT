@@ -38,7 +38,7 @@ ETAPA 4  🚧 em andamento
   BLOCO 1 ✅
   BLOCO 2 ✅
   BLOCO 3 ✅ concluído / validado
-  BLOCO 4 🚧 Portal do Participante — 4.1 implementado / 4.2 base implementada / 4.3 próximo
+  BLOCO 4 🚧 Portal do Participante — 4.1 ✅ / 4.2 ✅ base / 4.3 🧪 implementado aguardando validação / 4.4 ⏳
 ```
 
 A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi concluída/validada em 13/09/2026. A ETAPA 3 também está concluída/validada após integração, testes HTTP e validação prática dos perfis.
@@ -230,7 +230,7 @@ A limpeza técnica de `rascomp/bin/`, `.classpath/.project`, código morto, CSS 
 12. parar no checkpoint e aguardar validação
 ```
 
-No estado atual, as **ETAPAS 0–3 estão encerradas/validadas**. A **ETAPA 4 — Consolidação funcional e polimento do MVP** está em andamento; os **BLOCOS 1, 2 e 3 estão concluídos/validados** e o **BLOCO 4 — Portal do Participante** está em andamento. O 4.1 (equipe/associação) está implementado, a base funcional do 4.2 (responsáveis por robô) está implementada e o próximo foco é o 4.3 — inscrição normal pelo Portal com aprovação da GESTAO.
+No estado atual, as **ETAPAS 0–3 estão encerradas/validadas**. A **ETAPA 4 — Consolidação funcional e polimento do MVP** está em andamento; os **BLOCOS 1, 2 e 3 estão concluídos/validados** e o **BLOCO 4 — Portal do Participante** está em andamento. O 4.1 (equipe/associação) e a base funcional do 4.2 (responsáveis por robô) estão implementados. O **4.3 — inscrição normal pelo Portal** também está implementado e aguarda validação manual. **Não iniciar 4.4 antes desse checkpoint.**
 
 ## Checkpoint pessoal opcional
 
@@ -254,4 +254,13 @@ Regras canônicas atuais:
 - participação competitiva depende de `Registration PENDENTE → GESTAO aprova → APROVADA`;
 - V24 introduziu `team_membership_requests` e `robot_responsibles`.
 
-Próximo sub-bloco: **4.3 — inscrição normal pelo Portal**.
+BLOCO 4.3 implementado:
+- líder pode inscrever qualquer robô da equipe;
+- membro comum pode inscrever os robôs pelos quais é responsável;
+- responsáveis permanentes do robô vêm pré-selecionados;
+- competidores específicos da Registration podem ser ajustados entre membros válidos da equipe;
+- inscrição nasce `PENDENTE`;
+- somente `APROVADA` vira participação oficial;
+- validação manual está documentada em `VALIDACAO_ETAPA4_BLOCO4.md`.
+
+Próximo passo: **validar o 4.3**. O 4.4 permanece não iniciado.
