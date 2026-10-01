@@ -5,11 +5,14 @@ import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
 import type {
   Category,
+  ParticipantCompetitionRegistration,
+  ParticipantCompetitionRegistrationStatus,
   Registration,
   RegistrationCancellationRequest,
   UserAccount,
   RegistrationStatus,
-  RegistrationStatusHistory
+  RegistrationStatusHistory,
+  RegistrationCompetitorContext
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -21,6 +24,8 @@ const reviewingId = ref<number>()
 const registrationActionId = ref<number>()
 const cancellationReviewingId = ref<number>()
 const rows = ref<Registration[]>([])
+const participantRows = ref<ParticipantCompetitionRegistration[]>([])
+const participantReviewingId = ref<number>()
 const cancellationRequests = ref<RegistrationCancellationRequest[]>([])
 const competitionId = ref<number>()
 const status = ref<string>('PENDENTE')
@@ -29,6 +34,8 @@ const detailsOpen = ref(false)
 const selected = ref<Registration>()
 const statusHistory = ref<RegistrationStatusHistory[]>([])
 const statusHistoryLoading = ref(false)
+const registrationContext = ref<RegistrationCompetitorContext[]>([])
+const registrationContextLoading = ref(false)
 
 const manualDialog = ref(false)
 const manualSaving = ref(false)
@@ -234,19 +241,22 @@ async function loadBase() {
 async function load() {
   if (!competitionId.value) {
     rows.value = []
+    participantRows.value = []
     cancellationRequests.value = []
     return
   }
 
   loading.value = true
   try {
-    const [registrationRows, cancellationRows] = await Promise.all([
+    const [registrationRows, participantRegistrationRows, cancellationRows] = await Promise.all([
       adminApi.registrations({ competitionId: competitionId.value }),
+      adminApi.participantRegistrations(competitionId.value),
       adminApi.cancellationRequests({
         competitionId: competitionId.value
       })
     ])
     rows.value = registrationRows
+    participantRows.value = participantRegistrationRows
     cancellationRequests.value = cancellationRows
 
     if (selected.value) {
@@ -264,14 +274,88 @@ async function openDetails(row: Registration) {
   selected.value = row
   detailsOpen.value = true
   statusHistory.value = []
+  registrationContext.value = []
   statusHistoryLoading.value = true
+  registrationContextLoading.value = true
 
   try {
-    statusHistory.value = await adminApi.registrationStatusHistory(row.id)
+    const [history, context] = await Promise.all([
+      adminApi.registrationStatusHistory(row.id),
+      adminApi.registrationCompetitorContext(row.id)
+    ])
+    statusHistory.value = history
+    registrationContext.value = context
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar o histórico da inscrição.')
   } finally {
     statusHistoryLoading.value = false
+    registrationContextLoading.value = false
+  }
+}
+
+async function openBlob(blob: Blob) {
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank', 'noopener,noreferrer')
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+}
+
+async function openParticipantReceipt(row: ParticipantCompetitionRegistration) {
+  try {
+    await openBlob(await adminApi.participantRegistrationReceipt(row.id))
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível abrir o comprovante do participante.')
+  }
+}
+
+async function openRobotReceipt(row: Registration) {
+  try {
+    await openBlob(await adminApi.robotRegistrationReceipt(row.id))
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível abrir o comprovante do robô.')
+  }
+}
+
+async function reviewParticipant(
+  row: ParticipantCompetitionRegistration,
+  next: ParticipantCompetitionRegistrationStatus
+) {
+  const approving = next === 'APROVADA'
+  let motivo: string | undefined
+
+  try {
+    if (approving) {
+      await ElMessageBox.confirm(
+        `Aprovar a inscrição pessoal de ${row.competitorNome}? Os robôs associados aparecem nesta mesma linha para conferência.`,
+        'Aprovar participante',
+        {
+          type: 'success',
+          confirmButtonText: 'Aprovar participante',
+          cancelButtonText: 'Cancelar'
+        }
+      )
+    } else {
+      const result = await ElMessageBox.prompt(
+        'Informe o motivo da rejeição da inscrição pessoal.',
+        `Rejeitar participante · ${row.competitorNome}`,
+        {
+          inputType: 'textarea',
+          inputValidator: (value) => value?.trim() ? true : 'Informe o motivo da rejeição.',
+          confirmButtonText: 'Rejeitar',
+          cancelButtonText: 'Cancelar'
+        }
+      )
+      motivo = result.value?.trim()
+    }
+
+    participantReviewingId.value = row.id
+    await adminApi.reviewParticipantRegistration(row.id, next, motivo)
+    ElMessage.success(approving ? 'Participante aprovado.' : 'Inscrição pessoal rejeitada.')
+    await load()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a inscrição pessoal.')
+  } finally {
+    participantReviewingId.value = undefined
   }
 }
 
@@ -285,6 +369,24 @@ async function review(row: Registration, next: RegistrationStatus) {
 
   try {
     if (approving) {
+      const context = await adminApi.registrationCompetitorContext(row.id)
+      const invalid = context.filter(
+        (item) => !item.robotResponsible || item.participantRegistrationStatus !== 'APROVADA'
+      )
+      if (!row.comprovanteDisponivel) {
+        ElMessage.warning('Esta inscrição de robô ainda não possui comprovante de pagamento.')
+        return
+      }
+      if (invalid.length) {
+        ElMessage.warning(
+          'Ainda não é possível aprovar este robô. Verifique: '
+            + invalid.map((item) =>
+              `${item.competitorNome} (${!item.robotResponsible ? 'não é responsável pelo robô' : item.participantRegistrationStatus || 'sem inscrição pessoal'})`
+            ).join(', ')
+        )
+        return
+      }
+
       await ElMessageBox.confirm(
         `Deseja aprovar a inscrição do robô ${row.robotNome}, da equipe ${row.teamNome}?`,
         'Aprovar inscrição',
@@ -578,6 +680,76 @@ onMounted(loadBase)
       </button>
     </div>
 
+    <article class="table-card registrations-table-card participant-approval-card" v-loading="loading">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Pagamento e habilitação pessoal</span>
+          <h2>Inscrições dos participantes</h2>
+        </div>
+        <el-tag type="warning" effect="light">
+          {{ participantRows.filter((item) => item.status === 'PENDENTE').length }} pendente(s)
+        </el-tag>
+      </div>
+
+      <el-table :data="participantRows" empty-text="Nenhuma inscrição pessoal nesta competição">
+        <el-table-column label="Competidor / Equipe" min-width="190">
+          <template #default="{ row }">
+            <div class="registration-main-cell">
+              <strong>{{ row.competitorNome }}</strong>
+              <span>{{ row.teamNome }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Robôs associados" min-width="260">
+          <template #default="{ row }">
+            <div v-if="row.robots?.length" class="participant-linked-robots">
+              <span v-for="robot in row.robots" :key="`${robot.robotId}-${robot.registrationId || 0}-${robot.categoryId || 0}`">
+                <b>{{ robot.robotNome }}</b>
+                <small v-if="robot.categoryNome">{{ robot.categoryNome }} · {{ robot.registrationStatus }}</small>
+                <small v-else>Sem inscrição de robô nesta competição</small>
+              </span>
+            </div>
+            <span v-else class="muted">Nenhum robô associado</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Comprovante" width="145">
+          <template #default="{ row }">
+            <el-button
+              v-if="row.comprovanteDisponivel"
+              size="small"
+              plain
+              @click="openParticipantReceipt(row)"
+            >Abrir</el-button>
+            <span v-else class="muted">Não enviado</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Status" width="135">
+          <template #default="{ row }"><StatusBadge :value="row.status" /></template>
+        </el-table-column>
+        <el-table-column label="Ações" width="205" fixed="right">
+          <template #default="{ row }">
+            <div v-if="row.status === 'PENDENTE'" class="registration-actions">
+              <el-button
+                size="small"
+                type="success"
+                plain
+                :loading="participantReviewingId === row.id"
+                @click="reviewParticipant(row, 'APROVADA')"
+              >Aprovar</el-button>
+              <el-button
+                size="small"
+                type="danger"
+                plain
+                :loading="participantReviewingId === row.id"
+                @click="reviewParticipant(row, 'REJEITADA')"
+              >Rejeitar</el-button>
+            </div>
+            <span v-else class="muted">{{ row.reviewedByUserNome || 'Analisada' }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+    </article>
+
     <article class="registration-filters">
       <div class="registration-filter-main">
         <el-input
@@ -633,6 +805,12 @@ onMounted(loadBase)
               <strong>{{ row.requestedByUserNome || 'Organização' }}</strong>
               <span>{{ formatDateTime(row.dataCadastro) }}</span>
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Comprovante" width="125">
+          <template #default="{ row }">
+            <el-button v-if="row.comprovanteDisponivel" size="small" plain @click="openRobotReceipt(row)">Abrir</el-button>
+            <span v-else class="muted">—</span>
           </template>
         </el-table-column>
         <el-table-column label="Status" width="145">
@@ -784,12 +962,40 @@ onMounted(loadBase)
           </dl>
         </section>
 
-        <section class="registration-details-section">
-          <h3>Competidores</h3>
-          <div v-if="selected.competitorNomes?.length" class="registration-person-list">
-            <span v-for="name in selected.competitorNomes" :key="name">{{ name }}</span>
+        <section class="registration-details-section" v-loading="registrationContextLoading">
+          <div class="registration-detail-heading-row">
+            <h3>Competidores e elegibilidade</h3>
+            <el-button
+              v-if="selected.comprovanteDisponivel"
+              size="small"
+              plain
+              @click="openRobotReceipt(selected)"
+            >Ver comprovante do robô</el-button>
           </div>
-          <p v-else class="muted">Nenhum competidor informado.</p>
+          <div v-if="registrationContext.length" class="registration-eligibility-list">
+            <article v-for="item in registrationContext" :key="item.competitorId">
+              <strong>{{ item.competitorNome }}</strong>
+              <span :class="{ ok: item.robotResponsible, bad: !item.robotResponsible }">
+                {{ item.robotResponsible ? 'Responsável pelo robô' : 'Não associado ao robô' }}
+              </span>
+              <span
+                :class="{
+                  ok: item.participantRegistrationStatus === 'APROVADA',
+                  pending: item.participantRegistrationStatus === 'PENDENTE',
+                  bad: !item.participantRegistrationStatus || item.participantRegistrationStatus === 'REJEITADA'
+                }"
+              >
+                Inscrição pessoal: {{ item.participantRegistrationStatus || 'NÃO ENVIADA' }}
+              </span>
+            </article>
+          </div>
+          <p v-else-if="!registrationContextLoading" class="muted">Nenhum competidor informado.</p>
+          <el-alert
+            v-if="selected.status === 'PENDENTE' && registrationContext.some((item) => !item.robotResponsible || item.participantRegistrationStatus !== 'APROVADA')"
+            type="warning"
+            :closable="false"
+            title="Este robô ainda possui dependências e não pode ser aprovado."
+          />
         </section>
 
         <section class="registration-details-section">
@@ -893,6 +1099,18 @@ onMounted(loadBase)
 </template>
 
 <style scoped>
+.participant-linked-robots { display:grid; gap:5px; }
+.participant-linked-robots > span { display:grid; gap:1px; padding:5px 0; }
+.participant-linked-robots b { color:#4e3a44; font-size:12px; }
+.participant-linked-robots small { color:#81737a; font-size:10px; }
+.registration-detail-heading-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.registration-eligibility-list { display:grid; gap:8px; }
+.registration-eligibility-list article { display:grid; gap:4px; padding:10px 12px; border:1px solid #eadde3; border-radius:10px; }
+.registration-eligibility-list span { font-size:11px; color:#776970; }
+.registration-eligibility-list .ok { color:#28734d; font-weight:700; }
+.registration-eligibility-list .pending { color:#8d671d; font-weight:700; }
+.registration-eligibility-list .bad { color:#a32745; font-weight:700; }
+
 .manual-entry-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
 .manual-entry-form label { display:grid; gap:6px; color:#4e3d45; font-size:12px; font-weight:800; }
 .manual-entry-form .span-2 { grid-column:1 / -1; }
