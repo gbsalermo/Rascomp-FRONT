@@ -25,6 +25,7 @@ const categoryId = ref<number>()
 const bracketId = ref<number>()
 const inspectionDialog = ref(false)
 const judgeDialog = ref(false)
+const inspectionUnit = ref<'g' | 'kg'>('g')
 const inspection = reactive({
   registrationId: undefined as number | undefined,
   aprovada: undefined as boolean | undefined,
@@ -98,7 +99,16 @@ function inspectionTagType(registration: Registration) {
 function openInspection(row?: Registration) {
   resetInspection()
   inspection.registrationId = row?.id
+  inspectionUnit.value = currentCategory.value?.sumoPhysicalClass === 'SUMO_3KG' ? 'kg' : 'g'
   inspectionDialog.value = true
+}
+
+function formatInspectionWeight(value?: number) {
+  if (value == null) return '—'
+  if (currentCategory.value?.sumoPhysicalClass === 'MINI_500G') {
+    return `${Math.round(Number(value) * 1000)} g`
+  }
+  return `${Number(value).toFixed(3)} kg`
 }
 
 function physicalClassLabel(category?: Category) {
@@ -254,6 +264,7 @@ function resetInspection() {
   inspection.aprovada = undefined
   inspection.pesoMedido = undefined
   inspection.observacao = ''
+  inspectionUnit.value = currentCategory.value?.sumoPhysicalClass === 'SUMO_3KG' ? 'kg' : 'g'
 }
 
 async function saveInspection() {
@@ -265,7 +276,9 @@ async function saveInspection() {
     await adminApi.inspectSumo({
       registrationId: inspection.registrationId,
       aprovada: inspection.aprovada,
-      pesoMedido: inspection.pesoMedido && inspection.pesoMedido > 0 ? inspection.pesoMedido : undefined,
+      pesoMedido: inspection.pesoMedido && inspection.pesoMedido > 0
+        ? (inspectionUnit.value === 'g' ? inspection.pesoMedido / 1000 : inspection.pesoMedido)
+        : undefined,
       observacao: inspection.observacao || undefined
     })
     ElMessage.success(inspection.aprovada ? 'Inspeção registrada como APTO.' : 'Inspeção registrada como INAPTO.')
@@ -380,6 +393,21 @@ onMounted(initialize)
       <el-tag effect="plain">{{ judges.length }} juiz{{ judges.length === 1 ? '' : 'es' }} ativo{{ judges.length === 1 ? '' : 's' }}</el-tag>
     </article>
 
+    <article class="table-card sumo-judges-card">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Arbitragem</span>
+          <h2>Juízes da competição</h2>
+          <p class="muted">Juízes ativos podem ser selecionados nas decisões técnicas das batalhas.</p>
+        </div>
+        <el-button @click="judgeDialog = true">Cadastrar juiz</el-button>
+      </div>
+      <div v-if="judges.length" class="judge-list visible-judge-list">
+        <el-tag v-for="judge in judges" :key="judge.id" type="info" effect="plain">{{ judge.nome }} · ativo</el-tag>
+      </div>
+      <div v-else class="muted">Nenhum juiz ativo cadastrado para esta competição.</div>
+    </article>
+
     <article class="table-card sumo-inspection-table">
       <div class="card-heading">
         <div>
@@ -406,7 +434,7 @@ onMounted(initialize)
           <template #default="{ row }">
             <span v-if="latestInspection(row.id)">
               #{{ latestInspection(row.id)?.numeroTentativa || '—' }}
-              <template v-if="latestInspection(row.id)?.pesoMedido"> · {{ latestInspection(row.id)?.pesoMedido }} kg</template>
+              <template v-if="latestInspection(row.id)?.pesoMedido"> · {{ formatInspectionWeight(latestInspection(row.id)?.pesoMedido) }}</template>
             </span>
             <span v-else>—</span>
           </template>
@@ -497,7 +525,20 @@ onMounted(initialize)
           </el-radio-group>
         </label>
         <label class="span-2">Peso medido <small class="muted">(opcional e informativo)</small>
-          <el-input-number v-model="inspection.pesoMedido" :min="0.001" :precision="3" controls-position="right" />
+          <div class="inspection-weight-row">
+            <el-input-number
+              v-model="inspection.pesoMedido"
+              :min="inspectionUnit === 'g' ? 1 : 0.001"
+              :precision="inspectionUnit === 'g' ? 0 : 3"
+              :step="inspectionUnit === 'g' ? 1 : 0.01"
+              controls-position="right"
+              style="width:100%"
+            />
+            <el-radio-group v-model="inspectionUnit">
+              <el-radio-button value="g">g</el-radio-button>
+              <el-radio-button value="kg">kg</el-radio-button>
+            </el-radio-group>
+          </div>
         </label>
         <label class="span-2">Observação
           <el-input v-model="inspection.observacao" type="textarea" :rows="3" />
@@ -543,6 +584,8 @@ onMounted(initialize)
 .sumo-rule-card { align-items:center; }
 .inspection-hint { margin:0; padding:10px 12px; border-radius:10px; background:#f8f3f5; color:#6f6067; font-size:12px; line-height:1.5; }
 .judge-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.visible-judge-list { padding: 0 16px 16px; }
+.inspection-weight-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; }
 .generation-hint { color:#8b6d78; font-size:11px; font-weight:700; }
 </style>
 
