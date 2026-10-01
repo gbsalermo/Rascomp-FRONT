@@ -1449,3 +1449,20 @@ Decisões finais:
 - loading ocasional ao abrir partida precisa de hardening.
 
 A checklist detalhada permanece em `docs/VALIDACAO_ETAPA4_BLOCO3.md`.
+
+
+## BLOCO 3 — correções finais prontas para re-smoke — 30/09/2026
+
+Implementado no frontend:
+
+- `RegistrationsView.vue`: ação DEV **Adicionar robô avulso**, usando conta PARTICIPANTE existente, equipe, categoria, robô e justificativa;
+- `BracketHistoryView.vue`: Chaves independente, árvore local, geração comum e regeneração excepcional DEV auditada;
+- `TournamentBracket.vue`: disputa de 3º lugar separada e BYE explícito;
+- `SumoView.vue`: estado competitivo derivado (Em disputa/Eliminado/Campeão/Vice/3º), peso g/kg e juízes visíveis;
+- `ResultsView.vue`: pódio 1º/2º/3º, decisão administrativa de pódio no Follow e histórico filtrável Follow + Sumô;
+- `DashboardView.vue`: campeões/pódio já definidos;
+- `MatchesView.vue`: BYE preservado visualmente como avanço automático;
+- `SumoMatchView.vue`: timeout de carregamento e retorno ao contexto Chaves;
+- Agenda: limpar filtros.
+
+O próximo passo do BLOCO 3 é exclusivamente o re-smoke dirigido registrado em `docs/VALIDACAO_ETAPA4_BLOCO3.md`.
