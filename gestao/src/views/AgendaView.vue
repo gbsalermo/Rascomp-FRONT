@@ -96,6 +96,12 @@ function formatDateTime(value?: string) {
   }).format(date)
 }
 
+function clearFilters() {
+  modalityFilter.value = ''
+  categoryFilter.value = undefined
+  trackFilter.value = ''
+}
+
 function modalityLabel(item: AgendaActivity) {
   return item.modalidade === 'FOLLOW_LINE' ? 'Follow Line' : 'Sumô'
 }
@@ -492,6 +498,7 @@ onMounted(initialize)
         <el-option v-for="item in categories" :key="item.id" :label="item.nome" :value="item.id" />
       </el-select>
       <el-input v-model="trackFilter" clearable placeholder="Filtrar pista/dohyo" style="width:210px" />
+      <el-button :disabled="!modalityFilter && !categoryFilter && !trackFilter" @click="clearFilters">Limpar filtros</el-button>
     </article>
 
     <article class="table-card agenda-table-card">
