@@ -300,7 +300,8 @@ onMounted(load)
           </div>
           <small>{{ item.categoryNome }}</small>
           <template v-if="item.status === 'CONCLUIDO'">
-            <strong>{{ item.winnerRobotNome }}</strong>
+            <span class="results-champion-label">CAMPEÃO</span>
+            <strong class="results-champion-name">{{ item.winnerRobotNome }}</strong>
             <span>{{ item.winnerTeamNome }}</span>
             <em>{{ winnerDetail(item) }}</em>
             <div v-if="item.resolutionType === 'DECISAO_ORGANIZACAO'" class="follow-manual-result-note">
@@ -469,4 +470,7 @@ onMounted(load)
 .results-winners-empty { padding:28px; border:1px dashed #ddd0d6; border-radius:14px; color:#84757d; text-align:center; }
 @media (max-width:1000px) { .category-winners-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:680px) { .category-winners-grid { grid-template-columns:1fr; } }
+
+.results-champion-label { display:inline-flex; width:max-content; padding:5px 9px; border-radius:999px; background:#9f0f3b; color:#fff; font-size:10px; font-weight:950; letter-spacing:.12em; }
+.results-champion-name { font-size:22px !important; color:#2b2026; }
 </style>
