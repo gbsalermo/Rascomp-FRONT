@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
 import type {
+  Category,
   Registration,
   RegistrationCancellationRequest,
+  Team,
+  UserAccount,
   RegistrationStatus,
   RegistrationStatusHistory
 } from '../types'
@@ -27,6 +30,25 @@ const detailsOpen = ref(false)
 const selected = ref<Registration>()
 const statusHistory = ref<RegistrationStatusHistory[]>([])
 const statusHistoryLoading = ref(false)
+
+const manualDialog = ref(false)
+const manualSaving = ref(false)
+const manualUsers = ref<UserAccount[]>([])
+const manualTeams = ref<Team[]>([])
+const manualCategories = ref<Category[]>([])
+const manualForm = reactive({
+  participantUserId: undefined as number | undefined,
+  teamId: undefined as number | undefined,
+  categoryId: undefined as number | undefined,
+  robotNome: '',
+  robotDescricao: '',
+  justificativa: ''
+})
+
+const manualSelectedCategory = computed(() =>
+  manualCategories.value.find((item) => item.id === manualForm.categoryId)
+)
+
 
 const statusOptions: RegistrationStatus[] = [
   'PENDENTE',
@@ -108,7 +130,8 @@ function statusHistoryActionLabel(item: RegistrationStatusHistory) {
     CANCELAMENTO: 'Inscrição cancelada',
     DESISTENCIA: 'Desistência registrada',
     REATIVACAO: 'Inscrição reativada',
-    DESCLASSIFICACAO: 'Inscrição desclassificada'
+    DESCLASSIFICACAO: 'Inscrição desclassificada',
+    ENTRADA_MANUAL: 'Entrada manual DEV'
   }
   return labels[item.changeType]
 }
@@ -124,6 +147,83 @@ function formatDateTime(value?: string) {
     hour: '2-digit',
     minute: '2-digit'
   }).format(date)
+}
+
+function resetManualEntry() {
+  manualForm.participantUserId = undefined
+  manualForm.teamId = undefined
+  manualForm.categoryId = undefined
+  manualForm.robotNome = ''
+  manualForm.robotDescricao = ''
+  manualForm.justificativa = ''
+}
+
+function selectManualParticipant(userId?: number) {
+  const user = manualUsers.value.find((item) => item.id === userId)
+  if (user?.competitorTeamId) {
+    manualForm.teamId = user.competitorTeamId
+  }
+}
+
+async function openManualEntry() {
+  if (!auth.isDev || !competitionId.value) return
+  resetManualEntry()
+  manualDialog.value = true
+  try {
+    const [users, teams, categories] = await Promise.all([
+      adminApi.users('PARTICIPANTE'),
+      adminApi.teams(),
+      adminApi.categories()
+    ])
+    manualUsers.value = users.filter((item) => item.ativo !== false)
+    manualTeams.value = teams.filter((item) => item.ativo !== false)
+    manualCategories.value = categories.filter((item) => item.ativo !== false)
+  } catch (error: any) {
+    manualDialog.value = false
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da entrada manual.')
+  }
+}
+
+async function saveManualEntry() {
+  if (!competitionId.value
+      || !manualForm.participantUserId
+      || !manualForm.teamId
+      || !manualForm.categoryId
+      || !manualForm.robotNome.trim()
+      || !manualForm.justificativa.trim()) {
+    return ElMessage.warning('Informe participante, equipe, categoria, robô e justificativa.')
+  }
+
+  manualSaving.value = true
+  try {
+    const registration = await adminApi.manualCompetitionEntry({
+      competitionId: competitionId.value,
+      participantUserId: manualForm.participantUserId,
+      teamId: manualForm.teamId,
+      categoryId: manualForm.categoryId,
+      robotNome: manualForm.robotNome.trim(),
+      robotDescricao: manualForm.robotDescricao.trim() || undefined,
+      justificativa: manualForm.justificativa.trim()
+    })
+
+    manualDialog.value = false
+    status.value = 'APROVADA'
+    await load()
+
+    if (manualSelectedCategory.value?.modalidade === 'SUMO') {
+      ElMessage.success(
+        `${registration.robotNome} foi cadastrado e inscrito. Faça a inspeção de Sumô e depois gere uma nova chave.`
+      )
+    } else {
+      ElMessage.success(
+        `${registration.robotNome} foi cadastrado e já pode ser sincronizado nas próximas chamadas do Follow.`
+      )
+    }
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível realizar a entrada manual.')
+  } finally {
+    manualSaving.value = false
+  }
 }
 
 async function loadBase() {
@@ -385,6 +485,7 @@ onMounted(loadBase)
         <p class="muted">Analise, cancele, reative e acompanhe as inscrições sem perder o histórico competitivo.</p>
       </div>
       <div class="heading-actions">
+        <el-button v-if="auth.isDev" class="brand-button" @click="openManualEntry">Adicionar robô avulso</el-button>
         <el-button :loading="loading" @click="load">Atualizar</el-button>
       </div>
     </div>
@@ -581,6 +682,87 @@ onMounted(loadBase)
         </el-table-column>
       </el-table>
     </article>
+
+    <el-dialog
+      v-model="manualDialog"
+      title="Entrada manual de participante e robô"
+      width="min(680px, 94vw)"
+      @closed="resetManualEntry"
+    >
+      <div class="manual-entry-form">
+        <div class="manual-entry-note">
+          <strong>Fluxo excepcional DEV</strong>
+          <span>O participante deve criar a própria conta primeiro. Depois o DEV associa a conta a uma equipe/competidor, cria o robô e registra a inscrição já aprovada.</span>
+        </div>
+
+        <label>Conta do participante
+          <el-select
+            v-model="manualForm.participantUserId"
+            filterable
+            placeholder="Selecione a conta PARTICIPANTE"
+            style="width:100%"
+            @change="selectManualParticipant"
+          >
+            <el-option
+              v-for="item in manualUsers"
+              :key="item.id"
+              :value="item.id"
+              :label="`${item.nome} · ${item.email}${item.competitorTeamNome ? ' · ' + item.competitorTeamNome : ''}`"
+            />
+          </el-select>
+        </label>
+
+        <label>Equipe
+          <el-select v-model="manualForm.teamId" filterable placeholder="Equipe do participante/robô" style="width:100%">
+            <el-option v-for="item in manualTeams" :key="item.id" :value="item.id" :label="item.nome" />
+          </el-select>
+        </label>
+
+        <label>Categoria
+          <el-select v-model="manualForm.categoryId" filterable placeholder="Categoria da inscrição" style="width:100%">
+            <el-option
+              v-for="item in manualCategories"
+              :key="item.id"
+              :value="item.id"
+              :label="`${item.nome} · ${item.modalidade === 'SUMO' ? 'Sumô' : 'Follow Line'}`"
+            />
+          </el-select>
+        </label>
+
+        <label>Nome do robô
+          <el-input v-model="manualForm.robotNome" maxlength="120" />
+        </label>
+
+        <label class="span-2">Descrição do robô <small class="muted">(opcional)</small>
+          <el-input v-model="manualForm.robotDescricao" type="textarea" :rows="2" maxlength="500" />
+        </label>
+
+        <label class="span-2">Justificativa da entrada manual
+          <el-input
+            v-model="manualForm.justificativa"
+            type="textarea"
+            :rows="3"
+            maxlength="500"
+            show-word-limit
+            placeholder="Ex.: inclusão excepcional autorizada pela organização após encerramento das inscrições."
+          />
+        </label>
+
+        <div v-if="manualSelectedCategory?.modalidade === 'SUMO'" class="manual-entry-warning span-2">
+          <strong>Sumô</strong>
+          <span>A inscrição será aprovada, mas o robô ainda precisa passar pela inspeção antes de entrar em uma nova chave.</span>
+        </div>
+        <div v-else-if="manualSelectedCategory?.modalidade === 'FOLLOW_LINE'" class="manual-entry-warning span-2">
+          <strong>Follow Line</strong>
+          <span>Após o cadastro, sincronize a fila das próximas tomadas para incluir o novo robô.</span>
+        </div>
+      </div>
+
+      <template #footer>
+        <el-button @click="manualDialog = false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="manualSaving" @click="saveManualEntry">Criar e inscrever</el-button>
+      </template>
+    </el-dialog>
 
     <el-drawer v-model="detailsOpen" size="min(520px, 94vw)" direction="rtl" class="registration-details-drawer">
       <template #header>
