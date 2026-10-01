@@ -9,7 +9,9 @@ import type { Bracket, CompetitionCategoryResult, FollowAttempt, Registration } 
 interface ResultRow {
   id: number
   matchId: number
+  categoryId?: number
   categoryNome?: string
+  tipoPartida?: string
   bracketNome?: string
   winnerRobotNome?: string
   pontosA?: number
@@ -25,6 +27,8 @@ const loading = ref(false)
 const rows = ref<ResultRow[]>([])
 const scopedBracket = ref<Bracket>()
 const categoryResults = ref<CompetitionCategoryResult[]>([])
+const followHistory = ref<Array<FollowAttempt & { categoryNome?: string }>>([])
+const historyCategoryFilter = ref<number>()
 
 const extraDialog = ref(false)
 const extraSaving = ref(false)
@@ -60,9 +64,29 @@ const sumoLink = computed(() =>
     : '/sumo'
 )
 
+const historyCategories = computed(() =>
+  categoryResults.value
+    .map((item) => ({ id: item.categoryId, nome: item.categoryNome, modalidade: item.modalidade }))
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+)
+
+const filteredResultRows = computed(() =>
+  rows.value.filter((item) => !historyCategoryFilter.value || item.categoryId === historyCategoryFilter.value)
+)
+
+const filteredFollowHistory = computed(() =>
+  followHistory.value.filter((item) => !historyCategoryFilter.value || item.categoryId === historyCategoryFilter.value)
+)
+
 function formatSeconds(value?: number) {
   if (value == null) return '—'
   return `${Number(value).toFixed(3)} s`
+}
+
+function followAttemptStatus(item: FollowAttempt) {
+  if (item.valida && item.concluida) return 'Válida'
+  if (!item.concluida) return 'Não concluída'
+  return 'Inválida'
 }
 
 function winnerDetail(item: CompetitionCategoryResult) {
@@ -232,6 +256,8 @@ async function load() {
     if (!competition.selectedId) {
       rows.value = []
       categoryResults.value = []
+      followHistory.value = []
+      historyCategoryFilter.value = undefined
       scopedBracket.value = undefined
       return
     }
@@ -247,6 +273,21 @@ async function load() {
       ? []
       : await adminApi.competitionResults(competition.selectedId)
 
+    if (!scopedBracket.value) {
+      const followCategories = categoryResults.value.filter((item) => item.modalidade === 'FOLLOW_LINE')
+      const followGroups = await Promise.all(
+        followCategories.map(async (item) => {
+          const attempts = await adminApi.followAttempts(competition.selectedId!, item.categoryId)
+          return attempts.map((attempt) => ({ ...attempt, categoryNome: item.categoryNome }))
+        })
+      )
+      followHistory.value = followGroups
+        .flat()
+        .sort((a, b) => new Date(b.dataCadastro || 0).getTime() - new Date(a.dataCadastro || 0).getTime())
+    } else {
+      followHistory.value = []
+    }
+
     const groups = await Promise.all(
       sourceBrackets.map(async (bracket) => {
         const [matches, results] = await Promise.all([
@@ -258,7 +299,9 @@ async function load() {
           return {
             id: result.id,
             matchId: result.matchId,
+            categoryId: bracket.categoryId,
             categoryNome: bracket.categoryNome,
+            tipoPartida: match?.tipoPartida,
             bracketNome: bracket.nome,
             winnerRobotNome: result.winnerRobotNome,
             pontosA: result.pontosA,
@@ -277,7 +320,10 @@ async function load() {
   }
 }
 
-watch(() => competition.selectedId, load)
+watch(() => competition.selectedId, () => {
+  historyCategoryFilter.value = undefined
+  load()
+})
 watch(() => route.fullPath, load)
 onMounted(load)
 </script>
@@ -402,18 +448,79 @@ onMounted(load)
       <div v-else class="results-winners-empty">Nenhuma categoria com inscrições nesta edição.</div>
     </section>
 
-    <article class="table-card">
-      <el-table :data="rows" empty-text="Nenhum resultado consolidado">
-        <el-table-column prop="categoryNome" label="Categoria" min-width="170" />
-        <el-table-column v-if="!scopedBracket" prop="bracketNome" label="Chave" min-width="210" />
-        <el-table-column label="Confronto" min-width="260">
-          <template #default="{ row }">{{ row.robotANome || '—' }} <span class="versus">×</span> {{ row.robotBNome || '—' }}</template>
-        </el-table-column>
-        <el-table-column prop="winnerRobotNome" label="Vencedor" min-width="180" />
-        <el-table-column label="Placar" width="110"><template #default="{ row }"><strong>{{ row.pontosA ?? 0 }} × {{ row.pontosB ?? 0 }}</strong></template></el-table-column>
-        <el-table-column prop="matchId" label="Partida" width="90" />
-      </el-table>
-    </article>
+    <section class="results-history-section">
+      <div class="section-mini-heading results-history-heading">
+        <div>
+          <span class="eyebrow">Histórico competitivo</span>
+          <strong>{{ scopedBracket ? 'Partidas desta chave' : 'Follow Line + Sumô' }}</strong>
+        </div>
+        <div v-if="!scopedBracket" class="results-history-filter">
+          <el-select v-model="historyCategoryFilter" clearable placeholder="Todas as categorias" style="width:260px">
+            <el-option
+              v-for="item in historyCategories"
+              :key="item.id"
+              :value="item.id"
+              :label="`${item.nome} · ${item.modalidade === 'FOLLOW_LINE' ? 'Follow' : 'Sumô'}`"
+            />
+          </el-select>
+          <el-button v-if="historyCategoryFilter" @click="historyCategoryFilter = undefined">Limpar</el-button>
+        </div>
+      </div>
+
+      <article v-if="filteredResultRows.length || scopedBracket" class="table-card">
+        <div class="card-heading">
+          <div>
+            <span class="eyebrow">Sumô</span>
+            <h2>Histórico de partidas</h2>
+          </div>
+          <strong>{{ filteredResultRows.length }} resultado(s)</strong>
+        </div>
+        <el-table :data="filteredResultRows" empty-text="Nenhum resultado de Sumô neste filtro">
+          <el-table-column prop="categoryNome" label="Categoria" min-width="170" />
+          <el-table-column v-if="!scopedBracket" prop="bracketNome" label="Chave" min-width="210" />
+          <el-table-column label="Fase" width="145">
+            <template #default="{ row }">{{ row.tipoPartida === 'TERCEIRO_LUGAR' ? '3º lugar' : 'Eliminatória' }}</template>
+          </el-table-column>
+          <el-table-column label="Confronto" min-width="260">
+            <template #default="{ row }">{{ row.robotANome || '—' }} <span class="versus">×</span> {{ row.robotBNome || '—' }}</template>
+          </el-table-column>
+          <el-table-column prop="winnerRobotNome" label="Vencedor" min-width="180" />
+          <el-table-column label="Placar" width="110"><template #default="{ row }"><strong>{{ row.pontosA ?? 0 }} × {{ row.pontosB ?? 0 }}</strong></template></el-table-column>
+          <el-table-column prop="matchId" label="Partida" width="90" />
+        </el-table>
+      </article>
+
+      <article v-if="!scopedBracket" class="table-card">
+        <div class="card-heading">
+          <div>
+            <span class="eyebrow">Follow Line</span>
+            <h2>Histórico de tomadas e tentativas</h2>
+            <p class="muted">Consulta das tentativas registradas sem alterar o ranking oficial.</p>
+          </div>
+          <strong>{{ filteredFollowHistory.length }} tentativa(s)</strong>
+        </div>
+        <el-table :data="filteredFollowHistory" empty-text="Nenhuma tentativa de Follow neste filtro">
+          <el-table-column prop="categoryNome" label="Categoria" min-width="180" />
+          <el-table-column prop="robotNome" label="Robô" min-width="150" />
+          <el-table-column prop="teamNome" label="Equipe" min-width="160" />
+          <el-table-column label="Tomada" width="90"><template #default="{ row }">T{{ row.tomada }}</template></el-table-column>
+          <el-table-column label="Tentativa" width="95"><template #default="{ row }">#{{ row.numeroTentativa }}</template></el-table-column>
+          <el-table-column label="Situação" width="125">
+            <template #default="{ row }">{{ followAttemptStatus(row) }}</template>
+          </el-table-column>
+          <el-table-column label="Tempo final" width="125">
+            <template #default="{ row }">{{ row.tempoFinalSegundos != null ? formatSeconds(row.tempoFinalSegundos) : '—' }}</template>
+          </el-table-column>
+          <el-table-column label="Penalidade" width="110">
+            <template #default="{ row }">{{ row.penalidadeSegundos || 0 }} s</template>
+          </el-table-column>
+          <el-table-column label="Checkpoints" width="110" prop="checkpointsAlcancados" />
+          <el-table-column label="Data" min-width="145">
+            <template #default="{ row }">{{ formatDateTime(row.dataCadastro) }}</template>
+          </el-table-column>
+        </el-table>
+      </article>
+    </section>
 
     <el-dialog v-model="extraDialog" title="Criar Tomada Extra" width="min(560px, 94vw)">
       <div v-if="extraTarget" class="follow-resolution-dialog">
@@ -450,7 +557,7 @@ onMounted(load)
       <div v-if="manualTarget" class="follow-resolution-dialog">
         <div class="follow-resolution-context">
           <span class="eyebrow">{{ manualTarget.categoryNome }}</span>
-          <strong>Definir vencedor sem tempo classificável</strong>
+          <strong>Definir pódio sem tempo classificável</strong>
           <small>
             Os checkpoints servem apenas como apoio. A organização define 1º, 2º e 3º lugar, com justificativa e sem criar tempos fictícios.
           </small>
@@ -496,7 +603,7 @@ onMounted(load)
             :rows="4"
             maxlength="500"
             show-word-limit
-            placeholder="Explique o critério utilizado pela organização para definir o vencedor."
+            placeholder="Explique o critério utilizado pela organização para definir o pódio."
           />
         </label>
       </div>
@@ -554,4 +661,9 @@ onMounted(load)
 .results-match-links { display:flex; flex-wrap:wrap; gap:12px; }
 .follow-manual-podium-selects { display:grid; gap:10px; }
 .follow-manual-podium-selects label { display:grid; gap:5px; font-size:12px; font-weight:800; color:#4e3d45; }
+
+.results-history-section { display:grid; gap:14px; }
+.results-history-heading { align-items:flex-end; }
+.results-history-filter { display:flex; align-items:center; gap:8px; }
+@media (max-width:680px) { .results-history-heading { align-items:flex-start; flex-direction:column; } .results-history-filter { width:100%; } .results-history-filter :deep(.el-select) { width:100% !important; } }
 </style>
