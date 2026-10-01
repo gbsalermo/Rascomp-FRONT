@@ -1,5 +1,6 @@
 import type {
   CancellationRequestStatus,
+  ManualCompetitionEntryRequest,
   Registration,
   RegistrationCancellationRequest,
   RegistrationStatusHistory
@@ -7,6 +8,8 @@ import type {
 import { http } from '../http'
 
 export const adminRegistrationApi = {
+  manualCompetitionEntry: (payload: ManualCompetitionEntryRequest) =>
+    http.post<Registration>('/api/v1/inscricoes/entrada-manual', payload).then((r) => r.data),
   registrations: (params?: { competitionId?: number; status?: string }) => {
     if (params?.competitionId) {
       return http.get<Registration[]>('/api/v1/inscricoes/por-competicao', {
