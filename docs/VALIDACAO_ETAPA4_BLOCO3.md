@@ -354,3 +354,21 @@ Portanto:
 - não adicionar reabertura comum apenas para facilitar testes.
 
 A ordem corrigida do re-smoke mantém primeiro todos os fluxos que dependem de `EM_ANDAMENTO` e deixa a validação terminal para o encerramento.
+
+
+## Achados do re-smoke — participante e Sumô
+
+- testes 1–5 validados;
+- card "Regra da categoria" considerado redundante e removido;
+- troca explícita entre chave atual/histórica adicionada ao módulo Chaves;
+- teste 6 revelou inconsistência central no onboarding e foi tratado:
+  - conta PARTICIPANTE + equipe implica Competitor;
+  - criador da equipe vira competidor automaticamente;
+  - participante pode cadastrar instituição no onboarding;
+  - Portal expõe cadastro normal de robô ao responsável;
+  - entrada manual DEV deriva a equipe do participante e não lista todas as equipes;
+- testes 8 e 9 validados;
+- teste 10 revelou ausência de estado de campeão no Portal; corrigido com destaque competitivo final;
+- testes 11 e 12 validados.
+
+O fluxo de solicitação para ingressar em equipe existente permanece parte do BLOCO 4/Portal do Participante; quando aprovado, deve criar o vínculo Competitor automaticamente, seguindo a regra canônica acima.
