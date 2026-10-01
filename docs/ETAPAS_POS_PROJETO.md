@@ -1615,3 +1615,18 @@ Regras:
 - a regeneração excepcional continua **bloqueada se a chave vigente já possuir disputa competitiva real**; não se apaga nem reescreve uma chave já disputada.
 
 Essa implementação antecipa apenas essa necessidade concreta. A ETAPA 5 continua responsável pelas demais operações gerais DEV e auditoria.
+
+
+### Revisão 01/10/2026 — aprovação dupla no BLOCO 4.3
+
+Antes da validação manual, o fluxo foi refinado:
+
+- inscrição pessoal por Competition, com dados + comprovante + PENDENTE/APROVADA/REJEITADA;
+- inscrição do Robot por Competition/Category, também com comprovante e aprovação própria;
+- Team/Competitor/RobotResponsible continuam independentes da aprovação competitiva;
+- competidores da inscrição do Robot devem ser RobotResponsible daquele Robot;
+- líder não é competidor automático do Robot;
+- Robot pode ser enviado enquanto participante está PENDENTE, mas só pode ser APROVADO quando todos os competidores selecionados estiverem pessoalmente APROVADOS;
+- GESTAO deve visualizar Robot ↔ Competitor nos dois sentidos durante a análise;
+- backend bloqueia aprovação cruzada incoerente;
+- 4.4 permanece bloqueado até implementação + bateria manual do novo 4.3.
