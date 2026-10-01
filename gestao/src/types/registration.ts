@@ -25,6 +25,8 @@ export interface Registration {
   reviewReason?: string
   status: RegistrationStatus
   observacao?: string
+  comprovanteDisponivel?: boolean
+  comprovanteNome?: string
   ativo?: boolean
   dataCadastro?: string
 }
@@ -79,4 +81,51 @@ export interface ManualCompetitionEntryRequest {
   robotNome: string
   robotDescricao?: string
   justificativa: string
+}
+
+
+export type ParticipantCompetitionRegistrationStatus =
+  | 'PENDENTE'
+  | 'APROVADA'
+  | 'REJEITADA'
+  | 'CANCELADA'
+
+export interface ParticipantRobotLink {
+  robotId: number
+  robotNome: string
+  registrationId?: number
+  categoryId?: number
+  categoryNome?: string
+  registrationStatus?: RegistrationStatus
+}
+
+export interface ParticipantCompetitionRegistration {
+  id: number
+  competitionId: number
+  competitionNome: string
+  competitorId: number
+  competitorNome: string
+  teamId: number
+  teamNome: string
+  status: ParticipantCompetitionRegistrationStatus
+  observacao?: string
+  comprovanteDisponivel?: boolean
+  comprovanteNome?: string
+  requestedByUserId?: number
+  requestedByUserNome?: string
+  reviewedByUserId?: number
+  reviewedByUserNome?: string
+  reviewedAt?: string
+  reviewReason?: string
+  ativo?: boolean
+  dataCadastro?: string
+  robots: ParticipantRobotLink[]
+}
+
+export interface RegistrationCompetitorContext {
+  competitorId: number
+  competitorNome: string
+  robotResponsible: boolean
+  participantRegistrationId?: number
+  participantRegistrationStatus?: ParticipantCompetitionRegistrationStatus
 }
