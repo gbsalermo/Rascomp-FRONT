@@ -1528,3 +1528,25 @@ No BLOCO 4, o cadastro do robô é interno à equipe. A aprovação organizacion
 `Robot da equipe → Registration PENDENTE → GESTAO aprova → APROVADA → alocação competitiva`.
 
 Não criar estado de "robô aguardando aprovação" no catálogo da equipe. O status de aprovação pertence à Registration.
+
+
+## BLOCO 4 iniciado — 01/10/2026
+
+Sub-blocos:
+- 4.1 equipe/associação;
+- 4.2 responsáveis por robô;
+- 4.3 inscrições do Portal;
+- 4.4 polimento/validação.
+
+Implementado neste checkpoint:
+- convite do líder por e-mail de conta PARTICIPANTE;
+- aceite/recusa do convite;
+- solicitação de entrada pelo participante;
+- aprovação/rejeição pelo líder;
+- criação automática do Competitor ao concluir associação;
+- migration V24;
+- vínculo N:N Robot ↔ Competitor responsável;
+- criador do robô como responsável inicial;
+- líder administra responsáveis;
+- membro comum passa a ver robôs pela responsabilidade, não por inscrições antigas;
+- cadastro de robô liberado para competidor da equipe.
