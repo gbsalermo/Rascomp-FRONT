@@ -1630,3 +1630,16 @@ Antes da validação manual, o fluxo foi refinado:
 - GESTAO deve visualizar Robot ↔ Competitor nos dois sentidos durante a análise;
 - backend bloqueia aprovação cruzada incoerente;
 - 4.4 permanece bloqueado até implementação + bateria manual do novo 4.3.
+
+Checkpoint de implementação do mesmo dia:
+
+- V25 implementa a base persistente da inscrição pessoal e os comprovantes das duas inscrições;
+- Portal recebeu Minha inscrição pessoal + comprovantes;
+- Registration do Robot passou a aceitar somente RobotResponsible;
+- aprovação do Robot exige inscrição pessoal APROVADA de todos os competidores selecionados;
+- GESTAO recebeu visão cruzada Competitor → Robots e Robot → Competitors;
+- N:N está coberto no testdata com Vespa → Membro + Apoio e Apoio → Vespa + Atlas;
+- remoção de RobotResponsible usado em Registration ativa é bloqueada;
+- CI/testdata foi preparado para o fluxo duplo, mas o checkpoint automatizado ainda não foi executado nos heads atuais;
+- 4.3 permanece aberto até build + bateria manual;
+- 4.4 permanece NÃO INICIADO.
