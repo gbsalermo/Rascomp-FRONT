@@ -89,6 +89,69 @@ function inspectionStatusLabel(registration: Registration) {
   return latest.aprovada ? 'APTO' : 'INAPTO'
 }
 
+function resultFor(matchId: number) {
+  return results.value.find((item) => item.matchId === matchId)
+}
+
+function thirdPlaceMatch() {
+  return matches.value.find((item) => item.tipoPartida === 'TERCEIRO_LUGAR')
+}
+
+function finalMainMatch() {
+  return matches.value
+    .filter((item) => item.tipoPartida !== 'TERCEIRO_LUGAR')
+    .sort((a, b) => b.rodada - a.rodada || a.ordem - b.ordem)[0]
+}
+
+function competitiveState(registration: Registration) {
+  if (registration.status === 'DESCLASSIFICADA') {
+    return { code: 'DESCLASSIFICADO', label: 'Desclassificado', type: 'danger' as const }
+  }
+  if (registration.status === 'DESISTENTE') {
+    return { code: 'DESISTENTE', label: 'Desistente', type: 'warning' as const }
+  }
+
+  const final = finalMainMatch()
+  const finalResult = final ? resultFor(final.id) : undefined
+  if (final && finalResult) {
+    if (finalResult.winnerRegistrationId === registration.id) {
+      return { code: 'CAMPEAO', label: 'Campeão', type: 'success' as const }
+    }
+    if ([final.registrationAId, final.registrationBId].includes(registration.id)) {
+      return { code: 'VICE', label: 'Vice-campeão', type: 'info' as const }
+    }
+  }
+
+  const third = thirdPlaceMatch()
+  const thirdResult = third ? resultFor(third.id) : undefined
+  if (third && [third.registrationAId, third.registrationBId].includes(registration.id)) {
+    if (!thirdResult) {
+      return { code: 'DISPUTA_TERCEIRO', label: 'Disputa 3º lugar', type: 'warning' as const }
+    }
+    if (thirdResult.winnerRegistrationId === registration.id) {
+      return { code: 'TERCEIRO', label: '3º lugar', type: 'success' as const }
+    }
+    return { code: 'ELIMINADO', label: 'Eliminado', type: 'info' as const }
+  }
+
+  const perdeuEliminatoria = matches.value.some((match) => {
+    if (match.tipoPartida === 'TERCEIRO_LUGAR') return false
+    const result = resultFor(match.id)
+    if (!result) return false
+    const participou = match.registrationAId === registration.id || match.registrationBId === registration.id
+    return participou && result.winnerRegistrationId !== registration.id
+  })
+  if (perdeuEliminatoria) {
+    return { code: 'ELIMINADO', label: 'Eliminado', type: 'info' as const }
+  }
+
+  const latest = latestInspection(registration.id)
+  if (latest?.aprovada) {
+    return { code: 'EM_DISPUTA', label: 'Em disputa', type: 'success' as const }
+  }
+  return { code: 'PREPARACAO', label: 'Preparação', type: 'warning' as const }
+}
+
 function inspectionTagType(registration: Registration) {
   if (registration.status === 'DESCLASSIFICADA') return 'danger'
   const latest = latestInspection(registration.id)
@@ -229,7 +292,9 @@ async function generate() {
 
 function canDisqualify(row: Registration) {
   const status = competition.selectedCompetition?.status
+  const state = competitiveState(row).code
   return row.status === 'APROVADA'
+    && !['CAMPEAO', 'VICE', 'TERCEIRO', 'ELIMINADO'].includes(state)
     && !['FINALIZADA', 'CANCELADA'].includes(status || '')
 }
 
@@ -427,6 +492,13 @@ onMounted(initialize)
           <template #default="{ row }">
             <el-tag :type="inspectionTagType(row)" effect="light">
               {{ inspectionStatusLabel(row) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Situação competitiva" width="165">
+          <template #default="{ row }">
+            <el-tag :type="competitiveState(row).type" effect="plain">
+              {{ competitiveState(row).label }}
             </el-tag>
           </template>
         </el-table-column>
