@@ -12,10 +12,14 @@ import { http } from './http'
 
 export const participantApi = {
   institutions: () => http.get<Array<{ id: number; nome: string; sigla?: string }>>('/api/v1/public/instituicoes').then((r) => r.data),
+  createInstitution: (payload: { nome: string; sigla: string; cidade?: string; estado?: string; ativo?: boolean }) =>
+    http.post<{ id: number; nome: string; sigla: string }>('/api/v1/participante/instituicoes', payload).then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/participante/equipes').then((r) => r.data),
   createTeam: (payload: { nome: string; institutionId: number }) => http.post<Team>('/api/v1/participante/equipes', payload).then((r) => r.data),
   competitors: (teamId: number) => http.get<Competitor[]>(`/api/v1/participante/equipes/${teamId}/competidores`).then((r) => r.data),
   robots: (teamId: number) => http.get<Robot[]>(`/api/v1/participante/equipes/${teamId}/robos`).then((r) => r.data),
+  createRobot: (teamId: number, payload: { nome: string; descricao?: string }) =>
+    http.post<Robot>(`/api/v1/participante/equipes/${teamId}/robos`, payload).then((r) => r.data),
   robotPhotos: (robotId: number) => http.get<RobotImage[]>(`/api/v1/participante/robos/${robotId}/fotos`).then((r) => r.data),
   uploadRobotPhoto: (robotId: number, file: File) => {
     const form = new FormData()
