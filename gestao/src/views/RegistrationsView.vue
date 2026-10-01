@@ -7,7 +7,6 @@ import type {
   Category,
   Registration,
   RegistrationCancellationRequest,
-  Team,
   UserAccount,
   RegistrationStatus,
   RegistrationStatusHistory
@@ -34,11 +33,9 @@ const statusHistoryLoading = ref(false)
 const manualDialog = ref(false)
 const manualSaving = ref(false)
 const manualUsers = ref<UserAccount[]>([])
-const manualTeams = ref<Team[]>([])
 const manualCategories = ref<Category[]>([])
 const manualForm = reactive({
   participantUserId: undefined as number | undefined,
-  teamId: undefined as number | undefined,
   categoryId: undefined as number | undefined,
   robotNome: '',
   robotDescricao: '',
@@ -151,7 +148,6 @@ function formatDateTime(value?: string) {
 
 function resetManualEntry() {
   manualForm.participantUserId = undefined
-  manualForm.teamId = undefined
   manualForm.categoryId = undefined
   manualForm.robotNome = ''
   manualForm.robotDescricao = ''
@@ -160,8 +156,8 @@ function resetManualEntry() {
 
 function selectManualParticipant(userId?: number) {
   const user = manualUsers.value.find((item) => item.id === userId)
-  if (user?.competitorTeamId) {
-    manualForm.teamId = user.competitorTeamId
+  if (!user?.competitorTeamId) {
+    ElMessage.warning('Este participante ainda não está associado a uma equipe.')
   }
 }
 
@@ -170,13 +166,11 @@ async function openManualEntry() {
   resetManualEntry()
   manualDialog.value = true
   try {
-    const [users, teams, categories] = await Promise.all([
+    const [users, categories] = await Promise.all([
       adminApi.users('PARTICIPANTE'),
-      adminApi.teams(),
       adminApi.categories()
     ])
-    manualUsers.value = users.filter((item) => item.ativo !== false)
-    manualTeams.value = teams.filter((item) => item.ativo !== false)
+    manualUsers.value = users.filter((item) => item.ativo !== false && item.competitorTeamId)
     manualCategories.value = categories.filter((item) => item.ativo !== false)
   } catch (error: any) {
     manualDialog.value = false
@@ -187,7 +181,6 @@ async function openManualEntry() {
 async function saveManualEntry() {
   if (!competitionId.value
       || !manualForm.participantUserId
-      || !manualForm.teamId
       || !manualForm.categoryId
       || !manualForm.robotNome.trim()
       || !manualForm.justificativa.trim()) {
@@ -199,7 +192,6 @@ async function saveManualEntry() {
     const registration = await adminApi.manualCompetitionEntry({
       competitionId: competitionId.value,
       participantUserId: manualForm.participantUserId,
-      teamId: manualForm.teamId,
       categoryId: manualForm.categoryId,
       robotNome: manualForm.robotNome.trim(),
       robotDescricao: manualForm.robotDescricao.trim() || undefined,
@@ -712,11 +704,11 @@ onMounted(loadBase)
           </el-select>
         </label>
 
-        <label>Equipe
-          <el-select v-model="manualForm.teamId" filterable placeholder="Equipe do participante/robô" style="width:100%">
-            <el-option v-for="item in manualTeams" :key="item.id" :value="item.id" :label="item.nome" />
-          </el-select>
-        </label>
+        <div v-if="manualForm.participantUserId" class="manual-entry-team-readonly">
+          <span>Equipe associada</span>
+          <strong>{{ manualUsers.find((item) => item.id === manualForm.participantUserId)?.competitorTeamNome || '—' }}</strong>
+          <small>A equipe vem do vínculo competitivo da conta e não pode ser trocada neste fluxo.</small>
+        </div>
 
         <label>Categoria
           <el-select v-model="manualForm.categoryId" filterable placeholder="Categoria da inscrição" style="width:100%">
