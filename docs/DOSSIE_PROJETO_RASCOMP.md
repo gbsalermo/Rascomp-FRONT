@@ -1,6 +1,6 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **19/09/2026**
+Última revisão estrutural: **01/10/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
@@ -23,12 +23,15 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
-ETAPA 4                                        🚧 em andamento — BLOCO 3 implementado / aguardando validação
-Backend — último checkpoint funcional          135 testes / 0 falhas / 0 erros / 0 skipped
-Frontend Gestão                                typecheck + build ✅
+ETAPA 4                                        🚧 em andamento — BLOCO 4 / Portal do Participante
+BLOCO 3 — Operação competitiva                 ✅ concluído / validado
+BLOCO 4.1 — Equipe e associação                ✅ implementado / aguardando validação prática consolidada
+BLOCO 4.2 — Responsáveis por robô              🚧 base funcional implementada
+BLOCO 4.3 — Inscrição normal pelo Portal       ⏳ próximo
+Backend/Frontend                               revalidar suíte/build após alterações mais recentes do BLOCO 4
 Banco ativo                                    MySQL
-Migrations                                     V1–V13
-Próxima migration estrutural                   V14+
+Migrations                                     V1–V24
+Próxima migration estrutural                   V25+
 Profile testdata                               ✅ contra MySQL real
 Roles atuais                                   DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                                        backend ✅ / frontend ✅ / validada ✅
@@ -173,7 +176,7 @@ Banco ativo: **MySQL**.
 
 ```text
 src/main/resources/db/migration/
-V1 ... V12
+V1 ... V24
 ```
 
 Resumo atual:
@@ -191,13 +194,16 @@ V9  — classe física de Sumô nas categorias
 V10 — Follow 3×3 + parâmetros operacionais + ausência de tomada
 V11 — modo de controle Sumô + rounds extras + auditoria de inspeção + juízes/decisão
 V12 — separação da agenda operacional da estrutura lógica das partidas
+V13+ — evolução posterior de permissões, sessão e consolidação da ETAPA 4
+V20–V23 — auditorias/correções finais do BLOCO 3
+V24 — convites/solicitações de equipe + responsáveis por robô
 ```
 
 Regra congelada:
 
 ```text
-V1–V12 nunca são reescritas
-próxima mudança estrutural = V13+
+migrations aplicadas nunca são reescritas
+próxima mudança estrutural = V25+
 ```
 
 PostgreSQL não faz parte da configuração ativa. Referências antigas dentro de artefatos legados não definem a arquitetura atual.
@@ -1067,16 +1073,22 @@ O RasComp já possui base aprovada. A prioridade é evoluir sem perder integrida
 A visibilidade não é equivalente:
 
 ```text
-responsibleUser
+Team.responsibleUser
 → equipe inteira
+→ administra todos os robôs e responsáveis
 
 Competitor.userAccount
-→ própria participação
-→ Registration em que está associado
-→ Robot dessas Registration
+→ identidade competitiva da pessoa
+→ pertence a uma única equipe competitiva
+
+RobotResponsible
+→ define quais robôs aparecem como "Meus robôs" para o membro comum
+
+RegistrationCompetitor
+→ define quem participa daquela inscrição específica
 ```
 
-Assim, pertencer à mesma equipe não concede automaticamente acesso administrativo ou visão de todos os robôs. A regra é aplicada no backend e apenas refletida no frontend.
+O líder mantém visão administrativa da equipe inteira mesmo sem ser responsável por cada robô. O membro comum não ganha visão de todos os robôs apenas por pertencer à equipe: vê os robôs em que possui responsabilidade ativa. A responsabilidade permanente pelo robô e a composição de uma inscrição são conceitos distintos.
 
 
 ## Fechamento da matriz de permissões — 19/09/2026
@@ -1286,3 +1298,53 @@ Migrations adicionadas:
 - V23 — auditoria da correção excepcional de MatchResult.
 
 A UI Chaves passa a ter maior independência do módulo Sumô, enquanto Resultados se torna a fonte visual principal do pódio e do histórico competitivo Follow/Sumô.
+
+
+## ETAPA 4 — BLOCO 4 — Portal do Participante — checkpoint 01/10/2026
+
+Escopo dividido para evitar crescimento descontrolado:
+
+```text
+4.1 Equipe e associação
+4.2 Responsáveis por robô
+4.3 Inscrição pelo Portal
+4.4 Polimento + validação
+```
+
+### 4.1 — implementado
+
+- líder envia convite por e-mail para conta PARTICIPANTE;
+- participante aceita/recusa;
+- participante sem equipe pode solicitar ingresso em equipe existente;
+- líder aprova/rejeita;
+- aceite/aprovação cria ou reaproveita `Competitor` e vincula `UserAccount → Competitor → Team`;
+- conta já associada a outra equipe competitiva é bloqueada;
+- criação de equipe pelo participante já cria seu Competitor automaticamente.
+
+### 4.2 — base funcional implementada
+
+- V24 cria `robot_responsibles`;
+- `Robot ↔ Competitor` é N:N;
+- qualquer competidor autorizado da equipe pode cadastrar robô;
+- criador entra como responsável inicial;
+- líder administra responsáveis e continua com acesso a todos os robôs;
+- membro comum vê em "Meus robôs" os robôs em que possui responsabilidade;
+- edição/fotos respeitam responsabilidade ou liderança.
+
+### Regra de aprovação competitiva
+
+Cadastro de `Robot` não representa participação em competição.
+
+```text
+Robot da equipe
+→ participante escolhe competição/categoria
+→ cria Registration PENDENTE
+→ GESTAO aprova/rejeita
+→ APROVADA = alocação oficial do robô à competição
+```
+
+`RobotResponsible` (responsabilidade permanente) e `RegistrationCompetitor` (composição daquela inscrição) não são a mesma relação.
+
+### Próximo
+
+Implementar **4.3 — inscrição normal pelo Portal**, usando responsáveis do robô como sugestão inicial de competidores e preservando o fluxo administrativo existente de aprovação pela GESTAO.
