@@ -1486,3 +1486,21 @@ Após a bateria 1–56, foram implementadas as correções estruturais principai
 - melhorias anteriores de g/kg, juízes, BYE, filtros, chamada e bloqueio Follow fora de EM_ANDAMENTO.
 
 Estado: **CORREÇÕES IMPLEMENTADAS · RE-SMOKE PENDENTE**.
+
+
+## Revisão de fluxo PARTICIPANTE após re-smoke — 30/09/2026
+
+Decisão canônica: `PARTICIPANTE` é identidade competitiva. Após associação a uma equipe, a conta deve possuir um `Competitor` correspondente.
+
+Aplicado:
+- criador de equipe vira Competitor automaticamente;
+- instituição pode ser criada no onboarding;
+- cadastro de robô exposto no Portal;
+- entrada manual DEV usa somente a equipe já vinculada;
+- campeão/vice/3º/eliminado passam a ser estados explícitos no Portal;
+- card redundante do Sumô removido;
+- seletor explícito de chave atual/histórica em Chaves.
+
+Pendente para BLOCO 4:
+- implementar solicitação real de ingresso em equipe existente + aprovação/reprovação pelo responsável;
+- aprovação deve criar Competitor vinculado à conta.
