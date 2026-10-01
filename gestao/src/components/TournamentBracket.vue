@@ -7,6 +7,7 @@ const props = defineProps<{
   matches: Match[]
   results: MatchResult[]
   readOnly?: boolean
+  returnTo?: 'sumo' | 'chaves'
 }>()
 
 const eliminationMatches = computed(() =>
@@ -89,7 +90,8 @@ function arenaRoute(match: Match) {
     query: {
       ...(match.competitionId ? { competitionId: String(match.competitionId) } : {}),
       ...(match.categoryId ? { categoryId: String(match.categoryId) } : {}),
-      ...(match.bracketId ? { bracketId: String(match.bracketId) } : {})
+      ...(match.bracketId ? { bracketId: String(match.bracketId) } : {}),
+      ...(props.returnTo ? { from: props.returnTo } : {})
     }
   }
 }
