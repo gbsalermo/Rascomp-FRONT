@@ -13,6 +13,7 @@ import type {
   Registration,
   Robot,
   RobotImage,
+  RobotResponsible,
   Team,
   TeamMembershipRequest
 } from '../types'
@@ -53,6 +54,10 @@ const teamDialog = ref(false)
 const joinDialog = ref(false)
 const robotDialog = ref(false)
 const creatingRobot = ref(false)
+const responsibleDialog = ref(false)
+const responsibleSaving = ref(false)
+const responsibleRobot = ref<Robot>()
+const responsibleSelection = ref<number[]>([])
 const inviteDialog = ref(false)
 const invitingMember = ref(false)
 const membershipActionId = ref<number>()
@@ -80,6 +85,7 @@ const teamForm = reactive({
 const robotForm = reactive({ nome: '', descricao: '' })
 const inviteForm = reactive({ email: '', mensagem: '' })
 const photoMap = ref<Record<number, RobotImage[]>>({})
+const responsibleMap = ref<Record<number, RobotResponsible[]>>({})
 const followMap = ref<Record<number, FollowOverview>>({})
 const sumoMap = ref<Record<number, SumoOverview>>({})
 
@@ -170,6 +176,7 @@ async function loadTeam() {
   registrations.value = []
   cancellationPendingIds.value = new Set()
   photoMap.value = {}
+  responsibleMap.value = {}
   followMap.value = {}
   sumoMap.value = {}
   if (!teamId.value) return
@@ -186,10 +193,16 @@ async function loadTeam() {
       ? await participantApi.teamMemberships(teamId.value)
       : []
 
-    const photoEntries = await Promise.all(
-      robots.value.map(async (robot) => [robot.id, await participantApi.robotPhotos(robot.id).catch(() => [])] as const)
-    )
+    const [photoEntries, responsibleEntries] = await Promise.all([
+      Promise.all(
+        robots.value.map(async (robot) => [robot.id, await participantApi.robotPhotos(robot.id).catch(() => [])] as const)
+      ),
+      Promise.all(
+        robots.value.map(async (robot) => [robot.id, await participantApi.robotResponsibles(robot.id).catch(() => [])] as const)
+      )
+    ])
     photoMap.value = Object.fromEntries(photoEntries)
+    responsibleMap.value = Object.fromEntries(responsibleEntries)
 
     if (isTeamLeader.value) {
       const cancellationEntries = await Promise.all(
@@ -360,6 +373,34 @@ async function createTeam() {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a equipe.')
   } finally {
     creatingTeam.value = false
+  }
+}
+
+function openResponsibleDialog(robot: Robot) {
+  if (!isTeamLeader.value) return
+  responsibleRobot.value = robot
+  responsibleSelection.value = (responsibleMap.value[robot.id] || []).map((item) => item.competitorId)
+  responsibleDialog.value = true
+}
+
+async function saveRobotResponsibles() {
+  if (!responsibleRobot.value) return
+  responsibleSaving.value = true
+  try {
+    const rows = await participantApi.setRobotResponsibles(
+      responsibleRobot.value.id,
+      responsibleSelection.value
+    )
+    responsibleMap.value = {
+      ...responsibleMap.value,
+      [responsibleRobot.value.id]: rows
+    }
+    ElMessage.success('Responsáveis do robô atualizados.')
+    responsibleDialog.value = false
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar os responsáveis do robô.')
+  } finally {
+    responsibleSaving.value = false
   }
 }
 
@@ -711,10 +752,10 @@ onMounted(loadTeams)
           <div class="participant-section-actions">
             <span class="muted">
               {{ isTeamLeader
-                ? 'Cadastre os robôs da equipe antes de enviá-los para inscrição.'
-                : 'Aqui aparecem somente os robôs das inscrições em que você participa.' }}
+                ? 'Você administra todos os robôs da equipe e seus responsáveis.'
+                : 'Aqui aparecem os robôs pelos quais você está cadastrado como responsável.' }}
             </span>
-            <el-button v-if="isTeamLeader" class="brand-button" @click="robotDialog = true">Cadastrar robô</el-button>
+            <el-button class="brand-button" @click="robotDialog = true">Cadastrar robô</el-button>
           </div>
         </div>
         <div class="robot-gallery">
@@ -727,11 +768,21 @@ onMounted(loadTeams)
               <strong>{{ robot.nome }}</strong>
               <span>{{ robot.descricao || 'Sem descrição' }}</span>
               <small>{{ (photoMap[robot.id] || []).length }} foto(s) cadastrada(s)</small>
+              <div class="robot-responsible-summary">
+                <b>Responsáveis</b>
+                <span v-if="(responsibleMap[robot.id] || []).length">
+                  {{ (responsibleMap[robot.id] || []).map((item) => item.competitorNome).join(', ') }}
+                </span>
+                <span v-else>Nenhum responsável definido</span>
+              </div>
             </div>
-            <label v-if="isTeamLeader" class="robot-photo-upload" :class="{ disabled: uploadRobotId === robot.id }">
-              {{ uploadRobotId === robot.id ? 'Enviando...' : 'Trocar / adicionar foto' }}
-              <input type="file" accept="image/png,image/jpeg,image/webp" :disabled="uploadRobotId === robot.id" @change="onPhotoSelected(robot, $event)" />
-            </label>
+            <div class="robot-gallery-actions">
+              <label class="robot-photo-upload" :class="{ disabled: uploadRobotId === robot.id }">
+                {{ uploadRobotId === robot.id ? 'Enviando...' : 'Trocar / adicionar foto' }}
+                <input type="file" accept="image/png,image/jpeg,image/webp" :disabled="uploadRobotId === robot.id" @change="onPhotoSelected(robot, $event)" />
+              </label>
+              <el-button v-if="isTeamLeader" size="small" @click="openResponsibleDialog(robot)">Responsáveis</el-button>
+            </div>
           </article>
         </div>
       </section>
@@ -866,11 +917,42 @@ onMounted(loadTeams)
       </template>
     </el-dialog>
 
+    <el-dialog
+      v-model="responsibleDialog"
+      :title="`Responsáveis · ${responsibleRobot?.nome || 'Robô'}`"
+      width="min(560px, 92vw)"
+    >
+      <div class="robot-responsible-dialog">
+        <p class="muted">
+          Selecione os competidores da equipe responsáveis por este robô. O líder continua com acesso administrativo mesmo sem estar nesta lista.
+        </p>
+        <el-checkbox-group v-model="responsibleSelection" class="robot-responsible-options">
+          <el-checkbox
+            v-for="competitor in competitors.filter((item) => item.ativo !== false)"
+            :key="competitor.id"
+            :value="competitor.id"
+            border
+          >
+            <span>{{ competitor.nome }}</span>
+            <small v-if="competitor.email">{{ competitor.email }}</small>
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
+      <template #footer>
+        <el-button @click="responsibleDialog = false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="responsibleSaving" @click="saveRobotResponsibles">Salvar responsáveis</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="robotDialog" title="Cadastrar robô" width="min(520px, 92vw)">
       <div class="form-grid">
         <label class="span-2">Nome do robô
           <el-input v-model="robotForm.nome" maxlength="120" placeholder="Ex.: Vespa" />
         </label>
+        <div class="span-2 participant-flow-note">
+          <strong>Responsabilidade inicial</strong>
+          <span>Quem cadastrar o robô entra automaticamente como responsável. O líder poderá adicionar outros integrantes depois.</span>
+        </div>
         <label class="span-2">Descrição <small class="muted">(opcional)</small>
           <el-input v-model="robotForm.descricao" type="textarea" :rows="3" maxlength="500" />
         </label>
@@ -975,4 +1057,14 @@ onMounted(loadTeams)
 .participant-flow-note { display:grid; gap:4px; padding:11px 13px; border-radius:11px; background:#faf6f8; border:1px solid #eadde3; }
 .participant-flow-note span { color:#786a71; font-size:12px; line-height:1.4; }
 @media (max-width:680px) { .participant-invite-card,.participant-join-request { align-items:flex-start; flex-direction:column; } }
+
+.robot-gallery-actions { display:grid; gap:8px; justify-items:stretch; }
+.robot-responsible-summary { display:grid; gap:2px; margin-top:5px; }
+.robot-responsible-summary b { color:#67535d; font-size:10px; text-transform:uppercase; letter-spacing:.05em; }
+.robot-responsible-summary span { color:#7b6d74; font-size:11px; }
+.robot-responsible-dialog { display:grid; gap:14px; }
+.robot-responsible-options { display:grid; grid-template-columns:1fr; gap:8px; }
+.robot-responsible-options .el-checkbox { margin:0; height:auto; padding:10px 12px; }
+.robot-responsible-options .el-checkbox__label { display:grid; gap:2px; }
+.robot-responsible-options small { color:#81737a; font-size:10px; }
 </style>
