@@ -57,6 +57,7 @@ export type RegistrationStatusChangeType =
   | 'DESISTENCIA'
   | 'REATIVACAO'
   | 'DESCLASSIFICACAO'
+  | 'ENTRADA_MANUAL'
 
 export interface RegistrationStatusHistory {
   id: number
@@ -68,4 +69,15 @@ export interface RegistrationStatusHistory {
   actorUserNome?: string
   reason?: string
   dataCadastro?: string
+}
+
+
+export interface ManualCompetitionEntryRequest {
+  competitionId: number
+  categoryId: number
+  teamId: number
+  participantUserId: number
+  robotNome: string
+  robotDescricao?: string
+  justificativa: string
 }
