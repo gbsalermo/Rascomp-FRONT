@@ -6,7 +6,8 @@ import type {
   RegistrationCancellationRequest,
   Robot,
   RobotImage,
-  Team
+  Team,
+  TeamMembershipRequest
 } from '../types'
 import { http } from './http'
 
@@ -16,6 +17,22 @@ export const participantApi = {
     http.post<{ id: number; nome: string; sigla: string }>('/api/v1/participante/instituicoes', payload).then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/participante/equipes').then((r) => r.data),
   createTeam: (payload: { nome: string; institutionId: number }) => http.post<Team>('/api/v1/participante/equipes', payload).then((r) => r.data),
+  inviteTeamMember: (teamId: number, payload: { email: string; mensagem?: string }) =>
+    http.post<TeamMembershipRequest>(`/api/v1/participante/equipes/${teamId}/convites`, payload).then((r) => r.data),
+  requestTeamJoin: (teamId: number, payload: { mensagem?: string }) =>
+    http.post<TeamMembershipRequest>(`/api/v1/participante/equipes/${teamId}/solicitacoes`, payload).then((r) => r.data),
+  myTeamMemberships: () =>
+    http.get<TeamMembershipRequest[]>('/api/v1/participante/vinculos-equipe').then((r) => r.data),
+  teamMemberships: (teamId: number) =>
+    http.get<TeamMembershipRequest[]>(`/api/v1/participante/equipes/${teamId}/vinculos`).then((r) => r.data),
+  acceptTeamInvite: (requestId: number) =>
+    http.post<TeamMembershipRequest>(`/api/v1/participante/vinculos-equipe/${requestId}/aceitar-convite`).then((r) => r.data),
+  rejectTeamInvite: (requestId: number) =>
+    http.post<TeamMembershipRequest>(`/api/v1/participante/vinculos-equipe/${requestId}/rejeitar-convite`).then((r) => r.data),
+  approveTeamJoin: (requestId: number) =>
+    http.post<TeamMembershipRequest>(`/api/v1/participante/vinculos-equipe/${requestId}/aprovar-solicitacao`).then((r) => r.data),
+  rejectTeamJoin: (requestId: number) =>
+    http.post<TeamMembershipRequest>(`/api/v1/participante/vinculos-equipe/${requestId}/rejeitar-solicitacao`).then((r) => r.data),
   competitors: (teamId: number) => http.get<Competitor[]>(`/api/v1/participante/equipes/${teamId}/competidores`).then((r) => r.data),
   robots: (teamId: number) => http.get<Robot[]>(`/api/v1/participante/equipes/${teamId}/robos`).then((r) => r.data),
   createRobot: (teamId: number, payload: { nome: string; descricao?: string }) =>
