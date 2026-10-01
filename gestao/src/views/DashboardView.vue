@@ -390,3 +390,16 @@ watch(
     </article>
   </div>
 </template>
+
+<style scoped>
+.dashboard-champions-section { display:grid; gap:12px; }
+.dashboard-champions-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.dashboard-champion-card { display:grid; gap:6px; padding:14px 16px; border:1px solid #eadbe2; border-left:4px solid #a91243; border-radius:14px; background:linear-gradient(145deg,#fff,#fff8fa); }
+.dashboard-champion-card > div { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.dashboard-champion-card > div span { color:#9f0f3b; font-size:10px; font-weight:900; text-transform:uppercase; }
+.dashboard-champion-card > div small,.dashboard-champion-card > small { color:#77686f; }
+.dashboard-champion-card > strong { font-size:15px; color:#2f2228; }
+.dashboard-champion-card p { margin:0; color:#6f6067; font-size:11px; }
+@media (max-width:1000px) { .dashboard-champions-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:680px) { .dashboard-champions-grid { grid-template-columns:1fr; } }
+</style>
