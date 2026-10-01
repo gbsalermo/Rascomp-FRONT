@@ -869,24 +869,24 @@ onMounted(loadTeams)
       <section class="participant-summary-grid">
         <article><span>Competidores</span><strong>{{ competitors.length }}</strong><small>na equipe</small></article>
         <article><span>Robôs</span><strong>{{ robots.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'vinculados a mim' }}</small></article>
-        <article><span>Inscrições aprovadas</span><strong>{{ approvedRegistrations.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'minhas' }}</small></article>
-        <article class="attention"><span>Pendentes</span><strong>{{ pendingRegistrations.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'minhas' }}</small></article>
+        <article><span>Inscrições aprovadas</span><strong>{{ approvedRegistrations.length }}</strong><small>{{ isTeamLeader ? 'dos robôs da equipe' : 'dos meus robôs' }}</small></article>
+        <article class="attention"><span>Pendentes</span><strong>{{ pendingRegistrations.length }}</strong><small>{{ isTeamLeader ? 'inscrições de robôs da equipe' : 'inscrições dos meus robôs' }}</small></article>
       </section>
 
       <section class="participant-section">
         <div class="participant-section-heading">
           <div>
             <span class="eyebrow">Participante</span>
-            <h2>Minha inscrição pessoal</h2>
+            <h2>Minha inscrição</h2>
           </div>
           <div class="participant-section-actions">
-            <span class="muted">Sua inscrição é independente da equipe e das inscrições dos robôs.</span>
+            <span class="muted">Sua inscrição individual na competição. Equipe e robôs são tratados separadamente.</span>
             <el-button
               class="brand-button"
               :disabled="!availablePersonalRegistrationCompetitions.length"
               @click="openPersonalRegistrationDialog"
             >
-              Nova inscrição pessoal
+              Fazer minha inscrição
             </el-button>
           </div>
         </div>
@@ -915,18 +915,18 @@ onMounted(loadTeams)
           </article>
         </div>
         <div v-else class="participant-flow-note">
-          <strong>Você ainda não enviou uma inscrição pessoal.</strong>
-          <span>Entrar em uma equipe e ser responsável por robôs não depende desta aprovação. A aprovação pessoal é exigida para validar sua participação na competição.</span>
+          <strong>Você ainda não fez sua inscrição.</strong>
+          <span>Esta é somente a sua entrada individual na competição. Seu vínculo com a equipe e com os robôs continua existindo independentemente desta aprovação.</span>
         </div>
       </section>
 
       <section class="participant-section">
         <div class="participant-section-heading">
-          <div><span class="eyebrow">Competição</span><h2>{{ isTeamLeader ? 'Participação da equipe' : 'Minha participação' }}</h2></div>
+          <div><span class="eyebrow">Robôs</span><h2>{{ isTeamLeader ? 'Inscrições dos robôs da equipe' : 'Inscrições dos meus robôs' }}</h2></div>
           <div class="participant-section-actions">
-            <span class="muted">Acompanhe o que já aconteceu e o que ainda falta.</span>
+            <span class="muted">Inscreva um robô em uma categoria e acompanhe a aprovação dele.</span>
             <el-button class="brand-button" :disabled="!robots.length || !availableCompetitions.length" @click="openRegistrationDialog">
-              Nova inscrição
+              Inscrever robô
             </el-button>
           </div>
         </div>
@@ -934,7 +934,7 @@ onMounted(loadTeams)
         <div v-if="pendingRegistrations.length" class="participant-registration-pending-banner">
           <div>
             <strong>Aguardando aprovação da organização</strong>
-            <span>{{ pendingRegistrations.length }} inscrição(ões) pendente(s). O robô só entra oficialmente na competição após aprovação.</span>
+            <span>{{ pendingRegistrations.length }} inscrição(ões) de robô pendente(s). O robô só entra oficialmente na competição após aprovação.</span>
           </div>
         </div>
 
@@ -1250,11 +1250,11 @@ onMounted(loadTeams)
       </template>
     </el-dialog>
 
-    <el-dialog v-model="registrationDialog" title="Nova inscrição" width="min(680px, 94vw)">
+    <el-dialog v-model="registrationDialog" title="Inscrever robô" width="min(680px, 94vw)">
       <div class="registration-flow-dialog">
         <div class="participant-flow-note">
-          <strong>Fluxo normal de inscrição</strong>
-          <span>A inscrição do robô nasce PENDENTE e possui aprovação própria. Na aprovação, todos os competidores escolhidos precisam ser responsáveis pelo robô e estar pessoalmente APROVADOS nesta competição.</span>
+          <strong>Inscrição do robô</strong>
+          <span>Escolha o robô, a categoria e quem realmente competirá com ele. Esta inscrição é separada da sua inscrição individual.</span>
         </div>
 
         <div class="form-grid">
@@ -1297,8 +1297,8 @@ onMounted(loadTeams)
 
           <div class="span-2 registration-competitors-block">
             <div class="registration-competitors-copy">
-              <strong>Competidores desta inscrição</strong>
-              <span>Somente responsáveis permanentes deste robô podem compor a inscrição. Você pode escolher um ou vários entre eles.</span>
+              <strong>Quem vai competir com este robô?</strong>
+              <span>Somente responsáveis deste robô aparecem aqui. Se ele tiver apenas um responsável, será só essa pessoa; se tiver vários, escolha quais participarão com o robô nesta categoria.</span>
             </div>
             <el-checkbox-group v-model="registrationForm.competitorIds" class="registration-competitor-options">
               <el-checkbox
@@ -1338,7 +1338,7 @@ onMounted(loadTeams)
           :loading="creatingRegistration"
           :disabled="!registrationForm.categoryId || !registrationForm.competitorIds.length"
           @click="submitRegistration"
-        >Enviar inscrição</el-button>
+        >Enviar inscrição do robô</el-button>
       </template>
     </el-dialog>
 
