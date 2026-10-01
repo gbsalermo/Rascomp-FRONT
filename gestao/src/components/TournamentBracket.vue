@@ -50,6 +50,15 @@ function isWinner(match: Match, registrationId?: number) {
   return Boolean(result?.winnerRegistrationId && registrationId === result.winnerRegistrationId)
 }
 
+function isByeAdvance(match: Match) {
+  const participantes = Number(Boolean(match.registrationAId)) + Number(Boolean(match.registrationBId))
+  return participantes === 1 && match.status === 'FINALIZADA' && !resultFor(match.id)
+}
+
+function byeRobotName(match: Match) {
+  return match.robotANome || match.robotBNome || 'Participante'
+}
+
 function canOpen(match: Match) {
   return Boolean(match.id)
     && Boolean(match.registrationAId)
@@ -145,6 +154,9 @@ function arenaRoute(match: Match) {
           <footer class="match-foot">
             <span v-if="resultFor(match.id)" class="winner-note">
               {{ resultFor(match.id)?.winnerRobotNome }} avançou
+            </span>
+            <span v-else-if="isByeAdvance(match)" class="bye-note">
+              BYE · {{ byeRobotName(match) }} avançou automaticamente
             </span>
             <router-link
               v-if="canOpen(match)"
@@ -379,6 +391,7 @@ function arenaRoute(match: Match) {
 
 .battle-action:hover { text-decoration: underline; }
 .winner-note { color: #1f714d; font-size: 11px; font-weight: 800; }
+.bye-note { color:#6e4b00; font-size:11px; font-weight:800; }
 .read-only-note { color: #8c8187; font-size: 11px; }
 
 @media (max-width: 760px) {
