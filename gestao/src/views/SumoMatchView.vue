@@ -137,6 +137,17 @@ function phaseLabel(round: number) {
   return `Rodada ${round}`
 }
 
+function callStatusLabel(value?: string) {
+  const labels: Record<string, string> = {
+    NAO_CONVOCADA: 'Não convocada',
+    CONVOCADA: 'Convocada',
+    EM_CHAMADA: 'Em chamada',
+    PRONTA: 'Pronta para batalha',
+    ADIADA: 'Adiada'
+  }
+  return value ? (labels[value] || value.replaceAll('_', ' ')) : 'Não convocada'
+}
+
 function chooseWinner(side: WinnerSide) {
   if (penaltyLoser.value === side) {
     ElMessage.warning('Um robô com 2 penalidades perde o round automaticamente.')
@@ -387,6 +398,7 @@ onMounted(load)
         <div><span>Controle</span><strong>{{ controlModeLabel }}</strong></div>
         <div><span>Formato</span><strong>{{ config.numeroRounds }} rounds · {{ config.roundsParaVencer }} vitórias</strong></div>
         <div><span>Extras</span><strong>{{ config.permiteRoundDesempate ? `até ${config.maxRoundsExtras}` : 'não permitidos' }}</strong></div>
+        <div><span>Chamada</span><strong>{{ callStatusLabel(match.statusConvocacao) }}</strong></div>
         <p v-if="category?.sumoControlMode === 'AUTONOMO'">Autônomo: após autorização/ativação, respeite o atraso regulamentar de 5 s. O RasComp não decide falha automaticamente.</p>
         <p v-else-if="category?.sumoControlMode === 'RC'">R/C: início ao comando do juiz, sem o atraso regulamentar de 5 s dos autônomos.</p>
       </section>
