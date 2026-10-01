@@ -155,9 +155,7 @@ const availableCompetitions = computed(() => {
 })
 const availablePersonalRegistrationCompetitions = computed(() => {
   const registeredCompetitionIds = new Set(
-    personalRegistrations.value
-      .filter((item) => item.status !== 'CANCELADA')
-      .map((item) => item.competitionId)
+    personalRegistrations.value.map((item) => item.competitionId)
   )
   return availableCompetitions.value.filter((item) => !registeredCompetitionIds.has(item.id))
 })
