@@ -340,3 +340,17 @@ Após a bateria 1–56, foram implementadas as correções estruturais principai
 - melhorias anteriores de g/kg, juízes, BYE, filtros, chamada e bloqueio Follow fora de EM_ANDAMENTO.
 
 Estado: **CORREÇÕES IMPLEMENTADAS · RE-SMOKE PENDENTE**.
+
+
+## Correção do roteiro de re-smoke — 30/09/2026
+
+O teste de bloqueio de operação Follow após a competição chegar a `FINALIZADA` é **destrutivo**, porque `FINALIZADA` é estado terminal no fluxo normal.
+
+Portanto:
+
+- esse teste deve ser executado **por último** no re-smoke;
+- nenhum roteiro deve exigir `FINALIZADA → EM_ANDAMENTO` pelo fluxo comum;
+- se for necessário repetir cenários depois dele, usar reset do banco dedicado de QA;
+- não adicionar reabertura comum apenas para facilitar testes.
+
+A ordem corrigida do re-smoke mantém primeiro todos os fluxos que dependem de `EM_ANDAMENTO` e deixa a validação terminal para o encerramento.
