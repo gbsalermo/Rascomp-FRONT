@@ -2,6 +2,7 @@ import type {
   Competitor,
   ConfigFollow,
   FollowAttempt,
+  ParticipantCompetitionRegistration,
   Registration,
   RegistrationCancellationRequest,
   Robot,
@@ -53,6 +54,20 @@ export const participantApi = {
   setPrincipalRobotPhoto: (robotId: number, imageId: number) =>
     http.patch<RobotImage>(`/api/v1/participante/robos/${robotId}/fotos/${imageId}/principal`).then((r) => r.data),
   deleteRobotPhoto: (robotId: number, imageId: number) => http.delete(`/api/v1/participante/robos/${robotId}/fotos/${imageId}`),
+  personalRegistrations: () =>
+    http.get<ParticipantCompetitionRegistration[]>('/api/v1/participante/inscricoes-pessoais').then((r) => r.data),
+  createPersonalRegistration: (payload: { competitionId: number; observacao?: string }, receipt: File) => {
+    const form = new FormData()
+    form.append('dados', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
+    form.append('comprovante', receipt)
+    return http.post<ParticipantCompetitionRegistration>('/api/v1/participante/inscricoes-pessoais', form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then((r) => r.data)
+  },
+  cancelPersonalRegistration: (id: number) =>
+    http.delete(`/api/v1/participante/inscricoes-pessoais/${id}`).then(() => undefined),
+  personalRegistrationReceipt: (id: number) =>
+    http.get<Blob>(`/api/v1/participante/inscricoes-pessoais/${id}/comprovante`, { responseType: 'blob' }).then((r) => r.data),
   registrations: (teamId: number) => http.get<Registration[]>(`/api/v1/participante/equipes/${teamId}/inscricoes`).then((r) => r.data),
   createRegistration: (teamId: number, payload: {
     competitionId: number
@@ -60,7 +75,16 @@ export const participantApi = {
     robotId: number
     competitorIds: number[]
     observacao?: string
-  }) => http.post<Registration>(`/api/v1/participante/equipes/${teamId}/inscricoes`, payload).then((r) => r.data),
+  }, receipt: File) => {
+    const form = new FormData()
+    form.append('dados', new Blob([JSON.stringify(payload)], { type: 'application/json' }))
+    form.append('comprovante', receipt)
+    return http.post<Registration>(`/api/v1/participante/equipes/${teamId}/inscricoes`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then((r) => r.data)
+  },
+  registrationReceipt: (registrationId: number) =>
+    http.get<Blob>(`/api/v1/participante/inscricoes/${registrationId}/comprovante`, { responseType: 'blob' }).then((r) => r.data),
   cancelRegistration: (registrationId: number) => http.delete(`/api/v1/participante/inscricoes/${registrationId}`),
   reactivateRegistration: (registrationId: number) =>
     http.patch<Registration>(`/api/v1/participante/inscricoes/${registrationId}/reativar`).then((r) => r.data),
