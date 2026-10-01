@@ -73,9 +73,13 @@ Não substituir esse fluxo futuro por duplicação manual de dados de usuário.
 
 ## Participação competitiva
 
-Ser membro da equipe não torna o usuário automaticamente competidor.
+Regra revisada em 30/09/2026:
 
-A participação é definida por inscrição de robô.
+- uma conta `PARTICIPANTE` representa uma pessoa competidora;
+- ao criar uma equipe, o próprio usuário é automaticamente criado/vinculado como `Competitor` da equipe;
+- ao ingressar em uma equipe existente, a aprovação do vínculo deverá criar o `Competitor` correspondente;
+- contas de gestão interna continuam separadas e não viram competidores;
+- a inscrição competitiva continua sendo a associação do robô + categoria + competidores daquela equipe.
 
 Experiência desejada:
 
@@ -121,3 +125,26 @@ O robô pode ser cadastrado dentro do wizard de inscrição e, após persistido,
 ## Recuperação de senha
 
 A rota/tela existe para preservar a experiência esperada de login, porém a funcionalidade real só será ativada quando houver endpoint e política de recuperação no backend.
+
+
+## Revisão de onboarding — 30/09/2026
+
+Fluxo canônico:
+
+```text
+Criar conta PARTICIPANTE
+        ↓
+Criar equipe OU ingressar em equipe existente
+        ↓
+Conta vinculada automaticamente a Competitor da equipe
+        ↓
+Cadastrar robôs da própria equipe
+        ↓
+Inscrever robô em competição/categoria
+        ↓
+Selecionar competidores da mesma equipe
+```
+
+A criação de equipe não depende de uma lista fechada de instituições. O usuário pode selecionar uma instituição existente ou cadastrar a própria instituição informando nome/sigla e dados opcionais.
+
+O cadastro manual DEV de participante/robô é exceção operacional. Ele nunca deve permitir escolher uma equipe arbitrária: a equipe é derivada do `Competitor` já associado à conta PARTICIPANTE.
