@@ -49,6 +49,9 @@ export interface Bracket {
   status?: string
   ativo?: boolean
   atual?: boolean
+  generationReason?: string
+  generatedByUserId?: number
+  generatedByUserNome?: string
   dataCadastro?: string
 }
 
