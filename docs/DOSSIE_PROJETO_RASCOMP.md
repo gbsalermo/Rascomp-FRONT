@@ -1267,3 +1267,22 @@ Principais entregas:
 Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅ com 166 testes; MySQL/Flyway V18/testdata ✅.
 
 BLOCO 3 aguarda validação manual final.
+
+
+## Atualização operacional — 30/09/2026 — fechamento técnico do BLOCO 3
+
+O fechamento manual do BLOCO 3 resultou em quatro extensões de domínio consideradas necessárias ao MVP operacional:
+
+1. entrada manual DEV de participante/robô, partindo de conta PARTICIPANTE existente e gerando inscrição aprovada auditada;
+2. regeneração excepcional e segura de chave antes do início de atividade competitiva real;
+3. pódio oficial completo, incluindo disputa de 3º lugar no Sumô e pódio manual auditado no Follow sem tempos classificáveis;
+4. correção excepcional DEV de resultado Sumô, com auditoria e proteção de dependências.
+
+Migrations adicionadas:
+
+- V20 — auditoria da regeneração excepcional de chave;
+- V21 — tipo de partida Sumô (`ELIMINATORIA / TERCEIRO_LUGAR`);
+- V22 — segundo/terceiro lugar do resultado administrativo Follow;
+- V23 — auditoria da correção excepcional de MatchResult.
+
+A UI Chaves passa a ter maior independência do módulo Sumô, enquanto Resultados se torna a fonte visual principal do pódio e do histórico competitivo Follow/Sumô.
