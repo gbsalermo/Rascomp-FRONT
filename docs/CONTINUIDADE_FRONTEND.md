@@ -1423,3 +1423,29 @@ A próxima execução usa um único cenário no banco dedicado `rascomp_b3_valid
 - formulário de chamada deixa estados competitivos como automáticos;
 - data/hora e ações receberam melhor área de interação;
 - "Apresentação" foi substituída na UX por "espera após chamada".
+
+
+## Fechamento da bateria manual do BLOCO 3 — 30/09/2026
+
+Os 56 testes foram percorridos. O bloco permanece em **correções + re-smoke**.
+
+Decisões finais:
+
+- seletor `B3 · Follow Operação / Exceção` é seletor de categoria; os nomes são apenas do seed;
+- Follow só aceita tentativa/ausência com competição `EM_ANDAMENTO`;
+- peso da inspeção aceita entrada em g/kg;
+- juízes precisam de área visível;
+- convocação Sumô deve aparecer na arena;
+- BYE deve explicar avanço automático;
+- Resultados deve priorizar CAMPEÃO / VICE / 3º LUGAR;
+- Follow normal/extra obtém pódio do ranking;
+- Follow sem tempo classificável exige decisão administrativa do pódio ordenado, auditada;
+- Sumô ganha disputa de 3º lugar entre os perdedores das semifinais;
+- Chaves deve se tornar interface independente de Sumô;
+- DEV precisa de correção extrema auditável de resultado/partida quando ainda for estruturalmente segura;
+- estado `ELIMINADO` é derivado da chave e não substitui o status cadastral da inscrição;
+- histórico competitivo em Resultados deve permitir consulta por categoria e incluir Follow + Sumô;
+- Dashboard poderá destacar campeões definidos;
+- loading ocasional ao abrir partida precisa de hardening.
+
+A checklist detalhada permanece em `docs/VALIDACAO_ETAPA4_BLOCO3.md`.
