@@ -1519,3 +1519,12 @@ BLOCO 4 deve consolidar:
 - inscrição usando os responsáveis como sugestão inicial, sem confundir responsabilidade permanente com competidores daquela Registration.
 
 O cadastro manual DEV permanece apenas como contingência operacional descoberta no BLOCO 3.
+
+
+### Regra de aprovação competitiva do Portal
+
+No BLOCO 4, o cadastro do robô é interno à equipe. A aprovação organizacional ocorre na inscrição:
+
+`Robot da equipe → Registration PENDENTE → GESTAO aprova → APROVADA → alocação competitiva`.
+
+Não criar estado de "robô aguardando aprovação" no catálogo da equipe. O status de aprovação pertence à Registration.
