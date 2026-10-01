@@ -207,10 +207,17 @@ Escopo congelado em quatro sub-blocos:
 - bateria manual do Portal;
 - smoke final da ETAPA 4.
 
-Checkpoint inicial:
+Checkpoint atual — 01/10/2026:
 - V24 cria convites/solicitações de equipe e responsáveis por robô;
-- 4.1 implementado backend + frontend, aguardando validação;
-- base funcional de 4.2 implementada, aguardando validação.
+- 4.1 — equipe e associação: ✅ implementado;
+- 4.2 — responsáveis por robô: ✅ base funcional implementada;
+- 4.3 — inscrição pelo Portal: 🧪 implementado e aguardando validação manual;
+- líder pode inscrever qualquer robô da equipe; membro comum pode inscrever robôs pelos quais é responsável;
+- responsáveis permanentes do robô são pré-selecionados, mas os competidores daquela Registration continuam ajustáveis entre membros válidos da mesma equipe;
+- Registration nasce `PENDENTE`; o fluxo administrativo existente continua responsável por aprovar/rejeitar;
+- somente `APROVADA` entra nas projeções públicas/oficiais e nos fluxos competitivos;
+- duplicidade, janela de inscrições, ownership, equipe dos competidores e compatibilidade física continuam validadas pelo backend;
+- BLOCO 4.4 permanece **NÃO INICIADO** até a validação do 4.3.
 
 ### Relação da ETAPA 4 com o eixo mobile
 
