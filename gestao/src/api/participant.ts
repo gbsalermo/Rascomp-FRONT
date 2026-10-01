@@ -6,6 +6,7 @@ import type {
   RegistrationCancellationRequest,
   Robot,
   RobotImage,
+  RobotResponsible,
   Team,
   TeamMembershipRequest
 } from '../types'
@@ -37,6 +38,10 @@ export const participantApi = {
   robots: (teamId: number) => http.get<Robot[]>(`/api/v1/participante/equipes/${teamId}/robos`).then((r) => r.data),
   createRobot: (teamId: number, payload: { nome: string; descricao?: string }) =>
     http.post<Robot>(`/api/v1/participante/equipes/${teamId}/robos`, payload).then((r) => r.data),
+  robotResponsibles: (robotId: number) =>
+    http.get<RobotResponsible[]>(`/api/v1/participante/robos/${robotId}/responsaveis`).then((r) => r.data),
+  setRobotResponsibles: (robotId: number, competitorIds: number[]) =>
+    http.put<RobotResponsible[]>(`/api/v1/participante/robos/${robotId}/responsaveis`, { competitorIds }).then((r) => r.data),
   robotPhotos: (robotId: number) => http.get<RobotImage[]>(`/api/v1/participante/robos/${robotId}/fotos`).then((r) => r.data),
   uploadRobotPhoto: (robotId: number, file: File) => {
     const form = new FormData()
