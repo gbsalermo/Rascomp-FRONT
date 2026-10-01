@@ -163,6 +163,15 @@ Executar uma revisão funcional e visual do produto existente:
 
 Melhorias cabíveis nesta etapa são correções/polimentos que **não criam um novo grande domínio**.
 
+### Fronteira interna da ETAPA 4 após o BLOCO 3
+
+Para impedir que a ETAPA 4 volte a crescer como um roadmap paralelo:
+
+- **BLOCO 3 — Operação competitiva:** encerra Follow, Sumô, Chaves, Agenda, Resultados e contingências DEV diretamente ligadas à competição.
+- **BLOCO 4 — Portal do Participante:** consolida o fluxo básico de equipe/participante necessário para o produto atual, incluindo convite/aceite, associação automática a Competitor, responsáveis por robô e visibilidade "Meus robôs".
+- recursos avançados do Portal permanecem na **ETAPA 7**.
+- Landing/Galeria continuam apenas no smoke geral; implementação/polimento completo permanece na **ETAPA 9**.
+
 ### Relação da ETAPA 4 com o eixo mobile
 
 A ETAPA 4 pode revelar e corrigir problemas de responsividade encontrados durante o polimento, mas **não é definida nem encerrada exclusivamente pelo trabalho mobile**.
@@ -219,13 +228,15 @@ Antes da migration, fechar regras de equipe, atribuição de robôs, placar, dur
 
 ## ETAPA 7 — Portal do Participante completo + identificação competitiva
 
-**Objetivo:** transformar o portal atual em uma experiência realmente autônoma e prática para o competidor.
+**Objetivo:** ampliar e fechar o Portal após a consolidação básica feita no BLOCO 4 da ETAPA 4.
+
+> O BLOCO 4 da ETAPA 4 é responsável pelo fluxo básico indispensável: associação a equipe, convite/aceite, responsabilidade por robô e visibilidade correta de líder x membro. A ETAPA 7 amplia esse portal para a experiência completa do MVP.
 
 Completar/consolidar:
 
-- convite/aceite ou fluxo equivalente de entrada em equipe;
-- integrantes e papéis da equipe;
-- robôs e fotos;
+- refinamentos do fluxo de equipe já consolidado no BLOCO 4;
+- integrantes e papéis avançados da equipe;
+- robôs, responsáveis e fotos;
 - inscrições permitidas;
 - integração com Futebol;
 - histórico e acompanhamento competitivo;
