@@ -1,10 +1,12 @@
 # Validação manual — ETAPA 4 / BLOCO 3
 
-Última atualização: **29/09/2026**
+Última atualização: **01/10/2026**
 
 Este documento registra a bateria manual do BLOCO 3 e evita repetir testes já validados.
 
-## 1. Estado da bateria
+> **Fechamento:** o BLOCO 3 foi concluído/validado em 30/09/2026 após a bateria completa e as correções finais. As listas abaixo preservam o histórico incremental da validação; itens descritos como "ainda não executados" refletem o momento daquele checkpoint e não o estado atual. O trabalho corrente está no BLOCO 4.3.
+
+## 1. Estado histórico da bateria durante o checkpoint de 29/09
 
 ### Validado pelo usuário
 
@@ -410,3 +412,26 @@ Em 01/10/2026, após o re-smoke e validação do fluxo de robô avulso, o usuár
 Estado final: **✅ CONCLUÍDO / VALIDADO**.
 
 Descobertas relacionadas ao Portal do Participante foram transferidas formalmente para o BLOCO 4 e não reabrem o escopo competitivo.
+
+
+---
+
+## Fechamento consolidado — 30/09/2026
+
+O BLOCO 3 foi encerrado após conclusão da bateria e re-smoke das correções finais.
+
+Foram consolidados, entre outros:
+
+- Follow restrito a competição `EM_ANDAMENTO`;
+- Tomada Extra e decisão administrativa sem tempo fictício;
+- pódio Follow;
+- Sumô com campeão, vice e disputa própria de 3º lugar;
+- estado competitivo derivado;
+- correção excepcional DEV auditável;
+- entrada manual DEV de contingência;
+- regeneração excepcional protegida;
+- Chaves/Agenda/Resultados alinhados.
+
+Estado canônico: **BLOCO 3 ✅ CONCLUÍDO / VALIDADO**.
+
+A continuidade da ETAPA 4 ocorre em `VALIDACAO_ETAPA4_BLOCO4.md`.
