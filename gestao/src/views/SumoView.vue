@@ -446,18 +446,6 @@ onMounted(initialize)
       </span>
     </article>
 
-    <article v-if="currentCategory" class="feature-card compact sumo-rule-card">
-      <div>
-        <span class="eyebrow">Regra da categoria</span>
-        <h2>{{ currentCategory.nome }}</h2>
-        <p class="muted">
-          {{ physicalClassLabel(currentCategory) }} · {{ controlModeLabel(currentCategory) }}
-          <template v-if="currentCategory.sumoControlMode === 'AUTONOMO'"> · atraso regulamentar de 5 s antes da movimentação</template>
-        </p>
-      </div>
-      <el-tag effect="plain">{{ judges.length }} juiz{{ judges.length === 1 ? '' : 'es' }} ativo{{ judges.length === 1 ? '' : 's' }}</el-tag>
-    </article>
-
     <article class="table-card sumo-judges-card">
       <div class="card-heading">
         <div>
