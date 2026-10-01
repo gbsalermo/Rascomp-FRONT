@@ -312,3 +312,18 @@ PARTICIPANTE 7 — histórico
 ```
 
 A experiência participante deve ser validada separadamente da experiência ORGANIZACAO.
+
+
+## Revisão competitiva — 30/09/2026
+
+O Portal do Participante deve destacar explicitamente resultados finais:
+
+- `CAMPEÃO`;
+- `VICE-CAMPEÃO`;
+- `3º LUGAR`;
+- `ELIMINADO`;
+- `EM DISPUTA`.
+
+No Sumô, não basta mostrar número de vitórias/derrotas. Quando a final ou disputa de terceiro lugar já possui resultado oficial, a situação do robô deve refletir a colocação consolidada.
+
+O fluxo normal deve permitir ao responsável da equipe cadastrar robôs pelo próprio Portal. O fluxo manual DEV é apenas contingência.
