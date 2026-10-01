@@ -69,6 +69,19 @@ function callStatusLabel(value?: MatchCallStatus) {
   } as Record<MatchCallStatus, string>)[value || 'NAO_CONVOCADA']
 }
 
+function isAutomaticBye(row: MatchRow) {
+  const participantCount = Number(Boolean(row.registrationAId)) + Number(Boolean(row.registrationBId))
+  return row.tipoPartida !== 'TERCEIRO_LUGAR'
+    && participantCount === 1
+    && row.status === 'FINALIZADA'
+}
+
+function phaseLabel(row: MatchRow) {
+  if (row.tipoPartida === 'TERCEIRO_LUGAR') return 'Disputa de 3º lugar'
+  if (isAutomaticBye(row)) return 'BYE · avanço automático'
+  return `Rodada ${row.rodada}`
+}
+
 function canOpenArena(row: MatchRow) {
   return Boolean(row.id)
     && Boolean(row.registrationAId)
@@ -220,12 +233,22 @@ onMounted(load)
         <el-table-column label="Confronto" min-width="240">
           <template #default="{ row }"><strong>{{ row.robotANome || 'A definir' }}</strong><span class="versus">×</span><strong>{{ row.robotBNome || 'A definir' }}</strong></template>
         </el-table-column>
-        <el-table-column prop="rodada" label="Rodada" width="85" />
+        <el-table-column label="Fase" min-width="155">
+          <template #default="{ row }">
+            <strong v-if="isAutomaticBye(row)" class="bye-status">{{ phaseLabel(row) }}</strong>
+            <span v-else>{{ phaseLabel(row) }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="Execução" width="90"><template #default="{ row }">{{ row.ordemExecucao || '—' }}</template></el-table-column>
         <el-table-column label="Pista" width="120"><template #default="{ row }">{{ row.pista || '—' }}</template></el-table-column>
         <el-table-column label="Horário" width="155"><template #default="{ row }">{{ formatDateTime(row.dataHora) }}</template></el-table-column>
         <el-table-column label="Convocação" width="135"><template #default="{ row }">{{ callStatusLabel(row.statusConvocacao) }}</template></el-table-column>
-        <el-table-column label="Status" width="155"><template #default="{ row }"><StatusBadge :value="row.status" /></template></el-table-column>
+        <el-table-column label="Status" width="180">
+          <template #default="{ row }">
+            <span v-if="isAutomaticBye(row)" class="bye-status">BYE · avançou</span>
+            <StatusBadge v-else :value="row.status" />
+          </template>
+        </el-table-column>
         <el-table-column label="Ações" width="190" align="right">
           <template #default="{ row }">
             <div class="match-actions">
@@ -233,7 +256,8 @@ onMounted(load)
               <router-link v-if="canOpenArena(row)" :to="arenaRoute(row)" class="text-link">
                 {{ row.status === 'FINALIZADA' || row.status === 'CANCELADA' || row.historical ? 'Ver partida' : 'Abrir partida' }}
               </router-link>
-              <span v-else-if="!canEditAgenda(row)" class="muted">Aguardando</span>
+              <span v-else-if="isAutomaticBye(row)" class="bye-status">Avanço automático</span>
+              <span v-else-if="!canEditAgenda(row)" class="muted">{{ row.status === 'FINALIZADA' ? 'Finalizada' : 'Aguardando' }}</span>
             </div>
           </template>
         </el-table-column>
@@ -288,4 +312,6 @@ onMounted(load)
 .agenda-context strong { color:#3e3037; }
 .agenda-context small { color:#7e7077; }
 .agenda-hint { margin:0; font-size:11px; line-height:1.5; }
+
+.bye-status { color:#7a5800; font-size:11px; font-weight:850; }
 </style>
