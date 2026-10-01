@@ -43,4 +43,4 @@ export type {
 } from './types/agenda'
 export type { CompetitionCategoryResult } from './types/results'
 
-export type { TeamMembershipRequestType, TeamMembershipStatus, TeamMembershipRequest } from './types/participant'
+export type { TeamMembershipRequestType, TeamMembershipStatus, TeamMembershipRequest, RobotResponsible } from './types/participant'
