@@ -81,6 +81,59 @@ A relação visual é auxiliar; o **backend deve repetir todas essas validaçõe
 
 ---
 
+
+
+### Cardinalidade N:N Robot ↔ Competitor
+
+A relação de responsabilidade é obrigatoriamente **muitos-para-muitos**:
+
+```text
+1 Robot
+→ 1..N RobotResponsible
+
+1 Competitor
+→ 0..N Robots como RobotResponsible
+```
+
+Exemplos válidos:
+
+```text
+Vespa
+→ Gabriel
+→ João
+→ Maria
+
+Gabriel
+→ Vespa
+→ Atlas
+→ LineBot
+```
+
+As exigências de aprovação definem apenas o mínimo necessário para uma participação válida; elas **não limitam** Robot a um único Competitor nem Competitor a um único Robot.
+
+Regras de alteração posterior:
+
+- um Robot já cadastrado pode receber novos `RobotResponsible`;
+- um Competitor pode ser associado como responsável a vários Robots da própria Team;
+- adicionar/remover `RobotResponsible` altera a responsabilidade permanente, mas **não deve reescrever automaticamente** `Registration.competitors` de uma inscrição já criada;
+- uma `Registration` já `APROVADA` não perde aprovação apenas porque outro responsável permanente foi adicionado ao Robot;
+- para o novo responsável passar a compor aquela inscrição competitiva, ele precisa ser incluído explicitamente na `Registration`;
+- se a composição de uma Registration já aprovada for alterada, a alteração precisa voltar para análise da GESTAO antes de a nova composição ser considerada oficial;
+- a nova pessoa incluída na Registration precisa ser `RobotResponsible` e possuir inscrição pessoal `APROVADA` na mesma Competition;
+- remover responsabilidade permanente de alguém que ainda compõe uma Registration ativa deve ser bloqueado ou exigir regularização explícita, evitando uma Registration oficial apontar para pessoa que deixou de ser responsável pelo Robot.
+
+Portanto:
+
+```text
+RobotResponsible
+= vínculo permanente N:N
+
+Registration.competitors
+= recorte competitivo daquele Robot naquela Competition/Category
+```
+
+---
+
 # 1. Cenário de QA do 4.3
 
 O profile backend `testdata` foi dedicado ao Portal e usa um banco separado:
@@ -411,6 +464,12 @@ A bateria antiga não deve ser usada como aceite final. O novo 4.3 só poderá s
 [ ] APROVADA do Robot não aprova Competitor automaticamente
 [ ] auditoria preserva quem aprovou/rejeitou e motivo
 [ ] fluxo manual DEV continua excepcional e auditável
+[ ] um Robot pode possuir múltiplos RobotResponsible
+[ ] um Competitor pode ser responsável por múltiplos Robots
+[ ] adicionar responsável permanente não altera automaticamente Registration.competitors
+[ ] Registration APROVADA não perde aprovação apenas por ganhar novo responsável permanente
+[ ] alterar a composição competitiva de Registration APROVADA exige nova análise
+[ ] não é permitido manter Registration ativa com competidor que deixou de ser RobotResponsible sem regularização explícita
 ```
 
 **Não iniciar 4.4 antes desta validação.**
