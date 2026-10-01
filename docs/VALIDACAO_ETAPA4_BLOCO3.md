@@ -260,3 +260,63 @@ BLOCO 3: **AGUARDANDO CORREÇÕES + RE-SMOKE**, principalmente:
 6. estado competitivo “Eliminado” derivado da chave;
 7. loading ocasional ao abrir partida;
 8. revalidação rápida dos ajustes.
+
+
+## 9. Correções finais implementadas — 30/09/2026
+
+A rodada de correções derivada dos testes 1–56 foi implementada e agora entra em **re-smoke dirigido**.
+
+Implementado:
+
+- Follow bloqueia tentativa e ausência fora de `EM_ANDAMENTO`;
+- pódio Follow normal/extra = três primeiras posições do ranking;
+- decisão administrativa do Follow sem tempo classificável = pódio ordenado, justificativa e auditoria;
+- Sumô gera disputa específica de 3º lugar e envia automaticamente os perdedores das semifinais;
+- campeão/vice/3º são consolidados em Resultados;
+- Resultados passa a priorizar pódio e oferece histórico filtrável de Sumô + Follow;
+- Dashboard destaca campeões já definidos;
+- Chaves exibe a árvore no próprio módulo e concentra geração/regeneração, histórico e correção extrema DEV;
+- correção DEV de vencedor exige justificativa, preserva rounds, normaliza o placar consolidado e é bloqueada quando uma dependência já iniciou;
+- situação competitiva `ELIMINADO` é derivada da chave, sem adulterar o status cadastral da Registration;
+- BYE permanece visível como avanço automático no desenho e no histórico de partidas;
+- arena de Sumô possui timeout de carregamento e retorno correto ao módulo Chaves quando aberta de lá;
+- inspeção Sumô aceita entrada de peso em g/kg;
+- área de juízes e estado de chamada ficaram explícitos;
+- Agenda ganhou limpeza de filtros.
+
+### Entrada manual / robô avulso
+
+Também foi incorporado o fluxo solicitado pelo cliente:
+
+```text
+conta PARTICIPANTE existente
+→ DEV escolhe equipe
+→ cria/associa Competitor
+→ cria Robot
+→ cria Registration APROVADA
+```
+
+Follow: sincronizar o novo inscrito nas chamadas seguintes.
+
+Sumô: realizar inspeção; se APTO, gerar nova chave. A regeneração excepcional durante `EM_ANDAMENTO` exige justificativa e só é permitida se a chave atual ainda não tiver disputa real.
+
+### Re-smoke necessário
+
+O re-smoke não repete os 56 testes. Deve cobrir somente:
+
+1. entrada manual Follow;
+2. entrada manual Sumô + inspeção + regeneração segura;
+3. tentativa de regenerar depois que uma disputa real começou → deve bloquear;
+4. semifinal → perdedor cai na disputa de 3º lugar;
+5. final + disputa de 3º → Resultados mostra 1º/2º/3º;
+6. Follow por ranking → 1º/2º/3º;
+7. Follow por decisão da organização → pódio manual auditado;
+8. correção DEV antes da dependência → propaga e audita;
+9. correção DEV depois da dependência iniciada → bloqueia;
+10. Chaves/Partidas → BYE explícito;
+11. Resultados → filtros + histórico Follow/Sumô;
+12. Dashboard → campeão visível;
+13. abrir repetidamente partidas pela Chaves → sem loading infinito;
+14. smoke responsivo das telas alteradas.
+
+Se estes pontos passarem, o BLOCO 3 pode ser marcado como **CONCLUÍDO / VALIDADO**.
