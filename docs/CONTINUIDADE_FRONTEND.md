@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **19/09/2026**
+Última atualização: **01/10/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -29,7 +29,7 @@ ETAPA 0  ✅ concluída / validada
 ETAPA 1  ✅ concluída / validada
 ETAPA 2   ✅ concluída / validada
 ETAPA 3   ✅ concluída / validada
-ETAPA 4   🚧 EM ANDAMENTO — BLOCO 3 IMPLEMENTADO / AGUARDANDO VALIDAÇÃO
+ETAPA 4   🚧 EM ANDAMENTO — BLOCO 3 ✅ / BLOCO 4.3 🧪 aguardando validação manual
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -86,7 +86,7 @@ Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, inclui
 
 Em 12/09/2026 o **Bloco 5 — Fluxos integrados completos** foi concluído no backend. Ele não exigiu nova funcionalidade visual: validou, com services e repositories reais, que os contratos já refletidos no `gestao/` funcionam juntos e que falhas não deixam persistência parcial.
 
-**As ETAPAS 1, 2 e 3 estão concluídas e validadas. O roadmap foi reorganizado em 19/09/2026. A próxima etapa é a ETAPA 4 — Consolidação funcional e polimento do MVP, ainda não iniciada.**
+**As ETAPAS 1, 2 e 3 estão concluídas/validadas. A ETAPA 4 está em andamento: BLOCO 3 foi concluído/validado; no BLOCO 4, 4.1 e 4.2 estão implementados e 4.3 está implementado aguardando validação manual. 4.4 ainda não foi iniciado.**
 
 ---
 
@@ -317,20 +317,34 @@ Category.sumoControlMode
 
 ## Participante
 
-Primeira versão em `/minha-equipe` inclui:
+A versão atual em `/minha-equipe` inclui:
 
-- equipe;
-- competidores;
+- equipe e onboarding;
+- convite/aceite e solicitação/aprovação de ingresso;
+- vínculo automático `UserAccount PARTICIPANTE → Competitor → Team`;
 - robôs/fotos;
-- inscrições;
-- Follow/histórico;
-- acompanhamento de Sumô;
+- responsáveis N:N por robô;
+- líder com visão de todos os robôs da equipe;
+- membro comum com visão dos robôs pelos quais é responsável;
+- **Nova inscrição** pelo Portal;
+- competições com inscrições abertas;
+- seleção de categoria, robô e competidores;
+- responsáveis permanentes do robô pré-selecionados;
+- Registration criada como `PENDENTE`;
+- feedback explícito **Aguardando aprovação da organização**;
 - cancelamento direto de inscrição `PENDENTE`;
 - solicitação de cancelamento para inscrição `APROVADA`;
 - indicação de solicitação pendente;
-- reativação de inscrição `CANCELADA` quando permitida.
+- reativação de inscrição `CANCELADA` quando permitida;
+- Follow/histórico;
+- acompanhamento de Sumô.
 
-O portal ainda não é completo; a conclusão geral foi remapeada para a ETAPA 7.
+Permissão de inscrição:
+- líder administra inscrições de qualquer robô da equipe;
+- membro comum administra inscrições dos robôs pelos quais é responsável;
+- participação na lista de competidores de uma Registration, sozinha, não concede responsabilidade permanente sobre o robô.
+
+O Portal ainda terá refinamentos avançados na ETAPA 7. Dentro da ETAPA 4, o 4.3 aguarda validação prática antes de iniciar o 4.4.
 
 ## Landing
 
@@ -591,7 +605,7 @@ ETAPA 3 — matriz de permissões
 └─ checkpoint prático dos quatro perfis  ✅ validado em 19/09/2026
 ```
 
-A ETAPA 4 é a próxima etapa do roadmap, mas só deve ser iniciada após autorização explícita.
+A ETAPA 4 já está em andamento. Permanecer no BLOCO 4.3 até a validação prática; **não iniciar 4.4 sem confirmação explícita**.
 
 ---
 
@@ -1550,3 +1564,26 @@ Implementado neste checkpoint:
 - líder administra responsáveis;
 - membro comum passa a ver robôs pela responsabilidade, não por inscrições antigas;
 - cadastro de robô liberado para competidor da equipe.
+
+
+---
+
+## ETAPA 4 — BLOCO 4.3 — checkpoint de implementação 01/10/2026
+
+Implementado no frontend:
+
+- `participantApi.createRegistration(...)`;
+- wizard **Nova inscrição** no Portal;
+- carregamento de competições/categorias públicas para seleção;
+- filtro de Competition com `INSCRICOES_ABERTAS` e janela válida;
+- seleção de robô gerenciável pelo usuário;
+- pré-seleção dos `RobotResponsible`;
+- ajuste dos competidores específicos da Registration;
+- prevenção visual de duplicidade já existente para o mesmo robô/categoria/competição;
+- filtro visual de classe física de Sumô coerente com inscrições pendentes/aprovadas do mesmo robô;
+- mensagem explícita de pendência;
+- ações de inscrição disponibilizadas ao líder ou responsável permanente pelo robô.
+
+O backend permanece a fonte de verdade para todas as validações. Nenhuma nova regra competitiva foi movida para o cliente.
+
+Estado: **implementado; typecheck/build do commit atual ainda precisam ser confirmados pelo CI. 4.4 não iniciado.**
