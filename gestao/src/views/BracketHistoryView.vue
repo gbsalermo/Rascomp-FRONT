@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
 import type { Bracket, Category, Match, MatchResult } from '../types'
@@ -32,6 +32,7 @@ const generationForm = reactive({
 const previewBracketId = ref<number>()
 const previewMatches = ref<Match[]>([])
 const previewResults = ref<MatchResult[]>([])
+const correctingMatchId = ref<number>()
 
 const categories = computed(() => {
   const map = new Map<number, string>()
@@ -75,6 +76,61 @@ async function selectPreview(item: BracketHistoryRow) {
     previewMatches.value = []
     previewResults.value = []
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar a árvore da chave.')
+  }
+}
+
+function resultForMatch(matchId: number) {
+  return previewResults.value.find((item) => item.matchId === matchId)
+}
+
+async function correctResult(match: Match) {
+  const result = resultForMatch(match.id)
+  if (!auth.isDev || !result || !match.registrationAId || !match.registrationBId) return
+
+  const currentWinner = result.winnerRegistrationId
+  const options = [
+    { id: match.registrationAId, nome: match.robotANome || 'Robô A' },
+    { id: match.registrationBId, nome: match.robotBNome || 'Robô B' }
+  ]
+  const alternative = options.find((item) => item.id !== currentWinner)
+  if (!alternative) return
+
+  try {
+    await ElMessageBox.confirm(
+      `Corrigir o vencedor da partida para ${alternative.nome}? Essa operação é exclusiva do DEV, ficará auditada e será bloqueada se uma dependência seguinte já tiver começado.`,
+      'Correção excepcional de resultado',
+      {
+        type: 'warning',
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Cancelar'
+      }
+    )
+
+    const { value } = await ElMessageBox.prompt(
+      'Informe a justificativa da correção. Os rounds originais permanecem no histórico e o resultado consolidado fica marcado como corrigido pelo DEV.',
+      'Justificativa obrigatória',
+      {
+        inputType: 'textarea',
+        inputPlaceholder: 'Motivo da correção excepcional',
+        inputValidator: (value) => value?.trim() ? true : 'Informe a justificativa.',
+        confirmButtonText: 'Corrigir resultado',
+        cancelButtonText: 'Cancelar'
+      }
+    )
+
+    correctingMatchId.value = match.id
+    await adminApi.correctSumoMatchResult(match.id, {
+      winnerRegistrationId: alternative.id,
+      justificativa: value.trim()
+    })
+    ElMessage.success('Resultado corrigido e propagação atualizada com auditoria.')
+    if (previewBracket.value) await selectPreview(previewBracket.value)
+    await load()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível corrigir o resultado.')
+  } finally {
+    correctingMatchId.value = undefined
   }
 }
 
@@ -293,6 +349,44 @@ onMounted(load)
         :results="previewResults"
         :read-only="previewBracket.atual === false"
       />
+
+      <div v-if="previewResults.length" class="bracket-result-audit">
+        <div class="section-mini-heading">
+          <div>
+            <span class="eyebrow">Resultados da chave</span>
+            <strong>Auditoria e correções DEV</strong>
+          </div>
+        </div>
+        <el-table :data="previewMatches.filter((item) => resultForMatch(item.id))" size="small">
+          <el-table-column label="Partida" min-width="170">
+            <template #default="{ row }">
+              <strong>{{ row.tipoPartida === 'TERCEIRO_LUGAR' ? 'Disputa de 3º lugar' : `Rodada ${row.rodada} · #${row.ordem}` }}</strong>
+            </template>
+          </el-table-column>
+          <el-table-column label="Vencedor" min-width="160">
+            <template #default="{ row }">{{ resultForMatch(row.id)?.winnerRobotNome }}</template>
+          </el-table-column>
+          <el-table-column label="Auditoria" min-width="230">
+            <template #default="{ row }">
+              <span v-if="resultForMatch(row.id)?.correctionReason" class="corrected-result-note">
+                Corrigido por {{ resultForMatch(row.id)?.correctedByUserNome || 'DEV' }} · {{ resultForMatch(row.id)?.correctionReason }}
+              </span>
+              <span v-else class="muted">Resultado original</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="auth.isDev && previewBracket.atual !== false" label="DEV" width="150" align="right">
+            <template #default="{ row }">
+              <el-button
+                size="small"
+                type="warning"
+                plain
+                :loading="correctingMatchId === row.id"
+                @click="correctResult(row)"
+              >Corrigir vencedor</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
     </section>
 
     <article class="table-card bracket-history-table-card">
