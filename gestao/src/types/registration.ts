@@ -14,7 +14,6 @@ export interface Registration {
   competitionNome: string
   categoryId: number
   categoryNome: string
-  teamId: number
   teamNome: string
   robotId: number
   robotNome: string
