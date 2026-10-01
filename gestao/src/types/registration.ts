@@ -76,7 +76,6 @@ export interface RegistrationStatusHistory {
 export interface ManualCompetitionEntryRequest {
   competitionId: number
   categoryId: number
-  teamId: number
   participantUserId: number
   robotNome: string
   robotDescricao?: string
