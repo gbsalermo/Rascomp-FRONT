@@ -348,6 +348,7 @@ onMounted(load)
         :matches="previewMatches"
         :results="previewResults"
         :read-only="previewBracket.atual === false"
+        return-to="chaves"
       />
 
       <div v-if="previewResults.length" class="bracket-result-audit">
