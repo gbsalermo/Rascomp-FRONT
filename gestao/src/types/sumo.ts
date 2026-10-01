@@ -94,6 +94,10 @@ export interface MatchResult {
   winnerRobotNome?: string
   pontosA?: number
   pontosB?: number
+  correctionReason?: string
+  correctedByUserId?: number
+  correctedByUserNome?: string
+  correctedAt?: string
   [key: string]: unknown
 }
 
