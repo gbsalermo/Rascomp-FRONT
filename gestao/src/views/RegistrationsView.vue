@@ -714,6 +714,58 @@ onMounted(loadBase)
       <StatusBadge :value="activeCompetition.status || 'PLANEJADA'" />
     </article>
 
+    <article v-if="compositionChanges.length" class="table-card registrations-table-card composition-review-card" v-loading="loading">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Composição competitiva</span>
+          <h2>Alterações de responsáveis</h2>
+        </div>
+        <el-tag type="warning" effect="light">{{ compositionChanges.length }} alteração(ões)</el-tag>
+      </div>
+      <p class="muted">
+        Antes do início da competição, a composição é sincronizada automaticamente. A organização é avisada e pode manter ou vetar a mudança específica.
+      </p>
+      <el-table :data="compositionChanges" empty-text="Nenhuma alteração pendente">
+        <el-table-column label="Robô" min-width="150" prop="robotNome" />
+        <el-table-column label="Competidor" min-width="170" prop="competitorNome" />
+        <el-table-column label="Mudança" width="125">
+          <template #default="{ row }">
+            <el-tag :type="row.changeType === 'ADICIONADO' ? 'success' : 'warning'" effect="light">
+              {{ row.changeType === 'ADICIONADO' ? 'Adicionado' : 'Removido' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Responsável pela alteração" min-width="170">
+          <template #default="{ row }">
+            <div class="registration-request-cell">
+              <strong>{{ row.actorUserNome || 'Sistema' }}</strong>
+              <span>{{ formatDateTime(row.dataCadastro) }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Ações" width="220" fixed="right">
+          <template #default="{ row }">
+            <div class="registration-actions">
+              <el-button
+                size="small"
+                type="success"
+                plain
+                :loading="compositionReviewingId === row.id"
+                @click="reviewCompositionChange(row, true)"
+              >Manter</el-button>
+              <el-button
+                size="small"
+                type="danger"
+                plain
+                :loading="compositionReviewingId === row.id"
+                @click="reviewCompositionChange(row, false)"
+              >Vetar</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </article>
+
     <article v-if="pendingCancellationRequests.length" class="table-card registrations-table-card" v-loading="loading">
       <div class="card-heading">
         <div>
@@ -848,9 +900,9 @@ onMounted(loadBase)
         <el-table-column label="Status" width="135">
           <template #default="{ row }"><StatusBadge :value="row.status" /></template>
         </el-table-column>
-        <el-table-column label="Ações" width="205" fixed="right">
+        <el-table-column label="Ações" min-width="330" fixed="right">
           <template #default="{ row }">
-            <div v-if="row.status === 'PENDENTE'" class="registration-actions">
+            <div v-if="row.status === 'PENDENTE'" class="registration-actions participant-review-actions">
               <el-button
                 size="small"
                 type="success"
@@ -860,13 +912,30 @@ onMounted(loadBase)
               >Aprovar</el-button>
               <el-button
                 size="small"
+                type="warning"
+                plain
+                :loading="participantReviewingId === row.id"
+                @click="reviewParticipant(row, 'CORRECAO_SOLICITADA')"
+              >Solicitar correção</el-button>
+              <el-button
+                size="small"
                 type="danger"
                 plain
+                :disabled="row.teamLeader"
                 :loading="participantReviewingId === row.id"
                 @click="reviewParticipant(row, 'REJEITADA')"
               >Rejeitar</el-button>
+              <el-button
+                v-if="row.teamLeader && auth.isDev"
+                size="small"
+                plain
+                @click="openLeaderTransfer(row)"
+              >Trocar líder</el-button>
             </div>
-            <span v-else class="muted">{{ row.reviewedByUserNome || 'Analisada' }}</span>
+            <div v-else class="registration-request-cell">
+              <StatusBadge :value="row.status" />
+              <span v-if="row.reviewReason">{{ row.reviewReason }}</span>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -974,6 +1043,49 @@ onMounted(loadBase)
         </el-table-column>
       </el-table>
     </article>
+
+    <el-dialog
+      v-model="leaderDialog"
+      title="Transferir liderança da equipe"
+      width="min(620px, 94vw)"
+    >
+      <div class="registration-flow-dialog">
+        <div class="participant-flow-note">
+          <strong>Proteção da liderança</strong>
+          <span>
+            A inscrição do líder atual não pode ser rejeitada definitivamente sem resolver a liderança.
+            Selecione outro participante da mesma equipe com inscrição individual PENDENTE ou APROVADA.
+          </span>
+        </div>
+        <label>Novo líder
+          <el-select v-model="leaderTransferForm.newResponsibleUserId" filterable style="width:100%" placeholder="Selecione">
+            <el-option
+              v-for="candidate in leaderCandidates"
+              :key="candidate.id"
+              :label="`${candidate.nome} · ${candidate.email || ''}`"
+              :value="candidate.userAccountId"
+            />
+          </el-select>
+        </label>
+        <label>Justificativa
+          <el-input
+            v-model="leaderTransferForm.motivo"
+            type="textarea"
+            :rows="3"
+            maxlength="500"
+            show-word-limit
+          />
+        </label>
+      </div>
+      <template #footer>
+        <el-button @click="leaderDialog = false">Cancelar</el-button>
+        <el-button
+          class="brand-button"
+          :loading="leaderTransferSaving"
+          @click="transferLeader"
+        >Transferir liderança</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog
       v-model="manualDialog"
@@ -1113,10 +1225,16 @@ onMounted(loadBase)
           </div>
           <p v-else-if="!registrationContextLoading" class="muted">Nenhum competidor informado.</p>
           <el-alert
-            v-if="selected.status === 'PENDENTE' && registrationContext.some((item) => !item.robotResponsible || item.participantRegistrationStatus !== 'APROVADA')"
+            v-if="selected.status === 'PENDENTE' && !registrationContext.some((item) => item.robotResponsible && item.participantRegistrationStatus === 'APROVADA')"
             type="warning"
             :closable="false"
-            title="Este robô ainda possui dependências e não pode ser aprovado."
+            title="Este robô ainda precisa de pelo menos um responsável com inscrição individual APROVADA."
+          />
+          <el-alert
+            v-else-if="registrationContext.some((item) => item.robotResponsible && item.participantRegistrationStatus === 'PENDENTE')"
+            type="info"
+            :closable="false"
+            title="Há responsáveis ainda PENDENTES. Eles não bloqueiam o robô; entram automaticamente na composição se forem aprovados antes do início da competição."
           />
         </section>
 
@@ -1221,6 +1339,9 @@ onMounted(loadBase)
 </template>
 
 <style scoped>
+.composition-review-card > .muted { margin:0 0 12px; }
+.participant-review-actions { flex-wrap:wrap; }
+
 .participant-linked-robots { display:grid; gap:5px; }
 .participant-linked-robots > span { display:grid; gap:1px; padding:5px 0; }
 .participant-linked-robots b { color:#4e3a44; font-size:12px; }
