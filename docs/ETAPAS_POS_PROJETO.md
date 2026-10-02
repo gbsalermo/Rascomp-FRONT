@@ -192,13 +192,23 @@ Escopo congelado em quatro sub-blocos:
 - membro comum vê/edita somente os robôs pelos quais é responsável.
 
 **4.3 — Portal e inscrições**
-- cadastro normal de robô pelo participante associado à equipe;
-- seleção de competição/categoria disponível;
-- seleção do robô e competidores;
-- inscrição criada como `PENDENTE`;
-- GESTAO aprova/rejeita;
-- somente `APROVADA` aloca oficialmente o robô à competição;
-- responsáveis do robô servem como sugestão inicial para os competidores da inscrição.
+- inscrição individual separada da inscrição do Robot;
+- comprovantes separados;
+- Minha inscrição PENDENTE/APROVADA libera Inscrever robô;
+- `Robot.createdByUser` diferencia ownership de responsabilidade N:N;
+- membro comum só inicia/administra Registration de Robot que cadastrou;
+- líder administra qualquer Robot da Team;
+- composição competitiva automática, sem seleção arbitrária de colegas;
+- ao menos um responsável pessoalmente APROVADO já permite aprovação do Robot;
+- responsáveis PENDENTE não bloqueiam outro elegível;
+- sincronização automática de composição antes da prova;
+- aviso/auditoria e veto da GESTAO para mudanças de composição;
+- rejeição automática do Robot quando não existir elegível/recuperável;
+- reinscrição consciente de Robot REJEITADO;
+- proteção da rejeição do líder, `CORRECAO_SOLICITADA` e transferência DEV;
+- responsáveis/composição congelados durante competição iniciada;
+- V25 + V26 sustentam o domínio revisado;
+- validação manual canônica em `VALIDACAO_ETAPA4_BLOCO4.md`.
 
 **4.4 — Polimento + validação**
 - estados vazios/loading/erro;
@@ -208,16 +218,12 @@ Escopo congelado em quatro sub-blocos:
 - smoke final da ETAPA 4.
 
 Checkpoint atual — 01/10/2026:
-- V24 cria convites/solicitações de equipe e responsáveis por robô;
 - 4.1 — equipe e associação: ✅ implementado;
-- 4.2 — responsáveis por robô: ✅ base funcional implementada;
-- 4.3 — inscrição pelo Portal: 🧪 implementado e aguardando validação manual;
-- líder pode inscrever qualquer robô da equipe; membro comum pode inscrever robôs pelos quais é responsável;
-- responsáveis permanentes do robô são pré-selecionados, mas os competidores daquela Registration continuam ajustáveis entre membros válidos da mesma equipe;
-- Registration nasce `PENDENTE`; o fluxo administrativo existente continua responsável por aprovar/rejeitar;
-- somente `APROVADA` entra nas projeções públicas/oficiais e nos fluxos competitivos;
-- duplicidade, janela de inscrições, ownership, equipe dos competidores e compatibilidade física continuam validadas pelo backend;
-- BLOCO 4.4 permanece **NÃO INICIADO** até a validação do 4.3.
+- 4.2 — responsáveis/ownership por robô: ✅ implementação revisada;
+- 4.3 — inscrição individual + Robot: 🧪 implementação V25/V26 revisada e aguardando build + validação manual;
+- documento funcional: `REGRAS_PARTICIPANTE.md`;
+- bateria manual: `VALIDACAO_ETAPA4_BLOCO4.md`;
+- BLOCO 4.4 permanece **NÃO INICIADO** até o aceite do 4.3.
 
 ### Relação da ETAPA 4 com o eixo mobile
 
@@ -1765,3 +1771,10 @@ Regra de decisão:
 ```
 
 A rejeição pessoal nunca remove automaticamente o vínculo permanente `RobotResponsible`; ela apenas retira a elegibilidade naquela Competition.
+
+
+### Checkpoint V26 — regras do participante
+
+A revisão 360 do BLOCO 4.3 consolidou ownership de Robot, elegibilidade parcial, composição automática, veto da GESTAO, rejeição/reinscrição do Robot e proteção/troca de liderança. A fonte específica passa a ser `docs/REGRAS_PARTICIPANTE.md`.
+
+Estado: implementação revisada, **ainda não validada manualmente**. 4.4 segue bloqueado.
