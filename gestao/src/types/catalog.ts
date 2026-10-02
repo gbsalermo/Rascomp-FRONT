@@ -16,6 +16,8 @@ export interface Robot {
   descricao?: string
   teamId: number
   teamNome?: string
+  createdByUserId?: number
+  createdByUserNome?: string
   ativo?: boolean
   [key: string]: unknown
 }
