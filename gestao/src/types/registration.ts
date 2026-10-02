@@ -1,6 +1,7 @@
 export type RegistrationStatus =
   | 'PENDENTE'
   | 'APROVADA'
+  | 'CORRECAO_SOLICITADA'
   | 'REJEITADA'
   | 'CANCELADA'
   | 'DESISTENTE'
@@ -59,6 +60,7 @@ export type RegistrationStatusChangeType =
   | 'REATIVACAO'
   | 'DESCLASSIFICACAO'
   | 'ENTRADA_MANUAL'
+  | 'AJUSTE_COMPOSICAO'
 
 export interface RegistrationStatusHistory {
   id: number
@@ -106,6 +108,7 @@ export interface ParticipantCompetitionRegistration {
   competitorNome: string
   teamId: number
   teamNome: string
+  teamLeader?: boolean
   status: ParticipantCompetitionRegistrationStatus
   observacao?: string
   comprovanteDisponivel?: boolean
@@ -127,4 +130,43 @@ export interface RegistrationCompetitorContext {
   robotResponsible: boolean
   participantRegistrationId?: number
   participantRegistrationStatus?: ParticipantCompetitionRegistrationStatus
+}
+
+
+export type RegistrationCompetitorChangeType = 'ADICIONADO' | 'REMOVIDO'
+export type RegistrationCompetitorChangeStatus = 'PENDENTE_REVISAO' | 'MANTIDA' | 'VETADA'
+
+export interface RegistrationCompetitorChange {
+  id: number
+  registrationId: number
+  competitionId: number
+  robotId: number
+  robotNome: string
+  competitorId: number
+  competitorNome: string
+  changeType: RegistrationCompetitorChangeType
+  status: RegistrationCompetitorChangeStatus
+  actorUserId?: number
+  actorUserNome?: string
+  reviewedByUserId?: number
+  reviewedByUserNome?: string
+  reviewedAt?: string
+  reason?: string
+  dataCadastro?: string
+}
+
+export interface TeamLeadershipHistory {
+  id: number
+  teamId: number
+  teamNome: string
+  competitionId?: number
+  competitionNome?: string
+  previousUserId?: number
+  previousUserNome?: string
+  newUserId: number
+  newUserNome: string
+  changedByUserId: number
+  changedByUserNome: string
+  reason: string
+  dataCadastro?: string
 }
