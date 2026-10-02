@@ -128,6 +128,7 @@ export interface RegistrationCompetitorContext {
   competitorId: number
   competitorNome: string
   robotResponsible: boolean
+  officialCompetitor: boolean
   participantRegistrationId?: number
   participantRegistrationStatus?: ParticipantCompetitionRegistrationStatus
 }
