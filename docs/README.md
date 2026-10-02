@@ -20,10 +20,13 @@ A documentação foi revisada para evitar roadmaps paralelos, snapshots de demon
 3. docs/CONTRATO_REGRAS_COMPETITIVAS.md
    → regras competitivas aprovadas, invariantes e base dos testes da ETAPA 1
 
-4. docs/CONTINUIDADE_FRONTEND.md
+4. docs/REGRAS_PARTICIPANTE.md
+   → regras canônicas de equipe, inscrição individual, ownership de Robot, responsáveis e inscrição do Robot
+
+5. docs/CONTINUIDADE_FRONTEND.md
    → checkpoint vivo de gestao, landing-page e photo-gallery
 
-5. gbsalermo/Rascomp/rascomp/docs/CONTINUIDADE.md
+6. gbsalermo/Rascomp/rascomp/docs/CONTINUIDADE.md
    → checkpoint vivo do backend
 ```
 
@@ -177,8 +180,8 @@ EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
 
 ```text
 Banco ativo                           MySQL
-Migrations                            V1–V24 aplicadas por evolução incremental
-Próxima migration                     V25+
+Migrations                            V1–V26 por evolução incremental
+Próxima migration                     V27+
 Roles atuais                          DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                               ✅ concluída / validada
 ETAPA 1                               ✅ contrato + correções + fluxos integrados concluídos
@@ -240,27 +243,30 @@ No estado atual, as **ETAPAS 0–3 estão encerradas/validadas**. A **ETAPA 4 �
 
 ## Checkpoint Portal do Participante — 01/10/2026
 
-Regras canônicas atuais:
+Fonte específica do domínio:
 
-- conta `PARTICIPANTE` associada a equipe possui `Competitor` correspondente;
-- líder pode convidar conta PARTICIPANTE por e-mail; participante aceita/recusa;
-- participante também pode solicitar entrada; líder aprova/recusa;
-- aceite/aprovação converge para `UserAccount → Competitor → Team`;
-- `Robot` pertence à equipe e possui responsáveis N:N via `RobotResponsible`;
-- líder administra todos os robôs da equipe;
-- membro comum vê/gerencia os robôs pelos quais é responsável;
-- criador do robô vira responsável inicial;
-- cadastro de robô não exige aprovação organizacional;
-- participação competitiva depende de `Registration PENDENTE → GESTAO aprova → APROVADA`;
-- V24 introduziu `team_membership_requests` e `robot_responsibles`.
+```text
+docs/REGRAS_PARTICIPANTE.md
+```
 
-BLOCO 4.3 implementado:
-- líder pode inscrever qualquer robô da equipe;
-- membro comum pode inscrever os robôs pelos quais é responsável;
-- responsáveis permanentes do robô vêm pré-selecionados;
-- competidores específicos da Registration podem ser ajustados entre membros válidos da equipe;
-- inscrição nasce `PENDENTE`;
-- somente `APROVADA` vira participação oficial;
-- validação manual está documentada em `VALIDACAO_ETAPA4_BLOCO4.md`.
+Estado atual:
 
-Próximo passo: **validar o 4.3**. O 4.4 permanece não iniciado.
+- V24: associação de equipe + responsáveis N:N;
+- V25: inscrição individual + comprovantes separados;
+- V26: `Robot.createdByUser`, auditoria de composição, histórico pessoal e troca de liderança;
+- membro comum vê Robots pelos quais é responsável, mas só inicia/administra Registration de Robot que ele cadastrou;
+- líder administra qualquer Robot da Team;
+- **Minha inscrição** PENDENTE/APROVADA libera **Inscrever robô**;
+- composição é automática, baseada em responsáveis + elegibilidade pessoal;
+- ao menos um responsável APROVADO já permite aprovação do Robot;
+- responsáveis PENDENTE não bloqueiam outro aprovado;
+- mudanças antes da prova sincronizam automaticamente e geram aviso/veto auditável;
+- responsabilidade/composição ficam bloqueadas durante competição iniciada;
+- líder possui proteção contra rejeição definitiva sem correção ou transferência DEV;
+- Robot sem elegíveis é rejeitado automaticamente e pode ser conscientemente reinscrito;
+- bateria vigente: `VALIDACAO_ETAPA4_BLOCO4.md`.
+
+```text
+BLOCO 4.3 = implementação revisada / aguardando build + validação manual
+BLOCO 4.4 = NÃO INICIADO
+```
