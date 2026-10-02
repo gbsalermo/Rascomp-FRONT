@@ -5,6 +5,7 @@ import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
 import type {
   Category,
+  Competitor,
   ParticipantCompetitionRegistration,
   ParticipantCompetitionRegistrationStatus,
   Registration,
@@ -12,7 +13,8 @@ import type {
   UserAccount,
   RegistrationStatus,
   RegistrationStatusHistory,
-  RegistrationCompetitorContext
+  RegistrationCompetitorContext,
+  RegistrationCompetitorChange
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -36,6 +38,16 @@ const statusHistory = ref<RegistrationStatusHistory[]>([])
 const statusHistoryLoading = ref(false)
 const registrationContext = ref<RegistrationCompetitorContext[]>([])
 const registrationContextLoading = ref(false)
+const compositionChanges = ref<RegistrationCompetitorChange[]>([])
+const compositionReviewingId = ref<number>()
+const leaderDialog = ref(false)
+const leaderTransferSaving = ref(false)
+const leaderRegistration = ref<ParticipantCompetitionRegistration>()
+const leaderCandidates = ref<Competitor[]>([])
+const leaderTransferForm = reactive({
+  newResponsibleUserId: undefined as number | undefined,
+  motivo: ''
+})
 
 const manualDialog = ref(false)
 const manualSaving = ref(false)
@@ -135,7 +147,8 @@ function statusHistoryActionLabel(item: RegistrationStatusHistory) {
     DESISTENCIA: 'Desistência registrada',
     REATIVACAO: 'Inscrição reativada',
     DESCLASSIFICACAO: 'Inscrição desclassificada',
-    ENTRADA_MANUAL: 'Entrada manual DEV'
+    ENTRADA_MANUAL: 'Entrada manual DEV',
+    AJUSTE_COMPOSICAO: 'Composição competitiva ajustada'
   }
   return labels[item.changeType]
 }
@@ -242,21 +255,24 @@ async function load() {
   if (!competitionId.value) {
     rows.value = []
     participantRows.value = []
+    compositionChanges.value = []
     cancellationRequests.value = []
     return
   }
 
   loading.value = true
   try {
-    const [registrationRows, participantRegistrationRows, cancellationRows] = await Promise.all([
+    const [registrationRows, participantRegistrationRows, compositionRows, cancellationRows] = await Promise.all([
       adminApi.registrations({ competitionId: competitionId.value }),
       adminApi.participantRegistrations(competitionId.value),
+      adminApi.compositionChanges(competitionId.value),
       adminApi.cancellationRequests({
         competitionId: competitionId.value
       })
     ])
     rows.value = registrationRows
     participantRows.value = participantRegistrationRows
+    compositionChanges.value = compositionRows
     cancellationRequests.value = cancellationRows
 
     if (selected.value) {
@@ -320,12 +336,13 @@ async function reviewParticipant(
   next: ParticipantCompetitionRegistrationStatus
 ) {
   const approving = next === 'APROVADA'
+  const correction = next === 'CORRECAO_SOLICITADA'
   let motivo: string | undefined
 
   try {
     if (approving) {
       await ElMessageBox.confirm(
-        `Aprovar a inscrição pessoal de ${row.competitorNome}? Os robôs associados aparecem nesta mesma linha para conferência.`,
+        `Aprovar a inscrição de ${row.competitorNome}? Os robôs associados aparecem nesta linha para conferência.`,
         'Aprovar participante',
         {
           type: 'success',
@@ -334,13 +351,24 @@ async function reviewParticipant(
         }
       )
     } else {
+      if (next === 'REJEITADA' && row.teamLeader) {
+        ElMessage.warning(
+          'Este participante é o líder da equipe. Solicite correção ou, como DEV, transfira a liderança antes de rejeitar definitivamente.'
+        )
+        return
+      }
+
       const result = await ElMessageBox.prompt(
-        'Informe o motivo da rejeição da inscrição pessoal.',
-        `Rejeitar participante · ${row.competitorNome}`,
+        correction
+          ? 'Informe o que precisa ser corrigido. O participante poderá reenviar o comprovante sem perder a equipe.'
+          : 'Informe o motivo da rejeição definitiva da inscrição individual.',
+        correction
+          ? `Solicitar correção · ${row.competitorNome}`
+          : `Rejeitar participante · ${row.competitorNome}`,
         {
           inputType: 'textarea',
-          inputValidator: (value) => value?.trim() ? true : 'Informe o motivo da rejeição.',
-          confirmButtonText: 'Rejeitar',
+          inputValidator: (value) => value?.trim() ? true : 'Informe a justificativa.',
+          confirmButtonText: correction ? 'Solicitar correção' : 'Rejeitar',
           cancelButtonText: 'Cancelar'
         }
       )
@@ -349,13 +377,110 @@ async function reviewParticipant(
 
     participantReviewingId.value = row.id
     await adminApi.reviewParticipantRegistration(row.id, next, motivo)
-    ElMessage.success(approving ? 'Participante aprovado.' : 'Inscrição pessoal rejeitada.')
+    ElMessage.success(
+      approving
+        ? 'Participante aprovado.'
+        : correction
+          ? 'Correção solicitada ao participante.'
+          : 'Inscrição individual rejeitada.'
+    )
     await load()
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a inscrição pessoal.')
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a inscrição individual.')
   } finally {
     participantReviewingId.value = undefined
+  }
+}
+
+async function openLeaderTransfer(row: ParticipantCompetitionRegistration) {
+  if (!auth.isDev || !competitionId.value) return
+  leaderRegistration.value = row
+  leaderTransferForm.newResponsibleUserId = undefined
+  leaderTransferForm.motivo = ''
+  try {
+    leaderCandidates.value = (await adminApi.teamLeaderCandidates(row.teamId, competitionId.value))
+      .filter((item) => item.userAccountId && item.userAccountId !== row.requestedByUserId)
+    leaderDialog.value = true
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar candidatos à liderança.')
+  }
+}
+
+async function transferLeader() {
+  if (!competitionId.value
+      || !leaderRegistration.value
+      || !leaderTransferForm.newResponsibleUserId
+      || !leaderTransferForm.motivo.trim()) {
+    return ElMessage.warning('Selecione o novo líder e informe a justificativa.')
+  }
+
+  const candidate = leaderCandidates.value.find(
+    (item) => item.userAccountId === leaderTransferForm.newResponsibleUserId
+  )
+  if (!candidate?.userAccountId) return
+
+  leaderTransferSaving.value = true
+  try {
+    await adminApi.transferTeamLeader(leaderRegistration.value.teamId, {
+      competitionId: competitionId.value,
+      newResponsibleUserId: candidate.userAccountId,
+      motivo: leaderTransferForm.motivo.trim()
+    })
+    ElMessage.success('Liderança transferida e auditada. A rejeição do líder anterior agora pode ser analisada.')
+    leaderDialog.value = false
+    await load()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível transferir a liderança.')
+  } finally {
+    leaderTransferSaving.value = false
+  }
+}
+
+async function reviewCompositionChange(change: RegistrationCompetitorChange, keep: boolean) {
+  try {
+    let motivo: string | undefined
+    if (!keep) {
+      const result = await ElMessageBox.prompt(
+        'Informe por que esta alteração de associação não deve valer nesta competição.',
+        `Vetar alteração · ${change.robotNome} / ${change.competitorNome}`,
+        {
+          inputType: 'textarea',
+          inputValidator: (value) => value?.trim() ? true : 'Informe a justificativa do veto.',
+          confirmButtonText: 'Vetar alteração',
+          cancelButtonText: 'Cancelar',
+          type: 'warning'
+        }
+      )
+      motivo = result.value?.trim()
+    } else {
+      await ElMessageBox.confirm(
+        `Manter a alteração de ${change.competitorNome} no robô ${change.robotNome}?`,
+        'Confirmar alteração',
+        {
+          confirmButtonText: 'Manter',
+          cancelButtonText: 'Cancelar',
+          type: 'info'
+        }
+      )
+    }
+
+    compositionReviewingId.value = change.id
+    await adminApi.reviewCompositionChange(
+      change.id,
+      keep ? 'MANTIDA' : 'VETADA',
+      motivo
+    )
+    ElMessage.success(keep ? 'Alteração mantida.' : 'Alteração vetada nesta competição.')
+    await load()
+    if (selected.value?.id === change.registrationId) {
+      await openDetails(selected.value)
+    }
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível revisar a alteração.')
+  } finally {
+    compositionReviewingId.value = undefined
   }
 }
 
@@ -370,19 +495,16 @@ async function review(row: Registration, next: RegistrationStatus) {
   try {
     if (approving) {
       const context = await adminApi.registrationCompetitorContext(row.id)
-      const invalid = context.filter(
-        (item) => !item.robotResponsible || item.participantRegistrationStatus !== 'APROVADA'
+      const eligible = context.filter(
+        (item) => item.robotResponsible && item.participantRegistrationStatus === 'APROVADA'
       )
       if (!row.comprovanteDisponivel) {
         ElMessage.warning('Esta inscrição de robô ainda não possui comprovante de pagamento.')
         return
       }
-      if (invalid.length) {
+      if (!eligible.length) {
         ElMessage.warning(
-          'Ainda não é possível aprovar este robô. Verifique: '
-            + invalid.map((item) =>
-              `${item.competitorNome} (${!item.robotResponsible ? 'não é responsável pelo robô' : item.participantRegistrationStatus || 'sem inscrição pessoal'})`
-            ).join(', ')
+          'Ainda não é possível aprovar este robô. É necessário pelo menos um responsável com inscrição individual APROVADA.'
         )
         return
       }
