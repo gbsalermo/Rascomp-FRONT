@@ -34,7 +34,11 @@ export type {
   ParticipantCompetitionRegistrationStatus,
   ParticipantRobotLink,
   ParticipantCompetitionRegistration,
-  RegistrationCompetitorContext
+  RegistrationCompetitorContext,
+  RegistrationCompetitorChangeType,
+  RegistrationCompetitorChangeStatus,
+  RegistrationCompetitorChange,
+  TeamLeadershipHistory
 } from './types/registration'
 export type { Team, Robot, RobotImage, Competitor, CompetitionAdminCatalog } from './types/catalog'
 
