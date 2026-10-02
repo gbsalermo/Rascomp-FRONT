@@ -138,11 +138,6 @@ const registrableRobots = computed(() =>
         robot.ativo !== false && robot.createdByUserId === auth.user?.id
       )
 )
-const responsibleCompetitorSet = computed(() => new Set(
-  registrationForm.robotId
-    ? (responsibleMap.value[registrationForm.robotId] || []).map((item) => item.competitorId)
-    : []
-))
 const availableCompetitions = computed(() => {
   const now = new Date()
   const today = [
@@ -1312,7 +1307,7 @@ onMounted(loadTeams)
       <div class="registration-flow-dialog">
         <div class="participant-flow-note">
           <strong>Inscrição do robô</strong>
-          <span>Sua inscrição individual já foi iniciada, então você pode cadastrar o robô sem esperar a aprovação da Gestão. A aprovação do robô continua separada e só acontece depois da aprovação dos competidores selecionados.</span>
+          <span>Sua inscrição individual já foi iniciada, então você pode inscrever o robô sem esperar a aprovação da Gestão. Para aprovar o robô, basta existir ao menos um responsável com inscrição individual APROVADA; outros responsáveis podem continuar aguardando análise.</span>
         </div>
 
         <div class="form-grid">
@@ -1331,7 +1326,7 @@ onMounted(loadTeams)
             <el-select v-model="registrationForm.robotId" style="width:100%" @change="onRegistrationRobotChange">
               <el-option v-for="robot in registrableRobots" :key="robot.id" :label="robot.nome" :value="robot.id" />
             </el-select>
-            <small class="muted">{{ isTeamLeader ? 'Como líder, você pode inscrever qualquer robô da equipe.' : 'Você pode inscrever apenas robôs pelos quais é responsável.' }}</small>
+            <small class="muted">{{ isTeamLeader ? 'Como líder, você pode inscrever qualquer robô da equipe.' : 'Você pode iniciar a inscrição apenas dos robôs cadastrados por você.' }}</small>
           </label>
 
           <label class="span-2">Categoria compatível
