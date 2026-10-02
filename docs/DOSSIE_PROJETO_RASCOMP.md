@@ -31,8 +31,8 @@ BLOCO 4.3 — Inscrições participante/robô       🧪 implementação princip
 BLOCO 4.4 — Polimento + bateria final           ⏳ não iniciado
 Backend/Frontend                               revalidar suíte/build após alterações do BLOCO 4.3
 Banco ativo                                    MySQL
-Migrations                                     V1–V25
-Próxima migration estrutural                   V26+
+Migrations                                     V1–V26
+Próxima migration estrutural                   V27+
 Profile testdata                               ✅ contra MySQL real
 Roles atuais                                   DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                                        backend ✅ / frontend ✅ / validada ✅
@@ -204,7 +204,7 @@ Regra congelada:
 
 ```text
 migrations aplicadas nunca são reescritas
-próxima mudança estrutural = V25+
+próxima mudança estrutural = V27+
 ```
 
 PostgreSQL não faz parte da configuração ativa. Referências antigas dentro de artefatos legados não definem a arquitetura atual.
@@ -907,15 +907,16 @@ Registration
 ```
 
 Regras:
-- líder administra todos os robôs e inscrições da equipe;
-- membro comum administra os robôs pelos quais é responsável;
-- responsabilidade permanente por robô não é igual à composição de `Registration.competitors`;
-- responsáveis permanentes servem apenas como pré-seleção no wizard de inscrição;
-- o participante pode ajustar a composição da Registration entre competidores ativos da mesma equipe;
+- líder administra todos os Robots e Registrations da equipe;
+- membro comum pode visualizar Robots pelos quais é responsável, mas só inicia/administra Registration de Robot que cadastrou;
+- `Robot.createdByUser` preserva autoria histórica;
+- responsabilidade permanente não é igual à composição oficial da edição;
+- composição é derivada automaticamente de responsabilidade + elegibilidade pessoal, sem seletor arbitrário de colegas;
 - criar Robot não exige aprovação;
 - Registration normal nasce `PENDENTE`;
-- somente `APROVADA` é participação oficial e aparece nas projeções públicas/competitivas;
-- GESTAO continua aprovando/rejeitando pelo fluxo administrativo existente;
+- ao menos um responsável pessoalmente APROVADO já permite aprovação do Robot;
+- mudanças antes da prova sincronizam composição e geram auditoria/veto da GESTAO;
+- mudanças normais de responsáveis/composição ficam congeladas durante competição iniciada;
 - entrada manual DEV permanece contingência operacional e não substitui o Portal.
 
 O BLOCO 4.3 implementou esse fluxo normal. O BLOCO 4.4 permanece não iniciado até a validação manual.
@@ -1428,7 +1429,7 @@ Invariantes:
 - liderança da Team concede administração do cadastro, mas não responsabilidade competitiva automática;
 - o líder só pode constar como competidor de um Robot quando estiver explicitamente ligado a ele como `RobotResponsible`;
 - a inscrição do Robot pode ser enviada enquanto inscrições pessoais ainda estão `PENDENTE`;
-- a inscrição do Robot só pode ser `APROVADA` se todos os competidores selecionados possuírem inscrição pessoal `APROVADA` na mesma Competition;
+- a inscrição do Robot pode ser `APROVADA` quando existir ao menos um responsável pessoalmente `APROVADO` na mesma Competition; responsáveis `PENDENTE` não bloqueiam outro elegível;
 - aprovação pessoal e aprovação do Robot nunca propagam automaticamente uma para a outra;
 - comprovantes e auditorias das duas inscrições permanecem independentes.
 
@@ -1788,3 +1789,43 @@ Regra de decisão:
 ```
 
 A rejeição pessoal nunca remove automaticamente o vínculo permanente `RobotResponsible`; ela apenas retira a elegibilidade naquela Competition.
+
+
+---
+
+## Checkpoint canônico 01/10/2026 — regras do participante / V26
+
+Fonte funcional específica: `docs/REGRAS_PARTICIPANTE.md`.
+
+Implementação consolidada no BLOCO 4.3:
+
+- V25 separa inscrição individual e Registration do Robot, com comprovantes independentes;
+- V26 adiciona `Robot.createdByUser`, auditoria/veto de composição, histórico da inscrição individual e histórico de liderança;
+- membro comum só inicia/administra Registration de Robot que ele cadastrou;
+- líder pode iniciar/administra Registration de qualquer Robot da própria Team;
+- responsabilidade N:N não transfere ownership da Registration;
+- Minha inscrição `PENDENTE` ou `APROVADA` libera o fluxo de Robot sem esperar análise;
+- composição oficial do Robot é derivada automaticamente dos responsáveis elegíveis;
+- **um único responsável pessoalmente APROVADO já basta para o Robot poder ser aprovado**;
+- responsáveis `PENDENTE` não bloqueiam outro aprovado;
+- aprovação posterior de responsável antes da prova o adiciona automaticamente à composição;
+- mudança de responsáveis antes da prova não devolve Robot aprovado para análise completa quando ainda existe elegível;
+- GESTAO recebe alteração de composição e pode MANTER/VETAR a mudança específica, com auditoria e justificativa no veto;
+- nova proposta posterior a veto é permitida;
+- se nenhum elegível existir, Robot permanece PENDENTE quando houver caso recuperável ou é REJEITADO automaticamente quando todos forem inelegíveis;
+- Robot rejeitado pode ser conscientemente reinscrito pelo líder/criador quando as condições voltarem a ser válidas;
+- líder atual não pode sofrer rejeição pessoal definitiva sem correção ou transferência DEV;
+- `CORRECAO_SOLICITADA` permite reenvio sem perder Team;
+- DEV pode transferir liderança para participante ativo da mesma Team com inscrição individual PENDENTE/APROVADA, com histórico;
+- durante Competition iniciada, mudanças normais de responsáveis/composição ficam bloqueadas.
+
+Bateria canônica: `docs/VALIDACAO_ETAPA4_BLOCO4.md`.
+
+Estado:
+
+```text
+4.3 → IMPLEMENTAÇÃO REVISADA / AGUARDANDO BUILD + VALIDAÇÃO MANUAL
+4.4 → NÃO INICIADO
+```
+
+Não considerar suíte/build verdes sem execução real nos heads atuais.
