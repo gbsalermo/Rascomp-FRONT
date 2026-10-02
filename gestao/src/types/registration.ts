@@ -1,7 +1,6 @@
 export type RegistrationStatus =
   | 'PENDENTE'
   | 'APROVADA'
-  | 'CORRECAO_SOLICITADA'
   | 'REJEITADA'
   | 'CANCELADA'
   | 'DESISTENTE'
@@ -88,6 +87,7 @@ export interface ManualCompetitionEntryRequest {
 export type ParticipantCompetitionRegistrationStatus =
   | 'PENDENTE'
   | 'APROVADA'
+  | 'CORRECAO_SOLICITADA'
   | 'REJEITADA'
   | 'CANCELADA'
 
