@@ -64,6 +64,15 @@ export const participantApi = {
       headers: { 'Content-Type': 'multipart/form-data' }
     }).then((r) => r.data)
   },
+  correctPersonalRegistration: (id: number, receipt: File) => {
+    const form = new FormData()
+    form.append('comprovante', receipt)
+    return http.post<ParticipantCompetitionRegistration>(
+      `/api/v1/participante/inscricoes-pessoais/${id}/correcao`,
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    ).then((r) => r.data)
+  },
   cancelPersonalRegistration: (id: number) =>
     http.delete(`/api/v1/participante/inscricoes-pessoais/${id}`).then(() => undefined),
   personalRegistrationReceipt: (id: number) =>
@@ -73,7 +82,7 @@ export const participantApi = {
     competitionId: number
     categoryId: number
     robotId: number
-    competitorIds: number[]
+    competitorIds?: number[]
     observacao?: string
   }, receipt: File) => {
     const form = new FormData()
