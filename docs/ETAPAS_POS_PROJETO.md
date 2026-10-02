@@ -1626,7 +1626,7 @@ Antes da validação manual, o fluxo foi refinado:
 - Team/Competitor/RobotResponsible continuam independentes da aprovação competitiva;
 - competidores da inscrição do Robot devem ser RobotResponsible daquele Robot;
 - líder não é competidor automático do Robot;
-- Robot pode ser enviado enquanto participante está PENDENTE, mas só pode ser APROVADO quando todos os competidores selecionados estiverem pessoalmente APROVADOS;
+- Robot pode ser enviado enquanto participantes associados estão PENDENTE; para ser APROVADO, precisa existir pelo menos um responsável pessoalmente APROVADO na mesma Competition;
 - GESTAO deve visualizar Robot ↔ Competitor nos dois sentidos durante a análise;
 - backend bloqueia aprovação cruzada incoerente;
 - 4.4 permanece bloqueado até implementação + bateria manual do novo 4.3.
@@ -1636,7 +1636,7 @@ Checkpoint de implementação do mesmo dia:
 - V25 implementa a base persistente da inscrição pessoal e os comprovantes das duas inscrições;
 - Portal recebeu Minha inscrição pessoal + comprovantes;
 - Registration do Robot passou a aceitar somente RobotResponsible;
-- aprovação do Robot exige inscrição pessoal APROVADA de todos os competidores selecionados;
+- aprovação do Robot exige pelo menos um responsável com inscrição pessoal APROVADA; responsáveis PENDENTE/REJEITADA não bloqueiam o Robot, apenas não entram na composição oficial;
 - GESTAO recebeu visão cruzada Competitor → Robots e Robot → Competitors;
 - N:N está coberto no testdata com Vespa → Membro + Apoio e Apoio → Vespa + Atlas;
 - alterações de RobotResponsible antes do início da Competition sincronizam automaticamente a composição competitiva;
@@ -1668,8 +1668,10 @@ Regras:
 
 - antes de existir inscrição pessoal `PENDENTE` ou `APROVADA` na Competition, o botão de inscrição de Robot fica bloqueado;
 - não é necessário aguardar a aprovação pessoal para criar a inscrição do Robot;
-- cada competidor selecionado na composição do Robot precisa ao menos possuir inscrição pessoal `PENDENTE` ou `APROVADA` na mesma Competition;
-- para aprovar o Robot, todos os competidores selecionados precisam estar pessoalmente `APROVADOS`;
+- cada responsável considerado para a competição precisa possuir inscrição pessoal na mesma Competition;
+- para aprovar o Robot, é suficiente existir **pelo menos um** responsável com inscrição pessoal `APROVADA`;
+- responsáveis `PENDENTE` não bloqueiam a aprovação do Robot, mas ainda não entram na composição oficial;
+- responsáveis `REJEITADA` ou `CANCELADA` não entram na composição oficial e também não bloqueiam o Robot enquanto existir pelo menos um responsável `APROVADA`;
 - inscrição pessoal `REJEITADA` ou `CANCELADA` não libera nova inscrição de Robot;
 - o backend repete todas essas validações, independentemente da interface.
 
@@ -1715,3 +1717,51 @@ data atual >= Competition.dataInicio
 A Gestão não precisa reaprender/reaprovar o Robot inteiro a cada ajuste. O controle é por **notificação + auditoria + veto justificado da alteração específica**.
 
 O veto administrativo é contextual à Competition/Registration. Ele não precisa apagar o vínculo permanente `RobotResponsible`, pois esse vínculo pode continuar relevante para futuras competições.
+
+
+### Regra consolidada — aprovação do Robot com elegibilidade parcial
+
+A aprovação da Registration do Robot **não exige aprovação pessoal de todos os RobotResponsible**.
+
+Exemplo:
+
+```text
+Vespa
+├─ Gabriel → REJEITADA
+├─ João    → PENDENTE
+└─ Maria   → APROVADA
+```
+
+Resultado:
+
+```text
+Maria é responsável elegível ✅
+→ Vespa pode ser APROVADO
+```
+
+Composição oficial naquele instante:
+
+```text
+Registration.competitors
+└─ Maria
+```
+
+Gabriel permanece fora da composição oficial porque sua inscrição pessoal foi rejeitada.
+
+João continua associado ao Robot como `RobotResponsible`, porém não integra a composição oficial enquanto sua inscrição pessoal estiver `PENDENTE`. Se João for aprovado antes do início da Competition, ele entra automaticamente na composição e a GESTAO recebe aviso/auditoria da alteração.
+
+Regra de decisão:
+
+```text
+>= 1 responsável com inscrição pessoal APROVADA
+→ Robot pode ser APROVADO
+
+0 APROVADOS + existe ao menos 1 PENDENTE
+→ Robot permanece PENDENTE
+
+0 APROVADOS + todos os responsáveis REJEITADOS/CANCELADOS
+→ Robot Registration é REJEITADA automaticamente
+→ motivo: sem responsável elegível
+```
+
+A rejeição pessoal nunca remove automaticamente o vínculo permanente `RobotResponsible`; ela apenas retira a elegibilidade naquela Competition.
