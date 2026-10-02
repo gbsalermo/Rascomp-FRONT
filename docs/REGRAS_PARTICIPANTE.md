@@ -427,7 +427,7 @@ Registration.competitors
 
 O líder não pode trocar competidores da prova durante a competição pelo fluxo normal.
 
-Alterações permanentes de responsabilidade podem ser organizadas para eventos futuros sem reescrever a composição já congelada desta edição.
+Enquanto existir uma Competition já iniciada vinculada ao Robot, o próprio gerenciamento normal de `RobotResponsible` também fica bloqueado. Depois que a edição for FINALIZADA/CANCELADA, o catálogo permanente pode voltar a ser ajustado para competições futuras.
 
 ---
 
