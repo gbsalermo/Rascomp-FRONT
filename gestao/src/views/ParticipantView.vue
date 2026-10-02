@@ -131,7 +131,13 @@ const pendingJoinTeamIds = computed(() =>
       .map((item) => item.teamId)
   )
 )
-const manageableRobotIds = computed(() => new Set(robots.value.map((robot) => robot.id)))
+const registrableRobots = computed(() =>
+  isTeamLeader.value
+    ? robots.value.filter((robot) => robot.ativo !== false)
+    : robots.value.filter((robot) =>
+        robot.ativo !== false && robot.createdByUserId === auth.user?.id
+      )
+)
 const responsibleCompetitorSet = computed(() => new Set(
   registrationForm.robotId
     ? (responsibleMap.value[registrationForm.robotId] || []).map((item) => item.competitorId)
@@ -532,7 +538,9 @@ async function createRobot() {
 }
 
 function canManageRegistration(registration: Registration) {
-  return manageableRobotIds.value.has(registration.robotId)
+  if (isTeamLeader.value) return true
+  const robot = robots.value.find((item) => item.id === registration.robotId)
+  return Boolean(robot?.createdByUserId && robot.createdByUserId === auth.user?.id)
 }
 
 function categoryOptionLabel(category: Category) {
@@ -546,10 +554,8 @@ function categoryOptionLabel(category: Category) {
   return `${category.nome} · ${physical} · ${control}`
 }
 
-function syncRegistrationCompetitors(robotId?: number) {
-  registrationForm.competitorIds = robotId
-    ? (responsibleMap.value[robotId] || []).map((item) => item.competitorId)
-    : []
+function syncRegistrationCompetitors() {
+  registrationForm.competitorIds = []
 }
 
 function refreshRegistrationCategory() {
@@ -567,10 +573,10 @@ function onRegistrationRobotChange(robotId?: number) {
 
 function openRegistrationDialog() {
   if (!teamId.value) return
-  if (!robots.value.length) {
+  if (!registrableRobots.value.length) {
     ElMessage.warning(isTeamLeader.value
       ? 'Cadastre um robô antes de criar uma inscrição.'
-      : 'Você precisa ser responsável por um robô antes de criar uma inscrição.')
+      : 'Você só pode iniciar a inscrição de um robô cadastrado por você. O líder pode inscrever qualquer robô da equipe.')
     return
   }
   if (!availableCompetitions.value.length) {
@@ -583,7 +589,7 @@ function openRegistrationDialog() {
   }
 
   registrationForm.competitionId = availableRobotRegistrationCompetitions.value[0]?.id
-  registrationForm.robotId = robots.value[0]?.id
+  registrationForm.robotId = registrableRobots.value[0]?.id
   registrationForm.observacao = ''
   robotRegistrationReceipt.value = undefined
   syncRegistrationCompetitors(registrationForm.robotId)
@@ -598,9 +604,6 @@ async function submitRegistration() {
       || !registrationForm.robotId) {
     return ElMessage.warning('Selecione competição, categoria e robô.')
   }
-  if (!registrationForm.competitorIds.length) {
-    return ElMessage.warning('Selecione ao menos um responsável pelo robô para esta inscrição.')
-  }
   if (!robotRegistrationReceipt.value) {
     return ElMessage.warning('Envie o comprovante da inscrição do robô.')
   }
@@ -611,7 +614,6 @@ async function submitRegistration() {
       competitionId: registrationForm.competitionId,
       categoryId: registrationForm.categoryId,
       robotId: registrationForm.robotId,
-      competitorIds: registrationForm.competitorIds,
       observacao: registrationForm.observacao.trim() || undefined
     }, robotRegistrationReceipt.value)
     ElMessage.success('Inscrição enviada. Aguardando aprovação da organização.')
@@ -666,6 +668,24 @@ async function submitPersonalRegistration() {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível enviar sua inscrição pessoal.')
   } finally {
     creatingPersonalRegistration.value = false
+  }
+}
+
+async function correctPersonalRegistration(
+  registration: ParticipantCompetitionRegistration,
+  event: Event
+) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+
+  try {
+    await participantApi.correctPersonalRegistration(registration.id, file)
+    ElMessage.success('Correção reenviada. Sua inscrição voltou para PENDENTE.')
+    personalRegistrations.value = await participantApi.personalRegistrations()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível reenviar a correção.')
   }
 }
 
@@ -925,7 +945,18 @@ onMounted(loadTeams)
               <StatusBadge :value="item.status" />
               <small v-if="item.comprovanteDisponivel">Comprovante: {{ item.comprovanteNome || 'enviado' }}</small>
               <small v-if="item.status === 'PENDENTE'">Aguardando aprovação da organização.</small>
+              <small v-if="item.status === 'CORRECAO_SOLICITADA' && item.reviewReason">
+                Correção solicitada: {{ item.reviewReason }}
+              </small>
               <small v-if="item.status === 'REJEITADA' && item.reviewReason">{{ item.reviewReason }}</small>
+              <label v-if="item.status === 'CORRECAO_SOLICITADA'" class="robot-photo-upload">
+                Reenviar comprovante
+                <input
+                  type="file"
+                  accept=".pdf,image/jpeg,image/png,image/webp"
+                  @change="correctPersonalRegistration(item, $event)"
+                />
+              </label>
             </div>
             <div v-if="item.robots?.length" class="personal-registration-robots">
               <b>Robôs associados a você</b>
@@ -950,7 +981,7 @@ onMounted(loadTeams)
             <span class="muted">{{ robotRegistrationUnlockMessage }}</span>
             <el-button
               class="brand-button"
-              :disabled="!robots.length || !availableRobotRegistrationCompetitions.length"
+              :disabled="!registrableRobots.length || !availableRobotRegistrationCompetitions.length"
               @click="openRegistrationDialog"
             >
               Inscrever robô
@@ -1298,7 +1329,7 @@ onMounted(loadTeams)
 
           <label class="span-2">Robô
             <el-select v-model="registrationForm.robotId" style="width:100%" @change="onRegistrationRobotChange">
-              <el-option v-for="robot in robots.filter((item) => item.ativo !== false)" :key="robot.id" :label="robot.nome" :value="robot.id" />
+              <el-option v-for="robot in registrableRobots" :key="robot.id" :label="robot.nome" :value="robot.id" />
             </el-select>
             <small class="muted">{{ isTeamLeader ? 'Como líder, você pode inscrever qualquer robô da equipe.' : 'Você pode inscrever apenas robôs pelos quais é responsável.' }}</small>
           </label>
@@ -1322,22 +1353,12 @@ onMounted(loadTeams)
             title="Nenhuma categoria disponível para este robô nesta competição. Verifique inscrições existentes ou reative uma inscrição cancelada quando aplicável."
           />
 
-          <div class="span-2 registration-competitors-block">
-            <div class="registration-competitors-copy">
-              <strong>Quem vai competir com este robô?</strong>
-              <span>Somente responsáveis deste robô aparecem aqui. Se ele tiver apenas um responsável, será só essa pessoa; se tiver vários, escolha quais participarão com o robô nesta categoria.</span>
-            </div>
-            <el-checkbox-group v-model="registrationForm.competitorIds" class="registration-competitor-options">
-              <el-checkbox
-                v-for="competitor in competitors.filter((item) => item.ativo !== false && responsibleCompetitorSet.has(item.id))"
-                :key="competitor.id"
-                :value="competitor.id"
-                border
-              >
-                <span>{{ competitor.nome }}</span>
-                <small>Responsável pelo robô</small>
-              </el-checkbox>
-            </el-checkbox-group>
+          <div class="span-2 participant-flow-note">
+            <strong>Composição automática</strong>
+            <span>
+              A composição competitiva é definida pelos responsáveis do robô e pelo status da inscrição individual de cada pessoa.
+              Responsáveis APROVADOS entram oficialmente; PENDENTES aguardam elegibilidade. O líder pode ajustar responsáveis até o início da competição.
+            </span>
           </div>
 
           <label class="span-2">Observação <small class="muted">(opcional)</small>
@@ -1363,7 +1384,7 @@ onMounted(loadTeams)
         <el-button
           class="brand-button"
           :loading="creatingRegistration"
-          :disabled="!registrationForm.categoryId || !registrationForm.competitorIds.length"
+          :disabled="!registrationForm.categoryId || !robotRegistrationReceipt"
           @click="submitRegistration"
         >Enviar inscrição do robô</el-button>
       </template>
