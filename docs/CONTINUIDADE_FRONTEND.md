@@ -317,34 +317,34 @@ Category.sumoControlMode
 
 ## Participante
 
-A versão atual em `/minha-equipe` inclui:
+A versão atual em `/minha-equipe` está alinhada ao domínio V24–V26:
 
-- equipe e onboarding;
 - convite/aceite e solicitação/aprovação de ingresso;
-- vínculo automático `UserAccount PARTICIPANTE → Competitor → Team`;
-- robôs/fotos;
-- responsáveis N:N por robô;
-- líder com visão de todos os robôs da equipe;
-- membro comum com visão dos robôs pelos quais é responsável;
-- **Nova inscrição** pelo Portal;
-- competições com inscrições abertas;
-- seleção de categoria, robô e competidores;
-- responsáveis permanentes do robô pré-selecionados;
-- Registration criada como `PENDENTE`;
-- feedback explícito **Aguardando aprovação da organização**;
-- cancelamento direto de inscrição `PENDENTE`;
-- solicitação de cancelamento para inscrição `APROVADA`;
-- indicação de solicitação pendente;
-- reativação de inscrição `CANCELADA` quando permitida;
-- Follow/histórico;
-- acompanhamento de Sumô.
+- `UserAccount PARTICIPANTE → Competitor → Team`;
+- **Minha inscrição** individual com comprovante e estados PENDENTE/APROVADA/CORRECAO_SOLICITADA/REJEITADA/CANCELADA;
+- inscrição de Robot desbloqueada após inscrição individual PENDENTE/APROVADA;
+- `Robot.createdByUser` exibido/consumido para ownership;
+- responsáveis N:N;
+- membro vê Robots pelos quais é responsável, mas só inicia/administra Registration de Robot cadastrado por ele;
+- líder administra qualquer Robot da Team;
+- tela de inscrição do Robot usa composição automática, sem escolha arbitrária de colegas;
+- comprovante do Robot separado;
+- GESTAO vê contexto pessoal ↔ Robots;
+- um responsável APROVADO já permite aprovação do Robot;
+- PENDENTE não bloqueia outro aprovado;
+- aprovação posterior sincroniza composição automaticamente;
+- GESTAO recebe alterações de composição e pode manter/vetar;
+- Portal permite correção pessoal quando solicitada;
+- DEV possui fluxo de troca de líder na tela de inscrições;
+- Robot rejeitado pode ser reinscrito quando as condições voltarem a ser válidas;
+- responsáveis/composição ficam bloqueados durante Competition iniciada;
+- cancelamentos e histórico competitivo anterior permanecem preservados.
 
-Permissão de inscrição:
-- líder administra inscrições de qualquer robô da equipe;
-- membro comum administra inscrições dos robôs pelos quais é responsável;
-- participação na lista de competidores de uma Registration, sozinha, não concede responsabilidade permanente sobre o robô.
+Fonte funcional: `docs/REGRAS_PARTICIPANTE.md`.
 
-O Portal ainda terá refinamentos avançados na ETAPA 7. Dentro da ETAPA 4, o 4.3 aguarda validação prática antes de iniciar o 4.4.
+Validação: `docs/VALIDACAO_ETAPA4_BLOCO4.md`.
+
+O 4.3 está **implementado/revisado e ainda aguarda build + validação manual**. O 4.4 não foi iniciado.
 
 ## Landing
 
@@ -1733,3 +1733,10 @@ BLOCO 4.4
 ```
 
 A bateria manual canônica está em `docs/VALIDACAO_ETAPA4_BLOCO4.md`.
+
+
+## Checkpoint frontend V26 — 01/10/2026
+
+O Portal e a tela administrativa de Inscrições foram alinhados às regras 360 do participante: ownership do Robot, composição automática, elegibilidade parcial, correção, avisos/veto de composição e troca DEV de liderança.
+
+Não registrar typecheck/build como verdes até execução real nos heads atuais.
