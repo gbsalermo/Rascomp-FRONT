@@ -5,12 +5,43 @@ import type {
   ParticipantCompetitionRegistrationStatus,
   Registration,
   RegistrationCompetitorContext,
+  RegistrationCompetitorChange,
+  RegistrationCompetitorChangeStatus,
+  TeamLeadershipHistory,
   RegistrationCancellationRequest,
   RegistrationStatusHistory
 } from '../../types/registration'
+import type { Competitor } from '../../types/catalog'
 import { http } from '../http'
 
 export const adminRegistrationApi = {
+  compositionChanges: (competitionId: number) =>
+    http.get<RegistrationCompetitorChange[]>('/api/v1/inscricoes/composicao/pendentes', {
+      params: { competitionId }
+    }).then((r) => r.data),
+  registrationCompositionChanges: (registrationId: number) =>
+    http.get<RegistrationCompetitorChange[]>(`/api/v1/inscricoes/composicao/por-inscricao/${registrationId}`).then((r) => r.data),
+  reviewCompositionChange: (
+    id: number,
+    status: RegistrationCompetitorChangeStatus,
+    motivo?: string
+  ) => http.patch<RegistrationCompetitorChange>(
+    `/api/v1/inscricoes/composicao/${id}`,
+    { status, motivo }
+  ).then((r) => r.data),
+  teamLeaderCandidates: (teamId: number, competitionId: number) =>
+    http.get<Competitor[]>(`/api/v1/equipes/${teamId}/lideranca/candidatos`, {
+      params: { competitionId }
+    }).then((r) => r.data),
+  transferTeamLeader: (
+    teamId: number,
+    payload: { competitionId: number; newResponsibleUserId: number; motivo: string }
+  ) => http.patch<TeamLeadershipHistory>(
+    `/api/v1/equipes/${teamId}/lideranca`,
+    payload
+  ).then((r) => r.data),
+  teamLeadershipHistory: (teamId: number) =>
+    http.get<TeamLeadershipHistory[]>(`/api/v1/equipes/${teamId}/lideranca/historico`).then((r) => r.data),
   participantRegistrations: (competitionId: number) =>
     http.get<ParticipantCompetitionRegistration[]>('/api/v1/inscricoes-participantes/por-competicao', {
       params: { competitionId }
