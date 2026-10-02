@@ -724,7 +724,9 @@ async function reactivateRegistration(registration: Registration) {
   registrationActionId.value = registration.id
   try {
     await participantApi.reactivateRegistration(registration.id)
-    ElMessage.success('Inscrição reativada e devolvida para análise.')
+    ElMessage.success(registration.status === 'REJEITADA'
+      ? 'Robô reinscrito e devolvido para análise.'
+      : 'Inscrição reativada e devolvida para análise.')
     await loadTeam()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível reativar a inscrição.')
@@ -1155,12 +1157,12 @@ onMounted(loadTeams)
                   @click="requestApprovedCancellation(row)"
                 >{{ cancellationPendingIds.has(row.id) ? 'Cancelamento solicitado' : 'Solicitar cancelamento' }}</el-button>
                 <el-button
-                  v-else-if="row.status === 'CANCELADA'"
+                  v-else-if="['CANCELADA', 'REJEITADA'].includes(row.status)"
                   size="small"
                   plain
                   :loading="registrationActionId === row.id"
                   @click="reactivateRegistration(row)"
-                >Reativar</el-button>
+                >{{ row.status === 'REJEITADA' ? 'Reinscrever' : 'Reativar' }}</el-button>
                 </template>
               </template>
             </el-table-column>
