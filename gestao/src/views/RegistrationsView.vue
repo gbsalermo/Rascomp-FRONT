@@ -1209,8 +1209,17 @@ onMounted(loadBase)
           <div v-if="registrationContext.length" class="registration-eligibility-list">
             <article v-for="item in registrationContext" :key="item.competitorId">
               <strong>{{ item.competitorNome }}</strong>
-              <span :class="{ ok: item.robotResponsible, bad: !item.robotResponsible }">
-                {{ item.robotResponsible ? 'Responsável pelo robô' : 'Não associado ao robô' }}
+              <span :class="{ ok: item.robotResponsible, pending: !item.robotResponsible && item.officialCompetitor, bad: !item.robotResponsible && !item.officialCompetitor }">
+                {{
+                  item.robotResponsible
+                    ? 'Responsável permanente pelo robô'
+                    : item.officialCompetitor
+                      ? 'Mantido na composição desta competição'
+                      : 'Não associado ao robô'
+                }}
+              </span>
+              <span :class="{ ok: item.officialCompetitor, pending: !item.officialCompetitor }">
+                {{ item.officialCompetitor ? 'Na composição oficial desta inscrição' : 'Fora da composição oficial' }}
               </span>
               <span
                 :class="{
