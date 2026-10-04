@@ -272,3 +272,28 @@ docs/ETAPAS_POS_PROJETO.md
 docs/DOSSIE_PROJETO_RASCOMP.md
 docs/CONTINUIDADE_LANDING_PAGE.md
 ```
+
+
+---
+
+## Atualização para V1-BETA A — 03/10/2026
+
+Este arquivo continua sendo snapshot histórico da versão apresentada em agosto.
+
+A evolução atual ocorre em:
+
+```text
+branch: v1-beta-a-landing
+fonte viva: docs/CONTINUIDADE_LANDING_PAGE.md
+roadmap: docs/ETAPAS_POS_PROJETO.md
+```
+
+A V1-BETA A revisará cada janela para substituir conteúdo demonstrativo por conteúdo real e validar a experiência em desktop/mobile.
+
+Integração obrigatória nova:
+
+```text
+Landing → CTA "Inscrever-se" → aplicação Gestão/Participante
+```
+
+A URL será configurável por ambiente.
