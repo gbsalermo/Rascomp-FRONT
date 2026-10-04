@@ -7,12 +7,16 @@ const props = defineProps<{
 }>()
 
 const mobileOpen = ref(false)
+const competitionMenu = ref<HTMLDetailsElement>()
 
 const competitionLive = computed(() => props.competition?.status === 'EM_ANDAMENTO')
-const registrationsOpen = computed(() => props.competition?.status === 'INSCRICOES_ABERTAS')
+const competitionNoticeLabel = computed(() =>
+  props.competition?.nome ? `${props.competition.nome} em andamento` : 'RRC em andamento'
+)
 
 function closeMobile() {
   mobileOpen.value = false
+  if (competitionMenu.value) competitionMenu.value.open = false
 }
 </script>
 
@@ -20,8 +24,14 @@ function closeMobile() {
   <div class="institutional-header-wrap">
     <div v-if="competitionLive" class="competition-notice">
       <div class="header-container competition-notice-inner">
-        <span><b>RRC em andamento</b><span v-if="competition?.nome"> · {{ competition.nome }}</span></span>
-        <a href="#competicao-atual">Acompanhar competição <span aria-hidden="true">→</span></a>
+        <span class="competition-notice-status">
+          <span class="competition-notice-dot" aria-hidden="true" />
+          <b>{{ competitionNoticeLabel }}</b>
+        </span>
+
+        <a href="#competicao-atual" @click="closeMobile">
+          Acompanhar competição <span aria-hidden="true">→</span>
+        </a>
       </div>
     </div>
 
@@ -39,49 +49,60 @@ function closeMobile() {
           </span>
         </a>
 
-        <button
-          class="public-menu-toggle"
-          type="button"
-          :aria-expanded="mobileOpen"
-          aria-label="Abrir navegação"
-          @click="mobileOpen = !mobileOpen"
+        <nav
+          id="public-primary-navigation"
+          class="institutional-nav"
+          :class="{ open: mobileOpen }"
+          aria-label="Navegação principal"
         >
-          <span />
-          <span />
-          <span />
-        </button>
-
-        <nav class="institutional-nav" :class="{ open: mobileOpen }" aria-label="Navegação principal">
-          <a href="#top" class="active" @click="closeMobile">Início</a>
           <a href="#sobre" @click="closeMobile">Sobre</a>
+          <a href="#equipe" @click="closeMobile">Equipe</a>
+          <a href="#galeria" @click="closeMobile">Galeria</a>
+          <a href="#eventos" @click="closeMobile">Eventos</a>
 
-          <details class="competition-nav-dropdown">
+          <details v-if="competitionLive" ref="competitionMenu" class="competition-nav-dropdown">
             <summary>Competição <span aria-hidden="true">⌄</span></summary>
             <div class="competition-nav-menu">
-              <a href="#competicao-atual" @click="closeMobile">Competição atual</a>
+              <a href="#competicao-atual" @click="closeMobile">Visão geral</a>
               <a href="#cronograma-competicao" @click="closeMobile">Cronograma</a>
               <a href="#resultados" @click="closeMobile">Resultados</a>
               <a href="#chaveamento" @click="closeMobile">Chaveamento</a>
             </div>
           </details>
 
-          <a href="#calendario" @click="closeMobile">Calendário</a>
-          <a href="#eventos" @click="closeMobile">Eventos</a>
           <a href="#contato" @click="closeMobile">Contato</a>
-
-          <a
-            v-if="registrationsOpen"
-            class="header-registration-cta mobile-registration-cta"
-            :href="managementUrl"
-            @click="closeMobile"
-          >
-            Inscrições
-          </a>
         </nav>
 
-        <a v-if="registrationsOpen" class="header-registration-cta desktop-registration-cta" :href="managementUrl">
-          Inscrições
+        <a
+          v-if="managementUrl"
+          class="header-registration-cta desktop-registration-cta"
+          :href="managementUrl"
+          @click="closeMobile"
+        >
+          Inscrever-se
         </a>
+        <span
+          v-else
+          class="header-registration-cta header-registration-cta--disabled desktop-registration-cta"
+          aria-disabled="true"
+          title="Destino de inscrição ainda não configurado"
+        >
+          Inscrever-se
+        </span>
+
+        <button
+          class="public-menu-toggle"
+          :class="{ open: mobileOpen }"
+          type="button"
+          :aria-expanded="mobileOpen"
+          aria-controls="public-primary-navigation"
+          :aria-label="mobileOpen ? 'Fechar navegação' : 'Abrir navegação'"
+          @click="mobileOpen = !mobileOpen"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
       </div>
     </header>
   </div>
