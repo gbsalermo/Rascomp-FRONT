@@ -79,11 +79,19 @@ export interface ManualCompetitionEntryRequest {
   competitionId: number
   categoryId: number
   participantUserId: number
+  teamId?: number
   robotNome: string
   robotDescricao?: string
   justificativa: string
 }
 
+
+export interface ManualParticipantEntryRequest {
+  competitionId: number
+  participantUserId: number
+  teamId?: number
+  justificativa: string
+}
 
 export type ParticipantCompetitionRegistrationStatus =
   | 'PENDENTE'
