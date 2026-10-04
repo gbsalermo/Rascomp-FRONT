@@ -5,7 +5,7 @@
 }
 
 .header-container {
-  width: min(1640px, calc(100% - 16px));
+  width: min(1280px, calc(100% - 40px));
   margin: 0 auto;
 }
 
@@ -21,7 +21,7 @@
 .header-main-row {
   height: 100%;
   display: grid;
-  grid-template-columns: minmax(380px, 1fr) auto minmax(190px, 1fr);
+  grid-template-columns: minmax(300px, 1fr) auto minmax(170px, 1fr);
   align-items: center;
   gap: 38px;
 }
