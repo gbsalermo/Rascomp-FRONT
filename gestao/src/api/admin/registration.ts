@@ -1,6 +1,7 @@
 import type {
   CancellationRequestStatus,
   ManualCompetitionEntryRequest,
+  ManualParticipantEntryRequest,
   ParticipantCompetitionRegistration,
   ParticipantCompetitionRegistrationStatus,
   Registration,
@@ -60,6 +61,11 @@ export const adminRegistrationApi = {
     http.get<RegistrationCompetitorContext[]>(`/api/v1/inscricoes/${id}/contexto-competidores`).then((r) => r.data),
   robotRegistrationReceipt: (id: number) =>
     http.get<Blob>(`/api/v1/inscricoes/${id}/comprovante`, { responseType: 'blob' }).then((r) => r.data),
+  manualParticipantEntry: (payload: ManualParticipantEntryRequest) =>
+    http.post<ParticipantCompetitionRegistration>(
+      '/api/v1/inscricoes-participantes/entrada-manual',
+      payload
+    ).then((r) => r.data),
   manualCompetitionEntry: (payload: ManualCompetitionEntryRequest) =>
     http.post<Registration>('/api/v1/inscricoes/entrada-manual', payload).then((r) => r.data),
   registrations: (params?: { competitionId?: number; status?: string }) => {
