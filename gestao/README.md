@@ -116,8 +116,20 @@ Documentação global: `../docs/README.md`.
 
 ## Roadmap atual
 
-As ETAPAS 0–3 estão concluídas/validadas. A **ETAPA 4 — Consolidação funcional e polimento do MVP** está em andamento desde 22/09/2026; BLOCOS 1 e 2 foram validados e o **BLOCO 3 está implementado aguardando validação manual final**. O CMS/Mídia pertence à ETAPA 8; Avisos IN_APP + Telegram à ETAPA 11; deploy à ETAPA 16.
+As ETAPAS 0–4 estão concluídas/validadas.
 
+O próximo trabalho pertence ao **TRILHO V1 BETA**:
+
+```text
+V1-BETA A → Landing pública finalizada/polida
+V1-BETA B → cloud + banco + storage/secrets
+V1-BETA C → cadastro/acesso/inscrições reais
+V1-BETA D → smoke + estabilização
+```
+
+Depois da Beta, o roadmap oficial é retomado. Ajustes Gerais DEV avançados ficam para o pós-go-live e não bloqueiam a primeira publicação.
+
+Produção recebe somente versões validadas em ambiente não-prod.
 
 ## Estado de responsividade mobile
 
