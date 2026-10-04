@@ -84,7 +84,7 @@ V1-BETA C  ⏳ — Abertura controlada: cadastro/login + inscrições reais + ac
 V1-BETA D  ⏳ — Smoke de produção + estabilização inicial
 
 ROADMAP OFICIAL — RETOMADA APÓS V1 BETA
-ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
+ETAPA 5  ⏳ PÓS-BETA — Ajustes Gerais DEV + auditoria; não bloqueia a publicação inicial
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
 ETAPA 8  ⏳ NÃO INICIADA — Gestor de Mídia / CMS
@@ -146,7 +146,7 @@ Saída: Landing pronta para divulgação externa.
 
 ## V1-BETA B — Infraestrutura de produção
 
-Objetivo: criar uma V1 real e reproduzível fora do ambiente local.
+Objetivo: criar uma V1 real, persistente e reproduzível fora do ambiente local.
 
 Separação mínima:
 
@@ -166,43 +166,116 @@ PRODUÇÃO
 → somente versões validadas
 ```
 
-Itens obrigatórios antes da abertura:
-- frontend publicado;
-- backend/API publicado;
-- MySQL de produção separado;
-- migrations Flyway aplicadas de forma controlada;
+### Gate obrigatório de infraestrutura antes de qualquer inscrição real
+
+Todos os itens abaixo são **bloqueantes**:
+
+- frontend público e aplicação autenticada publicados;
+- backend/API publicado e acessível por HTTPS;
+- **MySQL de produção persistente e separado de local/staging**;
+- **backup real do banco configurado e pelo menos um procedimento de restore documentado/testável**;
+- **Flyway executando sobre o banco de produção de forma controlada, com histórico de migrations íntegro**;
 - secrets/variáveis fora do código;
-- storage definitivo quando necessário;
-- CORS/URLs/domínio HTTPS;
+- CORS/URLs/domínios corretos;
 - bootstrap seguro do primeiro DEV;
-- backup/restore mínimo do banco;
-- logs/healthcheck mínimos;
-- estratégia operacional de rollback;
-- nenhum profile `testdata`, usuário demo ou senha demo em produção.
+- logs e healthcheck mínimos;
+- rollback operacional documentado;
+- nenhum profile `testdata`, usuário demo ou senha demo em produção;
+- **storage persistente dos comprovantes de inscrição**, sem depender do filesystem efêmero/local;
+- storage persistente de outros uploads que já forem usados pela Beta.
+
+Se qualquer item bloqueante falhar, a V1 pode continuar tecnicamente publicada para smoke interno, mas **não pode abrir inscrições reais**.
+
+### Gate de identidade e operação
+
+Antes da abertura também devem existir:
+
+- **contas verificadas reais** para DEV/GESTAO e demais perfis internos que realmente serão usados;
+- dados reais da organização exibidos publicamente;
+- contatos/e-mails reais de suporte/operação;
+- permissões dessas contas conferidas manualmente.
+
+Não usar a expressão 'contas institucionais' como requisito: o critério é serem **contas reais e verificadas para a operação**, independentemente do domínio de e-mail.
 
 ## V1-BETA C — Cadastro, acesso e inscrições reais
 
-Objetivo: permitir uso real do sistema antes da competição oficial.
+Objetivo: permitir uso real do sistema antes da primeira competição oficial.
 
-Liberar:
+Liberar na Beta:
 - cadastro público PARTICIPANTE;
 - login;
 - equipes;
 - Minha inscrição;
-- cadastro/associação de Robot;
+- cadastro/associação de Robot para modalidades que usam Robot próprio;
 - inscrição do Robot;
 - comprovantes;
 - análise da GESTAO;
-- páginas públicas necessárias para divulgação/acompanhamento.
+- páginas públicas necessárias para divulgação/acompanhamento;
+- **inscrição simples em Futebol de Robôs**.
 
-Antes de abrir inscrições:
-- criar Competition real;
-- categorias reais;
-- janela de inscrições;
-- contas institucionais reais;
-- revisar contatos exibidos;
-- smoke completo com contas novas;
-- confirmar backup da base.
+### Gate obrigatório antes de abrir a janela real
+
+Além do gate da V1-BETA B, confirmar obrigatoriamente:
+
+- **Competition real criada e revisada**;
+- **categorias reais corretas**;
+- **janela de inscrições correta** (`inicioInscricoes` / `fimInscricoes`);
+- valores/textos/taxas aplicáveis revisados;
+- contas verificadas reais de DEV/GESTAO prontas;
+- storage de comprovantes persistente e leitura/download testados;
+- backup do banco confirmado;
+- Flyway sem divergência;
+- nenhuma massa demo/testdata misturada com produção;
+- **smoke completo criando uma conta nova do zero**.
+
+O smoke do zero deve percorrer pelo menos:
+
+```text
+cadastro PARTICIPANTE
+→ login
+→ criação/entrada em equipe
+→ Minha inscrição
+→ envio de comprovante
+→ cadastro/associação de Robot quando aplicável
+→ inscrição competitiva
+→ análise pela GESTAO
+→ aprovação
+→ leitura pública/Portal refletindo o estado correto
+```
+
+Somente depois desse smoke ser aprovado a organização pode divulgar oficialmente que as inscrições estão abertas.
+
+### Futebol de Robôs — inscrição simples da V1 Beta
+
+A Beta deve permitir **inscrição na modalidade Futebol de Robôs sem exigir Robot próprio do participante/equipe**.
+
+Decisão já preservada:
+
+```text
+Futebol de Robôs
+→ robôs podem ser fornecidos/atribuídos pela organização
+→ não criar Robot fictício apenas para satisfazer Registration.robot
+```
+
+Escopo desta Beta:
+- participante/equipe escolhe a Competition + categoria Futebol;
+- informa/seleciona os competidores exigidos pelo formulário simples;
+- envia dados/comprovante quando o evento exigir;
+- inscrição nasce PENDENTE e pode ser aprovada/rejeitada pela GESTAO;
+- nenhum Robot próprio é obrigatório nessa inscrição;
+- atribuição do Robot da organização pode ficar para a operação posterior.
+
+Fora da V1 Beta:
+- regra da partida;
+- placar/gols;
+- cronômetro de 2 minutos;
+- empate/desempate;
+- chaveamento específico;
+- inspeção;
+- penalidades;
+- fluxo operacional da partida.
+
+Esses itens continuam na **ETAPA 6 — Futebol de Robôs** depois do site estar no ar.
 
 ## V1-BETA D — Estabilização inicial
 
@@ -376,6 +449,8 @@ Critério de saída:
 
 **Objetivo:** oferecer manutenção administrativa segura sem criar editor genérico de banco.
 
+**Prioridade:** pós-publicação. Esta etapa **não bloqueia a V1 Beta**; o conjunto DEV já existente é suficiente para o primeiro go-live. Melhorias administrativas avançadas serão retomadas depois que o site estiver no ar e estabilizado.
+
 Operações candidatas:
 
 - transferir competidor;
@@ -399,14 +474,15 @@ Não criar console SQL nem CRUD genérico de tabelas.
 
 ## ETAPA 6 — Futebol de Robôs
 
-**Objetivo:** implementar a modalidade competitiva que ainda altera o domínio estrutural.
+**Objetivo:** completar a modalidade competitiva após a Beta. A inscrição simples já terá sido antecipada na V1-BETA C; esta etapa trata o domínio funcional da competição.
 
 Ponto crítico já identificado:
 
-- `Registration.robot` hoje é obrigatório;
-- no Futebol os competidores usam robôs fornecidos/atribuídos pela organização;
-- a relação com robô deve ser modelada corretamente por modalidade;
-- não criar robô fictício apenas para satisfazer FK.
+- a inscrição de Futebol não deve exigir Robot próprio;
+- os robôs podem ser fornecidos/atribuídos pela organização;
+- não criar Robot fictício apenas para satisfazer FK;
+- a V1 Beta resolve somente o contrato mínimo de inscrição sem Robot próprio;
+- esta etapa fecha atribuição de robô, partida, placar, duração, empate/desempate, chaveamento, inspeção e penalidades.
 
 Antes da migration, fechar regras de equipe, atribuição de robôs, placar, duração, empate/desempate, formato, inspeção e penalidades.
 
@@ -2007,3 +2083,27 @@ Sequência aprovada:
 ```
 
 Esta decisão não transforma produção em ambiente de testes e não elimina as etapas restantes.
+---
+
+## Gate não negociável de abertura da V1 Beta
+
+A organização **não abre inscrições reais** até todos estes pontos estarem confirmados:
+
+```text
+[ ] MySQL de produção persistente
+[ ] backup configurado + restore documentado/testável
+[ ] Flyway validado no banco de produção
+[ ] storage persistente dos comprovantes
+[ ] contas verificadas reais de operação
+[ ] Competition real correta
+[ ] categorias reais corretas
+[ ] janela de inscrições correta
+[ ] ausência de testdata/demos na base
+[ ] smoke completo com conta criada do zero
+[ ] fluxo Gestão aprova inscrição real de teste
+[ ] Portal/estado público refletem o resultado
+```
+
+Se um item estiver pendente, a publicação pode permanecer em smoke interno, mas **não pode ser anunciada como inscrições abertas**.
+
+Ajustes Gerais DEV não fazem parte desse gate e serão tratados após o site estar no ar.
