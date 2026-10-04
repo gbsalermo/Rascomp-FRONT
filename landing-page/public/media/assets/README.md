@@ -17,6 +17,26 @@ media/assets/
 └─ robots/         → robôs, protótipos e projetos
 ```
 
+## Arquivos da Home já configurados
+
+Basta adicionar estes arquivos mantendo exatamente os nomes abaixo:
+
+```text
+institutional/
+└─ ras-ufrb-geral.jpg            → Hero principal / RAS UFRB
+
+events/
+├─ ras-nas-escolas.jpg           → Hero RAS nas Escolas + novidade
+└─ oficina-ras.jpg               → Hero Oficinas + novidade
+
+awards/
+└─ conquista-ras.jpg             → Hero Conquistas + novidade
+```
+
+As miniaturas de "Últimas novidades" reutilizam inicialmente as mesmas imagens
+dos slides. Se depois houver interesse em imagens exclusivas por notícia,
+basta criar novos MediaAsset/slots sem alterar o layout.
+
 ## Regras de uso na Beta A
 
 - não importar imagens diretamente em vários componentes;
