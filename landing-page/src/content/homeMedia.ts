@@ -6,7 +6,7 @@ export type HomeMediaSlot = {
 export const HOME_MEDIA = {
   hero: {
     ras: {
-      src: '',
+      src: '/media/assets/institutional/ras-ufrb-geral.jpg',
       alt: 'Atividade da IEEE RAS UFRB'
     },
     schools: {
