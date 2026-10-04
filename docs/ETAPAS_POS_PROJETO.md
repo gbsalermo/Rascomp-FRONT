@@ -1846,3 +1846,14 @@ A numeração, o nome definitivo, a prioridade relativa e o escopo dessa etapa �
 Não havia execução nova registrada do GitHub Actions nos heads finais no momento deste fechamento. Portanto, este documento **não declara CI remoto verde**.
 
 O encerramento desta etapa é baseado na validação manual completa realizada pelo usuário e na autorização explícita de merge em 03/10/2026.
+
+
+---
+
+### Decisões futuras preservadas após a ETAPA 4
+
+Estas decisões continuam no planejamento e **não são alteradas pelo encerramento da ETAPA 4**:
+
+- Ajustes DEV: operação explícita/auditável para encerrar ou cancelar chave vigente e gerar outra quando uma correção estrutural exigir, preservando histórico e justificativa;
+- Futebol de Robôs: cronômetro operacional com **2 minutos como referência atual/configurável**, placar por gols e persistência do resultado oficial;
+- Follow: possível divisão **Pro/Júnior** somente em pós-produção e mediante confirmação da competição; no MVP atual, Follow continua categoria única.
