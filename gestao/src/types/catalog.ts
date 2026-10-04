@@ -45,6 +45,7 @@ export interface Competitor {
   institutionSigla?: string
   userAccountId?: number
   userAccountNome?: string
+  teamLeader?: boolean
   ativo?: boolean
   dataCadastro?: string
   [key: string]: unknown
