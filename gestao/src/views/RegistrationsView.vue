@@ -714,6 +714,36 @@ onMounted(loadBase)
       <StatusBadge :value="activeCompetition.status || 'PLANEJADA'" />
     </article>
 
+    <article class="registration-context-filter">
+      <div>
+        <span class="eyebrow">Contexto da página</span>
+        <strong>Competição analisada</strong>
+      </div>
+      <el-select
+        v-if="auth.isDev"
+        v-model="competitionId"
+        placeholder="Selecione a competição"
+        @change="load"
+      >
+        <el-option
+          v-for="item in competition.competitions"
+          :key="item.id"
+          :label="item.nome"
+          :value="item.id"
+        />
+      </el-select>
+      <div v-else class="competition-context-static">
+        {{ activeCompetition?.nome || 'Nenhuma competição vigente' }}
+      </div>
+    </article>
+
+    <el-alert
+      v-if="auth.isDev && activeCompetition?.status === 'EM_ANDAMENTO'"
+      type="warning"
+      :closable="false"
+      title="Competição em andamento: entrada manual continua disponível apenas como operação excepcional DEV, com justificativa e auditoria."
+    />
+
     <article v-if="compositionChanges.length" class="table-card registrations-table-card composition-review-card" v-loading="loading">
       <div class="card-heading">
         <div>
@@ -723,7 +753,7 @@ onMounted(loadBase)
         <el-tag type="warning" effect="light">{{ compositionChanges.length }} alteração(ões)</el-tag>
       </div>
       <p class="muted">
-        Antes do início da competição, a composição é sincronizada automaticamente. A organização é avisada e pode manter ou vetar a mudança específica.
+        A mudança já vale automaticamente. A organização é avisada e pode vetá-la com justificativa até o início da competição. Se não houver veto, o sistema consolida a alteração ao iniciar a competição.
       </p>
       <el-table :data="compositionChanges" empty-text="Nenhuma alteração pendente">
         <el-table-column label="Robô" min-width="150" prop="robotNome" />
@@ -839,18 +869,26 @@ onMounted(loadBase)
       </el-table>
     </article>
 
+    <div class="robot-registration-heading">
+      <div>
+        <span class="eyebrow">Inscrições dos robôs</span>
+        <h2>Resumo das inscrições competitivas dos robôs</h2>
+      </div>
+      <small>Estes números não incluem as inscrições individuais dos participantes.</small>
+    </div>
+
     <div class="registrations-metrics">
       <button type="button" class="registration-metric" :class="{ active: status === '' }" @click="status = ''">
-        <span>Total</span><strong>{{ counts.total }}</strong>
+        <span>Robôs inscritos</span><strong>{{ counts.total }}</strong>
       </button>
       <button type="button" class="registration-metric pending" :class="{ active: status === 'PENDENTE' }" @click="selectStatus('PENDENTE')">
-        <span>Pendentes</span><strong>{{ counts.pendente }}</strong>
+        <span>Robôs pendentes</span><strong>{{ counts.pendente }}</strong>
       </button>
       <button type="button" class="registration-metric approved" :class="{ active: status === 'APROVADA' }" @click="selectStatus('APROVADA')">
-        <span>Aprovadas</span><strong>{{ counts.aprovada }}</strong>
+        <span>Robôs aprovados</span><strong>{{ counts.aprovada }}</strong>
       </button>
       <button type="button" class="registration-metric rejected" :class="{ active: status === 'REJEITADA' }" @click="selectStatus('REJEITADA')">
-        <span>Rejeitadas</span><strong>{{ counts.rejeitada }}</strong>
+        <span>Robôs rejeitados</span><strong>{{ counts.rejeitada }}</strong>
       </button>
     </div>
 
@@ -869,7 +907,10 @@ onMounted(loadBase)
         <el-table-column label="Competidor / Equipe" min-width="190">
           <template #default="{ row }">
             <div class="registration-main-cell">
-              <strong>{{ row.competitorNome }}</strong>
+              <div class="participant-name-with-role">
+                <strong>{{ row.competitorNome }}</strong>
+                <el-tag v-if="row.teamLeader" size="small" type="success" effect="light">Líder</el-tag>
+              </div>
               <span>{{ row.teamNome }}</span>
             </div>
           </template>
@@ -931,6 +972,9 @@ onMounted(loadBase)
                 plain
                 @click="openLeaderTransfer(row)"
               >Trocar líder</el-button>
+              <small v-if="row.teamLeader" class="leader-rejection-help">
+                Líder atual: a rejeição definitiva só é liberada após correção ou transferência da liderança.
+              </small>
             </div>
             <div v-else class="registration-request-cell">
               <StatusBadge :value="row.status" />
@@ -948,22 +992,6 @@ onMounted(loadBase)
           clearable
           placeholder="Buscar equipe, robô, categoria ou participante"
         />
-        <el-select
-          v-if="auth.isDev"
-          v-model="competitionId"
-          placeholder="Competição"
-          @change="load"
-        >
-          <el-option
-            v-for="item in competition.competitions"
-            :key="item.id"
-            :label="item.nome"
-            :value="item.id"
-          />
-        </el-select>
-        <div v-else class="competition-context-static">
-          {{ activeCompetition?.nome || 'Nenhuma competição vigente' }}
-        </div>
         <el-select v-model="status" placeholder="Status" clearable>
           <el-option label="Todos" value="" />
           <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
@@ -1348,6 +1376,19 @@ onMounted(loadBase)
 </template>
 
 <style scoped>
+.registration-context-filter { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 16px; border:1px solid #e5d9df; border-radius:14px; background:#fff; }
+.registration-context-filter > div:first-child { display:grid; gap:3px; }
+.registration-context-filter .el-select { width:min(440px,100%); }
+.robot-registration-heading { display:flex; align-items:end; justify-content:space-between; gap:16px; margin-top:4px; }
+.robot-registration-heading h2 { margin:2px 0 0; font-size:1.25rem; }
+.robot-registration-heading small { color:#786970; max-width:420px; text-align:right; }
+.participant-name-with-role { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.leader-rejection-help { flex-basis:100%; color:#8b5c19; line-height:1.35; max-width:310px; }
+@media (max-width:720px) {
+  .registration-context-filter,.robot-registration-heading { align-items:flex-start; flex-direction:column; }
+  .robot-registration-heading small { text-align:left; }
+}
+
 .composition-review-card > .muted { margin:0 0 12px; }
 .participant-review-actions { flex-wrap:wrap; }
 
