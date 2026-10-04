@@ -35,7 +35,6 @@ type NewsItem = {
 type QuickLink = {
   title: string
   description: string
-  href: string
   icon: 'projects' | 'workshops' | 'schools' | 'competitions'
 }
 
@@ -128,26 +127,22 @@ const newsItems = computed<NewsItem[]>(() => [
 const quickLinks = computed<QuickLink[]>(() => [
   {
     title: 'Projetos',
-    description: 'Desenvolvimento de soluções em robótica e automação.',
-    href: '#equipe',
+    description: 'Desenvolvimento de projetos e robôs nas áreas de robótica e automação.',
     icon: 'projects'
   },
   {
     title: 'Oficinas',
-    description: 'Formação prática e troca de conhecimento.',
-    href: '#eventos',
+    description: 'Capacitação prática por meio de oficinas, treinamentos e troca de conhecimento.',
     icon: 'workshops'
   },
   {
     title: 'RAS nas Escolas',
-    description: 'Ações de extensão em escolas da região.',
-    href: '#eventos',
+    description: 'Ações de extensão que levam robótica, ciência e tecnologia às escolas da região.',
     icon: 'schools'
   },
   {
     title: 'Competições',
-    description: 'Participação, resultados e acompanhamento dos eventos.',
-    href: props.competition?.status === 'EM_ANDAMENTO' ? '#competicao-atual' : '#eventos',
+    description: 'Participação em competições de robótica nacionais e internacionais.',
     icon: 'competitions'
   }
 ])
@@ -231,7 +226,7 @@ onBeforeUnmount(stopTimer)
           </div>
 
           <div class="hero-navigation" aria-label="Navegação dos destaques">
-            <button type="button" aria-label="Destaque anterior" @click="previous">‹</button>
+            <button type="button" aria-label="Destaque anterior" @click="previous">←</button>
 
             <div class="hero-dots" aria-label="Selecionar destaque">
               <button
@@ -244,7 +239,7 @@ onBeforeUnmount(stopTimer)
               />
             </div>
 
-            <button type="button" aria-label="Próximo destaque" @click="next">›</button>
+            <button type="button" aria-label="Próximo destaque" @click="next">→</button>
           </div>
         </article>
 
@@ -276,8 +271,8 @@ onBeforeUnmount(stopTimer)
         </aside>
       </div>
 
-      <nav class="hero-quick-links" aria-label="Atalhos da RAS UFRB">
-        <a v-for="item in quickLinks" :key="item.title" class="hero-quick-card" :href="item.href">
+      <div class="hero-quick-links" aria-label="Áreas de atuação da RAS UFRB">
+        <article v-for="item in quickLinks" :key="item.title" class="hero-quick-card">
           <span class="hero-quick-icon" aria-hidden="true">
             <svg v-if="item.icon === 'projects'" viewBox="0 0 24 24">
               <path d="M4 7h16v11H4zM7 4h10v3H7zm1 7h3v3H8zm5 0h3v3h-3z" />
@@ -297,8 +292,8 @@ onBeforeUnmount(stopTimer)
             <strong>{{ item.title }}</strong>
             <small>{{ item.description }}</small>
           </span>
-        </a>
-      </nav>
+        </article>
+      </div>
     </div>
   </section>
 </template>
