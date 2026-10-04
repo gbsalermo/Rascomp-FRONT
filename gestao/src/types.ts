@@ -31,6 +31,8 @@ export type {
   Registration,
   RegistrationCancellationRequest,
   RegistrationStatusHistory,
+  ManualCompetitionEntryRequest,
+  ManualParticipantEntryRequest,
   ParticipantCompetitionRegistrationStatus,
   ParticipantRobotLink,
   ParticipantCompetitionRegistration,
