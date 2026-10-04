@@ -1,27 +1,34 @@
 .institutional-brand-logo {
-  width: 86px;
-  height: 86px;
+  width: 118px;
+  height: 118px;
   object-fit: contain;
   flex: 0 0 auto;
 }
 
 @media(max-width:1180px) {
   .institutional-brand-logo {
-    width: 74px;
-    height: 74px;
+    width: 98px;
+    height: 98px;
   }
 }
 
 @media(max-width:980px) {
   .institutional-brand-logo {
-    width: 56px;
-    height: 56px;
+    width: 82px;
+    height: 82px;
+  }
+}
+
+@media(max-width:620px) {
+  .institutional-brand-logo {
+    width: 76px;
+    height: 76px;
   }
 }
 
 @media(max-width:500px) {
   .institutional-brand-logo {
-    width: 50px;
-    height: 50px;
+    width: 72px;
+    height: 72px;
   }
 }
