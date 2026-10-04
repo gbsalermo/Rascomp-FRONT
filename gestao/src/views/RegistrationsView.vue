@@ -1221,6 +1221,10 @@ onMounted(loadBase)
             <div><dt>Equipe</dt><dd>{{ selected.teamNome }}</dd></div>
             <div><dt>Categoria</dt><dd>{{ selected.categoryNome }}</dd></div>
             <div><dt>Robô</dt><dd>{{ selected.robotNome }}</dd></div>
+            <div v-if="selected.robotDescricao" class="registration-description-row">
+              <dt>Descrição enviada</dt>
+              <dd>{{ selected.robotDescricao }}</dd>
+            </div>
           </dl>
         </section>
 
@@ -1397,6 +1401,8 @@ onMounted(loadBase)
 .participant-linked-robots b { color:#4e3a44; font-size:12px; }
 .participant-linked-robots small { color:#81737a; font-size:10px; }
 .registration-detail-heading-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.registration-description-row { grid-column:1 / -1; }
+.registration-description-row dd { white-space:pre-wrap; line-height:1.45; }
 .registration-eligibility-list { display:grid; gap:8px; }
 .registration-eligibility-list article { display:grid; gap:4px; padding:10px 12px; border:1px solid #eadde3; border-radius:10px; }
 .registration-eligibility-list span { font-size:11px; color:#776970; }
