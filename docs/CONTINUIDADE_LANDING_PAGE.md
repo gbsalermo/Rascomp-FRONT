@@ -183,19 +183,32 @@ docs/MIDIA_LANDING_BETA_A.md
 
 ### Feed de Últimas novidades
 
-O Hero possui um feed editorial próprio em:
+A fonte editorial continua preservada em:
 
 ```text
 landing-page/src/content/updates.ts
 ```
 
-Regras:
+Decisão visual da Beta A em 04/10/2026:
+
+```text
+Hero
+→ NÃO renderiza Últimas novidades
+→ prioriza foto + mensagem institucional + CTAs + carrossel
+```
+
+Motivo: o painel de novidades competia visualmente com a mensagem principal e
+aproximava o Hero de uma linguagem de portal/dashboard.
+
+O feed será retomado na revisão de **Eventos/Postagens**, onde será definida sua
+posição definitiva na Landing.
+
+Regras preservadas:
 
 - não é simples espelho do Hero nem da seção Eventos;
 - pode reaproveitar dados de `events.ts` quando a novidade corresponder a um evento;
 - também aceita conteúdos sem evento associado, como nova chapa, premiação, visita, conquista ou comunicado;
 - a ordem é editorial;
-- na Beta A o painel é textual, sem miniaturas;
 - no futuro, a Gestão de Mídia/CMS deverá administrar publicação, ordenação, relacionamentos e mídia opcional desse feed.
 
 ---
