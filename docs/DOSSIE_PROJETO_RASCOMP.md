@@ -1952,3 +1952,37 @@ A Beta deve priorizar:
 - persistência segura em banco de produção.
 
 Funcionalidades restantes continuam no roadmap e serão promovidas progressivamente após validação fora de produção.
+
+### Gate obrigatório para abrir inscrições reais
+
+A V1 Beta só pode anunciar inscrições abertas após confirmação de:
+
+- MySQL de produção persistente e separado;
+- backup configurado e procedimento de restore documentado/testável;
+- Flyway íntegro e aplicado de forma controlada;
+- storage persistente dos comprovantes;
+- contas verificadas reais de operação (DEV/GESTAO e perfis internos realmente usados);
+- Competition real correta;
+- categorias reais corretas;
+- janela de inscrições correta;
+- ausência de testdata/demos na base;
+- smoke completo criando conta PARTICIPANTE nova do zero e percorrendo o fluxo até aprovação pela GESTAO.
+
+"Conta verificada real" é o termo canônico; não há exigência de domínio de e-mail institucional.
+
+Ajustes Gerais DEV avançados não bloqueiam a Beta e serão retomados após o site estar no ar.
+
+### Futebol de Robôs na V1 Beta
+
+Antecipar apenas a **inscrição simples**:
+
+```text
+Competition + categoria Futebol + competidores
+→ sem Robot próprio obrigatório
+→ PENDENTE
+→ análise GESTAO
+```
+
+Os robôs podem ser fornecidos/atribuídos pela organização. Não criar Robot fictício para satisfazer FK.
+
+Ficam para a ETAPA 6: regras de partida, placar, cronômetro (referência atual de 2 min), empate/desempate, chaveamento, inspeção e penalidades.
