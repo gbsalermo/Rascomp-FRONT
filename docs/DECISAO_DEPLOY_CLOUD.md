@@ -278,3 +278,47 @@ impacto no modo local
 custo
 nova decisão
 ```
+
+
+---
+
+## Regra congelada — Cloud não elimina operação local
+
+A hospedagem Cloudflare é uma camada de publicação, proteção e distribuição. **O domínio do RasComp não pode depender da existência da Cloudflare para funcionar.**
+
+O modo local permanece obrigatório:
+
+```text
+Spring Boot local
+MySQL local
+frontends locais/builds estáticos
+storage local configurável
+```
+
+### Quotas/Workers
+
+Não projetar a API de modo que toda requisição dinâmica dependa obrigatoriamente de uma execução de Worker sujeita a quota diária do plano.
+
+Na V1-BETA B:
+
+- conferir novamente limites/preços vigentes;
+- medir o tráfego esperado;
+- usar Cloudflare para static/CDN/DNS/TLS/proteção quando adequado;
+- manter backend/MySQL desacoplados de quota comercial específica.
+
+### Plano B para competição
+
+O projeto deve possuir runbook testado para operar em rede local caso a cloud fique indisponível ou seja deliberadamente retirada do caminho no dia do evento.
+
+Esse runbook deve incluir:
+
+- snapshot/backup recente;
+- restore local do MySQL;
+- disponibilidade local dos arquivos necessários;
+- configuração de URLs;
+- acesso via LAN;
+- smoke de Gestão/Portal/competição;
+- definição de fonte única de verdade durante o período local;
+- procedimento de retorno/reconciliação para cloud.
+
+Não operar duas bases independentes recebendo escritas simultâneas sem mecanismo explícito de sincronização.
