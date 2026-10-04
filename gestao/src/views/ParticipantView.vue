@@ -57,6 +57,8 @@ const teamDialog = ref(false)
 const joinDialog = ref(false)
 const robotDialog = ref(false)
 const creatingRobot = ref(false)
+const robotEditingId = ref<number>()
+const removingRobotId = ref<number>()
 const registrationDialog = ref(false)
 const creatingRegistration = ref(false)
 const personalRegistrationDialog = ref(false)
@@ -100,6 +102,7 @@ const registrationForm = reactive({
   categoryId: undefined as number | undefined,
   robotId: undefined as number | undefined,
   competitorIds: [] as number[],
+  robotDescricao: '',
   observacao: ''
 })
 const personalRegistrationForm = reactive({
@@ -510,25 +513,92 @@ async function saveRobotResponsibles() {
   }
 }
 
-async function createRobot() {
+function canMaintainRobot(robot: Robot) {
+  return isTeamLeader.value || robot.createdByUserId === auth.user?.id
+}
+
+function openCreateRobot() {
+  robotEditingId.value = undefined
+  robotForm.nome = ''
+  robotForm.descricao = ''
+  robotDialog.value = true
+}
+
+function openEditRobot(robot: Robot) {
+  if (!canMaintainRobot(robot)) return
+  robotEditingId.value = robot.id
+  robotForm.nome = robot.nome
+  robotForm.descricao = robot.descricao || ''
+  robotDialog.value = true
+}
+
+async function saveRobot() {
   if (!teamId.value || !robotForm.nome.trim()) {
     return ElMessage.warning('Informe o nome do robô.')
   }
+
+  const normalized = robotForm.nome.trim().toLocaleLowerCase('pt-BR')
+  const duplicate = robots.value.some((robot) =>
+    robot.id !== robotEditingId.value
+      && robot.nome.trim().toLocaleLowerCase('pt-BR') === normalized
+  )
+  if (duplicate) {
+    return ElMessage.warning('Já existe um robô com este nome na equipe. Edite o cadastro existente em vez de duplicá-lo.')
+  }
+
   creatingRobot.value = true
   try {
-    await participantApi.createRobot(teamId.value, {
+    const payload = {
       nome: robotForm.nome.trim(),
       descricao: robotForm.descricao.trim() || undefined
-    })
-    ElMessage.success('Robô cadastrado na sua equipe.')
+    }
+
+    if (robotEditingId.value) {
+      await participantApi.updateRobot(robotEditingId.value, payload)
+      ElMessage.success('Nome e descrição do robô atualizados.')
+    } else {
+      await participantApi.createRobot(teamId.value, payload)
+      ElMessage.success('Robô cadastrado na sua equipe.')
+    }
+
     robotDialog.value = false
+    robotEditingId.value = undefined
     robotForm.nome = ''
     robotForm.descricao = ''
     await loadTeam()
   } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível cadastrar o robô.')
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar o robô.')
   } finally {
     creatingRobot.value = false
+  }
+}
+
+async function removeRobot(robot: Robot) {
+  if (!canMaintainRobot(robot)) return
+
+  try {
+    await ElMessageBox.confirm(
+      `Remover o cadastro de ${robot.nome}? O histórico já existente será preservado. Robôs com inscrição PENDENTE ou APROVADA precisam ser regularizados antes.`,
+      'Remover robô',
+      {
+        type: 'warning',
+        confirmButtonText: 'Remover cadastro',
+        cancelButtonText: 'Cancelar'
+      }
+    )
+  } catch {
+    return
+  }
+
+  removingRobotId.value = robot.id
+  try {
+    await participantApi.deleteRobot(robot.id)
+    ElMessage.success('Cadastro do robô removido do Portal.')
+    await loadTeam()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível remover o robô.')
+  } finally {
+    removingRobotId.value = undefined
   }
 }
 
@@ -563,6 +633,8 @@ function onRegistrationCompetitionChange() {
 
 function onRegistrationRobotChange(robotId?: number) {
   syncRegistrationCompetitors(robotId)
+  const robot = registrableRobots.value.find((item) => item.id === robotId)
+  registrationForm.robotDescricao = robot?.descricao || ''
   refreshRegistrationCategory()
 }
 
@@ -585,6 +657,7 @@ function openRegistrationDialog() {
 
   registrationForm.competitionId = availableRobotRegistrationCompetitions.value[0]?.id
   registrationForm.robotId = registrableRobots.value[0]?.id
+  registrationForm.robotDescricao = registrableRobots.value[0]?.descricao || ''
   registrationForm.observacao = ''
   robotRegistrationReceipt.value = undefined
   syncRegistrationCompetitors(registrationForm.robotId)
@@ -609,6 +682,7 @@ async function submitRegistration() {
       competitionId: registrationForm.competitionId,
       categoryId: registrationForm.categoryId,
       robotId: registrationForm.robotId,
+      robotDescricao: registrationForm.robotDescricao.trim() || undefined,
       observacao: registrationForm.observacao.trim() || undefined
     }, robotRegistrationReceipt.value)
     ElMessage.success('Inscrição enviada. Aguardando aprovação da organização.')
@@ -861,6 +935,10 @@ onMounted(loadTeams)
         <span class="eyebrow">Portal do participante</span>
         <h1>{{ activeTeam?.nome || 'Minha equipe' }}</h1>
         <p class="muted">Robôs, inscrições e desempenho competitivo em um só lugar.</p>
+        <p v-if="activeTeam?.responsibleUserNome" class="team-leader-inline">
+          Líder da equipe: <strong>{{ activeTeam.responsibleUserNome }}</strong>
+          <el-tag v-if="isTeamLeader" size="small" type="success" effect="light">Você</el-tag>
+        </p>
       </div>
       <div class="heading-actions">
         <el-select v-if="teams.length > 1" v-model="teamId" style="width:260px">
@@ -971,9 +1049,9 @@ onMounted(loadTeams)
         </div>
       </section>
 
-      <section class="participant-section">
+      <section class="participant-section robot-registration-section">
         <div class="participant-section-heading">
-          <div><span class="eyebrow">Robôs</span><h2>{{ isTeamLeader ? 'Inscrições dos robôs da equipe' : 'Inscrições dos meus robôs' }}</h2></div>
+          <div><span class="eyebrow">Inscrição competitiva dos robôs</span><h2>{{ isTeamLeader ? 'Inscrições dos robôs da equipe' : 'Inscrições dos meus robôs' }}</h2></div>
           <div class="participant-section-actions">
             <span class="muted">{{ robotRegistrationUnlockMessage }}</span>
             <el-button
@@ -1089,7 +1167,7 @@ onMounted(loadTeams)
                 ? 'Você administra todos os robôs da equipe e seus responsáveis.'
                 : 'Aqui aparecem os robôs pelos quais você está cadastrado como responsável.' }}
             </span>
-            <el-button class="brand-button" @click="robotDialog = true">Cadastrar robô</el-button>
+            <el-button class="brand-button" @click="openCreateRobot">Cadastrar robô</el-button>
           </div>
         </div>
         <div class="robot-gallery">
@@ -1116,6 +1194,15 @@ onMounted(loadTeams)
                 <input type="file" accept="image/png,image/jpeg,image/webp" :disabled="uploadRobotId === robot.id" @change="onPhotoSelected(robot, $event)" />
               </label>
               <el-button v-if="isTeamLeader" size="small" @click="openResponsibleDialog(robot)">Responsáveis</el-button>
+              <el-button v-if="canMaintainRobot(robot)" size="small" plain @click="openEditRobot(robot)">Editar</el-button>
+              <el-button
+                v-if="canMaintainRobot(robot)"
+                size="small"
+                type="danger"
+                plain
+                :loading="removingRobotId === robot.id"
+                @click="removeRobot(robot)"
+              >Remover</el-button>
             </div>
           </article>
         </div>
@@ -1200,7 +1287,14 @@ onMounted(loadTeams)
           </div>
 
           <el-table :data="competitors" empty-text="Nenhum competidor">
-            <el-table-column prop="nome" label="Nome" />
+            <el-table-column label="Nome" min-width="180">
+              <template #default="{ row }">
+                <div class="participant-competitor-name">
+                  <strong>{{ row.nome }}</strong>
+                  <el-tag v-if="row.teamLeader" size="small" type="success" effect="light">Líder</el-tag>
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column prop="email" label="E-mail" min-width="180" />
           </el-table>
         </article>
@@ -1350,6 +1444,17 @@ onMounted(loadTeams)
             title="Nenhuma categoria disponível para este robô nesta competição. Verifique inscrições existentes ou reative uma inscrição cancelada quando aplicável."
           />
 
+          <label class="span-2">Descrição do robô nesta inscrição <small class="muted">(opcional)</small>
+            <el-input
+              v-model="registrationForm.robotDescricao"
+              type="textarea"
+              :rows="3"
+              maxlength="500"
+              placeholder="Descrição simples do robô para esta edição"
+            />
+            <small class="muted">O valor atual do cadastro é preenchido automaticamente e ficará registrado junto desta inscrição.</small>
+          </label>
+
           <div class="span-2 participant-flow-note">
             <strong>Composição automática</strong>
             <span>
@@ -1414,7 +1519,11 @@ onMounted(loadTeams)
       </template>
     </el-dialog>
 
-    <el-dialog v-model="robotDialog" title="Cadastrar robô" width="min(520px, 92vw)">
+    <el-dialog
+      v-model="robotDialog"
+      :title="robotEditingId ? 'Editar robô' : 'Cadastrar robô'"
+      width="min(520px, 92vw)"
+    >
       <div class="form-grid">
         <label class="span-2">Nome do robô
           <el-input v-model="robotForm.nome" maxlength="120" placeholder="Ex.: Vespa" />
@@ -1429,7 +1538,9 @@ onMounted(loadTeams)
       </div>
       <template #footer>
         <el-button @click="robotDialog = false">Cancelar</el-button>
-        <el-button class="brand-button" :loading="creatingRobot" @click="createRobot">Cadastrar robô</el-button>
+        <el-button class="brand-button" :loading="creatingRobot" @click="saveRobot">
+          {{ robotEditingId ? 'Salvar alterações' : 'Cadastrar robô' }}
+        </el-button>
       </template>
     </el-dialog>
 
@@ -1450,6 +1561,12 @@ onMounted(loadTeams)
 </template>
 
 <style scoped>
+.team-leader-inline { display:flex; align-items:center; gap:7px; margin:6px 0 0; color:#71636a; font-size:12px; }
+.team-leader-inline strong { color:#33262d; }
+.participant-competitor-name { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.robot-registration-section { padding:18px; border:1px solid #dfcdd5; border-radius:17px; background:#fff; box-shadow:0 10px 30px rgba(70,20,44,.045); }
+.robot-registration-section .participant-section-heading h2 { font-size:1.35rem; }
+.robot-registration-section .participant-section-actions > .muted { font-size:13px; line-height:1.45; color:#695b62; }
 .personal-registration-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .personal-registration-card { display:grid; gap:12px; padding:16px; border:1px solid #e7dde2; border-radius:15px; background:#fff; }
 .personal-registration-card > div:first-child { display:grid; gap:3px; }
@@ -1520,10 +1637,10 @@ onMounted(loadTeams)
 @media (max-width:680px) { .participant-summary-grid,.participation-grid { grid-template-columns:1fr; } .participant-section-heading,.take-progress-copy { align-items:flex-start; flex-direction:column; } .robot-gallery-card { grid-template-columns:82px 1fr; } .robot-gallery-image { width:82px; height:70px; } .robot-photo-upload { grid-column:1 / -1; } .participant-performance { grid-template-columns:1fr; } .participant-take-row { grid-template-columns:1fr 1fr; } }
 
 .participant-section-actions { display:flex; align-items:center; gap:12px; }
-.participant-registration-pending-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; border:1px solid #ead6bf; border-radius:13px; background:#fffaf2; }
+.participant-registration-pending-banner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border:1px solid #ead6bf; border-radius:13px; background:#fffaf2; }
 .participant-registration-pending-banner > div { display:grid; gap:3px; }
-.participant-registration-pending-banner strong { color:#7d4c13; }
-.participant-registration-pending-banner span { color:#806d57; font-size:12px; }
+.participant-registration-pending-banner strong { color:#7d4c13; font-size:14px; }
+.participant-registration-pending-banner span { color:#6f5d49; font-size:13px; line-height:1.4; }
 .registration-status-cell { display:grid; gap:5px; justify-items:start; }
 .registration-status-cell small { color:#8a735e; font-size:10px; line-height:1.25; }
 .registration-flow-dialog { display:grid; gap:14px; }
