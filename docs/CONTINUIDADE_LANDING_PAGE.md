@@ -146,6 +146,40 @@ Na V1-BETA A, quando houver material disponível, substituir placeholders por:
 
 Não é necessário antecipar o CMS completo para publicar a Beta. Conteúdo pode permanecer versionado no frontend nesta primeira entrega, desde que seja real e organizado. O CMS continua no roadmap para retirar essa dependência posteriormente.
 
+### Ponte temporária de mídia da Beta A
+
+A V1-BETA A passa a usar uma estrutura manual centralizada para imagens reais:
+
+```text
+landing-page/public/media/assets/
+landing-page/src/content/homeMedia.ts
+```
+
+Categorias iniciais:
+
+```text
+institutional/
+events/
+competitions/
+awards/
+robots/
+```
+
+Regras:
+
+- a `photo-gallery/` não é a fonte canônica das imagens da Landing;
+- a Galeria será consumidora/apresentação do mesmo acervo;
+- componentes não devem espalhar caminhos de imagem;
+- slots da Home ficam centralizados em `homeMedia.ts`;
+- a futura Gestão de Mídia substituirá essa origem estática por `MediaAsset / ContentSlot / ContentItem` + storage persistente/R2;
+- preservar a semântica dos slots para facilitar a migração sem redesenhar componentes.
+
+Documento específico:
+
+```text
+docs/MIDIA_LANDING_BETA_A.md
+```
+
 ---
 
 
