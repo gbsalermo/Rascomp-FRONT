@@ -1778,3 +1778,10 @@ A rejeição pessoal nunca remove automaticamente o vínculo permanente `RobotRe
 A revisão 360 do BLOCO 4.3 consolidou ownership de Robot, elegibilidade parcial, composição automática, veto da GESTAO, rejeição/reinscrição do Robot e proteção/troca de liderança. A fonte específica passa a ser `docs/REGRAS_PARTICIPANTE.md`.
 
 Estado: implementação revisada, **ainda não validada manualmente**. 4.4 segue bloqueado.
+
+
+### Checkpoint pós-bateria 4.3 — 03/10/2026
+
+A bateria 1–40 foi executada. Os achados originaram V27 e ajustes de UX/regra: edição/remoção segura de Robot, descrição snapshot na Registration, métricas/filtro/título mais claros, líder visível, veto de composição realmente reversível e consolidação automática de mudanças não vetadas no início da Competition.
+
+O BLOCO 4.3 permanece aberto apenas para a regressão focal R1–R15 e confirmação de build/testes. O BLOCO 4.4 continua NÃO INICIADO.
