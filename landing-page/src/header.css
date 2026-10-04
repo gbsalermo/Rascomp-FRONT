@@ -21,6 +21,7 @@
 .header-main-row {
   height: 100%;
   display: grid;
+  transform: translateY(-4px);
   grid-template-columns: minmax(300px, 1fr) auto minmax(170px, 1fr);
   align-items: center;
   gap: 38px;
@@ -253,6 +254,7 @@
   .header-main-row {
     grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 10px;
+    transform: translateY(-2px);
   }
 
   .institutional-brand {
