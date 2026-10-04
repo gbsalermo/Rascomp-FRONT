@@ -21,14 +21,18 @@
 
 @media(max-width:620px) {
   .institutional-brand-logo {
-    width: 90px;
-    height: 90px;
+    width: 96px;
+    height: 96px;
+    transform: scale(1.12);
+    transform-origin: left center;
   }
 }
 
 @media(max-width:500px) {
   .institutional-brand-logo {
-    width: 96px;
-    height: 96px;
+    width: 104px;
+    height: 104px;
+    transform: scale(1.22);
+    transform-origin: left center;
   }
 }
