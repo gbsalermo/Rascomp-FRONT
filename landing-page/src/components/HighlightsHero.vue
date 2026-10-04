@@ -97,7 +97,7 @@ const slides = computed<HeroSlide[]>(() => [
   }
 ])
 
-const latestUpdates = computed(() => LANDING_UPDATES.slice(0, 4))
+const latestUpdates = computed(() => LANDING_UPDATES.slice(0, 3))
 
 const quickLinks = computed<QuickLink[]>(() => [
   {
@@ -228,6 +228,7 @@ onBeforeUnmount(stopTimer)
             v-for="item in latestUpdates"
             :key="item.id"
             class="hero-news-item"
+            :class="`kind-${item.kind}`"
           >
             <div class="hero-event-meta">
               <span class="hero-news-tag">{{ item.tag }}</span>
