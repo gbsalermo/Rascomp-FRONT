@@ -1842,3 +1842,25 @@ V1-BETA D → smoke + estabilização
 ```
 
 Após o go-live Beta, frontend e backend continuam evoluindo em branch/ambiente não-prod. Produção recebe apenas versões já validadas.
+
+### Gate da V1 Beta — abertura de inscrições
+
+Antes de expor o CTA de inscrições como oficialmente aberto, validar:
+
+```text
+MySQL persistente
+backup/restore
+Flyway
+storage persistente de comprovantes
+contas verificadas reais
+Competition/categorias/janela reais
+smoke com conta nova do zero
+aprovação pela GESTAO
+Portal/público refletindo estado correto
+```
+
+O frontend não deve sugerir inscrições abertas enquanto esse gate não estiver aprovado.
+
+Futebol de Robôs entra na Beta somente como inscrição simples sem Robot próprio obrigatório. O domínio completo da partida permanece na ETAPA 6.
+
+Ajustes Gerais DEV avançados são pós-Beta e não bloqueiam o go-live inicial.
