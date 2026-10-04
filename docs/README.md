@@ -105,7 +105,7 @@ O backend é fonte de verdade de autorização, ownership e regras/resultados co
 
 ## `ETAPAS_POS_PROJETO.md`
 
-Planejamento único do ciclo. Define ETAPAS 0–16, organiza o trabalho em duas prioridades, marca as ETAPAS 0–3 como concluídas/validadas e a ETAPA 4 como próxima.
+Planejamento único do ciclo. Define o estado das ETAPAS 0–16 e o trilho prioritário V1 Beta. As ETAPAS 0–4 estão concluídas; o próximo trabalho é V1-BETA A — Landing pública.
 
 ## `DOSSIE_PROJETO_RASCOMP.md`
 
