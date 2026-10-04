@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { HOME_MEDIA } from '../content/homeMedia'
 
 const props = defineProps<{
   competition?: any
@@ -53,7 +54,8 @@ const slides = computed<HeroSlide[]>(() => [
     secondary: 'Ver atividades',
     secondaryHref: '#eventos',
     tone: 'institutional',
-    imageAlt: 'Atividade da IEEE RAS UFRB',
+    image: HOME_MEDIA.hero.ras.src || undefined,
+    imageAlt: HOME_MEDIA.hero.ras.alt,
     mediaLabel: 'Foto principal da RAS UFRB'
   },
   {
@@ -67,7 +69,8 @@ const slides = computed<HeroSlide[]>(() => [
     secondary: 'Ver atividades',
     secondaryHref: '#eventos',
     tone: 'community',
-    imageAlt: 'Atividade do projeto RAS nas Escolas',
+    image: HOME_MEDIA.hero.schools.src || undefined,
+    imageAlt: HOME_MEDIA.hero.schools.alt,
     mediaLabel: 'Foto do RAS nas Escolas'
   },
   {
@@ -81,7 +84,8 @@ const slides = computed<HeroSlide[]>(() => [
     secondary: 'Conheça a equipe',
     secondaryHref: '#equipe',
     tone: 'workshop',
-    imageAlt: 'Oficina promovida pela IEEE RAS UFRB',
+    image: HOME_MEDIA.hero.workshops.src || undefined,
+    imageAlt: HOME_MEDIA.hero.workshops.alt,
     mediaLabel: 'Foto de oficina ou treinamento'
   },
   {
@@ -95,7 +99,8 @@ const slides = computed<HeroSlide[]>(() => [
     secondary: 'Ver galeria',
     secondaryHref: '#galeria',
     tone: 'award',
-    imageAlt: 'Equipe da IEEE RAS UFRB em premiação',
+    image: HOME_MEDIA.hero.awards.src || undefined,
+    imageAlt: HOME_MEDIA.hero.awards.alt,
     mediaLabel: 'Foto de premiação ou competição'
   }
 ])
@@ -106,21 +111,24 @@ const newsItems = computed<NewsItem[]>(() => [
     title: 'Oficinas e formação',
     description: 'Atividades técnicas, treinamentos e experiências práticas promovidas pelo capítulo.',
     tone: 'workshop',
-    imageAlt: 'Oficina da IEEE RAS UFRB'
+    image: HOME_MEDIA.news.workshop.src || undefined,
+    imageAlt: HOME_MEDIA.news.workshop.alt
   },
   {
     tag: 'RAS nas Escolas',
     title: 'Ações de extensão',
     description: 'Iniciativas que aproximam estudantes e escolas da robótica e da universidade.',
     tone: 'community',
-    imageAlt: 'Ação de extensão da IEEE RAS UFRB'
+    image: HOME_MEDIA.news.schools.src || undefined,
+    imageAlt: HOME_MEDIA.news.schools.alt
   },
   {
     tag: 'Conquistas',
     title: 'Resultados do capítulo',
     description: 'Competições, premiações e momentos que marcam a trajetória da equipe.',
     tone: 'award',
-    imageAlt: 'Conquista da equipe IEEE RAS UFRB'
+    image: HOME_MEDIA.news.achievement.src || undefined,
+    imageAlt: HOME_MEDIA.news.achievement.alt
   }
 ])
 
