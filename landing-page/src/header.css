@@ -5,12 +5,12 @@
 }
 
 .header-container {
-  width: min(1420px, calc(100% - 40px));
+  width: min(1560px, calc(100% - 28px));
   margin: 0 auto;
 }
 
 .institutional-header {
-  height: 84px;
+  height: 92px;
   padding: 0;
   background: rgba(255, 255, 255, .985);
   border-bottom: 1px solid #ece8ef;
@@ -21,35 +21,35 @@
 .header-main-row {
   height: 100%;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto minmax(160px, 1fr);
+  grid-template-columns: minmax(315px, 1fr) auto minmax(180px, 1fr);
   align-items: center;
-  gap: 28px;
+  gap: 34px;
 }
 
 .institutional-brand {
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 
 .institutional-brand-copy {
   display: grid;
   gap: 2px;
-  padding-left: 12px;
+  padding-left: 14px;
   border-left: 1px solid #e7e1ea;
 }
 
 .institutional-brand-copy strong {
   color: #2b2230;
-  font-size: 1rem;
+  font-size: 1.05rem;
   letter-spacing: .01em;
 }
 
 .institutional-brand-copy small {
   color: #77707d;
-  font-size: .68rem;
+  font-size: .7rem;
 }
 
 .institutional-nav {
@@ -57,7 +57,7 @@
   align-items: center;
   justify-content: center;
   justify-self: center;
-  gap: 30px;
+  gap: 36px;
   color: #37313d;
   font-size: .84rem;
   font-weight: 700;
@@ -68,7 +68,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 48px;
   cursor: pointer;
   list-style: none;
   transition: color .16s ease;
@@ -149,11 +149,11 @@
   align-items: center;
   justify-content: center;
   justify-self: end;
-  padding: 0 22px;
+  padding: 0 24px;
   border-radius: 10px;
   background: #d20f39;
   color: #fff;
-  font-size: .82rem;
+  font-size: .84rem;
   font-weight: 850;
   box-shadow: 0 8px 20px rgba(210, 15, 57, .17);
   transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
