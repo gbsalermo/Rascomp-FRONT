@@ -57,22 +57,42 @@ HOME_HERO_AWARDS
 No código atual, esses slots são representados pelas chaves de `HOME_MEDIA`.
 
 
-### Próximos eventos da Home
+### Últimas novidades da Home
 
-O painel anteriormente tratado como "Últimas novidades" foi consolidado como
-**Próximos eventos** e não utiliza imagem na Beta A.
+O painel **Últimas novidades** é um feed institucional próprio e não utiliza
+imagem na Beta A.
 
-A fonte de dados é compartilhada:
+Ele pode reunir:
+
+- campeonatos e competições;
+- eventos e oficinas;
+- visitas e ações do RAS nas Escolas;
+- nova chapa/diretoria;
+- premiações e conquistas;
+- comunicados institucionais.
+
+Fontes atuais:
 
 ```text
 src/content/events.ts
-├─ HighlightsHero.vue       → resumo compacto dos primeiros eventos
-└─ InstitutionalEvents.vue  → seção completa de Eventos
+└─ agenda/eventos estruturados
+
+src/content/updates.ts
+└─ feed editorial de Últimas novidades
+   ├─ pode reutilizar um evento existente
+   └─ pode receber novidade institucional independente
 ```
 
-Assim, alterar um evento na fonte central reflete nos dois pontos e evita
-conteúdo divergente. Na Gestão de Mídia/CMS, essa fonte estática poderá ser
-substituída por conteúdo editorial/API sem recriar o layout.
+O Hero consome `LANDING_UPDATES`. Quando uma novidade corresponde a um evento,
+o feed referencia o item existente por ID e reaproveita seus dados, evitando
+duplicação desnecessária.
+
+A ordem em `LANDING_UPDATES` representa prioridade/recência editorial e não
+precisa seguir a ordem cronológica da agenda.
+
+Na Gestão de Mídia/CMS, esse feed deve evoluir para conteúdo editorial
+publicável, preservando a possibilidade de relacionar uma novidade a Evento,
+MediaAsset e outros conteúdos sem obrigar que toda novidade seja um evento.
 
 ## Regra de reutilização
 
