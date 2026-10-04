@@ -1785,3 +1785,13 @@ BLOCO 4.4
 ```
 
 Migrations atuais: **V1–V27**. Próxima migration estrutural: **V28+**.
+
+
+### Ajustes finais pós-regressão — 03/10/2026
+
+- Portal do Participante recarrega inscrições ao voltar para a aba/janela e possui ação Atualizar, evitando status visual obsoleto após decisão da GESTAO em outra sessão.
+- DEV ganhou **Adicionar participante avulso**.
+- Conta PARTICIPANTE ainda sem Competitor pode receber Team no próprio fluxo excepcional.
+- Entrada manual pessoal cria inscrição individual APROVADA auditada.
+- Entrada de Robot avulso também passou a aceitar conta nova sem Team.
+- Composição de Robot já congelada não é alterada automaticamente por essa entrada.
