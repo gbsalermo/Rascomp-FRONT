@@ -65,7 +65,7 @@ Direção:
 3. regras, ajuda e segurança para participantes;
 4. hardening e testes físicos em dispositivos;
 5. validação final completa, inclusive permissões;
-6. deploy como última etapa do ciclo.
+6. consolidação/hardening final da produção depois da Beta.
 
 ---
 
