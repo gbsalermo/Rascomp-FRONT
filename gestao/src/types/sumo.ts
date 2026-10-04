@@ -49,6 +49,9 @@ export interface Bracket {
   status?: string
   ativo?: boolean
   atual?: boolean
+  generationReason?: string
+  generatedByUserId?: number
+  generatedByUserNome?: string
   dataCadastro?: string
 }
 
@@ -64,11 +67,14 @@ export interface Match {
   categoryNome?: string
   rodada: number
   ordem: number
+  tipoPartida?: 'ELIMINATORIA' | 'TERCEIRO_LUGAR'
   registrationAId?: number
+  registrationAStatus?: string
   robotAId?: number
   robotANome?: string
   teamANome?: string
   registrationBId?: number
+  registrationBStatus?: string
   robotBId?: number
   robotBNome?: string
   teamBNome?: string
@@ -88,6 +94,10 @@ export interface MatchResult {
   winnerRobotNome?: string
   pontosA?: number
   pontosB?: number
+  correctionReason?: string
+  correctedByUserId?: number
+  correctedByUserNome?: string
+  correctedAt?: string
   [key: string]: unknown
 }
 

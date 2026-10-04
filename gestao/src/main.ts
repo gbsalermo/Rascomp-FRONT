@@ -14,8 +14,22 @@ import './styles/competition-hub.css'
 import './styles/bracket-history.css'
 import App from './App.vue'
 import router from './router'
+import { AUTH_UNAUTHORIZED_EVENT } from './api'
 
 const app = createApp(App)
+
+if (typeof window !== 'undefined') {
+  window.addEventListener(AUTH_UNAUTHORIZED_EVENT, () => {
+    const currentRoute = router.currentRoute.value
+    if (currentRoute.meta.public) return
+
+    const redirect = currentRoute.fullPath
+    queueMicrotask(() => {
+      router.replace({ name: 'login', query: { redirect } })
+    })
+  })
+}
+
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus, { locale: undefined })

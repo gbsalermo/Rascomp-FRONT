@@ -7,10 +7,19 @@ const props = defineProps<{
   matches: Match[]
   results: MatchResult[]
   readOnly?: boolean
+  returnTo?: 'sumo' | 'chaves'
 }>()
 
+const eliminationMatches = computed(() =>
+  props.matches.filter((item) => item.tipoPartida !== 'TERCEIRO_LUGAR')
+)
+
+const thirdPlaceMatch = computed(() =>
+  props.matches.find((item) => item.tipoPartida === 'TERCEIRO_LUGAR')
+)
+
 const rounds = computed(() =>
-  [...new Set(props.matches.map((item) => item.rodada))].sort((a, b) => a - b)
+  [...new Set(eliminationMatches.value.map((item) => item.rodada))].sort((a, b) => a - b)
 )
 
 const maxRound = computed(() => Math.max(0, ...rounds.value))
@@ -50,6 +59,15 @@ function isWinner(match: Match, registrationId?: number) {
   return Boolean(result?.winnerRegistrationId && registrationId === result.winnerRegistrationId)
 }
 
+function isByeAdvance(match: Match) {
+  const participantes = Number(Boolean(match.registrationAId)) + Number(Boolean(match.registrationBId))
+  return participantes === 1 && match.status === 'FINALIZADA' && !resultFor(match.id)
+}
+
+function byeRobotName(match: Match) {
+  return match.robotANome || match.robotBNome || 'Participante'
+}
+
 function canOpen(match: Match) {
   return Boolean(match.id)
     && Boolean(match.registrationAId)
@@ -72,7 +90,8 @@ function arenaRoute(match: Match) {
     query: {
       ...(match.competitionId ? { competitionId: String(match.competitionId) } : {}),
       ...(match.categoryId ? { categoryId: String(match.categoryId) } : {}),
-      ...(match.bracketId ? { bracketId: String(match.bracketId) } : {})
+      ...(match.bracketId ? { bracketId: String(match.bracketId) } : {}),
+      ...(props.returnTo ? { from: props.returnTo } : {})
     }
   }
 }
@@ -103,7 +122,7 @@ function arenaRoute(match: Match) {
         }"
       >
         <article
-          v-for="match in matches"
+          v-for="match in eliminationMatches"
           :key="match.id"
           class="bracket-match"
           :class="[
@@ -146,6 +165,9 @@ function arenaRoute(match: Match) {
             <span v-if="resultFor(match.id)" class="winner-note">
               {{ resultFor(match.id)?.winnerRobotNome }} avançou
             </span>
+            <span v-else-if="isByeAdvance(match)" class="bye-note">
+              BYE · {{ byeRobotName(match) }} avançou automaticamente
+            </span>
             <router-link
               v-if="canOpen(match)"
               :to="arenaRoute(match)"
@@ -154,6 +176,46 @@ function arenaRoute(match: Match) {
               {{ canRegister(match) ? 'Abrir partida' : 'Ver partida' }}
             </router-link>
             <span v-else-if="readOnly" class="read-only-note">Somente leitura</span>
+          </footer>
+        </article>
+      </div>
+
+      <div v-if="thirdPlaceMatch" class="third-place-stage">
+        <div class="stage-heading third-place-heading">
+          <span>3º lugar</span>
+          <small>Disputa entre os perdedores das semifinais</small>
+        </div>
+
+        <article class="bracket-match third-place-match" :class="{ 'has-result': Boolean(resultFor(thirdPlaceMatch.id)) }">
+          <header class="match-head">
+            <span>Disputa de 3º lugar</span>
+            <StatusBadge :value="thirdPlaceMatch.status" />
+          </header>
+
+          <div class="competitor-row" :class="{ winner: isWinner(thirdPlaceMatch, thirdPlaceMatch.registrationAId) }">
+            <span class="seed-dot">A</span>
+            <strong>{{ thirdPlaceMatch.robotANome || 'Aguardando semifinal' }}</strong>
+            <b v-if="scoreFor(thirdPlaceMatch, 'A') !== undefined">{{ scoreFor(thirdPlaceMatch, 'A') }}</b>
+          </div>
+
+          <div class="competitor-row" :class="{ winner: isWinner(thirdPlaceMatch, thirdPlaceMatch.registrationBId) }">
+            <span class="seed-dot">B</span>
+            <strong>{{ thirdPlaceMatch.robotBNome || 'Aguardando semifinal' }}</strong>
+            <b v-if="scoreFor(thirdPlaceMatch, 'B') !== undefined">{{ scoreFor(thirdPlaceMatch, 'B') }}</b>
+          </div>
+
+          <footer class="match-foot">
+            <span v-if="resultFor(thirdPlaceMatch.id)" class="winner-note">
+              {{ resultFor(thirdPlaceMatch.id)?.winnerRobotNome }} ficou em 3º lugar
+            </span>
+            <router-link
+              v-if="canOpen(thirdPlaceMatch)"
+              :to="arenaRoute(thirdPlaceMatch)"
+              class="battle-action"
+            >
+              {{ canRegister(thirdPlaceMatch) ? 'Disputar 3º lugar' : 'Ver disputa' }}
+            </router-link>
+            <span v-else class="read-only-note">Aguardando semifinalistas</span>
           </footer>
         </article>
       </div>
@@ -379,6 +441,7 @@ function arenaRoute(match: Match) {
 
 .battle-action:hover { text-decoration: underline; }
 .winner-note { color: #1f714d; font-size: 11px; font-weight: 800; }
+.bye-note { color:#6e4b00; font-size:11px; font-weight:800; }
 .read-only-note { color: #8c8187; font-size: 11px; }
 
 @media (max-width: 760px) {
@@ -386,4 +449,9 @@ function arenaRoute(match: Match) {
   .stage-headings,
   .bracket-grid { min-width: 760px; }
 }
+
+.third-place-stage { margin-top:26px; padding-top:20px; border-top:1px solid #eee3e8; max-width:460px; }
+.third-place-heading { margin-bottom:12px; }
+.third-place-heading span { color:#6f4d00; }
+.third-place-match { border-color:#d9bd78; background:linear-gradient(180deg,#fff 0%,#fffbef 100%); }
 </style>

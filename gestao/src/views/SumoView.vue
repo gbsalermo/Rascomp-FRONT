@@ -3,12 +3,13 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
-import { useCompetitionStore } from '../store'
-import type { Bracket, Category, CompetitionJudge, Match, MatchResult, Registration } from '../types'
+import { useAuthStore, useCompetitionStore } from '../store'
+import type { Bracket, Category, CompetitionJudge, Match, MatchResult, Registration, SumoInspection } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 import TournamentBracket from '../components/TournamentBracket.vue'
 
 const route = useRoute()
+const auth = useAuthStore()
 const competition = useCompetitionStore()
 const loading = ref(false)
 const ready = ref(false)
@@ -18,11 +19,13 @@ const brackets = ref<Bracket[]>([])
 const matches = ref<Match[]>([])
 const results = ref<MatchResult[]>([])
 const judges = ref<CompetitionJudge[]>([])
+const inspections = ref<SumoInspection[]>([])
 const competitionId = ref<number>()
 const categoryId = ref<number>()
 const bracketId = ref<number>()
 const inspectionDialog = ref(false)
 const judgeDialog = ref(false)
+const inspectionUnit = ref<'g' | 'kg'>('g')
 const inspection = reactive({
   registrationId: undefined as number | undefined,
   aprovada: undefined as boolean | undefined,
@@ -47,9 +50,13 @@ const filteredBrackets = computed(() =>
       return dateB - dateA
     })
 )
-const approved = computed(() =>
-  registrations.value.filter((item) => item.status === 'APROVADA' && item.categoryId === categoryId.value)
+const categoryRegistrations = computed(() =>
+  registrations.value.filter((item) => item.categoryId === categoryId.value)
 )
+const approved = computed(() =>
+  categoryRegistrations.value.filter((item) => item.status === 'APROVADA' && item.ativo !== false)
+)
+const competitionContextLabel = computed(() => auth.isDev ? 'Competição em foco' : 'Competição vigente')
 
 function queryNumber(value: unknown) {
   const raw = Array.isArray(value) ? value[0] : value
@@ -63,16 +70,102 @@ function pickBracket(preferredId?: number) {
   bracketId.value = preferred?.id || options.find((item) => item.atual !== false)?.id || options[0]?.id
 }
 
-function controlModeLabel(category?: Category) {
-  if (category?.sumoControlMode === 'AUTONOMO') return 'Autônomo'
-  if (category?.sumoControlMode === 'RC') return 'R/C'
-  return 'Modo não configurado'
+function latestInspection(registrationId: number) {
+  return inspections.value
+    .filter((item) => item.registrationId === registrationId)
+    .sort((a, b) => (b.numeroTentativa || 0) - (a.numeroTentativa || 0))[0]
 }
 
-function physicalClassLabel(category?: Category) {
-  if (category?.sumoPhysicalClass === 'MINI_500G') return 'Mini 500 g'
-  if (category?.sumoPhysicalClass === 'SUMO_3KG') return 'Sumô 3 kg'
-  return 'Classe não configurada'
+function inspectionStatusLabel(registration: Registration) {
+  if (registration.status === 'DESCLASSIFICADA') return 'Desclassificado'
+  const latest = latestInspection(registration.id)
+  if (!latest) return 'Pendente'
+  return latest.aprovada ? 'APTO' : 'INAPTO'
+}
+
+function resultFor(matchId: number) {
+  return results.value.find((item) => item.matchId === matchId)
+}
+
+function thirdPlaceMatch() {
+  return matches.value.find((item) => item.tipoPartida === 'TERCEIRO_LUGAR')
+}
+
+function finalMainMatch() {
+  return matches.value
+    .filter((item) => item.tipoPartida !== 'TERCEIRO_LUGAR')
+    .sort((a, b) => b.rodada - a.rodada || a.ordem - b.ordem)[0]
+}
+
+function competitiveState(registration: Registration) {
+  if (registration.status === 'DESCLASSIFICADA') {
+    return { code: 'DESCLASSIFICADO', label: 'Desclassificado', type: 'danger' as const }
+  }
+  if (registration.status === 'DESISTENTE') {
+    return { code: 'DESISTENTE', label: 'Desistente', type: 'warning' as const }
+  }
+
+  const final = finalMainMatch()
+  const finalResult = final ? resultFor(final.id) : undefined
+  if (final && finalResult) {
+    if (finalResult.winnerRegistrationId === registration.id) {
+      return { code: 'CAMPEAO', label: 'Campeão', type: 'success' as const }
+    }
+    if ([final.registrationAId, final.registrationBId].includes(registration.id)) {
+      return { code: 'VICE', label: 'Vice-campeão', type: 'info' as const }
+    }
+  }
+
+  const third = thirdPlaceMatch()
+  const thirdResult = third ? resultFor(third.id) : undefined
+  if (third && [third.registrationAId, third.registrationBId].includes(registration.id)) {
+    if (!thirdResult) {
+      return { code: 'DISPUTA_TERCEIRO', label: 'Disputa 3º lugar', type: 'warning' as const }
+    }
+    if (thirdResult.winnerRegistrationId === registration.id) {
+      return { code: 'TERCEIRO', label: '3º lugar', type: 'success' as const }
+    }
+    return { code: 'ELIMINADO', label: 'Eliminado', type: 'info' as const }
+  }
+
+  const perdeuEliminatoria = matches.value.some((match) => {
+    if (match.tipoPartida === 'TERCEIRO_LUGAR') return false
+    const result = resultFor(match.id)
+    if (!result) return false
+    const participou = match.registrationAId === registration.id || match.registrationBId === registration.id
+    return participou && result.winnerRegistrationId !== registration.id
+  })
+  if (perdeuEliminatoria) {
+    return { code: 'ELIMINADO', label: 'Eliminado', type: 'info' as const }
+  }
+
+  const latest = latestInspection(registration.id)
+  if (latest?.aprovada) {
+    return { code: 'EM_DISPUTA', label: 'Em disputa', type: 'success' as const }
+  }
+  return { code: 'PREPARACAO', label: 'Preparação', type: 'warning' as const }
+}
+
+function inspectionTagType(registration: Registration) {
+  if (registration.status === 'DESCLASSIFICADA') return 'danger'
+  const latest = latestInspection(registration.id)
+  if (!latest) return 'warning'
+  return latest.aprovada ? 'success' : 'danger'
+}
+
+function openInspection(row?: Registration) {
+  resetInspection()
+  inspection.registrationId = row?.id
+  inspectionUnit.value = currentCategory.value?.sumoPhysicalClass === 'SUMO_3KG' ? 'kg' : 'g'
+  inspectionDialog.value = true
+}
+
+function formatInspectionWeight(value?: number) {
+  if (value == null) return '—'
+  if (currentCategory.value?.sumoPhysicalClass === 'MINI_500G') {
+    return `${Math.round(Number(value) * 1000)} g`
+  }
+  return `${Number(value).toFixed(3)} kg`
 }
 
 async function initialize() {
@@ -85,9 +178,13 @@ async function initialize() {
     const requestedCategory = queryNumber(route.query.categoryId)
     const requestedBracket = queryNumber(route.query.bracketId)
 
-    const selectedCompetition = competition.competitions.find((item) => item.id === requestedCompetition)
+    const selectedCompetition = auth.isDev
+      ? competition.competitions.find((item) => item.id === requestedCompetition)
+      : undefined
     competitionId.value = selectedCompetition?.id || competition.selectedId || competition.competitions[0]?.id
-    if (competitionId.value && competition.selectedId !== competitionId.value) competition.select(competitionId.value)
+    if (auth.isDev && competitionId.value && competition.selectedId !== competitionId.value) {
+      competition.select(competitionId.value)
+    }
 
     categoryId.value = categories.value.some((item) => item.id === requestedCategory)
       ? requestedCategory
@@ -113,6 +210,12 @@ async function loadCompetition(preferredBracketId?: number) {
   }
 
   loading.value = true
+  brackets.value = []
+  registrations.value = []
+  judges.value = []
+  inspections.value = []
+  matches.value = []
+  results.value = []
   try {
     const [br, regs, competitionJudges] = await Promise.all([
       adminApi.brackets(competitionId.value),
@@ -122,6 +225,10 @@ async function loadCompetition(preferredBracketId?: number) {
     brackets.value = br
     registrations.value = regs
     judges.value = competitionJudges
+
+    if (categoryId.value) {
+      inspections.value = await adminApi.sumoInspectionsByContext(competitionId.value, categoryId.value)
+    }
 
     if (!filteredBrackets.value.some((item) => item.id === bracketId.value)) {
       pickBracket(preferredBracketId)
@@ -171,11 +278,46 @@ async function generate() {
   }
 }
 
+function canDisqualify(row: Registration) {
+  const status = competition.selectedCompetition?.status
+  const state = competitiveState(row).code
+  return row.status === 'APROVADA'
+    && !['CAMPEAO', 'VICE', 'TERCEIRO', 'ELIMINADO'].includes(state)
+    && !['FINALIZADA', 'CANCELADA'].includes(status || '')
+}
+
+async function disqualifyRegistration(row: Registration) {
+  if (row.status !== 'APROVADA') return
+
+  try {
+    const { value } = await ElMessageBox.prompt(
+      'Informe o motivo da desclassificação. A decisão será auditada e, se o robô já estiver comprometido em uma partida, a chave será preservada para resolução administrativa.',
+      `Desclassificar · ${row.robotNome}`,
+      {
+        inputType: 'textarea',
+        inputPlaceholder: 'Motivo da desclassificação',
+        inputValidator: (value) => value?.trim() ? true : 'Informe o motivo da desclassificação.',
+        confirmButtonText: 'Desclassificar',
+        cancelButtonText: 'Cancelar',
+        type: 'warning'
+      }
+    )
+
+    await adminApi.disqualifyRegistration(row.id, value.trim())
+    ElMessage.success('Inscrição desclassificada e decisão registrada no histórico.')
+    await loadCompetition(bracketId.value)
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível desclassificar a inscrição.')
+  }
+}
+
 function resetInspection() {
   inspection.registrationId = undefined
   inspection.aprovada = undefined
   inspection.pesoMedido = undefined
   inspection.observacao = ''
+  inspectionUnit.value = currentCategory.value?.sumoPhysicalClass === 'SUMO_3KG' ? 'kg' : 'g'
 }
 
 async function saveInspection() {
@@ -187,12 +329,15 @@ async function saveInspection() {
     await adminApi.inspectSumo({
       registrationId: inspection.registrationId,
       aprovada: inspection.aprovada,
-      pesoMedido: inspection.pesoMedido && inspection.pesoMedido > 0 ? inspection.pesoMedido : undefined,
+      pesoMedido: inspection.pesoMedido && inspection.pesoMedido > 0
+        ? (inspectionUnit.value === 'g' ? inspection.pesoMedido / 1000 : inspection.pesoMedido)
+        : undefined,
       observacao: inspection.observacao || undefined
     })
     ElMessage.success(inspection.aprovada ? 'Inspeção registrada como APTO.' : 'Inspeção registrada como INAPTO.')
     inspectionDialog.value = false
     resetInspection()
+    await loadCompetition(bracketId.value)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a inspeção.')
   }
@@ -215,7 +360,7 @@ async function saveJudge() {
 
 watch(competitionId, async (value) => {
   if (!ready.value) return
-  if (value && competition.selectedId !== value) competition.select(value)
+  if (auth.isDev && value && competition.selectedId !== value) competition.select(value)
   bracketId.value = undefined
   await loadCompetition()
 })
@@ -223,6 +368,11 @@ watch(competitionId, async (value) => {
 watch(categoryId, async () => {
   if (!ready.value) return
   pickBracket()
+  if (competitionId.value && categoryId.value) {
+    inspections.value = await adminApi.sumoInspectionsByContext(competitionId.value, categoryId.value)
+  } else {
+    inspections.value = []
+  }
   await loadBracket()
 })
 
@@ -244,7 +394,7 @@ onMounted(initialize)
       </div>
       <div class="heading-actions">
         <el-button @click="judgeDialog = true">Cadastrar juiz</el-button>
-        <el-button @click="inspectionDialog = true">Nova inspeção</el-button>
+        <el-button @click="openInspection()">Nova inspeção</el-button>
         <el-button
           class="brand-button"
           :disabled="!canGenerate"
@@ -254,8 +404,17 @@ onMounted(initialize)
       </div>
     </div>
 
-    <article class="filter-bar">
-      <el-select v-model="competitionId" placeholder="Competição" style="width:280px">
+    <article class="sumo-context-card">
+      <div>
+        <span class="eyebrow">{{ competitionContextLabel }}</span>
+        <strong>{{ currentCompetition?.nome || 'Nenhuma competição selecionada' }}</strong>
+        <small>{{ auth.isDev ? 'O foco do DEV é local e não altera a edição vigente da GESTAO.' : 'A GESTAO opera somente a edição vigente definida pelo DEV.' }}</small>
+      </div>
+      <StatusBadge v-if="currentCompetition?.status" :value="currentCompetition.status" />
+    </article>
+
+    <article class="filter-bar sumo-filter-bar">
+      <el-select v-if="auth.isDev" v-model="competitionId" placeholder="Competição em foco" style="width:280px">
         <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
       </el-select>
       <el-select v-model="categoryId" placeholder="Categoria" style="width:260px">
@@ -275,16 +434,79 @@ onMounted(initialize)
       </span>
     </article>
 
-    <article v-if="currentCategory" class="feature-card compact sumo-rule-card">
-      <div>
-        <span class="eyebrow">Regra da categoria</span>
-        <h2>{{ currentCategory.nome }}</h2>
-        <p class="muted">
-          {{ physicalClassLabel(currentCategory) }} · {{ controlModeLabel(currentCategory) }}
-          <template v-if="currentCategory.sumoControlMode === 'AUTONOMO'"> · atraso regulamentar de 5 s antes da movimentação</template>
-        </p>
+    <article class="table-card sumo-judges-card">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Arbitragem</span>
+          <h2>Juízes da competição</h2>
+          <p class="muted">Juízes ativos podem ser selecionados nas decisões técnicas das batalhas.</p>
+        </div>
+        <el-button @click="judgeDialog = true">Cadastrar juiz</el-button>
       </div>
-      <el-tag effect="plain">{{ judges.length }} juiz{{ judges.length === 1 ? '' : 'es' }} ativo{{ judges.length === 1 ? '' : 's' }}</el-tag>
+      <div v-if="judges.length" class="judge-list visible-judge-list">
+        <el-tag v-for="judge in judges" :key="judge.id" type="info" effect="plain">{{ judge.nome }} · ativo</el-tag>
+      </div>
+      <div v-else class="muted">Nenhum juiz ativo cadastrado para esta competição.</div>
+    </article>
+
+    <article class="table-card sumo-inspection-table">
+      <div class="card-heading">
+        <div>
+          <span class="eyebrow">Preparação competitiva</span>
+          <h2>Inspeção e elegibilidade</h2>
+          <p class="muted">A decisão APTO/INAPTO é humana. Ao esgotar as tentativas sem aprovação, a inscrição é desclassificada pelo backend.</p>
+        </div>
+        <strong>{{ categoryRegistrations.length }} inscrição(ões)</strong>
+      </div>
+      <el-table :data="categoryRegistrations" empty-text="Nenhuma inscrição nesta categoria">
+        <el-table-column prop="robotNome" label="Robô" min-width="160" />
+        <el-table-column prop="teamNome" label="Equipe" min-width="160" />
+        <el-table-column label="Inscrição" width="145">
+          <template #default="{ row }"><StatusBadge :value="row.status" /></template>
+        </el-table-column>
+        <el-table-column label="Inspeção" width="145">
+          <template #default="{ row }">
+            <el-tag :type="inspectionTagType(row)" effect="light">
+              {{ inspectionStatusLabel(row) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Situação competitiva" width="165">
+          <template #default="{ row }">
+            <el-tag :type="competitiveState(row).type" effect="plain">
+              {{ competitiveState(row).label }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Última tentativa" min-width="210">
+          <template #default="{ row }">
+            <span v-if="latestInspection(row.id)">
+              #{{ latestInspection(row.id)?.numeroTentativa || '—' }}
+              <template v-if="latestInspection(row.id)?.pesoMedido"> · {{ formatInspectionWeight(latestInspection(row.id)?.pesoMedido) }}</template>
+            </span>
+            <span v-else>—</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Ações" width="220" align="right">
+          <template #default="{ row }">
+            <div class="sumo-registration-actions">
+              <el-button
+                v-if="row.status === 'APROVADA' && latestInspection(row.id)?.aprovada !== true"
+                size="small"
+                @click="openInspection(row)"
+              >Inspecionar</el-button>
+              <el-button
+                v-if="canDisqualify(row)"
+                size="small"
+                type="danger"
+                plain
+                @click="disqualifyRegistration(row)"
+              >Desclassificar</el-button>
+              <span v-if="row.status === 'DESCLASSIFICADA'" class="muted">Fora da competição</span>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
     </article>
 
     <article
@@ -351,7 +573,20 @@ onMounted(initialize)
           </el-radio-group>
         </label>
         <label class="span-2">Peso medido <small class="muted">(opcional e informativo)</small>
-          <el-input-number v-model="inspection.pesoMedido" :min="0.001" :precision="3" controls-position="right" />
+          <div class="inspection-weight-row">
+            <el-input-number
+              v-model="inspection.pesoMedido"
+              :min="inspectionUnit === 'g' ? 1 : 0.001"
+              :precision="inspectionUnit === 'g' ? 0 : 3"
+              :step="inspectionUnit === 'g' ? 1 : 0.01"
+              controls-position="right"
+              style="width:100%"
+            />
+            <el-radio-group v-model="inspectionUnit">
+              <el-radio-button value="g">g</el-radio-button>
+              <el-radio-button value="kg">kg</el-radio-button>
+            </el-radio-group>
+          </div>
         </label>
         <label class="span-2">Observação
           <el-input v-model="inspection.observacao" type="textarea" :rows="3" />
@@ -385,10 +620,24 @@ onMounted(initialize)
 </template>
 
 <style scoped>
+.sumo-registration-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:6px; }
+.sumo-context-card { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:15px 18px; border:1px solid #eadde3; border-left:4px solid #c31549; border-radius:14px; background:linear-gradient(100deg,#fff7f9,#fff 58%); }
+.sumo-context-card > div { display:grid; gap:4px; min-width:0; }
+.sumo-context-card .eyebrow { margin:0; }
+.sumo-context-card strong { color:#34272e; font-size:15px; }
+.sumo-context-card small { color:#7e7077; line-height:1.4; }
+.sumo-inspection-table { overflow:hidden; }
 .sumo-bracket-heading { margin-bottom: 12px; }
 .sumo-bracket-heading p { margin: 4px 0 0; }
-.sumo-rule-card { align-items:center; }
 .inspection-hint { margin:0; padding:10px 12px; border-radius:10px; background:#f8f3f5; color:#6f6067; font-size:12px; line-height:1.5; }
 .judge-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.visible-judge-list { padding: 0 16px 16px; }
+.inspection-weight-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; }
 .generation-hint { color:#8b6d78; font-size:11px; font-weight:700; }
+@media (max-width: 760px) {
+  .sumo-context-card { align-items:flex-start; flex-direction:column; }
+  .sumo-filter-bar :deep(.el-select) { width:100% !important; }
+}
 </style>
+
+

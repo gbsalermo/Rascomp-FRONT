@@ -1,6 +1,14 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+type ProxyRequest = {
+  removeHeader(name: string): void
+}
+
+type ProxyServerWithEvents = {
+  on(event: 'proxyReq', handler: (proxyReq: ProxyRequest) => void): void
+}
+
 export default defineConfig({
   plugins: [vue()],
 
@@ -14,7 +22,8 @@ export default defineConfig({
         changeOrigin: true,
 
         configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
+          const proxyWithEvents = proxy as unknown as ProxyServerWithEvents
+          proxyWithEvents.on('proxyReq', (proxyReq) => {
             proxyReq.removeHeader('origin')
           })
         }

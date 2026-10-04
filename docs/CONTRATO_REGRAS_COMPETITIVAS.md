@@ -51,14 +51,6 @@ Exemplos de adaptações próprias já aprovadas:
 ---
 
 # 2. Categorias competitivas
-## Decisões futuras registradas — 29/09/2026
-
-- **Follow Pro/Júnior:** possibilidade de subcategorias apenas para pós-produção e condicionada à confirmação da competição. Até lá, Follow é categoria única.
-- **Futebol de Robôs:** partida terá placar por gols e cronômetro operacional; 2 minutos é a referência atual de duração, mas deve permanecer configurável até confirmação do regulamento da edição.
-- **Correção estrutural excepcional de chave:** futura ferramenta DEV poderá encerrar/cancelar a chave vigente e gerar outra, sempre de forma explícita e auditável, sem apagar silenciosamente histórico já produzido.
-- **Inclusão manual excepcional:** futura ferramenta DEV poderá adicionar robôs/competidores manualmente quando a operação do evento exigir correção administrativa, com motivo e auditoria.
-
-
 
 ## 2.1 Modalidades técnicas do backend
 
@@ -1267,3 +1259,75 @@ A suíte completa encerrou a ETAPA 1 com:
 O profile `flowtest` usa H2 em memória exclusivamente para os fluxos integrados rápidos. O job separado `demo-profile` continua validando MySQL real + Flyway V1–V12 + initializers.
 
 As ETAPAS 1, 2 e 3 estão concluídas e validadas; este contrato continua sendo a referência das regras competitivas já aprovadas. A matriz de permissões não altera essas regras competitivas.
+
+
+# 17. Entrada manual excepcional de participante/robô
+
+Necessidade operacional aprovada:
+
+```text
+participante cria UserAccount PARTICIPANTE
+→ DEV seleciona a conta
+→ vincula/cria Competitor na equipe
+→ cria Robot na equipe
+→ cria Registration APROVADA
+```
+
+Regras:
+
+- exclusiva do DEV;
+- justificativa obrigatória e histórico `ENTRADA_MANUAL`;
+- não reabre a janela pública de inscrições;
+- conta PARTICIPANTE deve estar ativa;
+- vínculos de equipe existentes não podem ser silenciosamente trocados;
+- Follow: inscrição pode ser sincronizada nas chamadas ainda operáveis;
+- Sumô: exige inspeção APTO antes de entrar em chave.
+
+Quando o Sumô já possuir chave atual, uma nova geração excepcional pode ocorrer apenas se **nenhuma disputa competitiva real da chave vigente tiver começado**. A chave anterior é preservada como histórica.
+
+# 18. Pódio oficial
+
+## Follow Line
+
+- classificação normal/Tomada Extra: 1º, 2º e 3º = três primeiros do ranking oficial;
+- sem tentativa classificável: organização define pódio ordenado, com inscrições distintas, justificativa e auditoria;
+- checkpoints são apoio, nunca decisão automática;
+- não criar tempos fictícios.
+
+## Sumô
+
+- campeão = vencedor da final;
+- vice = perdedor da final;
+- 3º = vencedor da disputa de terceiro lugar;
+- os perdedores das semifinais alimentam automaticamente a disputa de 3º;
+- a disputa de 3º usa as mesmas regras operacionais de batalha/rounds do Sumô.
+
+# 19. Estado competitivo x status cadastral
+
+`ELIMINADO` é estado competitivo derivado da chave. Um robô que competiu e perdeu **não** se torna `DESCLASSIFICADO`.
+
+`DESCLASSIFICADO` continua reservado a uma decisão/regra administrativa ou competitiva explícita.
+
+# 20. Correção excepcional DEV de resultado Sumô
+
+A correção extrema:
+
+- exige DEV;
+- exige justificativa;
+- preserva rounds e histórico;
+- altera apenas o resultado consolidado e propagação compatível;
+- mantém placar coerente com o vencedor corrigido;
+- é permitida somente se nenhuma dependência seguinte já tiver atividade;
+- deve atualizar também o slot de 3º lugar quando a correção muda o perdedor de uma semifinal.
+
+
+---
+
+## Decisões futuras preservadas — 29/09/2026
+
+Estas decisões permanecem fora do fechamento da ETAPA 4, mas não podem ser perdidas no roadmap:
+
+- **Follow Pro/Júnior:** possibilidade de subcategorias somente em pós-produção e condicionada à confirmação da competição. Até lá, Follow permanece categoria única.
+- **Futebol de Robôs:** partida com placar por gols e cronômetro operacional; **2 minutos** é a referência atual de duração, mantendo configuração até confirmação regulamentar.
+- **Correção estrutural excepcional de chave:** ferramenta DEV futura poderá encerrar/cancelar a chave vigente e gerar outra, de forma explícita, auditável e sem apagar histórico competitivo já produzido.
+- **Inclusão manual excepcional:** operações DEV devem permitir correções administrativas de robôs/competidores com motivo e auditoria; parte desse fluxo já foi antecipada e validada na ETAPA 4 para entrada tardia de participante/Robot.

@@ -16,6 +16,8 @@ export interface Robot {
   descricao?: string
   teamId: number
   teamNome?: string
+  createdByUserId?: number
+  createdByUserNome?: string
   ativo?: boolean
   [key: string]: unknown
 }
@@ -37,5 +39,21 @@ export interface Competitor {
   email?: string
   telefone?: string
   teamId?: number
+  teamNome?: string
+  institutionId?: number
+  institutionNome?: string
+  institutionSigla?: string
+  userAccountId?: number
+  userAccountNome?: string
+  teamLeader?: boolean
+  ativo?: boolean
+  dataCadastro?: string
   [key: string]: unknown
+}
+
+export interface CompetitionAdminCatalog {
+  competitionId: number
+  teams: Team[]
+  competitors: Competitor[]
+  robots: Robot[]
 }

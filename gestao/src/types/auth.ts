@@ -17,6 +17,12 @@ export interface UserAccount {
   ativo: boolean
   ultimoLogin?: string
   dataCadastro?: string
+  competitorId?: number
+  competitorNome?: string
+  competitorTeamId?: number
+  competitorTeamNome?: string
+  competitorAtivo?: boolean
+  teamWithoutActiveCompetitors?: boolean
 }
 
 export interface InternalUserCreatePayload {

@@ -1,6 +1,6 @@
 # Experiência do Participante em Competição — RASCOMP
 
-Status: **PLANEJADO / REFERÊNCIA OFICIAL DE UX DO PERFIL PARTICIPANTE**
+Status: **REFERÊNCIA OFICIAL DE UX — base do Portal implementada; BLOCO 4.3 aguardando validação manual**
 
 ## 1. Princípio
 
@@ -312,3 +312,58 @@ PARTICIPANTE 7 — histórico
 ```
 
 A experiência participante deve ser validada separadamente da experiência ORGANIZACAO.
+
+
+## Revisão competitiva — 30/09/2026
+
+O Portal do Participante deve destacar explicitamente resultados finais:
+
+- `CAMPEÃO`;
+- `VICE-CAMPEÃO`;
+- `3º LUGAR`;
+- `ELIMINADO`;
+- `EM DISPUTA`.
+
+No Sumô, não basta mostrar número de vitórias/derrotas. Quando a final ou disputa de terceiro lugar já possui resultado oficial, a situação do robô deve refletir a colocação consolidada.
+
+O fluxo normal deve permitir ao responsável da equipe cadastrar robôs pelo próprio Portal. O fluxo manual DEV é apenas contingência.
+
+
+---
+
+## 13. Checkpoint implementado — BLOCO 4.3 — 01/10/2026
+
+O fluxo básico de inscrição deixou de ser apenas planejado.
+
+Implementação atual:
+
+```text
+PARTICIPANTE
+→ abre Nova inscrição
+→ escolhe Competition com INSCRICOES_ABERTAS e dentro da janela
+→ escolhe Robot que pode gerenciar
+→ escolhe Category compatível
+→ responsáveis permanentes do Robot vêm pré-selecionados
+→ pode ajustar os competidores específicos da Registration
+→ envia
+→ Registration = PENDENTE
+→ Portal mostra "Aguardando aprovação da organização"
+→ GESTAO usa o fluxo administrativo já existente
+→ APROVADA passa a ser participação oficial
+```
+
+Permissões:
+
+- líder administra inscrições de todos os robôs da equipe;
+- membro comum administra inscrições dos robôs pelos quais é responsável;
+- um participante que esteja apenas na composição de uma Registration pode visualizá-la, mas isso não o transforma em responsável permanente pelo robô;
+- ações administrativas da inscrição pelo Portal dependem de liderança da equipe ou responsabilidade permanente pelo robô.
+
+Fonte de verdade:
+
+- frontend filtra opções impossíveis para melhorar UX;
+- backend continua validando janela, estado da competição, equipe, competidores ativos, ownership, duplicidade e compatibilidade física do Sumô;
+- Registration `PENDENTE` não aparece nas projeções públicas oficiais;
+- somente após `APROVADA` a inscrição alimenta os fluxos competitivos existentes.
+
+O BLOCO 4.4 continua fora deste checkpoint.

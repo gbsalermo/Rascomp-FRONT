@@ -136,9 +136,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
-    clearSessionState()
-    hydrated.value = true
+  async function logout() {
+    try {
+      if (token.value) await authApi.logout()
+    } catch {
+      // Mesmo sem resposta do backend, o dispositivo atual deve encerrar a sessão local.
+    } finally {
+      clearSessionState()
+      hydrated.value = true
+    }
   }
 
   if (typeof window !== 'undefined') {
@@ -171,6 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
 })
 
 export const useCompetitionStore = defineStore('competition-context', () => {
+  const auth = useAuthStore()
   const competitions = ref<Competition[]>([])
   const loading = ref(false)
   const selectedId = ref<number | null>(
@@ -186,6 +193,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
 
   function priorityCompetition(items: Competition[]) {
     return (
+      items.find((item) => item.vigente) ||
       items.find((item) => item.status === 'EM_ANDAMENTO') ||
       items.find((item) => item.status === 'INSCRICOES_ABERTAS') ||
       items.find((item) => item.status === 'INSCRICOES_ENCERRADAS') ||
@@ -195,9 +203,25 @@ export const useCompetitionStore = defineStore('competition-context', () => {
   }
 
   function select(id?: number | null) {
-    selectedId.value = id || null
+    if (auth.isManagement) {
+      const vigenteId = competitions.value.find((item) => item.vigente)?.id || null
+      selectedId.value = vigenteId
+    } else {
+      selectedId.value = id || null
+    }
+
     if (selectedId.value) localStorage.setItem(COMPETITION_KEY, String(selectedId.value))
     else localStorage.removeItem(COMPETITION_KEY)
+  }
+
+  async function defineCurrent(id: number) {
+    if (!auth.isDev) return
+    const updated = await adminApi.setCurrentCompetition(id)
+    competitions.value = competitions.value.map((item) => ({
+      ...item,
+      vigente: item.id === updated.id
+    }))
+    return updated
   }
 
   async function load(force = false) {
@@ -205,6 +229,12 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     loading.value = true
     try {
       competitions.value = await adminApi.competitions()
+
+      if (auth.isManagement) {
+        select(competitions.value.find((item) => item.vigente)?.id)
+        return competitions.value
+      }
+
       const selectedStillExists = competitions.value.some((item) => item.id === selectedId.value)
       if (!selectedStillExists) select(priorityCompetition(competitions.value)?.id)
       return competitions.value
@@ -219,6 +249,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     selectedId,
     selectedCompetition,
     select,
+    defineCurrent,
     load
   }
 })

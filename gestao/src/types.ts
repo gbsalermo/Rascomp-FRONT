@@ -27,7 +27,30 @@ export type {
 export type {
   RegistrationStatus,
   CancellationRequestStatus,
+  RegistrationStatusChangeType,
   Registration,
-  RegistrationCancellationRequest
+  RegistrationCancellationRequest,
+  RegistrationStatusHistory,
+  ManualCompetitionEntryRequest,
+  ManualParticipantEntryRequest,
+  ParticipantCompetitionRegistrationStatus,
+  ParticipantRobotLink,
+  ParticipantCompetitionRegistration,
+  RegistrationCompetitorContext,
+  RegistrationCompetitorChangeType,
+  RegistrationCompetitorChangeStatus,
+  RegistrationCompetitorChange,
+  TeamLeadershipHistory
 } from './types/registration'
-export type { Team, Robot, RobotImage, Competitor } from './types/catalog'
+export type { Team, Robot, RobotImage, Competitor, CompetitionAdminCatalog } from './types/catalog'
+
+export type {
+  FollowScheduleStatus,
+  FollowCallStatus,
+  FollowTakeSchedule,
+  FollowTakeScheduleEntry,
+  AgendaActivity
+} from './types/agenda'
+export type { CompetitionCategoryResult } from './types/results'
+
+export type { TeamMembershipRequestType, TeamMembershipStatus, TeamMembershipRequest, RobotResponsible } from './types/participant'

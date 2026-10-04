@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
-import type { ConfigFollow, FollowAttempt, FollowTakeAbsence, RankingItem, Registration } from '../types'
+import type { ConfigFollow, FollowAttempt, FollowTakeAbsence, FollowTakeSchedule, RankingItem, Registration } from '../types'
 import RobotPhoto from '../components/RobotPhoto.vue'
 
 const route = useRoute()
@@ -16,6 +16,7 @@ const registration = ref<Registration>()
 const attempts = ref<FollowAttempt[]>([])
 const absences = ref<FollowTakeAbsence[]>([])
 const ranking = ref<RankingItem[]>([])
+const schedules = ref<FollowTakeSchedule[]>([])
 const selectedTake = ref(1)
 
 const attemptElapsedMs = ref(0)
@@ -31,6 +32,10 @@ let presentationEndsAt = 0
 const registrationId = computed(() => Number(route.params.registrationId))
 const competitionId = computed(() => Number(route.query.competitionId))
 const categoryId = computed(() => Number(route.query.categoryId))
+const requestedTake = computed(() => {
+  const parsed = Number(route.query.tomada)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+})
 
 const attempt = reactive({
   tempoSegundos: 0,
@@ -63,6 +68,25 @@ const currentRanking = computed(() =>
   ranking.value.find((item) => item.registrationId === registrationId.value)
 )
 
+const takeNumbers = computed(() => {
+  if (!config.value) return []
+  const normal = Array.from({ length: config.value.numeroTomadas }, (_, index) => index + 1)
+  const extra = schedules.value
+    .map((item) => item.tomada)
+    .filter((tomada) => tomada > config.value!.numeroTomadas && itemScheduleActive(tomada))
+  return Array.from(new Set([...normal, ...extra])).sort((a, b) => a - b)
+})
+
+function itemScheduleActive(tomada: number) {
+  const schedule = schedules.value.find((item) => item.tomada === tomada)
+  return Boolean(schedule && schedule.ativo !== false && schedule.status !== 'CANCELADA')
+}
+
+function takeLabel(tomada: number) {
+  if (config.value && tomada > config.value.numeroTomadas) return `Tomada Extra ${tomada}`
+  return `Tomada ${tomada}`
+}
+
 function isTakeClosed(tomada: number) {
   if (!config.value) return false
   const absent = robotAbsences.value.some((item) => item.tomada === tomada)
@@ -73,14 +97,14 @@ function isTakeClosed(tomada: number) {
 const completedTakes = computed(() => {
   if (!config.value) return 0
   let total = 0
-  for (let tomada = 1; tomada <= config.value.numeroTomadas; tomada++) {
+  for (const tomada of takeNumbers.value) {
     if (isTakeClosed(tomada)) total++
   }
   return total
 })
 
 const remainingTakes = computed(() =>
-  config.value ? Math.max(0, config.value.numeroTomadas - completedTakes.value) : 0
+  config.value ? Math.max(0, takeNumbers.value.length - completedTakes.value) : 0
 )
 
 const nextAttemptNumber = computed(() => {
@@ -98,7 +122,7 @@ const remainingAttempts = computed(() => {
 })
 
 const allCompleted = computed(() =>
-  Boolean(config.value && completedTakes.value >= config.value.numeroTomadas)
+  Boolean(config.value && takeNumbers.value.length > 0 && completedTakes.value >= takeNumbers.value.length)
 )
 
 const presentationExpired = computed(() =>
@@ -117,10 +141,10 @@ const attemptTimerLabel = computed(() => (attemptElapsedMs.value / 1000).toFixed
 
 function firstIncompleteTake() {
   if (!config.value) return 1
-  for (let tomada = 1; tomada <= config.value.numeroTomadas; tomada++) {
+  for (const tomada of takeNumbers.value) {
     if (!isTakeClosed(tomada)) return tomada
   }
-  return config.value.numeroTomadas
+  return takeNumbers.value[takeNumbers.value.length - 1] || config.value.numeroTomadas
 }
 
 function formatSeconds(value?: number) {
@@ -151,6 +175,8 @@ function resetAttemptTimer() {
 
 function startAttemptTimer() {
   if (attemptRunning.value || !nextAttemptNumber.value) return
+  clearPresentationTimer()
+  presentationStarted.value = false
   attemptStartedAt = Date.now() - attemptElapsedMs.value
   attemptRunning.value = true
   attemptTimer = setInterval(() => {
@@ -225,12 +251,13 @@ async function load() {
 
   loading.value = true
   try {
-    const [registrations, followConfig, contextAttempts, contextAbsences, rank] = await Promise.all([
+    const [registrations, followConfig, contextAttempts, contextAbsences, rank, takeSchedules] = await Promise.all([
       adminApi.registrations({ competitionId: competitionId.value }),
       adminApi.followConfig(categoryId.value),
       adminApi.followAttempts(competitionId.value, categoryId.value),
       adminApi.followTakeAbsences(competitionId.value, categoryId.value),
-      adminApi.rankingFollow(competitionId.value, categoryId.value)
+      adminApi.rankingFollow(competitionId.value, categoryId.value),
+      adminApi.followSchedulesByCategory(competitionId.value, categoryId.value)
     ])
 
     const found = registrations.find(
@@ -247,7 +274,11 @@ async function load() {
     attempts.value = contextAttempts
     absences.value = contextAbsences
     ranking.value = rank
-    selectedTake.value = firstIncompleteTake()
+    schedules.value = takeSchedules
+    selectedTake.value = requestedTake.value
+      && takeNumbers.value.includes(requestedTake.value)
+      ? requestedTake.value
+      : firstIncompleteTake()
     resetAttemptForm()
     resetPresentationTimer()
   } catch (error: any) {
@@ -268,7 +299,8 @@ async function refreshCompetitiveData() {
   absences.value = contextAbsences
   ranking.value = rank
 
-  if (isTakeClosed(selectedTake.value) && selectedTake.value < config.value.numeroTomadas) {
+  const lastTake = takeNumbers.value[takeNumbers.value.length - 1]
+  if (isTakeClosed(selectedTake.value) && lastTake && selectedTake.value < lastTake) {
     selectedTake.value = firstIncompleteTake()
   }
   resetAttemptForm()
@@ -285,6 +317,10 @@ async function saveAttempt() {
   }
 
   if (attemptRunning.value) stopAttemptTimer()
+
+  if (attempt.concluida && (!Number.isFinite(attempt.tempoSegundos) || attempt.tempoSegundos <= 0)) {
+    return ElMessage.warning('Inicie o cronômetro ou informe um tempo maior que zero antes de registrar a tentativa.')
+  }
 
   saving.value = true
   try {
@@ -314,7 +350,7 @@ async function markTakeAbsence() {
 
   try {
     await ElMessageBox.confirm(
-      `O tempo de apresentação da tomada ${selectedTake.value} terminou. Marcar ${registration.value.robotNome} como ausente nesta tomada?`,
+      `O tempo de espera após chamada da tomada ${selectedTake.value} terminou. Marcar ${registration.value.robotNome} como ausente nesta tomada?`,
       'Perder tomada por ausência',
       { confirmButtonText: 'Marcar ausência', cancelButtonText: 'Cancelar', type: 'warning' }
     )
@@ -395,7 +431,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="follow-run-score">
-        <div><span>Tomada atual</span><strong>{{ selectedTake }} / {{ config.numeroTomadas }}</strong></div>
+        <div><span>Tomada atual</span><strong>{{ takeLabel(selectedTake) }} / {{ takeNumbers.length }}</strong></div>
         <div><span>Tentativas restantes</span><strong>{{ remainingAttempts }}</strong></div>
         <div><span>Tomadas ainda abertas</span><strong>{{ remainingTakes }}</strong></div>
         <div class="highlight"><span>Melhor tempo</span><strong>{{ formatSeconds(currentRanking?.tempoFinalSegundos) }}</strong></div>
@@ -404,13 +440,13 @@ onBeforeUnmount(() => {
 
     <nav v-if="config" class="follow-take-tabs" aria-label="Tomadas do robô">
       <button
-        v-for="tomada in config.numeroTomadas"
+        v-for="tomada in takeNumbers"
         :key="tomada"
         type="button"
         :class="{ active: selectedTake === tomada, absent: robotAbsences.some((item) => item.tomada === tomada) }"
         @click="selectedTake = tomada"
       >
-        <span>Tomada {{ tomada }}</span>
+        <span>{{ takeLabel(tomada) }}</span>
         <small v-if="robotAbsences.some((item) => item.tomada === tomada)">Perdida por ausência</small>
         <small v-else>{{ robotAttempts.filter((item) => item.tomada === tomada).length }} / {{ config.tentativasPorTomada }} tentativas</small>
       </button>
@@ -430,7 +466,7 @@ onBeforeUnmount(() => {
 
         <div v-if="selectedAbsence" class="follow-absence-card">
           <strong>Tomada perdida por ausência</strong>
-          <span>{{ selectedAbsence.observacao || 'Participante não compareceu dentro do tempo de apresentação.' }}</span>
+          <span>{{ selectedAbsence.observacao || 'Participante não compareceu dentro do tempo de espera após chamada.' }}</span>
           <small>Registrado por {{ selectedAbsence.registradoPorNome || 'Organização' }} · {{ formatDate(selectedAbsence.dataCadastro) }}</small>
         </div>
         <div v-else-if="takeAttempts.length" class="follow-attempt-list">
@@ -458,7 +494,7 @@ onBeforeUnmount(() => {
             <h2 v-if="selectedAbsence">Tomada encerrada</h2>
             <h2 v-else-if="nextAttemptNumber">Tentativa #{{ nextAttemptNumber }}</h2>
             <h2 v-else>Tomada completa</h2>
-            <p class="muted">Tomada {{ selectedTake }} de {{ config.numeroTomadas }}</p>
+            <p class="muted">{{ takeLabel(selectedTake) }} · {{ takeNumbers.length }} chamada(s) ativas</p>
           </div>
         </div>
 
@@ -470,7 +506,7 @@ onBeforeUnmount(() => {
         <template v-else-if="nextAttemptNumber">
           <div v-if="takeAttempts.length === 0" class="follow-presentation-card">
             <div>
-              <span>Apresentação</span>
+              <span>Espera após chamada</span>
               <strong>{{ presentationRemaining }} s</strong>
               <small>Limite configurado: {{ config.tempoApresentacaoSegundos }} s</small>
             </div>
@@ -503,9 +539,9 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="follow-quick-actions">
-            <el-button size="small" @click="applyDidNotStopPenalty">Não parou (+{{ config.penalidadePadraoSegundos }} s)</el-button>
-            <el-button size="small" @click="attempt.valida = false">Invalidar</el-button>
-            <el-button size="small" @click="markNotCompleted">Não concluiu</el-button>
+            <el-button @click="applyDidNotStopPenalty">Não parou (+{{ config.penalidadePadraoSegundos }} s)</el-button>
+            <el-button @click="attempt.valida = false">Invalidar</el-button>
+            <el-button @click="markNotCompleted">Não concluiu</el-button>
           </div>
 
           <div class="follow-console-flags">

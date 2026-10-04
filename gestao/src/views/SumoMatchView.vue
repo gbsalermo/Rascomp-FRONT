@@ -24,6 +24,7 @@ const router = useRouter()
 const loading = ref(false)
 const saving = ref(false)
 const deciding = ref(false)
+const resolvingAdministrative = ref(false)
 const match = ref<Match>()
 const category = ref<Category>()
 const config = ref<ConfigSumo>()
@@ -45,12 +46,32 @@ const decisionForm = reactive({
 })
 
 const matchId = computed(() => Number(route.params.matchId))
+const unavailableSide = computed<WinnerSide | undefined>(() => {
+  const unavailable = (status?: string) => ['DESCLASSIFICADA', 'DESISTENTE'].includes(status || '')
+  const a = unavailable(match.value?.registrationAStatus)
+  const b = unavailable(match.value?.registrationBStatus)
+  if (a === b) return undefined
+  return a ? 'A' : 'B'
+})
+const hasUnavailableParticipant = computed(() =>
+  ['DESCLASSIFICADA', 'DESISTENTE'].includes(match.value?.registrationAStatus || '')
+  || ['DESCLASSIFICADA', 'DESISTENTE'].includes(match.value?.registrationBStatus || '')
+)
+const canResolveAdministrative = computed(() =>
+  Boolean(match.value)
+  && Boolean(unavailableSide.value)
+  && match.value?.bracketAtual !== false
+  && match.value?.bracketAtivo !== false
+  && match.value?.ativo !== false
+  && !['FINALIZADA', 'CANCELADA', 'BYE'].includes(match.value?.status || '')
+)
 const readOnly = computed(() =>
   match.value?.bracketAtual === false ||
   match.value?.bracketAtivo === false ||
   match.value?.ativo === false ||
   match.value?.status === 'FINALIZADA' ||
-  match.value?.status === 'CANCELADA'
+  match.value?.status === 'CANCELADA' ||
+  hasUnavailableParticipant.value
 )
 const score = computed(() => {
   let A = 0
@@ -112,8 +133,31 @@ const controlModeLabel = computed(() => {
   return 'Modo não configurado'
 })
 
+function withLoadTimeout<T>(promise: Promise<T>, label: string, timeoutMs = 15000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      window.setTimeout(
+        () => reject(new Error(`Tempo limite ao carregar ${label}. Tente novamente.`)),
+        timeoutMs
+      )
+    )
+  ])
+}
+
 function phaseLabel(round: number) {
   return `Rodada ${round}`
+}
+
+function callStatusLabel(value?: string) {
+  const labels: Record<string, string> = {
+    NAO_CONVOCADA: 'Não convocada',
+    CONVOCADA: 'Convocada',
+    EM_CHAMADA: 'Em chamada',
+    PRONTA: 'Pronta para batalha',
+    ADIADA: 'Adiada'
+  }
+  return value ? (labels[value] || value.replaceAll('_', ' ')) : 'Não convocada'
 }
 
 function chooseWinner(side: WinnerSide) {
@@ -228,16 +272,19 @@ async function load() {
   }
   loading.value = true
   try {
-    const detail = await adminApi.match(matchId.value)
+    const detail = await withLoadTimeout(adminApi.match(matchId.value), 'a partida')
     match.value = detail
     if (!detail.categoryId) throw new Error('A partida não possui categoria associada.')
 
-    const [sumoConfig, sumoRounds, sumoCategories, competitionJudges] = await Promise.all([
-      adminApi.sumoConfig(detail.categoryId),
-      adminApi.rounds(detail.id),
-      adminApi.categories('SUMO'),
-      detail.competitionId ? adminApi.judges(detail.competitionId) : Promise.resolve([] as CompetitionJudge[])
-    ])
+    const [sumoConfig, sumoRounds, sumoCategories, competitionJudges] = await withLoadTimeout(
+      Promise.all([
+        adminApi.sumoConfig(detail.categoryId),
+        adminApi.rounds(detail.id),
+        adminApi.categories('SUMO'),
+        detail.competitionId ? adminApi.judges(detail.competitionId) : Promise.resolve([] as CompetitionJudge[])
+      ]),
+      'dados da arena'
+    )
     config.value = sumoConfig
     rounds.value = [...sumoRounds].sort((a, b) => a.numeroRound - b.numeroRound)
     category.value = sumoCategories.find((item) => item.id === detail.categoryId)
@@ -293,6 +340,20 @@ async function saveRound() {
   }
 }
 
+async function resolveAdministrative() {
+  if (!match.value || !canResolveAdministrative.value) return
+  resolvingAdministrative.value = true
+  try {
+    const result = await adminApi.resolveUnavailableMatch(match.value.id)
+    ElMessage.success(`${result.winnerRobotNome || 'O adversário'} avançou por resolução administrativa.`)
+    await load()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível resolver administrativamente a partida.')
+  } finally {
+    resolvingAdministrative.value = false
+  }
+}
+
 async function saveJudgeDecision() {
   if (!match.value || !decisionForm.winnerSide || !decisionForm.judgeId || !canSubmitJudgeDecision.value) return
   const winnerRegistrationId = decisionForm.winnerSide === 'A'
@@ -318,6 +379,17 @@ async function saveJudgeDecision() {
 }
 
 function goBack() {
+  if (route.query.from === 'chaves') {
+    router.push({
+      path: '/chaves',
+      query: {
+        ...(route.query.competitionId ? { competitionId: route.query.competitionId } : {}),
+        ...(route.query.bracketId ? { bracketId: route.query.bracketId } : {})
+      }
+    })
+    return
+  }
+
   if (route.query.bracketId || route.query.categoryId || route.query.competitionId) {
     router.push({
       name: 'sumo',
@@ -352,6 +424,7 @@ onMounted(load)
         <div><span>Controle</span><strong>{{ controlModeLabel }}</strong></div>
         <div><span>Formato</span><strong>{{ config.numeroRounds }} rounds · {{ config.roundsParaVencer }} vitórias</strong></div>
         <div><span>Extras</span><strong>{{ config.permiteRoundDesempate ? `até ${config.maxRoundsExtras}` : 'não permitidos' }}</strong></div>
+        <div><span>Chamada</span><strong>{{ callStatusLabel(match.statusConvocacao) }}</strong></div>
         <p v-if="category?.sumoControlMode === 'AUTONOMO'">Autônomo: após autorização/ativação, respeite o atraso regulamentar de 5 s. O RasComp não decide falha automaticamente.</p>
         <p v-else-if="category?.sumoControlMode === 'RC'">R/C: início ao comando do juiz, sem o atraso regulamentar de 5 s dos autônomos.</p>
       </section>
@@ -390,6 +463,28 @@ onMounted(load)
       <div v-if="match.bracketAtual === false" class="arena-readonly-banner">
         Esta partida pertence a uma chave histórica. Consulta somente leitura.
       </div>
+
+      <article v-if="hasUnavailableParticipant && match.status !== 'FINALIZADA'" class="administrative-resolution-banner">
+        <div>
+          <span class="eyebrow">Resolução administrativa</span>
+          <strong>
+            {{ unavailableSide === 'A' ? match.robotANome : unavailableSide === 'B' ? match.robotBNome : 'Os participantes' }}
+            {{ unavailableSide ? 'não pode continuar na competição.' : 'estão indisponíveis.' }}
+          </strong>
+          <p v-if="unavailableSide">
+            O histórico da chave será preservado e nenhum round fictício será criado.
+          </p>
+          <p v-else>
+            Os dois participantes estão indisponíveis; o fluxo automático não escolhe um vencedor.
+          </p>
+        </div>
+        <el-button
+          v-if="canResolveAdministrative"
+          type="danger"
+          :loading="resolvingAdministrative"
+          @click="resolveAdministrative"
+        >Resolver administrativamente</el-button>
+      </article>
 
       <article v-if="judgeDecision" class="judge-decision-banner">
         <div><span class="eyebrow">Decisão de juiz</span><strong>{{ judgeDecision.winnerRobotNome }} venceu por decisão de {{ judgeDecision.judgeNome }}</strong></div>
@@ -579,6 +674,10 @@ onMounted(load)
 .arena-versus span { font-size:18px; font-weight:900; }
 .arena-versus small { max-width:110px; text-align:center; font-size:10px; }
 .arena-readonly-banner { padding:10px 14px; border:1px solid #edd7df; border-radius:12px; background:#fff5f8; color:#8f1238; font-size:12px; font-weight:700; }
+.administrative-resolution-banner { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 16px; border:1px solid #efc0c0; border-radius:14px; background:#fff7f7; }
+.administrative-resolution-banner > div { display:grid; gap:4px; }
+.administrative-resolution-banner strong { color:#8d2929; }
+.administrative-resolution-banner p { margin:0; color:#785e62; font-size:11px; }
 .judge-decision-banner { display:grid; gap:6px; padding:14px 16px; border:1px solid #d8e9df; border-radius:14px; background:#f2fbf6; }
 .judge-decision-banner div { display:grid; gap:3px; }
 .judge-decision-banner strong { color:#246344; }
@@ -632,5 +731,5 @@ onMounted(load)
 .arena-closed-state { display:grid; gap:5px; padding:28px 10px; text-align:center; }
 .arena-closed-state strong { color:#8f1238; font-size:16px; } .arena-closed-state span { color:#84767d; font-size:11px; }
 @media (max-width:980px) { .arena-workspace { grid-template-columns:1fr; } .arena-control-panel { position:static; } }
-@media (max-width:760px) { .arena-scoreboard { grid-template-columns:1fr; } .arena-versus { order:2; } .arena-competitor { order:1; } .arena-competitor-b { order:3; } .arena-competitor,.arena-competitor-b { grid-template-columns:72px minmax(0,1fr) auto; } .arena-competitor-b .arena-score { order:3; } .arena-competitor-b .robot-meta { order:2; justify-items:start; text-align:left; } .arena-competitor-b .robot-photo-placeholder { order:1; } .robot-photo-placeholder { width:72px; height:72px; } .winner-actions,.wo-actions,.penalty-grid { grid-template-columns:1fr; } }
+@media (max-width:760px) { .administrative-resolution-banner { align-items:stretch; flex-direction:column; } .arena-scoreboard { grid-template-columns:1fr; } .arena-versus { order:2; } .arena-competitor { order:1; } .arena-competitor-b { order:3; } .arena-competitor,.arena-competitor-b { grid-template-columns:72px minmax(0,1fr) auto; } .arena-competitor-b .arena-score { order:3; } .arena-competitor-b .robot-meta { order:2; justify-items:start; text-align:left; } .arena-competitor-b .robot-photo-placeholder { order:1; } .robot-photo-placeholder { width:72px; height:72px; } .winner-actions,.wo-actions,.penalty-grid { grid-template-columns:1fr; } }
 </style>

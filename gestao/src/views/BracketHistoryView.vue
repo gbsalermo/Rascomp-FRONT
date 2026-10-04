@@ -1,21 +1,38 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
-import { useCompetitionStore } from '../store'
-import type { Bracket } from '../types'
+import { useAuthStore, useCompetitionStore } from '../store'
+import type { Bracket, Category, Match, MatchResult } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
+import TournamentBracket from '../components/TournamentBracket.vue'
 
 interface BracketHistoryRow extends Bracket {
   quantidadePartidas: number
 }
 
+const auth = useAuthStore()
 const competition = useCompetitionStore()
+const competitionContextLabel = computed(() =>
+  auth.isDev ? 'Competição em foco' : 'Competição vigente'
+)
+
 const loading = ref(false)
 const rows = ref<BracketHistoryRow[]>([])
 const categoryFilter = ref<number>()
 const statusFilter = ref('')
 const search = ref('')
+const sumoCategories = ref<Category[]>([])
+const generationDialog = ref(false)
+const generationSaving = ref(false)
+const generationForm = reactive({
+  categoryId: undefined as number | undefined,
+  justificativa: ''
+})
+const previewBracketId = ref<number>()
+const previewMatches = ref<Match[]>([])
+const previewResults = ref<MatchResult[]>([])
+const correctingMatchId = ref<number>()
 
 const categories = computed(() => {
   const map = new Map<number, string>()
@@ -43,6 +60,121 @@ const currentRows = computed(() => rows.value.filter((item) => item.atual !== fa
 const historicalRows = computed(() => rows.value.filter((item) => item.atual === false && matchesFilters(item)))
 const historicalTotal = computed(() => rows.value.filter((item) => item.atual === false).length)
 const totalMatches = computed(() => rows.value.reduce((total, item) => total + item.quantidadePartidas, 0))
+const previewBracket = computed(() => rows.value.find((item) => item.id === previewBracketId.value))
+const currentCompetitionStatus = computed(() => competition.selectedCompetition?.status)
+const canGenerateCommon = computed(() => currentCompetitionStatus.value === 'INSCRICOES_ENCERRADAS')
+const canGenerateExceptional = computed(() => auth.isDev && currentCompetitionStatus.value === 'EM_ANDAMENTO')
+
+function choosePreviewBracket(id?: number) {
+  const item = rows.value.find((row) => row.id === id)
+  if (item) selectPreview(item)
+}
+
+async function selectPreview(item: BracketHistoryRow) {
+  previewBracketId.value = item.id
+  try {
+    ;[previewMatches.value, previewResults.value] = await Promise.all([
+      adminApi.matches(item.id),
+      adminApi.results(item.id)
+    ])
+  } catch (error: any) {
+    previewMatches.value = []
+    previewResults.value = []
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar a árvore da chave.')
+  }
+}
+
+function resultForMatch(matchId: number) {
+  return previewResults.value.find((item) => item.matchId === matchId)
+}
+
+async function correctResult(match: Match) {
+  const result = resultForMatch(match.id)
+  if (!auth.isDev || !result || !match.registrationAId || !match.registrationBId) return
+
+  const currentWinner = result.winnerRegistrationId
+  const options = [
+    { id: match.registrationAId, nome: match.robotANome || 'Robô A' },
+    { id: match.registrationBId, nome: match.robotBNome || 'Robô B' }
+  ]
+  const alternative = options.find((item) => item.id !== currentWinner)
+  if (!alternative) return
+
+  try {
+    await ElMessageBox.confirm(
+      `Corrigir o vencedor da partida para ${alternative.nome}? Essa operação é exclusiva do DEV, ficará auditada e será bloqueada se uma dependência seguinte já tiver começado.`,
+      'Correção excepcional de resultado',
+      {
+        type: 'warning',
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Cancelar'
+      }
+    )
+
+    const { value } = await ElMessageBox.prompt(
+      'Informe a justificativa da correção. Os rounds originais permanecem no histórico e o resultado consolidado fica marcado como corrigido pelo DEV.',
+      'Justificativa obrigatória',
+      {
+        inputType: 'textarea',
+        inputPlaceholder: 'Motivo da correção excepcional',
+        inputValidator: (value) => value?.trim() ? true : 'Informe a justificativa.',
+        confirmButtonText: 'Corrigir resultado',
+        cancelButtonText: 'Cancelar'
+      }
+    )
+
+    correctingMatchId.value = match.id
+    await adminApi.correctSumoMatchResult(match.id, {
+      winnerRegistrationId: alternative.id,
+      justificativa: value.trim()
+    })
+    ElMessage.success('Resultado corrigido e propagação atualizada com auditoria.')
+    if (previewBracket.value) await selectPreview(previewBracket.value)
+    await load()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível corrigir o resultado.')
+  } finally {
+    correctingMatchId.value = undefined
+  }
+}
+
+function openGeneration() {
+  generationForm.categoryId = sumoCategories.value[0]?.id
+  generationForm.justificativa = ''
+  generationDialog.value = true
+}
+
+async function generateFromBrackets() {
+  if (!competition.selectedId || !generationForm.categoryId) {
+    return ElMessage.warning('Selecione a categoria de Sumô.')
+  }
+
+  generationSaving.value = true
+  try {
+    const created = canGenerateExceptional.value
+      ? await adminApi.regenerateBracketExceptional({
+          competitionId: competition.selectedId,
+          categoryId: generationForm.categoryId,
+          justificativa: generationForm.justificativa.trim()
+        })
+      : await adminApi.generateBracket(competition.selectedId, generationForm.categoryId)
+
+    ElMessage.success(
+      canGenerateExceptional.value
+        ? 'Chave anterior arquivada e nova chave gerada com segurança.'
+        : 'Nova chave gerada.'
+    )
+    generationDialog.value = false
+    await load()
+    const createdRow = rows.value.find((item) => item.id === created.id)
+    if (createdRow) await selectPreview(createdRow)
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível gerar a nova chave.')
+  } finally {
+    generationSaving.value = false
+  }
+}
 
 function formatDateTime(value?: string) {
   if (!value) return '—'
@@ -87,13 +219,27 @@ async function load() {
       return
     }
 
-    const brackets = await adminApi.brackets(competition.selectedId)
+    const [brackets, categories] = await Promise.all([
+      adminApi.brackets(competition.selectedId),
+      adminApi.categories('SUMO')
+    ])
+    sumoCategories.value = categories.filter((item) => item.ativo !== false)
     rows.value = await Promise.all(
       brackets.map(async (bracket) => {
         const matches = await adminApi.matches(bracket.id)
         return { ...bracket, quantidadePartidas: matches.length }
       })
     )
+
+    const preferred = rows.value.find((item) => item.id === previewBracketId.value)
+      || rows.value.find((item) => item.atual !== false)
+      || rows.value[0]
+    if (preferred) await selectPreview(preferred)
+    else {
+      previewBracketId.value = undefined
+      previewMatches.value = []
+      previewResults.value = []
+    }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar o histórico de chaves.')
   } finally {
@@ -116,17 +262,21 @@ onMounted(load)
       <div>
         <span class="eyebrow">Histórico competitivo</span>
         <h1>Chaves</h1>
-        <p class="muted">Consulte a chave vigente e todas as gerações anteriores da competição em foco.</p>
+        <p class="muted">Consulte a chave vigente e todas as gerações anteriores da edição operacional.</p>
       </div>
       <div class="heading-actions">
-        <router-link :to="sumoRoute()" class="link-button bracket-generate-button">Gerar nova chave</router-link>
+        <el-button
+          v-if="canGenerateCommon || canGenerateExceptional"
+          class="brand-button bracket-generate-button"
+          @click="openGeneration"
+        >Gerar nova chave</el-button>
         <el-button @click="load">Atualizar</el-button>
       </div>
     </div>
 
     <article class="bracket-focus-card admin-focus-strip">
       <div>
-        <span class="eyebrow">Competição em foco</span>
+        <span class="eyebrow">{{ competitionContextLabel }}</span>
         <h2>{{ competition.selectedCompetition?.nome || 'Nenhuma competição selecionada' }}</h2>
         <p>Uma nova geração substitui apenas a chave vigente. As versões anteriores permanecem preservadas abaixo.</p>
       </div>
@@ -172,7 +322,7 @@ onMounted(load)
             <span>partida(s) na árvore</span>
           </div>
           <div class="bracket-card-actions">
-            <router-link :to="sumoRoute(item)" class="bracket-primary-action">Abrir chave</router-link>
+            <button type="button" class="bracket-primary-action" @click="selectPreview(item)">Ver árvore</button>
             <router-link :to="scopedRoute('/partidas', item)" class="bracket-secondary-action">Partidas</router-link>
             <router-link :to="scopedRoute('/resultados', item)" class="bracket-secondary-action">Resultados</router-link>
           </div>
@@ -183,6 +333,80 @@ onMounted(load)
         <strong>Nenhuma chave vigente encontrada.</strong>
         <span>Gere uma chave na operação do Sumô para iniciar o chaveamento desta edição.</span>
         <router-link :to="sumoRoute()" class="text-link">Abrir Sumô →</router-link>
+      </div>
+    </section>
+
+    <section v-if="previewBracket" class="bracket-preview-section">
+      <div class="card-heading bracket-preview-heading">
+        <div>
+          <span class="eyebrow">{{ previewBracket.atual !== false ? 'Árvore vigente' : 'Árvore histórica · somente leitura' }}</span>
+          <h2>{{ previewBracket.nome }}</h2>
+          <p class="muted">{{ previewBracket.categoryNome }}</p>
+          <p v-if="previewBracket.generationReason" class="bracket-generation-reason">
+            <strong>Motivo da regeneração:</strong> {{ previewBracket.generationReason }}
+            <span v-if="previewBracket.generatedByUserNome"> · {{ previewBracket.generatedByUserNome }}</span>
+          </p>
+        </div>
+        <div class="bracket-preview-switcher">
+          <el-select
+            v-model="previewBracketId"
+            placeholder="Trocar chave"
+            style="width:min(360px, 100%)"
+            @change="choosePreviewBracket"
+          >
+            <el-option
+              v-for="item in rows"
+              :key="item.id"
+              :label="`${item.atual !== false ? 'Atual' : 'Histórica'} · ${item.categoryNome || item.nome} · #${item.id}`"
+              :value="item.id"
+            />
+          </el-select>
+          <StatusBadge :value="previewBracket.status || 'GERADO'" />
+        </div>
+      </div>
+      <TournamentBracket
+        :matches="previewMatches"
+        :results="previewResults"
+        :read-only="previewBracket.atual === false"
+        return-to="chaves"
+      />
+
+      <div v-if="previewResults.length" class="bracket-result-audit">
+        <div class="section-mini-heading">
+          <div>
+            <span class="eyebrow">Resultados da chave</span>
+            <strong>Auditoria e correções DEV</strong>
+          </div>
+        </div>
+        <el-table :data="previewMatches.filter((item) => resultForMatch(item.id))" size="small">
+          <el-table-column label="Partida" min-width="170">
+            <template #default="{ row }">
+              <strong>{{ row.tipoPartida === 'TERCEIRO_LUGAR' ? 'Disputa de 3º lugar' : `Rodada ${row.rodada} · #${row.ordem}` }}</strong>
+            </template>
+          </el-table-column>
+          <el-table-column label="Vencedor" min-width="160">
+            <template #default="{ row }">{{ resultForMatch(row.id)?.winnerRobotNome }}</template>
+          </el-table-column>
+          <el-table-column label="Auditoria" min-width="230">
+            <template #default="{ row }">
+              <span v-if="resultForMatch(row.id)?.correctionReason" class="corrected-result-note">
+                Corrigido por {{ resultForMatch(row.id)?.correctedByUserNome || 'DEV' }} · {{ resultForMatch(row.id)?.correctionReason }}
+              </span>
+              <span v-else class="muted">Resultado original</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="auth.isDev && previewBracket.atual !== false" label="DEV" width="150" align="right">
+            <template #default="{ row }">
+              <el-button
+                size="small"
+                type="warning"
+                plain
+                :loading="correctingMatchId === row.id"
+                @click="correctResult(row)"
+              >Corrigir vencedor</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
     </section>
 
@@ -222,7 +446,7 @@ onMounted(load)
         <el-table-column label="Ações" width="235" align="right">
           <template #default="{ row }">
             <div class="bracket-table-actions">
-              <router-link :to="sumoRoute(row)" class="text-link">Ver chave</router-link>
+              <button type="button" class="text-link bracket-inline-button" @click="selectPreview(row)">Ver árvore</button>
               <router-link :to="scopedRoute('/partidas', row)" class="text-link">Partidas</router-link>
               <router-link :to="scopedRoute('/resultados', row)" class="text-link">Resultados</router-link>
             </div>
@@ -230,5 +454,54 @@ onMounted(load)
         </el-table-column>
       </el-table>
     </article>
+    <el-dialog v-model="generationDialog" title="Gerar nova chave de Sumô" width="min(620px, 94vw)">
+      <div class="bracket-generation-form">
+        <label>Categoria
+          <el-select v-model="generationForm.categoryId" filterable style="width:100%">
+            <el-option v-for="item in sumoCategories" :key="item.id" :label="item.nome" :value="item.id" />
+          </el-select>
+        </label>
+
+        <div v-if="canGenerateExceptional" class="bracket-generation-warning">
+          <strong>Regeneração excepcional DEV</strong>
+          <span>
+            A competição já está EM_ANDAMENTO. A chave vigente será arquivada e uma nova será criada somente se nenhuma disputa real da chave atual tiver começado.
+          </span>
+        </div>
+
+        <label v-if="canGenerateExceptional">Justificativa obrigatória
+          <el-input
+            v-model="generationForm.justificativa"
+            type="textarea"
+            :rows="4"
+            maxlength="500"
+            show-word-limit
+            placeholder="Ex.: inclusão excepcional de robô autorizada pela organização."
+          />
+        </label>
+      </div>
+      <template #footer>
+        <el-button @click="generationDialog = false">Cancelar</el-button>
+        <el-button
+          class="brand-button"
+          :loading="generationSaving"
+          :disabled="canGenerateExceptional && !generationForm.justificativa.trim()"
+          @click="generateFromBrackets"
+        >Gerar nova chave</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
+
+<style scoped>
+.bracket-preview-section { display:grid; gap:14px; }
+.bracket-preview-heading { align-items:flex-start; }
+.bracket-generation-reason { margin:8px 0 0; font-size:12px; color:#6f6067; }
+.bracket-inline-button { border:0; background:transparent; padding:0; cursor:pointer; }
+.bracket-generation-form { display:grid; gap:14px; }
+.bracket-generation-form label { display:grid; gap:6px; font-size:12px; font-weight:800; color:#4e3d45; }
+.bracket-generation-warning { display:grid; gap:5px; padding:12px 14px; border-radius:12px; background:#fff7e8; border:1px solid #efd59a; }
+.bracket-generation-warning span { color:#765f36; font-size:12px; line-height:1.45; }
+.bracket-result-audit { margin-top:16px; padding:14px; border:1px solid #eee1e6; border-radius:14px; background:#fff; }
+.corrected-result-note { color:#8a5b00; font-size:11px; font-weight:700; line-height:1.4; }
+</style>

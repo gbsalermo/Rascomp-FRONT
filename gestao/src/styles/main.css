@@ -81,7 +81,7 @@ h2 { letter-spacing: -.02em; }
 .integration-chip { display:inline-flex;padding:7px 10px;border-radius:999px;background:#eeeaf0;color:#675e6c;font-size:.73rem;font-weight:800; }
 .integration-chip.live { background:#e2f5ea;color:#1e6746; }
 .status-badge { display:inline-flex;align-items:center;width:max-content;padding:5px 8px;border-radius:999px;font-size:.68rem;font-weight:800;letter-spacing:.025em;background:#eeebf0;color:#625d66; }
-.status-pendente,.status-planejada,.status-agendada,.status-aguardando_participantes { background:#fff3d9;color:#8a5c00; }
+.status-pendente,.status-correcao_solicitada,.status-planejada,.status-agendada,.status-aguardando_participantes { background:#fff3d9;color:#8a5c00; }
 .status-aprovada,.status-finalizada,.status-finalizado,.status-em_andamento { background:#e3f6ed;color:#25664a; }
 .status-rejeitada,.status-cancelada,.status-cancelado,.status-desclassificada { background:#fde9ee;color:#9b2440; }
 .status-inscricoes_abertas { background:#efe7f5;color:var(--ras-purple); }

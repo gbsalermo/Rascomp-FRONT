@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
+  Aim,
   ArrowRight,
   Bell,
-  Collection,
+  Calendar,
+  Connection,
+  Cpu,
   DataBoard,
-  Setting,
+  Flag,
+  Grid,
+  Medal,
   Tickets,
   Timer,
   Trophy,
-  User
+  User,
+  UserFilled
 } from '@element-plus/icons-vue'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
@@ -36,35 +42,30 @@ const alerts = ref<AdminAlert[]>([])
 const devSections = [
   { label: 'Geral', items: [{ label: 'Dashboard', to: '/', icon: DataBoard }] },
   {
+    label: 'Operação ao vivo',
+    items: [
+      { label: 'Agenda', to: '/agenda', icon: Calendar },
+      { label: 'Follow Line', to: '/follow-line', icon: Timer },
+      { label: 'Sumô', to: '/sumo', icon: Aim },
+      { label: 'Resultados', to: '/resultados', icon: Medal }
+    ]
+  },
+  {
     label: 'Competição',
     items: [
       { label: 'Competição', to: '/competicoes', icon: Trophy },
       { label: 'Inscrições', to: '/inscricoes', icon: Tickets },
       { label: 'Equipes', to: '/equipes', icon: User },
-      { label: 'Robôs', to: '/robos', icon: Collection },
-      { label: 'Modalidades', to: '/modalidades', icon: Trophy }
+      { label: 'Competidores', to: '/competidores', icon: UserFilled },
+      { label: 'Robôs', to: '/robos', icon: Cpu },
+      { label: 'Modalidades', to: '/modalidades', icon: Grid },
+      { label: 'Chaves', to: '/chaves', icon: Connection }
     ]
   },
   {
-    label: 'Categorias',
+    label: 'Administração',
     items: [
-      { label: 'Follow Line', to: '/follow-line', icon: Timer },
-      { label: 'Sumô', to: '/sumo', icon: Collection }
-    ]
-  },
-  {
-    label: 'Competição ao vivo',
-    items: [
-      { label: 'Chaves', to: '/chaves', icon: Trophy },
-      { label: 'Partidas', to: '/partidas', icon: Timer },
-      { label: 'Resultados', to: '/resultados', icon: DataBoard }
-    ]
-  },
-  {
-    label: 'Sistema',
-    items: [
-      { label: 'Usuários', to: '/usuarios', icon: User },
-      { label: 'Configurações', to: '/configuracoes', icon: Setting }
+      { label: 'Usuários', to: '/usuarios', icon: User }
     ]
   }
 ]
@@ -87,7 +88,7 @@ const sections = computed(() => {
   if (auth.isParticipant) return participantSections
   if (auth.isMedia) return mediaSections
   if (auth.isDev) return devSections
-  return devSections.filter((section) => section.label !== 'Sistema')
+  return devSections.filter((section) => section.label !== 'Administração')
 })
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
@@ -95,8 +96,10 @@ const pageTitle = computed(() => {
     '/competicoes': 'Competição',
     '/inscricoes': 'Inscrições',
     '/equipes': 'Equipes',
+    '/competidores': 'Competidores',
     '/robos': 'Robôs',
     '/modalidades': 'Modalidades',
+    '/agenda': 'Agenda',
     '/follow-line': 'Follow Line',
     '/sumo': 'Sumô',
     '/chaves': 'Chaves',
@@ -107,6 +110,8 @@ const pageTitle = computed(() => {
     '/minha-equipe': 'Meu painel'
   }
   if (titles[route.path]) return titles[route.path]
+  if (route.name === 'follow-run') return 'Operação Follow Line'
+  if (route.name === 'sumo-match') return 'Partida de Sumô'
   if (auth.isParticipant) return 'Portal do participante'
   if (auth.isMedia) return 'Painel de mídia'
   return 'Gestão da competição'
@@ -136,8 +141,21 @@ function go(to: string) {
   mobileOpen.value = false
 }
 
-function logout() {
-  auth.logout()
+function openMobileMenu() {
+  collapsed.value = false
+  mobileOpen.value = true
+}
+
+function syncResponsiveShell() {
+  if (window.innerWidth <= 980) {
+    collapsed.value = false
+    return
+  }
+  mobileOpen.value = false
+}
+
+async function logout() {
+  await auth.logout()
   router.push('/login')
 }
 
@@ -153,9 +171,10 @@ async function loadAlerts() {
   alertLoading.value = true
   try {
     const competitionId = competition.selectedId
-    const [registrations, brackets] = await Promise.all([
+    const [registrations, brackets, agenda] = await Promise.all([
       adminApi.registrations({ competitionId }),
-      adminApi.brackets(competitionId).catch(() => [])
+      adminApi.brackets(competitionId).catch(() => []),
+      adminApi.agenda(competitionId).catch(() => [])
     ])
     const nextAlerts: AdminAlert[] = []
     const pending = registrations.filter((item) => item.status === 'PENDENTE')
@@ -169,21 +188,23 @@ async function loadAlerts() {
       })
     }
 
-    const matchGroups = await Promise.all(brackets.map((bracket) => adminApi.matches(bracket.id).catch(() => [])))
-    const matches = matchGroups.flat()
-    const upcoming = matches
-      .filter((match) => match.dataHora && ['AGENDADA', 'EM_ANDAMENTO'].includes(match.status || ''))
-      .map((match) => ({ match, minutes: minutesUntil(match.dataHora!) }))
+    const upcoming = agenda
+      .filter((item) => item.dataHora)
+      .filter((item) => !['FINALIZADA', 'CANCELADA'].includes(item.status || ''))
+      .map((item) => ({ item, minutes: minutesUntil(item.dataHora!) }))
       .filter(({ minutes }) => minutes >= -10 && minutes <= 90)
       .sort((a, b) => a.minutes - b.minutes)
       .slice(0, 4)
 
-    for (const { match, minutes } of upcoming) {
+    for (const { item, minutes } of upcoming) {
+      const follow = item.modalidade === 'FOLLOW_LINE'
       nextAlerts.push({
-        id: `match-${match.id}`,
-        title: minutes <= 0 ? 'Partida em andamento' : `Partida em ${minutes} min`,
-        detail: `${match.robotANome || 'A definir'} × ${match.robotBNome || 'A definir'}`,
-        to: '/partidas',
+        id: `agenda-${item.tipo}-${item.sourceId}`,
+        title: minutes <= 0
+          ? (follow ? 'Tomada em operação' : 'Batalha em operação')
+          : `${follow ? 'Tomada' : 'Batalha'} em ${minutes} min`,
+        detail: `${item.titulo} · ${item.pista || 'pista a definir'}`,
+        to: '/agenda',
         kind: 'match'
       })
     }
@@ -206,11 +227,16 @@ async function loadAlerts() {
 }
 
 onMounted(async () => {
+  syncResponsiveShell()
+  window.addEventListener('resize', syncResponsiveShell)
+
   if (auth.canOperateCompetition) {
     await competition.load()
     await loadAlerts()
   }
 })
+
+onBeforeUnmount(() => window.removeEventListener('resize', syncResponsiveShell))
 
 watch(() => competition.selectedId, loadAlerts)
 </script>
@@ -236,6 +262,24 @@ watch(() => competition.selectedId, loadAlerts)
       </button>
 
       <div class="sidebar-divider" />
+
+      <div v-if="auth.canOperateCompetition" class="sidebar-competition-mobile">
+        <span>{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
+        <el-select
+          v-if="auth.isDev"
+          :model-value="competition.selectedId"
+          :loading="competition.loading"
+          placeholder="Selecionar competição"
+          @change="competition.select"
+        >
+          <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
+        </el-select>
+        <div v-else class="sidebar-competition-static">
+          <strong>{{ competition.selectedCompetition?.nome || 'Nenhuma edição vigente' }}</strong>
+          <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Sem contexto operacional' }}</small>
+        </div>
+      </div>
+
       <nav class="nav-list" aria-label="Navegação principal">
         <section v-for="section in sections" :key="section.label" class="nav-section">
           <span v-if="!collapsed" class="nav-caption">{{ section.label }}</span>
@@ -252,7 +296,7 @@ watch(() => competition.selectedId, loadAlerts)
     <main class="main-area">
       <header class="topbar admin-topbar-v2">
         <div class="topbar-context">
-          <button class="mobile-menu" aria-label="Abrir menu" @click="mobileOpen = true">☰</button>
+          <button class="mobile-menu" aria-label="Abrir menu" @click="openMobileMenu">☰</button>
           <div>
             <span class="eyebrow">IEEE RAS · UFRB</span>
             <strong>{{ pageTitle }}</strong>
@@ -261,10 +305,11 @@ watch(() => competition.selectedId, loadAlerts)
 
         <div v-if="auth.canOperateCompetition" class="topbar-competition-switch">
           <div class="competition-switch-copy">
-            <span>Competição em foco</span>
-            <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Selecione a edição' }}</small>
+            <span>{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
+            <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Sem edição operacional' }}</small>
           </div>
           <el-select
+            v-if="auth.isDev"
             :model-value="competition.selectedId"
             :loading="competition.loading"
             placeholder="Selecionar competição"
@@ -273,6 +318,9 @@ watch(() => competition.selectedId, loadAlerts)
           >
             <el-option v-for="item in competition.competitions" :key="item.id" :label="item.nome" :value="item.id" />
           </el-select>
+          <div v-else class="competition-context-static">
+            {{ competition.selectedCompetition?.nome || 'Nenhuma edição vigente' }}
+          </div>
         </div>
 
         <div class="topbar-user">
