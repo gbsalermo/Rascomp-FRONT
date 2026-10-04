@@ -95,4 +95,27 @@ router.beforeEach(async (to) => {
   return true
 })
 
+router.afterEach((to) => {
+  if (to.name === 'not-found') return
+
+  const auth = useAuthStore()
+  if (to.name === 'login') {
+    document.title = 'RasComp · Entrar'
+    return
+  }
+  if (to.name === 'register') {
+    document.title = 'RasComp · Cadastro'
+    return
+  }
+  if (auth.isParticipant) {
+    document.title = 'RasComp · Participante'
+    return
+  }
+  if (auth.user?.role === 'DEV') {
+    document.title = 'RasComp · Administração'
+    return
+  }
+  document.title = 'RasComp · Gestão'
+})
+
 export default router
