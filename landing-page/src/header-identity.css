@@ -3,6 +3,9 @@
   height: 88px;
   object-fit: contain;
   flex: 0 0 auto;
+
+   transform: scale(1.30);
+  transform-origin: left center;
 }
 
 @media(max-width:1180px) {
