@@ -2297,3 +2297,55 @@ Antes da competição, confirmar:
 ```
 
 Se o cenário de carga ou segurança falhar, a primeira competição oficial não deve usar aquela versão até correção e nova validação.
+
+
+---
+
+### Duas vias aprovadas para operação da competição
+
+A arquitetura da V1 Beta e da primeira competição oficial deve preservar duas formas válidas de operação.
+
+#### VIA A — Cloud principal
+
+```text
+Internet
+→ Cloudflare
+→ frontend publicado
+→ backend/API em produção
+→ MySQL persistente
+→ storage persistente
+```
+
+É a via preferencial quando os testes de carga, limites do provedor e estabilidade forem satisfatórios.
+
+#### VIA B — Servidor local + Cloudflare Tunnel
+
+```text
+Internet
+→ domínio Cloudflare
+→ Cloudflare Tunnel
+→ servidor/PC local do evento
+   ├─ Landing/Gestão
+   ├─ Spring Boot
+   ├─ MySQL
+   └─ storage local
+```
+
+Também deve ser possível acessar o mesmo servidor pela rede local/LAN quando necessário.
+
+A VIA B pode ser adotada:
+
+- como contingência;
+- como operação principal temporária do evento;
+- quando houver dúvida sobre capacidade/custo/limite da VIA A;
+- quando os testes mostrarem que a máquina local oferece margem mais previsível.
+
+A escolha final deve ser tomada após os testes de carga e o ensaio de contingência.
+
+Não depender de reescrita do RasComp para alternar entre VIA A e VIA B.
+
+A configuração de API, banco, storage e URLs deve permanecer por ambiente.
+
+Se VIA B for adotada no evento, o servidor local passa a ser a fonte de verdade durante aquela operação.
+
+Não manter VIA A e VIA B gravando em bancos independentes ao mesmo tempo sem mecanismo explícito de sincronização.
