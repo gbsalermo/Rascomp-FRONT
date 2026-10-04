@@ -204,7 +204,6 @@ function openEdit(row?: Competition) {
   if (!target) return
   Object.assign(form, JSON.parse(JSON.stringify(target)))
   editingId.value = target.id || null
-  originalStatus.value = target.status || 'PLANEJADA'
   editionsOpen.value = false
   dialog.value = true
 }
