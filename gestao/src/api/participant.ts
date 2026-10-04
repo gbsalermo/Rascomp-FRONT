@@ -39,6 +39,10 @@ export const participantApi = {
   robots: (teamId: number) => http.get<Robot[]>(`/api/v1/participante/equipes/${teamId}/robos`).then((r) => r.data),
   createRobot: (teamId: number, payload: { nome: string; descricao?: string }) =>
     http.post<Robot>(`/api/v1/participante/equipes/${teamId}/robos`, payload).then((r) => r.data),
+  updateRobot: (robotId: number, payload: { nome: string; descricao?: string }) =>
+    http.put<Robot>(`/api/v1/participante/robos/${robotId}`, payload).then((r) => r.data),
+  deleteRobot: (robotId: number) =>
+    http.delete(`/api/v1/participante/robos/${robotId}`).then(() => undefined),
   robotResponsibles: (robotId: number) =>
     http.get<RobotResponsible[]>(`/api/v1/participante/robos/${robotId}/responsaveis`).then((r) => r.data),
   setRobotResponsibles: (robotId: number, competitorIds: number[]) =>
@@ -82,6 +86,7 @@ export const participantApi = {
     competitionId: number
     categoryId: number
     robotId: number
+    robotDescricao?: string
     competitorIds?: number[]
     observacao?: string
   }, receipt: File) => {
