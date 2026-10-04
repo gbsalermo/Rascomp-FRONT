@@ -1,6 +1,6 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
-Última revisão: **19/09/2026**
+Última revisão: **03/10/2026**
 
 Este documento é um **checkpoint específico da aplicação `landing-page/`**. Ele preserva decisões visuais/funcionais da Landing, mas não define a etapa global do RasComp.
 
@@ -13,16 +13,91 @@ docs/ETAPAS_POS_PROJETO.md
 Estado global:
 
 ```text
-ETAPA 0  ✅ concluída / validada
-ETAPA 1  ✅ concluída / validada
-ETAPA 2  ✅ concluída / validada
-ETAPA 3  ✅ concluída / validada
-ETAPA 4  ⏳ próxima / não iniciada — consolidação funcional do MVP
+ETAPAS 0–4  ✅ concluídas / validadas
+V1-BETA A   🚧 PRÓXIMA / branch própria — finalização e polimento da Landing
 ```
+
+Branch de implementação da fase:
+
+```text
+v1-beta-a-landing
+```
+
+A V1-BETA A transforma a Landing já existente em um **site real, publicável, responsivo e intuitivo**, substituindo progressivamente conteúdo demonstrativo por conteúdo definitivo.
 
 A maior parte da Landing abaixo foi consolidada para a demonstração de **26/08/2026**. Depois disso, a página 404 pública foi adicionada em **30/08/2026**.
 
 ---
+
+# 0. Método de execução da V1-BETA A
+
+A Beta A será executada **seção por seção**, evitando uma refatoração visual ampla sem validação.
+
+Para cada seção:
+
+```text
+1. abrir a seção atual
+2. revisar objetivo e hierarquia
+3. substituir imagem/asset provisório
+4. escrever/revisar texto real
+5. revisar links/CTA
+6. validar desktop
+7. validar mobile
+8. revisar acessibilidade/leitura
+9. validar com o usuário
+10. documentar e seguir para a próxima seção
+```
+
+Uma seção só fecha quando estiver adequada para publicação real.
+
+Ordem-base:
+
+```text
+Header / navegação
+→ Hero / destaques
+→ Sobre
+→ Equipe / Diretoria / Robôs / Premiações
+→ Galeria
+→ Eventos / postagens
+→ Competição pública
+→ Footer
+→ 404 / estados auxiliares
+→ revisão global desktop/mobile
+```
+
+A ordem pode ser ajustada durante a revisão, mas sem perder rastreabilidade.
+
+## Integração com o sistema autenticado
+
+A Landing deverá possuir CTA principal **Inscrever-se**, preferencialmente visível na navegação principal/sidebar equivalente e adaptado ao mobile.
+
+```text
+Landing
+→ Inscrever-se
+→ aplicação Gestão/Participante
+→ cadastro/login
+→ Portal
+```
+
+Usar `VITE_GESTAO_URL` ou configuração equivalente por ambiente. Nunca hardcodar domínio temporário ou localhost como destino definitivo.
+
+## Conteúdo real nesta fase
+
+Na V1-BETA A, quando houver material disponível, substituir placeholders por:
+
+- fotografias reais;
+- diretoria/equipe reais;
+- textos reais;
+- projetos/robôs reais;
+- premiações reais;
+- eventos/postagens reais;
+- parceiros reais;
+- contatos e links reais.
+
+Não é necessário antecipar o CMS completo para publicar a Beta. Conteúdo pode permanecer versionado no frontend nesta primeira entrega, desde que seja real e organizado. O CMS continua no roadmap para retirar essa dependência posteriormente.
+
+---
+
 
 # 1. Identidade — decisão preservada
 
@@ -267,7 +342,7 @@ docs/CONTINUIDADE_GALERIA_FOTOS.md
 
 # 10. Pendências futuras da Landing
 
-Não fazem parte da ETAPA 4. Devem continuar reservadas às etapas apropriadas do novo roadmap:
+Parte das pendências visuais/editoriais foi antecipada para a V1-BETA A. Funcionalidades estruturais continuam reservadas às etapas apropriadas:
 
 ## ETAPA 8 — CMS/Mídia
 

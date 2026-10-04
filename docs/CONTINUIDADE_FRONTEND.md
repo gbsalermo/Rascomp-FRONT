@@ -1820,3 +1820,47 @@ Migrations cross-repo = V1–V27
 O antigo 4.4 não será iniciado. O polimento da Landing será absorvido por uma etapa única futura junto ao trabalho já planejado de Landing/Galeria/conteúdo público. O desenho dessa próxima etapa será decidido após o merge atual.
 
 Não declarar GitHub Actions verde: não havia execução nova registrada nos heads finais.
+
+---
+
+## Próximo ciclo — V1 Beta em produção
+
+Branch de trabalho inicial:
+
+```text
+v1-beta-producao
+```
+
+Próxima frente: **V1-BETA A — Landing pública**.
+
+Depois:
+
+```text
+V1-BETA B → cloud + API + MySQL + secrets/storage/health
+V1-BETA C → cadastro/login/inscrições reais
+V1-BETA D → smoke + estabilização
+```
+
+Após o go-live Beta, frontend e backend continuam evoluindo em branch/ambiente não-prod. Produção recebe apenas versões já validadas.
+
+### Gate da V1 Beta — abertura de inscrições
+
+Antes de expor o CTA de inscrições como oficialmente aberto, validar:
+
+```text
+MySQL persistente
+backup/restore
+Flyway
+storage persistente de comprovantes
+contas verificadas reais
+Competition/categorias/janela reais
+smoke com conta nova do zero
+aprovação pela GESTAO
+Portal/público refletindo estado correto
+```
+
+O frontend não deve sugerir inscrições abertas enquanto esse gate não estiver aprovado.
+
+Futebol de Robôs entra na Beta somente como inscrição simples sem Robot próprio obrigatório. O domínio completo da partida permanece na ETAPA 6.
+
+Ajustes Gerais DEV avançados são pós-Beta e não bloqueiam o go-live inicial.

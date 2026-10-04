@@ -1331,3 +1331,30 @@ Estas decisões permanecem fora do fechamento da ETAPA 4, mas não podem ser per
 - **Futebol de Robôs:** partida com placar por gols e cronômetro operacional; **2 minutos** é a referência atual de duração, mantendo configuração até confirmação regulamentar.
 - **Correção estrutural excepcional de chave:** ferramenta DEV futura poderá encerrar/cancelar a chave vigente e gerar outra, de forma explícita, auditável e sem apagar histórico competitivo já produzido.
 - **Inclusão manual excepcional:** operações DEV devem permitir correções administrativas de robôs/competidores com motivo e auditoria; parte desse fluxo já foi antecipada e validada na ETAPA 4 para entrada tardia de participante/Robot.
+
+
+---
+
+## Futebol de Robôs — contrato mínimo de inscrição para a V1 Beta
+
+Antes da implementação completa da modalidade, a V1 Beta pode disponibilizar **somente o fluxo de inscrição**.
+
+Decisões preservadas:
+
+- o participante/equipe não precisa possuir Robot próprio para se inscrever em Futebol;
+- os Robots podem ser fornecidos/atribuídos pela organização;
+- não criar Robot fictício apenas para satisfazer o modelo atual de Registration;
+- a inscrição deve poder ser analisada pela GESTAO como PENDENTE/APROVADA/REJEITADA;
+- a atribuição operacional do Robot pode ocorrer posteriormente.
+
+Fora deste contrato mínimo:
+
+- partida;
+- placar/gols;
+- duração/cronômetro (2 min continua como referência atual);
+- empate/desempate;
+- chaves;
+- inspeção;
+- penalidades.
+
+Esses itens pertencem à implementação completa da ETAPA 6.

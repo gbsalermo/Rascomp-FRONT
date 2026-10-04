@@ -20,6 +20,24 @@ Documentos complementares:
 
 O roadmap deixa de ser uma sequência de funcionalidades isoladas e passa a seguir **maturidade do produto**.
 
+## TRILHO PRIORITÁRIO — V1 BETA EM PRODUÇÃO
+
+A partir de 03/10/2026, o RasComp adota um trilho temporário de publicação antecipada para colocar uma **V1 Beta utilizável no ar antes da primeira competição oficial**, sem abandonar o roadmap principal.
+
+Sequência aprovada:
+
+```text
+Landing pública finalizada/polida
+→ infraestrutura de produção
+→ banco de produção
+→ cadastro/login/acesso real
+→ inscrições reais
+→ smoke e estabilização da V1 Beta
+→ retorno ao roadmap oficial
+```
+
+Depois da publicação da V1 Beta, produção deixa de ser ambiente de desenvolvimento. A evolução continua em branch própria + ambiente não-prod + testes; somente depois ocorre merge/deploy em produção.
+
 ## PRIORIDADE 1 — Finalização e polimento do MVP
 
 Objetivo: transformar o que já existe em um produto realmente utilizável, consistente, apresentável e administrável antes de ampliar o escopo.
@@ -47,7 +65,7 @@ Direção:
 3. regras, ajuda e segurança para participantes;
 4. hardening e testes físicos em dispositivos;
 5. validação final completa, inclusive permissões;
-6. deploy como última etapa do ciclo.
+6. consolidação/hardening final da produção depois da Beta.
 
 ---
 
@@ -57,14 +75,20 @@ ETAPA 0  ✅ CONCLUÍDA / VALIDADA — Baseline e congelamento da versão aprova
 ETAPA 1  ✅ CONCLUÍDA / VALIDADA — Correções de lógica e integridade
 ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de código
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
-
-PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
 ETAPA 4  ✅ CONCLUÍDA / VALIDADA — Consolidação funcional do MVP atual
-ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
+
+TRILHO PRIORITÁRIO — V1 BETA EM PRODUÇÃO
+V1-BETA A  🚧 PRÓXIMA — Landing pública: finalização + polimento
+V1-BETA B  ⏳ — Infraestrutura de produção: cloud + banco + storage/secrets + observabilidade mínima
+V1-BETA C  ⏳ — Abertura controlada: cadastro/login + inscrições reais + acesso ao sistema
+V1-BETA D  ⏳ — Smoke de produção + estabilização inicial
+
+ROADMAP OFICIAL — RETOMADA APÓS V1 BETA
+ETAPA 5  ⏳ PÓS-BETA — Ajustes Gerais DEV + auditoria; não bloqueia a publicação inicial
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
 ETAPA 8  ⏳ NÃO INICIADA — Gestor de Mídia / CMS
-ETAPA 9  ⏳ NÃO INICIADA — Landing + Galeria + conteúdo público real
+ETAPA 9  ⚠️ REPLANEJAR — Landing/Galeria/conteúdo público será deduplicado após V1-BETA A
 CHECKPOINT MOBILE ⏳ NÃO INICIADO — Otimização Mobile do MVP
 ETAPA 10 ⏳ NÃO INICIADA — Validação e fechamento do MVP
 
@@ -74,10 +98,11 @@ ETAPA 12 ⏳ NÃO INICIADA — Portabilidade institucional
 ETAPA 13 ⏳ NÃO INICIADA — Regras, Ajuda e Segurança
 ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
-ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
+ETAPA 16 ⚠️ REINTERPRETADA — consolidação/hardening da produção definitiva; não é mais o primeiro deploy
 
-**Etapa atual: ETAPA 4 CONCLUÍDA / VALIDADA. O próximo trabalho será definido após este merge. Decisão já tomada: o antigo BLOCO 4.4 não seguirá isoladamente; o polimento da Landing será unificado com a etapa já prevista para Landing/Galeria/conteúdo público. Numeração, nome e escopo definitivo dessa etapa consolidada serão decididos antes de iniciar a próxima execução.**
+**Próximo trabalho autorizado: V1-BETA A — finalizar e polir a Landing pública.**
 
+A V1 Beta não encerra o roadmap. Ela cria uma linha estável de produção para divulgação, cadastro e inscrições enquanto o restante do produto continua evoluindo em ambiente não-prod.
 ---
 
 # 3. Regras gerais do ciclo
@@ -92,10 +117,224 @@ ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 - status só muda após implementação + validação + confirmação explícita;
 - uma instalação do RasComp representa uma instituição organizadora neste ciclo;
 - multi-tenancy permanece fora deste ciclo;
-- o deploy é a última etapa operacional do roadmap.
+- a V1 Beta antecipa o primeiro deploy operacional;
+- produção nunca é ambiente de desenvolvimento;
+- após a Beta, toda evolução relevante passa por branch + ambiente não-prod + testes + merge;
+- a antiga etapa final de deploy passa a representar consolidação/hardening da produção definitiva, não o primeiro go-live.
 
 ---
 
+# 3.1. Trilho V1 Beta
+
+## V1-BETA A — Landing pública pronta para divulgação
+
+Objetivo: transformar a Landing na porta de entrada real da versão Beta.
+
+Escopo mínimo:
+- revisão visual final;
+- responsividade desktop/mobile;
+- textos institucionais reais;
+- identidade visual consistente;
+- CTA de cadastro/login/inscrição;
+- links e informações públicas essenciais;
+- integração somente com APIs públicas necessárias;
+- remoção de placeholders e dados demo visíveis;
+- SEO/meta/título/favicon básicos;
+- estados de erro/carregamento do conteúdo público.
+
+Saída: Landing pronta para divulgação externa.
+
+### Integração obrigatória Landing → sistema autenticado
+
+A Landing deve funcionar como porta pública e conter CTA principal **Inscrever-se** no menu/sidebar/navegação principal.
+
+Fluxo:
+
+```text
+Landing pública
+→ Inscrever-se
+→ aplicação Gestão/Participante
+→ cadastro ou login
+→ Portal
+→ inscrição
+```
+
+A URL de destino deve ser configurável por ambiente. Não hardcodar localhost nem domínio temporário.
+
+## V1-BETA B — Infraestrutura de produção
+
+Objetivo: criar uma V1 real, persistente e reproduzível fora do ambiente local.
+
+Separação mínima:
+
+```text
+LOCAL / DEV
+→ desenvolvimento individual
+
+STAGING / HOMOLOGAÇÃO
+→ banco e serviços separados
+→ migrations testadas
+→ QA manual + automatizado
+
+PRODUÇÃO
+→ usuários reais
+→ inscrições reais
+→ dados reais
+→ somente versões validadas
+```
+
+### Gate obrigatório de infraestrutura antes de qualquer inscrição real
+
+Todos os itens abaixo são **bloqueantes**:
+
+- frontend público e aplicação autenticada publicados;
+- backend/API publicado e acessível por HTTPS;
+- **MySQL de produção persistente e separado de local/staging**;
+- **backup real do banco configurado e pelo menos um procedimento de restore documentado/testável**;
+- **Flyway executando sobre o banco de produção de forma controlada, com histórico de migrations íntegro**;
+- secrets/variáveis fora do código;
+- CORS/URLs/domínios corretos;
+- bootstrap seguro do primeiro DEV;
+- logs e healthcheck mínimos;
+- rollback operacional documentado;
+- nenhum profile `testdata`, usuário demo ou senha demo em produção;
+- **storage persistente dos comprovantes de inscrição**, sem depender do filesystem efêmero/local;
+- storage persistente de outros uploads que já forem usados pela Beta.
+
+Se qualquer item bloqueante falhar, a V1 pode continuar tecnicamente publicada para smoke interno, mas **não pode abrir inscrições reais**.
+
+### Gate de identidade e operação
+
+Antes da abertura também devem existir:
+
+- **contas verificadas reais** para DEV/GESTAO e demais perfis internos que realmente serão usados;
+- dados reais da organização exibidos publicamente;
+- contatos/e-mails reais de suporte/operação;
+- permissões dessas contas conferidas manualmente.
+
+Não usar a expressão 'contas institucionais' como requisito: o critério é serem **contas reais e verificadas para a operação**, independentemente do domínio de e-mail.
+
+### Portabilidade obrigatória da primeira infraestrutura
+
+A V1-BETA B pode ser hospedada inicialmente em uma **conta temporária do mantenedor** para acelerar a publicação.
+
+Porém a solução deve nascer pronta para migração futura para uma **conta própria do RasComp/organização e domínio próprio**.
+
+Obrigatório:
+
+- URLs frontend/API configuráveis;
+- DNS/domínio desacoplados da conta temporária;
+- secrets externos;
+- MySQL exportável/migrável;
+- storage exportável/migrável;
+- inventário dos recursos cloud;
+- procedimento documentado de migração/transferência;
+- nenhum identificador da conta temporária hardcoded na aplicação.
+
+A migração futura não pode exigir reescrever o sistema.
+
+## V1-BETA C — Cadastro, acesso e inscrições reais
+
+Objetivo: permitir uso real do sistema antes da primeira competição oficial.
+
+Liberar na Beta:
+- cadastro público PARTICIPANTE;
+- login;
+- equipes;
+- Minha inscrição;
+- cadastro/associação de Robot para modalidades que usam Robot próprio;
+- inscrição do Robot;
+- comprovantes;
+- análise da GESTAO;
+- páginas públicas necessárias para divulgação/acompanhamento;
+- **inscrição simples em Futebol de Robôs**.
+
+### Gate obrigatório antes de abrir a janela real
+
+Além do gate da V1-BETA B, confirmar obrigatoriamente:
+
+- **Competition real criada e revisada**;
+- **categorias reais corretas**;
+- **janela de inscrições correta** (`inicioInscricoes` / `fimInscricoes`);
+- valores/textos/taxas aplicáveis revisados;
+- contas verificadas reais de DEV/GESTAO prontas;
+- storage de comprovantes persistente e leitura/download testados;
+- backup do banco confirmado;
+- Flyway sem divergência;
+- nenhuma massa demo/testdata misturada com produção;
+- **smoke completo criando uma conta nova do zero**.
+
+O smoke do zero deve percorrer pelo menos:
+
+```text
+cadastro PARTICIPANTE
+→ login
+→ criação/entrada em equipe
+→ Minha inscrição
+→ envio de comprovante
+→ cadastro/associação de Robot quando aplicável
+→ inscrição competitiva
+→ análise pela GESTAO
+→ aprovação
+→ leitura pública/Portal refletindo o estado correto
+```
+
+Somente depois desse smoke ser aprovado a organização pode divulgar oficialmente que as inscrições estão abertas.
+
+### Futebol de Robôs — inscrição simples da V1 Beta
+
+A Beta deve permitir **inscrição na modalidade Futebol de Robôs sem exigir Robot próprio do participante/equipe**.
+
+Decisão já preservada:
+
+```text
+Futebol de Robôs
+→ robôs podem ser fornecidos/atribuídos pela organização
+→ não criar Robot fictício apenas para satisfazer Registration.robot
+```
+
+Escopo desta Beta:
+- participante/equipe escolhe a Competition + categoria Futebol;
+- informa/seleciona os competidores exigidos pelo formulário simples;
+- envia dados/comprovante quando o evento exigir;
+- inscrição nasce PENDENTE e pode ser aprovada/rejeitada pela GESTAO;
+- nenhum Robot próprio é obrigatório nessa inscrição;
+- atribuição do Robot da organização pode ficar para a operação posterior.
+
+Fora da V1 Beta:
+- regra da partida;
+- placar/gols;
+- cronômetro de 2 minutos;
+- empate/desempate;
+- chaveamento específico;
+- inspeção;
+- penalidades;
+- fluxo operacional da partida.
+
+Esses itens continuam na **ETAPA 6 — Futebol de Robôs** depois do site estar no ar.
+
+## V1-BETA D — Estabilização inicial
+
+Depois da abertura:
+- corrigir bugs críticos/hotfixes da Beta;
+- registrar feedback de usuários reais;
+- acompanhar erros de API/banco;
+- confirmar persistência de inscrições e comprovantes;
+- manter mudanças estruturais maiores fora de produção até validação em staging.
+
+Após estabilização:
+
+```text
+V1 Beta permanece online
++
+retorno ao roadmap oficial
++
+desenvolvimento em ambiente não-prod
++
+merge/deploy somente após testes
+```
+
+---
 # 4. Etapas concluídas
 
 ## ETAPA 0 — Baseline e congelamento da versão aprovada ✅
@@ -246,6 +485,8 @@ Critério de saída:
 
 **Objetivo:** oferecer manutenção administrativa segura sem criar editor genérico de banco.
 
+**Prioridade:** pós-publicação. Esta etapa **não bloqueia a V1 Beta**; o conjunto DEV já existente é suficiente para o primeiro go-live. Melhorias administrativas avançadas serão retomadas depois que o site estiver no ar e estabilizado.
+
 Operações candidatas:
 
 - transferir competidor;
@@ -269,14 +510,15 @@ Não criar console SQL nem CRUD genérico de tabelas.
 
 ## ETAPA 6 — Futebol de Robôs
 
-**Objetivo:** implementar a modalidade competitiva que ainda altera o domínio estrutural.
+**Objetivo:** completar a modalidade competitiva após a Beta. A inscrição simples já terá sido antecipada na V1-BETA C; esta etapa trata o domínio funcional da competição.
 
 Ponto crítico já identificado:
 
-- `Registration.robot` hoje é obrigatório;
-- no Futebol os competidores usam robôs fornecidos/atribuídos pela organização;
-- a relação com robô deve ser modelada corretamente por modalidade;
-- não criar robô fictício apenas para satisfazer FK.
+- a inscrição de Futebol não deve exigir Robot próprio;
+- os robôs podem ser fornecidos/atribuídos pela organização;
+- não criar Robot fictício apenas para satisfazer FK;
+- a V1 Beta resolve somente o contrato mínimo de inscrição sem Robot próprio;
+- esta etapa fecha atribuição de robô, partida, placar, duração, empate/desempate, chaveamento, inspeção e penalidades.
 
 Antes da migration, fechar regras de equipe, atribuição de robôs, placar, duração, empate/desempate, formato, inspeção e penalidades.
 
@@ -1857,3 +2099,71 @@ Estas decisões continuam no planejamento e **não são alteradas pelo encerrame
 - Ajustes DEV: operação explícita/auditável para encerrar ou cancelar chave vigente e gerar outra quando uma correção estrutural exigir, preservando histórico e justificativa;
 - Futebol de Robôs: cronômetro operacional com **2 minutos como referência atual/configurável**, placar por gols e persistência do resultado oficial;
 - Follow: possível divisão **Pro/Júnior** somente em pós-produção e mediante confirmação da competição; no MVP atual, Follow continua categoria única.
+
+---
+
+## Decisão de publicação Beta — 03/10/2026
+
+Motivação: disponibilizar o RasComp ao público e iniciar divulgação/inscrições antes da conclusão integral do roadmap.
+
+Sequência aprovada:
+
+```text
+1. finalizar/polir Landing
+2. configurar V1 de produção + cloud + banco
+3. abrir cadastro/login/inscrições reais
+4. validar V1 Beta em produção
+5. retomar roadmap oficial
+6. desenvolver etapas seguintes em ambiente não-prod
+7. merge/deploy em produção somente depois de testes
+```
+
+Esta decisão não transforma produção em ambiente de testes e não elimina as etapas restantes.
+---
+
+## Gate não negociável de abertura da V1 Beta
+
+A organização **não abre inscrições reais** até todos estes pontos estarem confirmados:
+
+```text
+[ ] MySQL de produção persistente
+[ ] backup configurado + restore documentado/testável
+[ ] Flyway validado no banco de produção
+[ ] storage persistente dos comprovantes
+[ ] contas verificadas reais de operação
+[ ] Competition real correta
+[ ] categorias reais corretas
+[ ] janela de inscrições correta
+[ ] ausência de testdata/demos na base
+[ ] smoke completo com conta criada do zero
+[ ] fluxo Gestão aprova inscrição real de teste
+[ ] Portal/estado público refletem o resultado
+```
+
+Se um item estiver pendente, a publicação pode permanecer em smoke interno, mas **não pode ser anunciada como inscrições abertas**.
+
+Ajustes Gerais DEV não fazem parte desse gate e serão tratados após o site estar no ar.
+
+---
+
+### Política de branches do trilho Beta
+
+Cada fase é isolada:
+
+```text
+v1-beta-a-landing
+v1-beta-b-producao
+v1-beta-c-inscricoes
+v1-beta-d-estabilizacao
+```
+
+Regra:
+
+```text
+fase atual
+→ testes/validação
+→ merge em main
+→ próxima branch criada do novo main
+```
+
+Não criar todas as branches antecipadamente, evitando que fases futuras partam de uma base desatualizada.

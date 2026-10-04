@@ -4,7 +4,7 @@
 
 Este checkpoint preserva a ideia de assinatura pessoal do projeto, mas **não é mais uma etapa numerada do roadmap**.
 
-O roadmap operacional atual termina na **ETAPA 16 — Deploy**. Para manter o deploy como última etapa do ciclo, a assinatura pessoal, se adotada, deve ser preparada no fechamento da **ETAPA 15 — Validação final completa** e entrar no mesmo conjunto de artefatos que seguirá para produção.
+Desde 03/10/2026, o primeiro go-live foi antecipado pelo **TRILHO V1 BETA**. A ETAPA 16 passa a representar consolidação/hardening final da produção. A assinatura pessoal continua opcional e, se adotada, deve ser tratada no fechamento da ETAPA 15 sem bloquear a Beta.
 
 Escopo possível:
 

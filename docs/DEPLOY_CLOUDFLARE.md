@@ -1,4 +1,6 @@
 # RasComp — Deploy em Nuvem com Cloudflare
+> **Atualização de estratégia — 03/10/2026:** a arquitetura técnica deste documento continua como referência do primeiro deploy, mas a premissa de calendário "somente ETAPA 16" foi superada. O primeiro go-live agora ocorre no **TRILHO V1 BETA**, após Landing + preparação cloud/banco + validação. A futura ETAPA 16 passa a representar consolidação/hardening da produção definitiva.
+
 
 Última revisão: **26/08/2026**
 
@@ -15,7 +17,7 @@ CLOUD
 → Cloudflare para DNS, frontend, backend containerizado e mídia
 ```
 
-O deploy corresponde à **ETAPA 16** e só deve ser executado depois da **ETAPA 15 — Validação final completa** de `docs/ETAPAS_POS_PROJETO.md`.
+O primeiro deploy foi antecipado para o **TRILHO V1 BETA**. Este guia passa a apoiar a V1-BETA B; a ETAPA 16 fica reservada à consolidação/hardening final.
 
 ---
 
