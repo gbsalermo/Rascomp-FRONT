@@ -1795,3 +1795,28 @@ Migrations atuais: **V1–V27**. Próxima migration estrutural: **V28+**.
 - Entrada manual pessoal cria inscrição individual APROVADA auditada.
 - Entrada de Robot avulso também passou a aceitar conta nova sem Team.
 - Composição de Robot já congelada não é alterada automaticamente por essa entrada.
+
+
+---
+
+## Encerramento final da ETAPA 4 — 03/10/2026
+
+Status:
+
+```text
+ETAPA 4 = ✅ CONCLUÍDA / VALIDADA / MERGE AUTORIZADO
+Portal participante 1–40 = ✅
+Regressão R1–R17 = ✅
+Migrations cross-repo = V1–V27
+```
+
+Últimos ajustes validados:
+- status do Portal atualizado ao retornar para a aba;
+- entrada manual de participante avulso por DEV;
+- vínculo automático Competitor → Team quando necessário;
+- inscrição individual manual APROVADA/auditada;
+- entrada manual de Robot reutilizando a mesma resolução de vínculo.
+
+O antigo 4.4 não será iniciado. O polimento da Landing será absorvido por uma etapa única futura junto ao trabalho já planejado de Landing/Galeria/conteúdo público. O desenho dessa próxima etapa será decidido após o merge atual.
+
+Não declarar GitHub Actions verde: não havia execução nova registrada nos heads finais.
