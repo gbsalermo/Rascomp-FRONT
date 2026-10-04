@@ -1901,3 +1901,54 @@ O documento funcional canônico do participante é `docs/REGRAS_PARTICIPANTE.md`
 O antigo 4.4 de polimento não prossegue como bloco independente. Landing/polimento será consolidado com a etapa já prevista de Landing/Galeria/conteúdo público, cuja forma final será decidida após este merge.
 
 Não há afirmação de CI remoto verde neste checkpoint porque não havia execução nova registrada do GitHub Actions nos heads finais.
+
+---
+
+## Estratégia V1 Beta — 03/10/2026
+
+O RasComp antecipa o primeiro go-live para uma **V1 Beta controlada**, sem considerar o roadmap principal concluído.
+
+Sequência imediata:
+
+```text
+Landing finalizada/polida
+→ cloud + backend/API + banco de produção
+→ cadastro/login/inscrições reais
+→ smoke e estabilização da V1 Beta
+→ retorno ao roadmap oficial
+```
+
+### Política de ambientes
+
+```text
+LOCAL/DEV        = desenvolvimento individual
+STAGING/QA       = integração, migrations, testes e validação manual
+PRODUÇÃO         = somente versões validadas
+```
+
+Depois da V1 Beta, correções e novas etapas devem seguir:
+
+```text
+branch
+→ staging/homologação
+→ testes
+→ merge em main
+→ deploy em produção
+```
+
+Produção não será usada como ambiente de desenvolvimento.
+
+### Escopo inicial de produção
+
+A Beta deve priorizar:
+- Landing pública;
+- autenticação/cadastro PARTICIPANTE;
+- acesso ao Portal;
+- Competition real;
+- inscrições pessoais;
+- cadastro/associação e inscrição de Robot;
+- comprovantes;
+- análise pela GESTAO;
+- persistência segura em banco de produção.
+
+Funcionalidades restantes continuam no roadmap e serão promovidas progressivamente após validação fora de produção.
