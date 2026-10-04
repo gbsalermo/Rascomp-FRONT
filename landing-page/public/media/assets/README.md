@@ -33,8 +33,9 @@ awards/
 └─ conquista-ras.jpg             → Hero Conquistas
 ```
 
-O painel superior de **Próximos eventos** não usa imagens. Ele consome a mesma
-fonte de dados da seção Eventos em `src/content/events.ts`.
+O painel superior de **Últimas novidades** não usa imagens na Beta A. Ele é
+alimentado por `src/content/updates.ts`, que pode reutilizar eventos de
+`src/content/events.ts` ou receber conteúdos institucionais independentes.
 
 ## Regras de uso na Beta A
 
