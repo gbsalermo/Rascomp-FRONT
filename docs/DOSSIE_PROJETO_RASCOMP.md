@@ -2019,3 +2019,27 @@ Dois testes distintos são obrigatórios:
 O cenário de competição deve validar consistência e concorrência, não apenas quantidade de requests.
 
 Critério principal: uma sobrecarga deve degradar/controlar o serviço de forma observável, nunca corromper inscrições, chaveamentos, resultados ou rankings.
+
+
+---
+
+## Resiliência operacional — Cloud + modo local
+
+Decisão permanente:
+
+> A cloud é o ambiente preferencial de produção, mas **não é dependência funcional obrigatória** do RasComp.
+
+O sistema deve preservar execução local completa e configurável.
+
+Isso atende:
+
+- desenvolvimento;
+- homologação;
+- demonstrações;
+- contingência de competição.
+
+Antes da primeira competição oficial, além dos testes de carga/segurança, deve existir teste real de contingência local com restore de banco, arquivos disponíveis, acesso LAN e smoke competitivo.
+
+Cloud e local não devem receber escritas independentes simultaneamente sem estratégia de sincronização. Em contingência, um ambiente deve ser declarado fonte de verdade.
+
+A arquitetura Cloudflare também deve evitar dependência desnecessária de quotas diárias de Worker para todas as requisições dinâmicas; limites e preços serão revalidados na V1-BETA B e antes do evento.
