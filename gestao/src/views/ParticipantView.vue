@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { assetUrl, http, participantApi, publicApi } from '../api'
 import { useAuthStore } from '../store'
@@ -924,8 +924,26 @@ async function reviewJoinRequest(item: TeamMembershipRequest, approve: boolean) 
   }
 }
 
+let lastExternalRefreshAt = 0
+
+function refreshPortalWhenReturning() {
+  if (document.visibilityState === 'hidden') return
+  const now = Date.now()
+  if (now - lastExternalRefreshAt < 800) return
+  lastExternalRefreshAt = now
+  loadTeams()
+}
+
 watch(teamId, loadTeam)
-onMounted(loadTeams)
+onMounted(() => {
+  loadTeams()
+  window.addEventListener('focus', refreshPortalWhenReturning)
+  document.addEventListener('visibilitychange', refreshPortalWhenReturning)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', refreshPortalWhenReturning)
+  document.removeEventListener('visibilitychange', refreshPortalWhenReturning)
+})
 </script>
 
 <template>
@@ -941,6 +959,7 @@ onMounted(loadTeams)
         </p>
       </div>
       <div class="heading-actions">
+        <el-button v-if="teams.length" :loading="loading" @click="loadTeams">Atualizar</el-button>
         <el-select v-if="teams.length > 1" v-model="teamId" style="width:260px">
           <el-option v-for="team in teams" :key="team.id" :label="team.nome" :value="team.id" />
         </el-select>
