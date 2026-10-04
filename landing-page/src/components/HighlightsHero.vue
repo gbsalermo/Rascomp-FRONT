@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { HOME_MEDIA } from '../content/homeMedia'
-import { LANDING_UPDATES } from '../content/updates'
 
 defineProps<{
   competition?: any
@@ -97,7 +96,6 @@ const slides = computed<HeroSlide[]>(() => [
   }
 ])
 
-const latestUpdates = computed(() => LANDING_UPDATES.slice(0, 3))
 
 const quickLinks = computed<QuickLink[]>(() => [
   {
@@ -218,48 +216,6 @@ onBeforeUnmount(stopTimer)
           </div>
         </article>
 
-        <aside class="hero-news-panel" aria-label="Últimas novidades da RAS UFRB">
-          <div class="hero-news-heading">
-            <strong>Últimas novidades</strong>
-            <a href="#eventos">Ver todas <span aria-hidden="true">→</span></a>
-          </div>
-
-          <article
-            v-for="item in latestUpdates"
-            :key="item.id"
-            class="hero-news-item"
-            :class="`kind-${item.kind}`"
-          >
-            <span class="hero-news-icon" aria-hidden="true">
-              <svg v-if="item.kind === 'competition'" viewBox="0 0 24 24">
-                <path d="M7 3h10v3h4v3c0 3.1-1.7 5.7-4.2 7.1A6 6 0 0 1 13 19.9V22h4v2H7v-2h4v-2.1a6 6 0 0 1-3.8-3.8A8 8 0 0 1 3 9V6h4V3Zm0 5H5v1c0 1.8.8 3.4 2.1 4.5A11 11 0 0 1 7 12V8Zm10 0v4c0 .5 0 1-.1 1.5A5.7 5.7 0 0 0 19 9V8h-2Z"/>
-              </svg>
-              <svg v-else-if="item.kind === 'extension'" viewBox="0 0 24 24">
-                <path d="m2 8 10-5 10 5-10 5L2 8Zm4 4.2 6 3 6-3V17c-3.8 2.4-8.2 2.4-12 0v-4.8ZM20 10h2v7h-2z"/>
-              </svg>
-              <svg v-else-if="item.kind === 'board'" viewBox="0 0 24 24">
-                <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm6-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 21v-2c0-3.3 2.7-6 6-6h2c3.3 0 6 2.7 6 6v2H2Zm14-8c3.3 0 6 2.7 6 6v2h-4v-2c0-2.2-.8-4.2-2.2-5.7.1-.1.1-.2.2-.3Z"/>
-              </svg>
-              <svg v-else-if="item.kind === 'achievement'" viewBox="0 0 24 24">
-                <path d="m12 2 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9L12 2Z"/>
-              </svg>
-              <svg v-else viewBox="0 0 24 24">
-                <path d="M10.8 2h2.4l.5 2.2c.6.2 1.1.4 1.6.7l1.9-1.2 1.7 1.7-1.2 1.9c.3.5.5 1 .7 1.6l2.2.5v2.4l-2.2.5c-.2.6-.4 1.1-.7 1.6l1.2 1.9-1.7 1.7-1.9-1.2c-.5.3-1 .5-1.6.7l-.5 2.2h-2.4l-.5-2.2c-.6-.2-1.1-.4-1.6-.7l-1.9 1.2-1.7-1.7 1.2-1.9c-.3-.5-.5-1-.7-1.6L3 11.8V9.4l2.2-.5c.2-.6.4-1.1.7-1.6L4.7 5.4l1.7-1.7 1.9 1.2c.5-.3 1-.5 1.6-.7L10.8 2Zm1.2 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
-              </svg>
-            </span>
-
-            <div class="hero-news-content">
-              <div class="hero-event-meta">
-                <span class="hero-news-tag">{{ item.tag }}</span>
-                <span class="hero-event-date">{{ item.dateLabel }}</span>
-              </div>
-
-              <div class="hero-news-copy">
-                <strong>{{ item.title }}</strong>
-              </div>
-            </div>
-          </article>
-        </aside>
       </div>
 
       <div class="hero-quick-links" aria-label="Áreas de atuação da RAS UFRB">
