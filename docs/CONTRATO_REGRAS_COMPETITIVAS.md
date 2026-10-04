@@ -1319,3 +1319,15 @@ A correção extrema:
 - mantém placar coerente com o vencedor corrigido;
 - é permitida somente se nenhuma dependência seguinte já tiver atividade;
 - deve atualizar também o slot de 3º lugar quando a correção muda o perdedor de uma semifinal.
+
+
+---
+
+## Decisões futuras preservadas — 29/09/2026
+
+Estas decisões permanecem fora do fechamento da ETAPA 4, mas não podem ser perdidas no roadmap:
+
+- **Follow Pro/Júnior:** possibilidade de subcategorias somente em pós-produção e condicionada à confirmação da competição. Até lá, Follow permanece categoria única.
+- **Futebol de Robôs:** partida com placar por gols e cronômetro operacional; **2 minutos** é a referência atual de duração, mantendo configuração até confirmação regulamentar.
+- **Correção estrutural excepcional de chave:** ferramenta DEV futura poderá encerrar/cancelar a chave vigente e gerar outra, de forma explícita, auditável e sem apagar histórico competitivo já produzido.
+- **Inclusão manual excepcional:** operações DEV devem permitir correções administrativas de robôs/competidores com motivo e auditoria; parte desse fluxo já foi antecipada e validada na ETAPA 4 para entrada tardia de participante/Robot.
