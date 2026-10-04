@@ -262,7 +262,7 @@
     grid-column: 1;
     grid-row: 1;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .institutional-brand-copy {
@@ -389,12 +389,12 @@
 
 @media(max-width:500px) {
   .institutional-header {
-    height: 82px;
+    height: 90px;
   }
 
   .institutional-header .institutional-nav {
-    top: 72px;
-    max-height: calc(100vh - 92px);
+    top: 90px;
+    max-height: calc(100vh - 110px);
   }
 
   .institutional-brand-copy {
