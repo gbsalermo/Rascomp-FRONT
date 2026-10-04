@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { LANDING_EVENTS } from '../content/events'
 import { HOME_MEDIA } from '../content/homeMedia'
 
-const props = defineProps<{
+defineProps<{
   competition?: any
   managementUrl: string
 }>()
@@ -22,15 +23,6 @@ type HeroSlide = {
   image?: string
   imageAlt: string
   mediaLabel: string
-}
-
-type NewsItem = {
-  tag: string
-  title: string
-  description: string
-  tone: HeroTone
-  image?: string
-  imageAlt: string
 }
 
 type QuickLink = {
@@ -105,32 +97,7 @@ const slides = computed<HeroSlide[]>(() => [
   }
 ])
 
-const newsItems = computed<NewsItem[]>(() => [
-  {
-    tag: 'Oficina',
-    title: 'Oficinas e formação',
-    description: 'Atividades técnicas, treinamentos e experiências práticas promovidas pelo capítulo.',
-    tone: 'workshop',
-    image: HOME_MEDIA.news.workshop.src || undefined,
-    imageAlt: HOME_MEDIA.news.workshop.alt
-  },
-  {
-    tag: 'RAS nas Escolas',
-    title: 'Ações de extensão',
-    description: 'Iniciativas que aproximam estudantes e escolas da robótica e da universidade.',
-    tone: 'community',
-    image: HOME_MEDIA.news.schools.src || undefined,
-    imageAlt: HOME_MEDIA.news.schools.alt
-  },
-  {
-    tag: 'Conquistas',
-    title: 'Resultados do capítulo',
-    description: 'Competições, premiações e momentos que marcam a trajetória da equipe.',
-    tone: 'award',
-    image: HOME_MEDIA.news.achievement.src || undefined,
-    imageAlt: HOME_MEDIA.news.achievement.alt
-  }
-])
+const featuredEvents = computed(() => LANDING_EVENTS.slice(0, 4))
 
 const quickLinks = computed<QuickLink[]>(() => [
   {
@@ -251,29 +218,25 @@ onBeforeUnmount(stopTimer)
           </div>
         </article>
 
-        <aside class="hero-news-panel" aria-label="Últimas novidades da RAS UFRB">
+        <aside class="hero-news-panel" aria-label="Próximos eventos da RAS UFRB">
           <div class="hero-news-heading">
-            <strong>Últimas novidades</strong>
-            <a href="#eventos">Ver todas <span aria-hidden="true">→</span></a>
+            <strong>Próximos eventos</strong>
+            <a href="#eventos">Ver todos <span aria-hidden="true">→</span></a>
           </div>
 
           <article
-            v-for="item in newsItems"
-            :key="`${item.tag}-${item.title}`"
+            v-for="event in featuredEvents"
+            :key="event.id"
             class="hero-news-item"
           >
-            <img
-              v-if="item.image"
-              class="hero-news-thumb hero-news-thumb-image"
-              :src="item.image"
-              :alt="item.imageAlt"
-            />
-            <div v-else class="hero-news-thumb" :class="`tone-${item.tone}`" aria-hidden="true" />
+            <div class="hero-event-meta">
+              <span class="hero-news-tag">{{ event.type }}</span>
+              <span class="hero-event-date">{{ event.dateLabel }}</span>
+            </div>
 
             <div class="hero-news-copy">
-              <span class="hero-news-tag">{{ item.tag }}</span>
-              <strong>{{ item.title }}</strong>
-              <p>{{ item.description }}</p>
+              <strong>{{ event.title }}</strong>
+              <p>{{ event.eyebrow }} · {{ event.location }}</p>
             </div>
           </article>
         </aside>
