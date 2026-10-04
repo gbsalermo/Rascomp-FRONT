@@ -1,6 +1,6 @@
 # RasComp — Regras do Participante
 
-Última revisão: **01/10/2026**
+Última revisão: **03/10/2026**
 
 Este documento consolida as regras funcionais do Portal do Participante e serve como fonte para:
 
@@ -214,6 +214,28 @@ O líder administra todos os robôs da própria Team.
 
 Se o líder cadastrar um robô, permanece registrada a autoria daquele cadastro. Como qualquer criador Competitor, pode ser o responsável inicial e posteriormente administrar os demais responsáveis.
 
+## 4.4 Edição, duplicidade e remoção
+
+Criador e líder podem editar:
+
+- nome do Robot;
+- descrição simples e opcional.
+
+A mesma Team não pode possuir dois Robots com o mesmo nome, inclusive variações apenas de maiúsculas/minúsculas no fluxo de serviço.
+
+A remoção do Portal é uma **desativação segura**, preservando histórico.
+
+```text
+Robot com Registration PENDENTE/APROVADA
+→ remoção bloqueada
+→ regularizar/cancelar a Registration primeiro
+
+Robot sem Registration ativa
+→ pode ser removido/desativado
+→ deixa de aparecer no Portal
+→ histórico permanece no banco
+```
+
 ---
 
 # 5. Quem pode iniciar a inscrição de um robô
@@ -376,35 +398,67 @@ Antes da competição:
 
 ```text
 líder altera RobotResponsible
-→ sistema sincroniza composição
-→ Robot continua APROVADO quando ainda possui elegível
-→ GESTAO recebe aviso
+→ sistema aplica a mudança imediatamente
+→ sincroniza a composição competitiva quando houver elegibilidade
+→ Robot continua APROVADO enquanto possuir ao menos um elegível
+→ GESTAO recebe aviso/auditoria
 ```
 
-A organização pode:
+A organização não precisa aprovar cada alteração para ela valer. A ação administrativa é de **veto**, não de autorização prévia.
+
+Enquanto a Competition ainda não iniciou, a GESTAO pode:
 
 ```text
-MANTER alteração
-OU
-VETAR alteração com justificativa
+MANTER
+→ confirma explicitamente a alteração
+
+VETAR
+→ exige justificativa
+→ desfaz a mudança de responsabilidade
+→ sincroniza novamente a composição
 ```
 
 ## 10.1 Veto de adição
 
-Se a GESTAO veta a entrada de um novo competidor:
+Se a GESTAO veta uma adição:
 
-- o vínculo permanente pode continuar existindo para futuras edições;
-- ele fica fora da composição oficial desta Registration/Competition.
+- o novo `RobotResponsible` é desativado;
+- a pessoa deixa de aparecer como responsável no Portal;
+- sai da composição oficial desta inscrição quando aplicável;
+- justificativa e decisão permanecem auditadas.
 
 ## 10.2 Veto de remoção
 
 Se a GESTAO veta uma remoção:
 
-- a pessoa pode ser mantida no snapshot competitivo daquela edição;
-- o vínculo permanente pode ter sido alterado para o futuro;
-- a decisão específica da Competition fica auditada.
+- o `RobotResponsible` é restaurado;
+- o participante volta a aparecer para o líder como responsável;
+- se estiver pessoalmente APROVADO, volta à composição oficial da Registration;
+- justificativa e decisão permanecem auditadas.
 
-Por isso, depois de existir decisão administrativa, a composição oficial não precisa ser uma cópia literal instantânea de `RobotResponsible`.
+## 10.3 Gestão não analisou a alteração
+
+A mudança **não fica esperando aprovação**.
+
+```text
+alteração aplicada
++
+nenhum veto até o início da Competition
+↓
+ao iniciar a competição
+↓
+evento PENDENTE_REVISAO → MANTIDA automaticamente
+↓
+composição é congelada
+```
+
+Isso impede a GESTAO de virar gargalo logístico.
+
+## 10.4 Nova tentativa depois de veto
+
+Um veto anterior não é permanente para sempre.
+
+Se o líder realizar uma nova alteração posteriormente, nasce um **novo evento auditável**, que pode ser novamente mantido ou vetado.
 
 ---
 
@@ -527,6 +581,22 @@ Limite atual:
 ```text
 10 MB
 ```
+
+---
+
+## 14.1 Descrição enviada com a inscrição
+
+Na inscrição do Robot existe uma descrição opcional, preenchida inicialmente com a descrição atual do cadastro.
+
+Ao enviar:
+
+```text
+Robot.descricao atual
+→ pode ser ajustada para aquela edição
+→ Registration.robotDescription guarda um snapshot
+```
+
+Alterar a descrição geral do Robot depois não reescreve automaticamente o texto já enviado naquela Registration.
 
 ---
 
