@@ -83,12 +83,17 @@ src/content/updates.ts
    └─ pode receber novidade institucional independente
 ```
 
-O Hero consome `LANDING_UPDATES`. Quando uma novidade corresponde a um evento,
-o feed referencia o item existente por ID e reaproveita seus dados, evitando
-duplicação desnecessária.
+O feed `LANDING_UPDATES` continua disponível como fonte editorial, mas a Beta A
+não o renderiza dentro do Hero. A decisão foi remover o painel para preservar a
+hierarquia visual da abertura institucional.
+
+Quando uma novidade corresponde a um evento, o feed referencia o item existente
+por ID e reaproveita seus dados, evitando duplicação desnecessária.
 
 A ordem em `LANDING_UPDATES` representa prioridade/recência editorial e não
 precisa seguir a ordem cronológica da agenda.
+
+A apresentação definitiva será decidida na revisão de Eventos/Postagens.
 
 Na Gestão de Mídia/CMS, esse feed deve evoluir para conteúdo editorial
 publicável, preservando a possibilidade de relacionar uma novidade a Evento,
