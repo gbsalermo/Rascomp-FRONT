@@ -1986,3 +1986,14 @@ Competition + categoria Futebol + competidores
 Os robôs podem ser fornecidos/atribuídos pela organização. Não criar Robot fictício para satisfazer FK.
 
 Ficam para a ETAPA 6: regras de partida, placar, cronômetro (referência atual de 2 min), empate/desempate, chaveamento, inspeção e penalidades.
+
+
+### Integração pública e portabilidade da Beta
+
+A Landing é a porta de entrada pública. Deve existir CTA **Inscrever-se** que leve à aplicação autenticada de Gestão/Participante.
+
+A URL do sistema autenticado é configuração de ambiente.
+
+A primeira infraestrutura pode ser criada temporariamente em conta pessoal para acelerar o lançamento, mas deve permanecer migrável para conta própria + domínio próprio. Banco, storage, DNS, URLs e secrets não podem depender estruturalmente da conta temporária.
+
+Branches Beta serão sequenciais e isoladas: A → merge → B → merge → C → merge → D.
