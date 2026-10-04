@@ -1,6 +1,6 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
-Última revisão: **03/10/2026**
+Última revisão: **04/10/2026**
 
 Este documento é um **checkpoint específico da aplicação `landing-page/`**. Ele preserva decisões visuais/funcionais da Landing, mas não define a etapa global do RasComp.
 
@@ -66,6 +66,56 @@ Header / navegação
 ```
 
 A ordem pode ser ajustada durante a revisão, mas sem perder rastreabilidade.
+
+
+## Progresso da V1-BETA A — revisão seção por seção
+
+```text
+Header / navegação       ✅ CONCLUÍDO E VALIDADO — 04/10/2026
+Hero / destaques         ▶ PRÓXIMA SEÇÃO
+Demais seções            ⏳ aguardando revisão Beta A
+```
+
+### Header — fechamento Beta A
+
+O Header foi redesenhado e validado em desktop e mobile com:
+
+- identidade IEEE RAS UFRB ampliada e legível;
+- logo oficial em `/ieee-ras-official.png`;
+- navegação institucional simplificada;
+- itens principais: Sobre, Equipe, Galeria, Eventos, Contato;
+- área competitiva exibida quando houver competição em andamento;
+- CTA permanente `Inscrever-se`;
+- `VITE_GESTAO_URL` como destino configurável do CTA;
+- menu mobile com CTA visível e botão hambúrguer;
+- correção de conflito com CSS legado do Header;
+- comportamento responsivo e escala específica da logo no mobile;
+- faixa rubra condicional para competição em andamento.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/InstitutionalHeader.vue
+landing-page/src/header.css
+landing-page/src/header-identity.css
+landing-page/src/App.vue
+```
+
+### Revisão especial pós-seções — modo competição
+
+Depois da revisão individual de todas as seções da Landing, executar uma rodada específica da experiência **em época de competição**.
+
+Objetivo:
+
+```text
+Landing institucional normal
+→ modo de competição ativo
+→ priorizar acompanhamento do RRC
+→ avaliar mover a seção competitiva para o início da Home
+→ facilitar acesso a status, cronograma, resultados e chaveamento
+```
+
+Essa decisão deve ser tomada somente depois de todas as seções estarem polidas, para comparar a hierarquia normal da Landing com a hierarquia necessária durante o evento.
 
 ## Integração com o sistema autenticado
 
