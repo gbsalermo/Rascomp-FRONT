@@ -24,7 +24,7 @@ const competitionId = ref<number>()
 const followCategoryId = ref<number>()
 const bracketId = ref<number>()
 let timer: number | undefined
-const managementUrl = import.meta.env.VITE_GESTAO_URL || 'http://localhost:5173'
+const managementUrl = String(import.meta.env.VITE_GESTAO_URL || (import.meta.env.DEV ? 'http://localhost:5173' : '')).trim()
 const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
 const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html'
 
