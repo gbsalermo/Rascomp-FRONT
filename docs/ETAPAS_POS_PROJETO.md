@@ -233,6 +233,67 @@ Obrigatório:
 
 A migração futura não pode exigir reescrever o sistema.
 
+### Regra permanente — modo local e contingência de competição
+
+O deploy em nuvem **não pode remover nem degradar o modo local**.
+
+O RasComp deve continuar podendo operar com:
+
+```text
+Landing/Vite local ou build estático local
++
+Gestão/Participante local
++
+Spring Boot local
++
+MySQL local/rede local
++
+storage local configurável
+```
+
+Objetivos:
+
+- desenvolvimento sem dependência da cloud;
+- homologação local;
+- demonstrações;
+- contingência operacional no dia da competição.
+
+Cloudflare é infraestrutura de publicação/proteção, não requisito funcional do domínio.
+
+#### Cloudflare e quotas
+
+Na V1-BETA B, revalidar limites e preços vigentes antes do provisionamento.
+
+Diretriz arquitetural:
+
+- Landing/assets estáticos podem aproveitar CDN/static hosting;
+- evitar arquitetar toda chamada dinâmica da API como execução obrigatória de Worker com quota diária;
+- backend Spring Boot e MySQL devem continuar acessíveis/operáveis independentemente dessa quota;
+- nenhum limite comercial específico deve ser assumido permanentemente no código ou na documentação operacional sem nova conferência.
+
+#### Contingência local de evento
+
+Antes da primeira competição oficial, executar um ensaio de operação sem cloud:
+
+```text
+backup/snapshot recente da produção
+→ restore em MySQL local
+→ arquivos necessários disponíveis localmente
+→ URLs/API configuradas para rede local
+→ Gestão + Portal + operação competitiva funcionando
+```
+
+Regras:
+
+- documentar passo a passo do cutover;
+- testar acesso por outros computadores/celulares na rede local;
+- validar Follow, Sumô, chaves, ranking e inscrições já existentes;
+- evitar operação simultânea cloud + local com escritas independentes;
+- durante contingência, definir explicitamente qual ambiente é a fonte de verdade;
+- ao retornar à cloud, executar procedimento controlado de reconciliação/restauração, nunca copiar dados manualmente sem rastreabilidade.
+
+O plano local é uma **contingência**, não substitui backup, observabilidade ou infraestrutura de produção adequada.
+
 ## V1-BETA C — Cadastro, acesso e inscrições reais
 
 Objetivo: permitir uso real do sistema antes da primeira competição oficial.
