@@ -1,6 +1,6 @@
 # RasComp — Roadmap Pós-Projeto
 
-Última revisão: **30/09/2026**
+Última revisão: **03/10/2026**
 
 Este é o **único documento canônico para ordem de execução, prioridade, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -59,7 +59,7 @@ ETAPA 2  ✅ CONCLUÍDA / VALIDADA — Limpeza técnica e organização de códi
 ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 
 PRIORIDADE 1 — FINALIZAÇÃO E POLIMENTO DO MVP
-ETAPA 4  🚧 EM ANDAMENTO — Consolidação funcional e polimento do MVP — BLOCO 3 concluído / BLOCO 4 em andamento
+ETAPA 4  ✅ CONCLUÍDA / VALIDADA — Consolidação funcional do MVP atual
 ETAPA 5  ⏳ NÃO INICIADA — Ajustes Gerais DEV + auditoria
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -76,7 +76,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
 ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
 ETAPA 16 ⏳ NÃO INICIADA — Deploy em nuvem / Cloudflare
 
-**Etapa atual: ETAPA 4 — EM ANDAMENTO. BLOCO 1, BLOCO 2 e BLOCO 3 concluídos/validados. BLOCO 4 — Portal do Participante — em andamento. Depois do BLOCO 4 resta apenas o smoke geral de encerramento da ETAPA 4. A Landing/Galeria recebe somente smoke básico aqui; o trabalho completo permanece na ETAPA 9. Não avançar para a ETAPA 5 sem confirmação explícita.**
+**Etapa atual: ETAPA 4 CONCLUÍDA / VALIDADA. O próximo trabalho será definido após este merge. Decisão já tomada: o antigo BLOCO 4.4 não seguirá isoladamente; o polimento da Landing será unificado com a etapa já prevista para Landing/Galeria/conteúdo público. Numeração, nome e escopo definitivo dessa etapa consolidada serão decididos antes de iniciar a próxima execução.**
 
 ---
 
@@ -172,7 +172,7 @@ Para impedir que a ETAPA 4 volte a crescer como um roadmap paralelo:
 - recursos avançados do Portal permanecem na **ETAPA 7**.
 - Landing/Galeria continuam apenas no smoke geral; implementação/polimento completo permanece na **ETAPA 9**.
 
-### BLOCO 4 — Portal do Participante 🚧 EM ANDAMENTO
+### BLOCO 4 — Portal do Participante ✅ CONCLUÍDO / VALIDADO
 
 Escopo congelado em quatro sub-blocos:
 
@@ -210,20 +210,21 @@ Escopo congelado em quatro sub-blocos:
 - V25 + V26 sustentam o domínio revisado;
 - validação manual canônica em `VALIDACAO_ETAPA4_BLOCO4.md`.
 
-**4.4 — Polimento + validação**
-- estados vazios/loading/erro;
-- líder x membro;
-- responsividade básica;
-- bateria manual do Portal;
-- smoke final da ETAPA 4.
+**4.4 — REMOVIDO DA ETAPA 4 / ABSORVIDO PELO EIXO FUTURO DE LANDING**
+- não será executado como bloco separado;
+- polimento da Landing será consolidado com a etapa já existente de Landing/Galeria/conteúdo público;
+- definição final dessa etapa consolidada ocorrerá somente após o merge da ETAPA 4.
 
-Checkpoint atual — 01/10/2026:
-- 4.1 — equipe e associação: ✅ implementado;
-- 4.2 — responsáveis/ownership por robô: ✅ implementação revisada;
-- 4.3 — inscrição individual + Robot: 🧪 implementação V25/V26 revisada e aguardando build + validação manual;
-- documento funcional: `REGRAS_PARTICIPANTE.md`;
-- bateria manual: `VALIDACAO_ETAPA4_BLOCO4.md`;
-- BLOCO 4.4 permanece **NÃO INICIADO** até o aceite do 4.3.
+Checkpoint final — 03/10/2026:
+- 4.1 — equipe e associação: ✅ validado;
+- 4.2 — responsáveis/ownership por Robot: ✅ validado;
+- 4.3 — inscrição individual + Robot: ✅ validado;
+- bateria manual 1–40: ✅ concluída;
+- regressão focal R1–R17: ✅ concluída;
+- documentação funcional: `REGRAS_PARTICIPANTE.md`;
+- validação histórica: `VALIDACAO_ETAPA4_BLOCO4.md`;
+- ETAPA 4: ✅ CONCLUÍDA / VALIDADA;
+- antigo 4.4: removido como bloco independente e reservado para consolidação futura com Landing/Galeria.
 
 ### Relação da ETAPA 4 com o eixo mobile
 
@@ -321,9 +322,11 @@ Reutilizar `ObjectStorageService` + Cloudflare R2 quando aplicável. Não criar 
 
 Esta etapa é parte do MVP porque hoje a permissão MIDIA existe, mas o site ainda não possui fluxo real de alimentação editorial.
 
-## ETAPA 9 — Landing + Galeria + conteúdo público real
+## ETAPA 9 — Landing + Galeria + conteúdo público real — ⚠️ SERÁ CONSOLIDADA/REPLANEJADA
 
-**Objetivo:** consolidar a experiência pública usando API pública + CMS + mídia real.
+> Decisão de 03/10/2026: esta entrega absorverá também o polimento da Landing que antes aparecia como BLOCO 4.4. Antes de iniciar o próximo trabalho, serão decididos nome, numeração, posição e escopo definitivo da etapa única. Este trecho permanece como inventário funcional, não como ordem final já aprovada.
+
+**Objetivo-base:** consolidar a experiência pública usando API pública + CMS + mídia real.
 
 Fechar definitivamente:
 
@@ -1785,3 +1788,61 @@ Estado: implementação revisada, **ainda não validada manualmente**. 4.4 segue
 A bateria 1–40 foi executada. Os achados originaram V27 e ajustes de UX/regra: edição/remoção segura de Robot, descrição snapshot na Registration, métricas/filtro/título mais claros, líder visível, veto de composição realmente reversível e consolidação automática de mudanças não vetadas no início da Competition.
 
 O BLOCO 4.3 permanece aberto apenas para a regressão focal R1–R15 e confirmação de build/testes. O BLOCO 4.4 continua NÃO INICIADO.
+
+
+---
+
+## Encerramento canônico da ETAPA 4 — 03/10/2026
+
+**Status final: ✅ CONCLUÍDA / VALIDADA MANUALMENTE / AUTORIZADA PARA MERGE.**
+
+A ETAPA 4 foi encerrada após:
+
+- BLOCO 1 validado;
+- BLOCO 2 validado;
+- BLOCO 3 validado;
+- BLOCO 4.1 — equipe e associação validado;
+- BLOCO 4.2 — RobotResponsible / ownership validado;
+- BLOCO 4.3 — inscrição individual + inscrição de Robot validado;
+- bateria manual principal **1–40 concluída**;
+- regressão pós-bateria **R1–R17 concluída**;
+- correções finais de status, liderança, veto, ciclo operacional e entrada manual DEV validadas pelo usuário;
+- migrations atuais consolidadas até **V27**;
+- documentação cross-repo revisada e sincronizada.
+
+Decisões finais relevantes:
+
+- Minha inscrição e inscrição do Robot são fluxos separados;
+- RobotResponsible permanece N:N e separado de ownership;
+- composição competitiva é automática e depende de elegibilidade;
+- um responsável APROVADO já permite aprovação do Robot;
+- alterações antes da prova valem automaticamente e podem ser vetadas pela GESTAO;
+- mudanças não vetadas são consolidadas no início;
+- composição/responsabilidade ficam congeladas durante a Competition;
+- líder atual possui proteção contra rejeição definitiva;
+- DEV pode transferir liderança com auditoria;
+- DEV pode incluir participante/Robot de forma excepcional e auditada, inclusive durante EM_ANDAMENTO;
+- Portal do Participante e GESTAO refletem o mesmo Registration.status, com atualização do Portal ao retornar à aba;
+- edição/remoção segura de Robot e descrição snapshot da Registration estão consolidadas.
+
+### Decisão de fronteira após o encerramento
+
+O antigo **BLOCO 4.4 — polimento/landing** deixa de existir como continuação da ETAPA 4.
+
+O trabalho de:
+
+```text
+polimento da Landing
++
+Landing/Galeria/conteúdo público já previsto no roadmap
+```
+
+será tratado como **uma única etapa futura consolidada**.
+
+A numeração, o nome definitivo, a prioridade relativa e o escopo dessa etapa única **não são definidos neste fechamento**. Eles serão decididos antes de iniciar o próximo trabalho.
+
+### CI / build remoto
+
+Não havia execução nova registrada do GitHub Actions nos heads finais no momento deste fechamento. Portanto, este documento **não declara CI remoto verde**.
+
+O encerramento desta etapa é baseado na validação manual completa realizada pelo usuário e na autorização explícita de merge em 03/10/2026.
