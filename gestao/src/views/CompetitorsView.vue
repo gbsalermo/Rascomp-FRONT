@@ -199,7 +199,14 @@ onMounted(load)
       </div>
 
       <el-table :data="visibleCompetitors" empty-text="Nenhum competidor encontrado">
-        <el-table-column prop="nome" label="Competidor" min-width="190" />
+        <el-table-column label="Competidor" min-width="210">
+          <template #default="{ row }">
+            <div class="competitor-name-cell">
+              <strong>{{ row.nome }}</strong>
+              <el-tag v-if="row.teamLeader" size="small" type="success" effect="light">Líder</el-tag>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column prop="teamNome" label="Equipe" min-width="180" />
         <el-table-column label="Instituição" min-width="180">
           <template #default="{ row }">
@@ -248,11 +255,10 @@ onMounted(load)
     </article>
 
     <div class="callout">
-      <strong>Competidor e robô não possuem vínculo de propriedade direto.</strong>
+      <strong>Responsabilidade, autoria e participação são relações diferentes.</strong>
       <p>
-        Os robôs abaixo são exibidos a partir das inscrições em que o competidor participa.
-        Competidores vinculados a uma conta PARTICIPANTE têm nome, contato e situação sincronizados pela gestão de Usuários.
-        Transferências entre equipes continuam reservadas ao fluxo administrativo auditável da ETAPA 5.
+        O competidor pode ser responsável por vários robôs, enquanto o cadastro do robô preserva quem o criou.
+        A liderança da equipe aparece identificada separadamente e não altera automaticamente autoria ou composição competitiva.
       </p>
     </div>
 
@@ -263,7 +269,11 @@ onMounted(load)
             <span class="eyebrow">Cadastro</span>
             <h2>{{ selectedCompetitor.nome }}</h2>
             <div class="competitor-detail-grid">
-              <div><small>Equipe</small><strong>{{ selectedCompetitor.teamNome || '—' }}</strong></div>
+              <div>
+                <small>Equipe</small>
+                <strong>{{ selectedCompetitor.teamNome || '—' }}</strong>
+                <el-tag v-if="selectedCompetitor.teamLeader" size="small" type="success" effect="light">Líder da equipe</el-tag>
+              </div>
               <div><small>Instituição</small><strong>{{ selectedCompetitor.institutionSigla || selectedCompetitor.institutionNome || '—' }}</strong></div>
               <div><small>E-mail</small><strong>{{ selectedCompetitor.email || '—' }}</strong></div>
               <div><small>Telefone</small><strong>{{ selectedCompetitor.telefone || '—' }}</strong></div>
@@ -295,6 +305,7 @@ onMounted(load)
 </template>
 
 <style scoped>
+.competitor-name-cell { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .competitor-detail { display:grid; gap:22px; }
 .competitor-detail h2 { margin:4px 0 14px; }
 .competitor-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
