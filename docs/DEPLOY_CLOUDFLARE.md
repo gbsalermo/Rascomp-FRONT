@@ -1154,3 +1154,58 @@ Por isso:
 - static assets/CDN e API dinâmica devem ser tratados como cargas diferentes.
 
 Se a arquitetura/conta escolhida passar a impor uma quota inadequada ao evento, deve ser possível trocar plano/provedor ou operar localmente sem alterar o domínio do RasComp.
+
+
+---
+
+## Estratégias de execução aprovadas
+
+### Estratégia A — cloud
+
+Usar a infraestrutura cloud provisionada normalmente.
+
+Escolher quando:
+
+- teste de carga aprovado;
+- limites/custos do provedor considerados adequados;
+- latência e estabilidade satisfatórias;
+- banco/storage/backup operacionais.
+
+### Estratégia B — servidor local publicado por Cloudflare Tunnel
+
+O servidor físico da organização pode rodar:
+
+```text
+frontend
+Spring Boot
+MySQL
+storage
+```
+
+e ser publicado externamente por Cloudflare Tunnel.
+
+Objetivo:
+
+- manter acesso pelo domínio;
+- não expor MySQL diretamente;
+- não abrir portas públicas desnecessárias;
+- preservar acesso pela LAN;
+- reduzir dependência da capacidade do backend hospedado em cloud/Workers quando desejado.
+
+A decisão A/B deve ser baseada nos testes de carga da versão candidata.
+
+Se houver baixa confiança na capacidade da VIA A para o evento, a VIA B é uma alternativa oficial, não um workaround improvisado.
+
+Na VIA B, preparar:
+
+- máquina dedicada ou estável;
+- Ethernet preferencial;
+- suspensão desativada;
+- energia estável;
+- cloudflared supervisionado;
+- Spring supervisionado;
+- MySQL local;
+- backup externo;
+- restore testado;
+- URLs por ambiente;
+- smoke via internet e LAN.
