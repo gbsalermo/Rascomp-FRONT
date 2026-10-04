@@ -275,3 +275,20 @@ BLOCO 4.4 = NÃO INICIADO
 ## Checkpoint pós-bateria manual — 03/10/2026
 
 O BLOCO 4.3 teve a bateria 1–40 executada e recebeu correções focais de QA. A fonte funcional continua sendo `REGRAS_PARTICIPANTE.md`; a regressão curta R1–R15 está em `VALIDACAO_ETAPA4_BLOCO4.md`. Migrations atuais: V1–V27. O 4.4 ainda não foi iniciado.
+
+
+## Fechamento ETAPA 4 — 03/10/2026
+
+```text
+ETAPA 4                 ✅ CONCLUÍDA / VALIDADA
+Bateria Portal 1–40     ✅
+Regressão R1–R17        ✅
+Migrations              V1–V27
+Próxima migration       V28+
+```
+
+Fonte funcional do Portal: `REGRAS_PARTICIPANTE.md`.
+
+Histórico de validação: `VALIDACAO_ETAPA4_BLOCO4.md`.
+
+O antigo BLOCO 4.4 foi retirado desta etapa. O polimento da Landing será consolidado futuramente com a entrega já prevista de Landing/Galeria; planejamento definitivo será feito após o merge da ETAPA 4.
