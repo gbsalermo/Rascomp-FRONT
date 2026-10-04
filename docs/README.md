@@ -1,6 +1,6 @@
 # RasComp — Índice da Documentação
 
-Última revisão: **01/10/2026**
+Última revisão: **03/10/2026**
 
 Este é o ponto de entrada para qualquer pessoa ou IA que precise entender ou continuar o RasComp.
 
@@ -30,19 +30,17 @@ A documentação foi revisada para evitar roadmaps paralelos, snapshots de demon
    → checkpoint vivo do backend
 ```
 
-Estado oficial em 01/10/2026:
+Estado oficial em 03/10/2026:
 
 ```text
-ETAPA 0  ✅ concluída / validada
-ETAPA 1  ✅ concluída / validada
-ETAPA 2  ✅ concluída / validada
-ETAPA 3  ✅ concluída / validada
-ETAPA 4  🚧 em andamento
-  BLOCO 1 ✅
-  BLOCO 2 ✅
-  BLOCO 3 ✅ concluído / validado
-  BLOCO 4 🚧 Portal do Participante — 4.1 ✅ / 4.2 ✅ base / 4.3 🧪 implementado aguardando validação / 4.4 ⏳
+ETAPAS 0–4    ✅ concluídas / validadas
+V1-BETA A     🚧 próxima — Landing pública
+V1-BETA B     ⏳ cloud + banco de produção
+V1-BETA C     ⏳ cadastro/acesso/inscrições reais
+V1-BETA D     ⏳ smoke + estabilização
 ```
+
+O roadmap oficial é retomado depois da V1 Beta. Produção receberá apenas versões validadas em ambiente não-prod.
 
 A ETAPA 1 foi concluída em 12/09/2026 após os cinco blocos funcionais e a validação integrada. O checkpoint final possui **111 testes verdes**, fluxos integrados com services/repositories reais e smoke do `testdata` contra MySQL + Flyway V12. A ETAPA 2 foi concluída/validada em 13/09/2026. A ETAPA 3 também está concluída/validada após integração, testes HTTP e validação prática dos perfis.
 
@@ -142,7 +140,7 @@ DECISAO_DEPLOY_CLOUD.md
 DEPLOY_CLOUDFLARE.md
 ```
 
-Referências da ETAPA 16. Não significam que o deploy já começou.
+Referências técnicas do primeiro deploy. Desde 03/10/2026, o primeiro go-live pertence ao TRILHO V1 BETA; ETAPA 16 representa consolidação final.
 
 ---
 
@@ -198,8 +196,9 @@ Avisos + Telegram                     ETAPA 11
 Telegram                              canal complementar ao IN_APP
 Vínculo RasComp ↔ Telegram            não obrigatório inicialmente
 Código de Registration no Telegram    opção futura/inicialmente opcional
-Landing + Galeria                     consolidação na ETAPA 9
-Deploy                                ETAPA 16
+Landing + Galeria                     Landing entra agora na V1-BETA A; ETAPA 9 será deduplicada/replanejada
+Primeiro go-live                      TRILHO V1 BETA
+Deploy/hardening definitivo           ETAPA 16 reinterpretada
 ```
 
 Camunda não faz parte da arquitetura atual.
