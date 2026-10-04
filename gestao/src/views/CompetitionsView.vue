@@ -24,7 +24,6 @@ const registrations = ref<Registration[]>([])
 const windowHistory = ref<CompetitionRegistrationWindowChange[]>([])
 const categoryCatalog = ref<Category[]>([])
 const editingId = ref<number | null>(null)
-const originalStatus = ref<CompetitionStatus>('PLANEJADA')
 const windowForm = reactive({ novaDataFim: '', motivo: '' })
 
 const emptyForm = (): Competition => ({
@@ -47,15 +46,6 @@ const statusLabels: Record<CompetitionStatus, string> = {
   CANCELADA: 'Cancelada'
 }
 
-const nextStatuses: Record<CompetitionStatus, CompetitionStatus[]> = {
-  PLANEJADA: ['INSCRICOES_ABERTAS', 'CANCELADA'],
-  INSCRICOES_ABERTAS: ['INSCRICOES_ENCERRADAS', 'CANCELADA'],
-  INSCRICOES_ENCERRADAS: ['EM_ANDAMENTO', 'CANCELADA'],
-  EM_ANDAMENTO: ['FINALIZADA', 'CANCELADA'],
-  FINALIZADA: [],
-  CANCELADA: []
-}
-
 const form = reactive<Competition>(emptyForm())
 const activeCompetition = computed(() => competition.selectedCompetition)
 const canChangeRegistrationWindow = computed(() =>
@@ -65,11 +55,6 @@ const canChangeRegistrationWindow = computed(() =>
 const registrationWindowActionLabel = computed(() =>
   activeCompetition.value?.status === 'INSCRICOES_ENCERRADAS' ? 'Reabrir inscrições' : 'Prorrogar inscrições'
 )
-const allowedStatusOptions = computed<CompetitionStatus[]>(() => {
-  if (!editingId.value) return ['PLANEJADA']
-  return [originalStatus.value, ...nextStatuses[originalStatus.value]]
-})
-
 const nextOperationalStatus = computed<CompetitionStatus | undefined>(() => {
   const current = activeCompetition.value?.status
   if (!current) return undefined
@@ -210,7 +195,6 @@ async function load() {
 function openCreate() {
   Object.assign(form, emptyForm())
   editingId.value = null
-  originalStatus.value = 'PLANEJADA'
   editionsOpen.value = false
   dialog.value = true
 }
@@ -287,7 +271,7 @@ async function advanceCompetitionStatus() {
   if (!active?.id || !target) return
 
   const warning = target === 'EM_ANDAMENTO'
-    ? 'Ao iniciar a competição, a geração comum de novas chaves deixa de ser permitida. Confirme que os chaveamentos necessários já foram preparados.'
+    ? 'A competição só pode iniciar após o encerramento das inscrições. Ao confirmar, alterações normais de composição ficam congeladas e a operação passa para EM_ANDAMENTO. Confirme também que os chaveamentos necessários já foram preparados.'
     : target === 'FINALIZADA'
       ? 'Ao finalizar a competição, esta edição deixa de ser a edição operacional vigente da GESTÃO.'
       : `A competição passará para: ${statusLabels[target]}.`
@@ -536,15 +520,12 @@ onMounted(load)
         <label>Fim das inscrições<el-date-picker v-model="form.fimInscricoes" value-format="YYYY-MM-DD" type="date" /></label>
         <label>Data inicial<el-date-picker v-model="form.dataInicio" value-format="YYYY-MM-DD" type="date" /></label>
         <label>Data final<el-date-picker v-model="form.dataFim" value-format="YYYY-MM-DD" type="date" /></label>
-        <label class="span-2">Status
-          <el-select v-model="form.status" style="width:100%">
-            <el-option
-              v-for="item in allowedStatusOptions"
-              :key="item"
-              :label="statusLabels[item]"
-              :value="item"
-            />
-          </el-select>
+        <label class="span-2">Status operacional
+          <el-input :model-value="statusLabels[form.status]" disabled />
+          <small class="muted">
+            O status não é alterado pela edição comum. Use as ações operacionais da página:
+            Abrir inscrições → Encerrar inscrições → Iniciar competição.
+          </small>
         </label>
       </div>
       <template #footer>
