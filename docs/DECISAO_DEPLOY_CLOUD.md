@@ -1,9 +1,11 @@
 # RasComp — Decisão Congelada de Deploy em Nuvem
+> **Atualização de estratégia — 03/10/2026:** a arquitetura técnica deste documento continua como referência do primeiro deploy, mas a premissa de calendário "somente ETAPA 16" foi superada. O primeiro go-live agora ocorre no **TRILHO V1 BETA**, após Landing + preparação cloud/banco + validação. A futura ETAPA 16 passa a representar consolidação/hardening da produção definitiva.
+
 
 Data da decisão: **26/08/2026**  
 Meta de resolução inicial: **até domingo, 30/08/2026**.
 
-Este documento congela a arquitetura escolhida para o primeiro deploy do RasComp. O objetivo é impedir que a implantação em nuvem force uma reescrita do backend ou quebre o funcionamento local já validado. No roadmap atual, o deploy é a **ETAPA 16**, última etapa do ciclo, após a ETAPA 15 de validação final.
+Este documento congela a arquitetura escolhida para o primeiro deploy do RasComp. O objetivo é impedir que a implantação em nuvem force uma reescrita do backend ou quebre o funcionamento local já validado. Historicamente o primeiro deploy estava reservado à ETAPA 16. A decisão de 03/10/2026 antecipou o primeiro go-live para o **TRILHO V1 BETA**; ETAPA 16 permanece como consolidação final.
 
 Documento operacional detalhado:
 
