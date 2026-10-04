@@ -1120,3 +1120,37 @@ Só publicar oficialmente quando todos estiverem marcados:
 ```
 
 Esse processo cria uma implantação em nuvem sem sacrificar a execução local que já existe.
+
+
+---
+
+## Contingência local obrigatória
+
+O primeiro deploy Beta deve preservar a possibilidade de retirar a cloud do caminho sem reescrever o sistema.
+
+Antes da primeira competição oficial, validar:
+
+```text
+1. export/backup do MySQL de produção
+2. restore em MySQL local
+3. arquivos/uploads necessários copiados ou restaurados
+4. backend Spring Boot apontando para banco local
+5. Landing/Gestão apontando para API local/LAN
+6. máquinas e celulares acessando pela rede local
+7. smoke competitivo
+```
+
+O procedimento deve ser documentado com comandos/variáveis reais na V1-BETA B.
+
+### Sobre limites da Cloudflare
+
+Os limites comerciais/técnicos podem mudar.
+
+Por isso:
+
+- não congelar no código pressupostos sobre quotas diárias;
+- revalidar a documentação oficial da Cloudflare na V1-BETA B e antes de competição relevante;
+- evitar Worker obrigatório para cada request dinâmica quando uma arquitetura desacoplada for suficiente;
+- static assets/CDN e API dinâmica devem ser tratados como cargas diferentes.
+
+Se a arquitetura/conta escolhida passar a impor uma quota inadequada ao evento, deve ser possível trocar plano/provedor ou operar localmente sem alterar o domínio do RasComp.
