@@ -1,6 +1,6 @@
 # Validação — ETAPA 4 / BLOCO 4 — Portal do Participante
 
-Última atualização: **01/10/2026**
+Última atualização: **03/10/2026**
 
 Status:
 
@@ -724,3 +724,271 @@ ex-líder pode então ser rejeitado
 ```
 
 **Não considerar esse checkpoint verde até existir execução real da suíte/build nos heads atuais.**
+
+
+---
+
+# 7. Regressão pós-bateria 1–40 — 03/10/2026
+
+A bateria manual principal foi **executada integralmente até o Teste 40**.
+
+Resultado:
+
+- testes 35–40: validados;
+- fluxo principal de inscrição pessoal/Robot: validado;
+- rejeição automática e reinscrição: validadas;
+- ownership e N:N: validados;
+- congelamento no início: validado;
+- foram encontrados ajustes de UX e três comportamentos de composição que exigiram correção antes do fechamento do 4.3.
+
+## Achados corrigidos
+
+1. Robot passou a ter ações de **Editar** e **Remover** no Portal para criador/líder.
+2. Remoção é bloqueada enquanto houver Registration PENDENTE/APROVADA.
+3. Duplicidade por nome dentro da mesma Team já era protegida no backend/banco; Portal agora antecipa o aviso quando possível.
+4. Nome e descrição simples do Robot podem ser editados.
+5. V27 adiciona snapshot opcional de descrição do Robot à Registration.
+6. Seção **Inscrições dos robôs** recebeu maior contraste/tamanho.
+7. Avisos pendentes/dependências receberam maior destaque.
+8. Cards da GESTAO agora deixam explícito que contam **inscrições dos robôs**, não inscrições pessoais.
+9. Filtro de Competition da página Inscrições foi movido para o topo.
+10. Título da aba do navegador passou a variar por perfil:
+    - Participante;
+    - Gestão;
+    - Administração/DEV.
+11. Reincluir responsável gera um novo aviso de composição para a GESTAO.
+12. Vetar remoção restaura o RobotResponsible.
+13. Vetar adição desfaz a nova responsabilidade.
+14. Alteração sem decisão da GESTAO não exige aprovação: ao iniciar a Competition, pendências de revisão são consolidadas automaticamente como MANTIDA.
+15. Motivo da proteção do líder ficou visível na interface.
+16. Status da Competition não pode mais ser alterado pela edição comum.
+17. Fluxo operacional explícito:
+    ```text
+    INSCRICOES_ABERTAS
+    → Encerrar inscrições
+    → INSCRICOES_ENCERRADAS
+    → Iniciar competição
+    → EM_ANDAMENTO
+    ```
+18. Líder da Team passou a ser identificado na visão do participante e da GESTAO.
+19. Seed Postman foi isolado do profile `testdata`, permitindo recriar `rascomp_b4_validation` do zero.
+
+## Entrada excepcional durante a competição
+
+Já existe camada excepcional DEV:
+
+```text
+Entrada manual DEV
+→ PARTICIPANTE existente
+→ já associado a Team
+→ Robot novo
+→ responsabilidade formalizada
+→ Registration APROVADA
+→ justificativa + auditoria
+```
+
+Ela funciona inclusive em `EM_ANDAMENTO`.
+
+Isso **não é autorização para aprovar inscrições normais atrasadas durante a prova**. O fluxo normal permanece congelado.
+
+A criação completamente manual de **pessoa/competidor sem conta/vínculo prévio**, como contingência operacional, continua no roadmap DEV e não deve ser confundida com a entrada manual atualmente implementada.
+
+---
+
+# 8. Bateria curta de regressão dos achados
+
+Não é necessário repetir os 40 testes. Validar apenas os pontos abaixo após atualizar backend/frontend.
+
+### R1 — Editar Robot
+
+Como Membro, no Vespa:
+
+- editar nome;
+- editar descrição;
+- salvar;
+- restaurar o nome original ao final.
+
+Esperado: alteração aparece no Portal.
+
+### R2 — Duplicidade de Robot
+
+Tentar cadastrar outro Robot com nome `B4 · Vespa` na mesma Team.
+
+Esperado:
+
+- Portal pode antecipar o aviso;
+- backend bloqueia definitivamente;
+- nenhum Robot duplicado é criado.
+
+### R3 — Remoção segura
+
+Em um Robot sem Registration ativa:
+
+- remover cadastro.
+
+Esperado:
+
+- deixa de aparecer no Portal;
+- histórico permanece.
+
+Em Robot com Registration PENDENTE/APROVADA:
+
+- tentar remover.
+
+Esperado:
+
+- bloqueio;
+- orientação para regularizar/cancelar a Registration.
+
+### R4 — Descrição da inscrição
+
+Inscrever Robot e alterar o campo **Descrição do robô nesta inscrição** antes do envio.
+
+Esperado:
+
+- comprovante + descrição são enviados;
+- GESTAO vê a descrição em **Detalhes da inscrição**;
+- editar depois a descrição geral do Robot não altera o snapshot da Registration.
+
+### R5 — Destaque visual do Portal
+
+Conferir:
+
+- seção **Inscrições dos robôs**;
+- banner/aviso de pendência.
+
+Esperado: leitura clara, sem aparência apagada.
+
+### R6 — Cards da GESTAO
+
+Na página Inscrições, conferir:
+
+```text
+Robôs inscritos
+Robôs pendentes
+Robôs aprovados
+Robôs rejeitados
+```
+
+Esperado: ficar explícito que os cards não contam inscrições pessoais.
+
+### R7 — Competition no topo
+
+Na página Inscrições:
+
+- seletor/contexto de Competition aparece no início da página;
+- filtro inferior fica somente com busca/status das Registrations.
+
+### R8 — Título da aba
+
+Testar logins:
+
+```text
+PARTICIPANTE → RasComp · Participante
+GESTAO       → RasComp · Gestão
+DEV          → RasComp · Administração
+```
+
+### R9 — Reinclusão gera aviso
+
+Antes do início:
+
+1. líder remove responsável;
+2. GESTAO mantém ou veta;
+3. líder associa novamente.
+
+Esperado: nova linha `ADICIONADO` aparece para GESTAO.
+
+### R10 — Veto realmente desfaz a mudança
+
+Caso A:
+
+```text
+líder remove João
+→ GESTAO veta remoção
+→ João volta a aparecer como responsável
+```
+
+Caso B:
+
+```text
+líder adiciona João
+→ GESTAO veta adição
+→ João deixa de aparecer como responsável
+```
+
+Justificativa fica auditada.
+
+### R11 — Gestão não é gargalo
+
+Criar uma alteração de responsável e **não clicar Manter nem Vetar**.
+
+Depois:
+
+```text
+Encerrar inscrições
+→ Iniciar competição
+```
+
+Esperado:
+
+- Competition inicia;
+- alteração é consolidada automaticamente como MANTIDA;
+- composição congela;
+- não sobra decisão pendente impedindo a operação.
+
+### R12 — Proteção do líder explicada
+
+Na inscrição pessoal do líder:
+
+- botão Rejeitar permanece protegido;
+- tela explica o motivo;
+- DEV continua vendo **Trocar líder**.
+
+### R13 — Ciclo operacional da Competition
+
+Com Competition em `INSCRICOES_ABERTAS`:
+
+- edição comum não permite trocar status;
+- tentativa direta de `INSCRICOES_ABERTAS → EM_ANDAMENTO` é rejeitada;
+- botão **Encerrar inscrições** funciona;
+- somente depois aparece/funciona **Iniciar competição**.
+
+### R14 — Líder visível
+
+Conferir:
+
+- Portal do Participante mostra líder da Team;
+- tabela de competidores do Portal marca `Líder`;
+- GESTAO / Competidores marca `Líder`;
+- GESTAO / Inscrições pessoais marca `Líder`.
+
+### R15 — Exceção DEV em competição iniciada
+
+Com Competition `EM_ANDAMENTO`, como DEV:
+
+- abrir **Entrada manual DEV**;
+- confirmar que a interface explica que é operação excepcional;
+- participante disponível precisa já possuir conta PARTICIPANTE + Team;
+- justificar entrada.
+
+Esperado:
+
+- fluxo excepcional permanece auditado;
+- fluxo normal de aprovação/alteração continua congelado.
+
+---
+
+# 9. Critério revisado para fechar o 4.3
+
+```text
+[✓] bateria 1–40 executada
+[✓] testes 35–40 validados
+[ ] regressão R1–R15 validada
+[ ] backend compila/testes automatizados passam
+[ ] frontend build/typecheck passa
+[ ] Flyway V27 aplica
+[ ] documentação final sincronizada
+```
+
+Somente após a regressão e builds o BLOCO 4.3 será marcado como CONCLUÍDO.
