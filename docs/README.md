@@ -180,8 +180,8 @@ EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
 
 ```text
 Banco ativo                           MySQL
-Migrations                            V1–V26 por evolução incremental
-Próxima migration                     V27+
+Migrations                            V1–V27 por evolução incremental
+Próxima migration                     V28+
 Roles atuais                          DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                               ✅ concluída / validada
 ETAPA 1                               ✅ contrato + correções + fluxos integrados concluídos
@@ -270,3 +270,8 @@ Estado atual:
 BLOCO 4.3 = implementação revisada / aguardando build + validação manual
 BLOCO 4.4 = NÃO INICIADO
 ```
+
+
+## Checkpoint pós-bateria manual — 03/10/2026
+
+O BLOCO 4.3 teve a bateria 1–40 executada e recebeu correções focais de QA. A fonte funcional continua sendo `REGRAS_PARTICIPANTE.md`; a regressão curta R1–R15 está em `VALIDACAO_ETAPA4_BLOCO4.md`. Migrations atuais: V1–V27. O 4.4 ainda não foi iniciado.
