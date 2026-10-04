@@ -96,8 +96,8 @@ PRIORIDADE 2 — ADIÇÕES, TESTES E PORTABILIDADE
 ETAPA 11 ⏳ NÃO INICIADA — Avisos IN_APP + Telegram
 ETAPA 12 ⏳ NÃO INICIADA — Portabilidade institucional
 ETAPA 13 ⏳ NÃO INICIADA — Regras, Ajuda e Segurança
-ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
-ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
+ETAPA 14 ⏳ NÃO INICIADA — Hardening de segurança + preparação de carga
+ETAPA 15 ⏳ NÃO INICIADA — Validação final + testes de carga pré-competição
 ETAPA 16 ⚠️ REINTERPRETADA — consolidação/hardening da produção definitiva; não é mais o primeiro deploy
 
 **Próximo trabalho autorizado: V1-BETA A — finalizar e polir a Landing pública.**
@@ -759,76 +759,121 @@ Validar e implementar:
 
 Na ETAPA 4, a responsabilidade é apenas garantir que a interface atual não prometa um fluxo inexistente e registrar a pendência. A implementação definitiva fica nesta ETAPA 13 para ser revisada novamente no hardening da ETAPA 14 e exercitada na validação final da ETAPA 15.
 
-## ETAPA 14 — Hardening + preparação para uso externo
+## ETAPA 14 — Hardening de segurança + preparação de carga
 
-**Objetivo:** endurecer o produto já completo antes da validação final.
+**Objetivo:** preparar o RasComp para exposição real e para o pico operacional de uma competição.
 
-Revisar sistematicamente:
+### Segurança obrigatória
 
-- autorização endpoint a endpoint;
-- erros, logs e auditoria;
-- CORS e segredos;
-- upload/storage;
-- migrations do zero e upgrade sobre banco existente;
-- backup/restore;
-- primeiro DEV;
-- instalação/upgrade;
-- testdata bloqueado em produção;
-- hardcodes institucionais remanescentes;
-- acessibilidade;
-- responsividade;
-- falhas de API/Telegram/R2;
-- concorrência crítica e rollback administrativo.
+Revisar e testar, entre outros:
 
-### Testes físicos em smartphones/tablets
+- SQL injection e manipulação de filtros/parâmetros;
+- queries sempre parametrizadas via JPA/repositories, sem concatenação insegura;
+- validação de payloads e limites de tamanho;
+- autenticação, JWT, expiração e autorização por role/ownership;
+- brute force/login abusivo;
+- rate limiting por IP/usuário/endpoint sensível;
+- proteção contra rajadas de requisições que possam saturar API ou banco;
+- limites de upload e tipos de arquivo;
+- timeouts, connection pool e limites de concorrência;
+- CORS, headers de segurança e HTTPS;
+- secrets fora do código;
+- usuário do banco com menor privilégio necessário;
+- logs/auditoria de eventos suspeitos;
+- respostas 429/4xx sem derrubar o processo;
+- proteção no edge/WAF quando disponível;
+- nenhum endpoint administrativo exposto sem autenticação/autorização.
 
-Adicionar explicitamente testes reais pela rede local ou ambiente de teste:
+### Teste de carga genérico
 
-- Android e iOS quando disponíveis;
-- diferentes larguras/alturas e orientação;
-- Chrome/Safari quando disponíveis;
-- login e sessão;
-- formulários, tabelas, diálogos e navegação;
-- Portal do Participante;
-- Gestão nas telas que fizerem sentido em mobile;
-- Landing pública;
-- chamadas reais ao backend usando IP/host acessível pelo dispositivo.
+Preparar uma suíte reproduzível para medir:
 
-DevTools continuam úteis, mas não substituem o teste físico final.
+- leitura pública;
+- login/autenticação;
+- APIs do participante;
+- APIs da GESTAO;
+- operações de escrita;
+- uploads controlados;
+- picos curtos e carga sustentada;
+- recuperação depois do pico.
 
-## ETAPA 15 — Validação final completa
+Registrar pelo menos:
 
-**Objetivo:** executar a bateria final do produto consolidado antes do deploy.
+```text
+throughput
+latência p50 / p95 / p99
+taxa de erro
+CPU
+memória
+pool de conexões
+uso do MySQL
+timeouts
+429/5xx
+tempo de recuperação
+```
 
-Inclui:
+O teste deve rodar em ambiente autorizado de staging/homologação equivalente à produção. Não executar carga destrutiva contra serviços de terceiros ou produção real sem janela/controladoria específica.
 
-- instalação/configuração limpa;
-- competição completa;
-- todos os módulos da Prioridade 1 e 2;
-- falhas e recuperação;
-- uso concorrente representativo;
-- instalação com identidade institucional alternativa;
-- mobile real;
-- smoke de storage/integradores.
+## ETAPA 15 — Validação final + testes de carga pré-competição
 
-### Validação final de permissões
+**Objetivo:** provar que a versão candidata à primeira competição oficial está funcional, segura e suporta a escala prevista.
 
-Repetir a matriz completa sobre o produto final:
+### 15.1 Validação funcional final
 
-- DEV;
-- GESTAO;
-- MIDIA;
-- PARTICIPANTE líder;
-- PARTICIPANTE membro comum;
-- rotas frontend;
-- autorização HTTP real;
-- acesso direto por URL/API;
-- criação/edição/desativação de contas internas;
-- proteção do último DEV ativo;
-- isolamento entre identidade institucional e participante;
-- acesso aos módulos adicionados depois da ETAPA 3.
+Reexecutar fluxos críticos e permissões com dados próximos do real.
 
-Essa validação substitui o antigo checkpoint separado 'ETAPA 13.5'.
+### 15.2 Carga genérica
+
+Executar a suíte genérica definida na ETAPA 14 e estabelecer baseline da versão candidata.
+
+### 15.3 Cenário específico — competição com 300 a 500 participantes
+
+Criar massa sintética representativa de uma edição real com **300–500 pessoas**, equipes, Robots, categorias e Registrations.
+
+A simulação deve cobrir o ciclo completo, incluindo tráfego concorrente representativo de:
+
+```text
+cadastro / login
+→ criação/entrada em equipe
+→ Minha inscrição
+→ comprovantes
+→ cadastro/associação de Robot
+→ inscrições competitivas
+→ análise/aprovação pela GESTAO
+→ consultas públicas/Portal
+→ geração e leitura de chaves
+→ atualizações de partidas
+→ Follow: tomadas/tentativas/tempos/ranking
+→ Sumô: partidas/rounds/resultados/progressão
+→ atualização de ranking/resultados públicos
+→ múltiplos usuários consultando enquanto a GESTAO grava resultados
+```
+
+Não basta cadastrar 500 registros e fazer uma única requisição. O cenário precisa reproduzir:
+
+- carga sustentada;
+- concorrência de leituras e escritas;
+- picos após divulgação de resultado/chave/ranking;
+- operações administrativas simultâneas;
+- atualização pública frequente durante a competição.
+
+A quantidade exata de usuários simultâneos/RPS deve ser calibrada para um evento de 300–500 participantes e revisada com métricas da Beta, em vez de assumir que todos estarão enviando requisições ao mesmo tempo.
+
+### 15.4 Critério de aceite
+
+Definir limites objetivos antes do teste, incluindo:
+
+- zero corrupção/perda de dados;
+- zero duplicidade causada por concorrência;
+- integridade de chaves/progressão;
+- rankings coerentes;
+- operações críticas concluídas dentro de latência aceitável;
+- ausência de crescimento descontrolado de memória/conexões;
+- taxa de erro dentro do limite aprovado;
+- recuperação automática após pico;
+- proteção/rate limiting funcionando sem bloquear o uso legítimo.
+
+Qualquer gargalo encontrado volta para correção em ambiente não-prod e o teste é repetido.
 
 ## ETAPA 16 — Deploy em nuvem / Cloudflare
 
@@ -2167,3 +2212,27 @@ fase atual
 ```
 
 Não criar todas as branches antecipadamente, evitando que fases futuras partam de uma base desatualizada.
+
+
+---
+
+## CHECKPOINT OBRIGATÓRIO — primeira competição oficial
+
+A existência da V1 Beta online **não autoriza automaticamente** usar a plataforma na primeira competição oficial.
+
+Antes da competição, confirmar:
+
+```text
+[ ] hardening de segurança concluído
+[ ] testes de injection/validação/autorização aprovados
+[ ] rate limiting/proteção contra rajadas configurados
+[ ] carga genérica aprovada
+[ ] cenário RRC 300–500 aprovado
+[ ] integridade de inscrições/chaves/resultados/rankings aprovada
+[ ] backup + restore novamente verificados
+[ ] observabilidade/alertas operacionais disponíveis
+[ ] plano de rollback/contingência documentado
+[ ] versão candidata congelada e validada em staging
+```
+
+Se o cenário de carga ou segurança falhar, a primeira competição oficial não deve usar aquela versão até correção e nova validação.
