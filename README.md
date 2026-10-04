@@ -380,3 +380,51 @@ A documentação técnica detalhada permanece separada da página de apresentaç
   <strong>RasComp</strong><br>
   Gestão e acompanhamento de competições de robótica — IEEE RAS UFRB
 </div>
+
+
+---
+
+## 🚀 Próximo ciclo — V1 Beta
+
+As ETAPAS 0–4 estão concluídas/validadas.
+
+O trabalho imediato segue o trilho:
+
+```text
+V1-BETA A — Landing pública
+V1-BETA B — cloud + banco + storage/secrets
+V1-BETA C — cadastro/acesso/inscrições reais
+V1-BETA D — smoke + estabilização
+```
+
+### Integração Landing → Gestão
+
+A Landing será a porta pública do RasComp e deverá possuir CTA principal como:
+
+```text
+Inscrever-se
+```
+
+Esse CTA redireciona para a aplicação autenticada de Gestão/Participante, onde cadastro, login, equipe e inscrições são realizados.
+
+O destino não deve ficar hardcoded para ambiente local. A URL da aplicação autenticada deve ser configurável por ambiente para suportar:
+
+```text
+local
+staging/homologação
+produção temporária
+produção definitiva/domínio próprio
+```
+
+### Branches do trilho Beta
+
+Cada fase terá branch própria:
+
+```text
+v1-beta-a-landing
+v1-beta-b-producao
+v1-beta-c-inscricoes
+v1-beta-d-estabilizacao
+```
+
+A próxima branch só deve nascer a partir do `main` após merge/validação da anterior.
