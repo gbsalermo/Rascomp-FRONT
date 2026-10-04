@@ -10,29 +10,29 @@ export const HOME_MEDIA = {
       alt: 'Atividade da IEEE RAS UFRB'
     },
     schools: {
-      src: '',
+      src: '/media/assets/events/ras-nas-escolas.jpg',
       alt: 'Atividade do projeto RAS nas Escolas'
     },
     workshops: {
-      src: '',
+      src: '/media/assets/events/oficina-ras.jpg',
       alt: 'Oficina promovida pela IEEE RAS UFRB'
     },
     awards: {
-      src: '',
+      src: '/media/assets/awards/conquista-ras.jpg',
       alt: 'Equipe da IEEE RAS UFRB em premiação'
     }
   },
   news: {
     workshop: {
-      src: '',
+      src: '/media/assets/events/oficina-ras.jpg',
       alt: 'Oficina da IEEE RAS UFRB'
     },
     schools: {
-      src: '',
+      src: '/media/assets/events/ras-nas-escolas.jpg',
       alt: 'Ação de extensão da IEEE RAS UFRB'
     },
     achievement: {
-      src: '',
+      src: '/media/assets/awards/conquista-ras.jpg',
       alt: 'Conquista da equipe IEEE RAS UFRB'
     }
   }
