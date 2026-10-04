@@ -322,3 +322,24 @@ Esse runbook deve incluir:
 - procedimento de retorno/reconciliação para cloud.
 
 Não operar duas bases independentes recebendo escritas simultâneas sem mecanismo explícito de sincronização.
+
+
+---
+
+## Decisão adicional — segunda via operacional
+
+A Cloud principal não é a única forma autorizada de operar o RasComp.
+
+Existe uma segunda via oficial:
+
+```text
+Cloudflare Tunnel
+→ servidor local
+→ Spring Boot + MySQL + frontends + storage local
+```
+
+Essa via poderá ser escolhida para a competição caso os testes de carga indiquem pouca margem ou baixa confiança na infraestrutura cloud/Workers escolhida.
+
+O domínio pode continuar público pelo Tunnel enquanto o processamento acontece localmente.
+
+A decisão entre cloud principal e servidor local deve acontecer após os testes de carga e antes do congelamento da versão do evento.
