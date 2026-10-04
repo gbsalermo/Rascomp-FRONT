@@ -26,16 +26,15 @@ institutional/
 └─ ras-ufrb-geral.jpg            → Hero principal / RAS UFRB
 
 events/
-├─ ras-nas-escolas.jpg           → Hero RAS nas Escolas + novidade
-└─ oficina-ras.jpg               → Hero Oficinas + novidade
+├─ ras-nas-escolas.jpg           → Hero RAS nas Escolas
+└─ oficina-ras.jpg               → Hero Oficinas
 
 awards/
-└─ conquista-ras.jpg             → Hero Conquistas + novidade
+└─ conquista-ras.jpg             → Hero Conquistas
 ```
 
-As miniaturas de "Últimas novidades" reutilizam inicialmente as mesmas imagens
-dos slides. Se depois houver interesse em imagens exclusivas por notícia,
-basta criar novos MediaAsset/slots sem alterar o layout.
+O painel superior de **Próximos eventos** não usa imagens. Ele consome a mesma
+fonte de dados da seção Eventos em `src/content/events.ts`.
 
 ## Regras de uso na Beta A
 
