@@ -144,6 +144,23 @@ Escopo mínimo:
 
 Saída: Landing pronta para divulgação externa.
 
+### Integração obrigatória Landing → sistema autenticado
+
+A Landing deve funcionar como porta pública e conter CTA principal **Inscrever-se** no menu/sidebar/navegação principal.
+
+Fluxo:
+
+```text
+Landing pública
+→ Inscrever-se
+→ aplicação Gestão/Participante
+→ cadastro ou login
+→ Portal
+→ inscrição
+```
+
+A URL de destino deve ser configurável por ambiente. Não hardcodar localhost nem domínio temporário.
+
 ## V1-BETA B — Infraestrutura de produção
 
 Objetivo: criar uma V1 real, persistente e reproduzível fora do ambiente local.
@@ -196,6 +213,25 @@ Antes da abertura também devem existir:
 - permissões dessas contas conferidas manualmente.
 
 Não usar a expressão 'contas institucionais' como requisito: o critério é serem **contas reais e verificadas para a operação**, independentemente do domínio de e-mail.
+
+### Portabilidade obrigatória da primeira infraestrutura
+
+A V1-BETA B pode ser hospedada inicialmente em uma **conta temporária do mantenedor** para acelerar a publicação.
+
+Porém a solução deve nascer pronta para migração futura para uma **conta própria do RasComp/organização e domínio próprio**.
+
+Obrigatório:
+
+- URLs frontend/API configuráveis;
+- DNS/domínio desacoplados da conta temporária;
+- secrets externos;
+- MySQL exportável/migrável;
+- storage exportável/migrável;
+- inventário dos recursos cloud;
+- procedimento documentado de migração/transferência;
+- nenhum identificador da conta temporária hardcoded na aplicação.
+
+A migração futura não pode exigir reescrever o sistema.
 
 ## V1-BETA C — Cadastro, acesso e inscrições reais
 
@@ -2107,3 +2143,27 @@ A organização **não abre inscrições reais** até todos estes pontos estarem
 Se um item estiver pendente, a publicação pode permanecer em smoke interno, mas **não pode ser anunciada como inscrições abertas**.
 
 Ajustes Gerais DEV não fazem parte desse gate e serão tratados após o site estar no ar.
+
+---
+
+### Política de branches do trilho Beta
+
+Cada fase é isolada:
+
+```text
+v1-beta-a-landing
+v1-beta-b-producao
+v1-beta-c-inscricoes
+v1-beta-d-estabilizacao
+```
+
+Regra:
+
+```text
+fase atual
+→ testes/validação
+→ merge em main
+→ próxima branch criada do novo main
+```
+
+Não criar todas as branches antecipadamente, evitando que fases futuras partam de uma base desatualizada.
