@@ -10,7 +10,7 @@
 }
 
 .institutional-header {
-  height: 120px;
+  height: 108px;
   padding: 0;
   background: rgba(255, 255, 255, .985);
   border-bottom: 1px solid #ece8ef;
@@ -59,8 +59,10 @@
   justify-self: center;
   gap: 44px;
   color: #37313d;
-  font-size: 1.12rem;
-  font-weight: 800;
+  font-family: inherit;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: .01em;
 }
 
 .institutional-nav > a,
@@ -228,8 +230,10 @@
 
   .institutional-header .institutional-nav {
     gap: 28px;
-    font-size: 1.02rem;
-    font-weight: 800;
+    font-family: inherit;
+    font-size: .98rem;
+    font-weight: 700;
+    letter-spacing: .01em;
   }
 
   .institutional-brand-copy small {
