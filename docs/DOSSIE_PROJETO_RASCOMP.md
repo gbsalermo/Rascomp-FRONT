@@ -1997,3 +1997,25 @@ A URL do sistema autenticado é configuração de ambiente.
 A primeira infraestrutura pode ser criada temporariamente em conta pessoal para acelerar o lançamento, mas deve permanecer migrável para conta própria + domínio próprio. Banco, storage, DNS, URLs e secrets não podem depender estruturalmente da conta temporária.
 
 Branches Beta serão sequenciais e isoladas: A → merge → B → merge → C → merge → D.
+
+
+---
+
+## Segurança e capacidade — gate pré-competição oficial
+
+Além do gate de abertura da Beta, existe um segundo gate específico para a **primeira competição oficial**.
+
+### Hardening
+
+Cobrir SQL injection, autorização, autenticação abusiva, rate limiting, floods/rajadas, limites de upload/payload, CORS/HTTPS, secrets, menor privilégio do banco, timeouts/pools, logs e proteção de edge/WAF quando aplicável.
+
+### Capacidade
+
+Dois testes distintos são obrigatórios:
+
+1. **Carga genérica:** baseline de APIs públicas/autenticadas, leituras, escritas e picos.
+2. **Carga RRC 300–500:** massa e concorrência representativas de 300–500 participantes, percorrendo inscrições, Gestão, chaves, Follow, Sumô, ranking e consultas públicas simultâneas.
+
+O cenário de competição deve validar consistência e concorrência, não apenas quantidade de requests.
+
+Critério principal: uma sobrecarga deve degradar/controlar o serviço de forma observável, nunca corromper inscrições, chaveamentos, resultados ou rankings.
