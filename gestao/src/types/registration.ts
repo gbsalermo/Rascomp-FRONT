@@ -17,6 +17,7 @@ export interface Registration {
   teamNome: string
   robotId: number
   robotNome: string
+  robotDescricao?: string
   competitorIds?: number[]
   competitorNomes?: string[]
   requestedByUserNome?: string
