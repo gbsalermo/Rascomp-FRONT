@@ -52,13 +52,27 @@ HOME_HERO_RAS
 HOME_HERO_SCHOOLS
 HOME_HERO_WORKSHOPS
 HOME_HERO_AWARDS
-
-HOME_NEWS_WORKSHOP
-HOME_NEWS_SCHOOLS
-HOME_NEWS_ACHIEVEMENT
 ```
 
 No código atual, esses slots são representados pelas chaves de `HOME_MEDIA`.
+
+
+### Próximos eventos da Home
+
+O painel anteriormente tratado como "Últimas novidades" foi consolidado como
+**Próximos eventos** e não utiliza imagem na Beta A.
+
+A fonte de dados é compartilhada:
+
+```text
+src/content/events.ts
+├─ HighlightsHero.vue       → resumo compacto dos primeiros eventos
+└─ InstitutionalEvents.vue  → seção completa de Eventos
+```
+
+Assim, alterar um evento na fonte central reflete nos dois pontos e evita
+conteúdo divergente. Na Gestão de Mídia/CMS, essa fonte estática poderá ser
+substituída por conteúdo editorial/API sem recriar o layout.
 
 ## Regra de reutilização
 
@@ -67,8 +81,8 @@ Um `MediaAsset` pode aparecer em vários contextos:
 ```text
 mesma foto
 ├─ Hero
-├─ notícia
 ├─ Sobre
+├─ páginas institucionais
 └─ Galeria
 ```
 
