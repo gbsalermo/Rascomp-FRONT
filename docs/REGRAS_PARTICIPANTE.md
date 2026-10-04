@@ -633,6 +633,40 @@ Não serve para substituir o fluxo normal do Portal.
 
 ---
 
+## 16.1 Conta criada durante a competição
+
+Quando uma pessoa cria uma conta `PARTICIPANTE` depois do fluxo normal, o DEV possui uma exceção auditada:
+
+```text
+conta PARTICIPANTE existente
+→ DEV: Adicionar participante avulso
+→ se não houver Competitor, selecionar Team
+→ sistema cria Competitor → Team
+→ cria/regulariza inscrição individual como APROVADA
+→ registra DEV + justificativa + data/hora
+```
+
+Esse fluxo pode ser usado inclusive com Competition `EM_ANDAMENTO`.
+
+Se a conta já possuir Competitor/Team:
+
+- a Team existente é preservada;
+- a entrada manual não transfere silenciosamente participante entre equipes.
+
+A tela DEV separa:
+
+```text
+Adicionar participante avulso
+= pessoa entra oficialmente na Competition
+
+Adicionar robô avulso
+= pessoa + Robot novo + Registration excepcional
+```
+
+A entrada de participante durante a prova **não altera automaticamente a composição de um Robot já congelado**. Colocar essa nova pessoa em um Robot existente durante `EM_ANDAMENTO` exige uma exceção administrativa específica e não deve acontecer como efeito colateral da entrada manual pessoal.
+
+---
+
 # 17. Matriz resumida de permissões
 
 | Ação | Participante comum | Líder | GESTAO | DEV |
@@ -646,6 +680,8 @@ Não serve para substituir o fluxo normal do Portal.
 | Aprovar Registration do Robot | não | não | sim | sim |
 | Manter/vetar mudança de composição | não | não | sim | sim |
 | Trocar líder | não | não | não | sim |
+| Adicionar participante avulso | não | não | não | sim |
+| Adicionar Robot avulso | não | não | não | sim |
 
 ---
 
