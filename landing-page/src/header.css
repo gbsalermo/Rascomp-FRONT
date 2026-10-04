@@ -389,12 +389,12 @@
 
 @media(max-width:500px) {
   .institutional-header {
-    height: 90px;
+    height: 78px;
   }
 
   .institutional-header .institutional-nav {
-    top: 90px;
-    max-height: calc(100vh - 110px);
+    top: 78px;
+    max-height: calc(100vh - 98px);
   }
 
   .institutional-brand-copy {
