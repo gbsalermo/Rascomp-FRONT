@@ -1874,3 +1874,30 @@ BLOCO 4.4
 ```
 
 Migrations atuais: **V1–V27**. Próxima migration estrutural: **V28+**.
+
+
+---
+
+## Encerramento definitivo da ETAPA 4 — 03/10/2026
+
+A ETAPA 4 foi encerrada após validação manual completa do Portal e das correções pós-bateria.
+
+```text
+BLOCO 1        ✅
+BLOCO 2        ✅
+BLOCO 3        ✅
+BLOCO 4.1      ✅
+BLOCO 4.2      ✅
+BLOCO 4.3      ✅
+Bateria 1–40   ✅
+Regressão R1–R17 ✅
+ETAPA 4        ✅ CONCLUÍDA
+```
+
+Migrations atuais: **V1–V27**.
+
+O documento funcional canônico do participante é `docs/REGRAS_PARTICIPANTE.md`.
+
+O antigo 4.4 de polimento não prossegue como bloco independente. Landing/polimento será consolidado com a etapa já prevista de Landing/Galeria/conteúdo público, cuja forma final será decidida após este merge.
+
+Não há afirmação de CI remoto verde neste checkpoint porque não havia execução nova registrada do GitHub Actions nos heads finais.
