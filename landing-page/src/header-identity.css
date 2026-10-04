@@ -1,21 +1,21 @@
 .institutional-brand-logo {
-  width: 118px;
-  height: 118px;
+  width: 104px;
+  height: 104px;
   object-fit: contain;
   flex: 0 0 auto;
 }
 
 @media(max-width:1180px) {
   .institutional-brand-logo {
-    width: 98px;
-    height: 98px;
+    width: 90px;
+    height: 90px;
   }
 }
 
 @media(max-width:980px) {
   .institutional-brand-logo {
-    width: 82px;
-    height: 82px;
+    width: 68px;
+    height: 68px;
   }
 }
 
