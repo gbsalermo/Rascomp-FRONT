@@ -754,3 +754,18 @@ A interface pública pode simplificar a linguagem, mas não deve alterar:
 - proteção da liderança.
 
 Mudanças futuras aprovadas no domínio devem atualizar primeiro este documento e os testes correspondentes.
+
+
+---
+
+## Status de implementação da ETAPA 4
+
+As regras deste documento foram implementadas e validadas manualmente no encerramento da ETAPA 4 em **03/10/2026**.
+
+A bateria completa está preservada em `docs/VALIDACAO_ETAPA4_BLOCO4.md`.
+
+Este documento passa a ser referência funcional para:
+- manutenção do Portal;
+- futuras telas de Regras do Participante;
+- regressões;
+- ampliação posterior do domínio.
