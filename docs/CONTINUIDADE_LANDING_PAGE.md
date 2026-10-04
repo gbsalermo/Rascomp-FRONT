@@ -72,7 +72,8 @@ A ordem pode ser ajustada durante a revisão, mas sem perder rastreabilidade.
 
 ```text
 Header / navegação       ✅ CONCLUÍDO E VALIDADO — 04/10/2026
-Hero / destaques         ▶ PRÓXIMA SEÇÃO
+Hero / destaques         ✅ CONCLUÍDO E VALIDADO — 04/10/2026
+Sobre IEEE + RAS UFRB    ▶ PRÓXIMA SEÇÃO
 Demais seções            ⏳ aguardando revisão Beta A
 ```
 
@@ -100,6 +101,50 @@ landing-page/src/header.css
 landing-page/src/header-identity.css
 landing-page/src/App.vue
 ```
+
+
+### Hero / Destaques — fechamento Beta A
+
+O Hero foi redesenhado e validado em desktop com foco em hierarquia institucional e leitura simples.
+
+Decisões finais:
+
+- imagem real em fundo full-width, sem aparência de card flutuante;
+- carrossel institucional com 4 slides:
+  - IEEE RAS UFRB;
+  - RAS nas Escolas;
+  - Oficinas;
+  - Conquistas;
+- imagens centralizadas em `homeMedia.ts`;
+- arquivos físicos organizados em `public/media/assets/`;
+- CTA primário e secundário por slide;
+- navegação por setas simples, sem círculos;
+- cards inferiores de atuação mantidos como informação estática, sem redirecionamento;
+- cards inferiores resumem Projetos, Oficinas, RAS nas Escolas e Competições;
+- painel de `Últimas novidades` removido do Hero para evitar competição visual com a mensagem principal;
+- `updates.ts` preservado para futura integração na revisão de Eventos/Postagens;
+- visual final prioriza foto + mensagem + CTA + carrossel;
+- responsividade do Hero preservada para revisão global final.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/HighlightsHero.vue
+landing-page/src/highlights-hero.css
+landing-page/src/content/homeMedia.ts
+landing-page/src/content/updates.ts
+landing-page/public/media/assets/
+```
+
+Imagens atualmente configuradas:
+
+```text
+/media/assets/institutional/ras-ufrb-geral.jpg
+/media/assets/events/ras-nas-escolas.jpg
+/media/assets/events/oficina-ras.jpg
+/media/assets/awards/conquista-ras.jpg
+```
+
 
 ### Revisão especial pós-seções — modo competição
 
