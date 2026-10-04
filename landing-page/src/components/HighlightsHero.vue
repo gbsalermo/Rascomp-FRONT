@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { LANDING_EVENTS } from '../content/events'
 import { HOME_MEDIA } from '../content/homeMedia'
+import { LANDING_UPDATES } from '../content/updates'
 
 defineProps<{
   competition?: any
@@ -97,7 +97,7 @@ const slides = computed<HeroSlide[]>(() => [
   }
 ])
 
-const featuredEvents = computed(() => LANDING_EVENTS.slice(0, 4))
+const latestUpdates = computed(() => LANDING_UPDATES.slice(0, 4))
 
 const quickLinks = computed<QuickLink[]>(() => [
   {
@@ -218,25 +218,25 @@ onBeforeUnmount(stopTimer)
           </div>
         </article>
 
-        <aside class="hero-news-panel" aria-label="Próximos eventos da RAS UFRB">
+        <aside class="hero-news-panel" aria-label="Últimas novidades da RAS UFRB">
           <div class="hero-news-heading">
-            <strong>Próximos eventos</strong>
-            <a href="#eventos">Ver todos <span aria-hidden="true">→</span></a>
+            <strong>Últimas novidades</strong>
+            <a href="#eventos">Ver atividades <span aria-hidden="true">→</span></a>
           </div>
 
           <article
-            v-for="event in featuredEvents"
-            :key="event.id"
+            v-for="item in latestUpdates"
+            :key="item.id"
             class="hero-news-item"
           >
             <div class="hero-event-meta">
-              <span class="hero-news-tag">{{ event.type }}</span>
-              <span class="hero-event-date">{{ event.dateLabel }}</span>
+              <span class="hero-news-tag">{{ item.tag }}</span>
+              <span class="hero-event-date">{{ item.dateLabel }}</span>
             </div>
 
             <div class="hero-news-copy">
-              <strong>{{ event.title }}</strong>
-              <p>{{ event.eyebrow }} · {{ event.location }}</p>
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.summary }}</p>
             </div>
           </article>
         </aside>
