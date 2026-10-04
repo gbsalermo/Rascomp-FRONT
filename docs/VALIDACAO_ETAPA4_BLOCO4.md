@@ -992,3 +992,62 @@ Esperado:
 ```
 
 Somente após a regressão e builds o BLOCO 4.3 será marcado como CONCLUÍDO.
+
+
+---
+
+# 10. Dois últimos checks pós-regressão
+
+Os demais pontos da regressão foram validados pelo usuário. Restaram somente os ajustes abaixo.
+
+### R16 — Sincronização de status entre Gestão e Participante
+
+1. manter Portal do Participante aberto;
+2. em outra sessão/aba, Gestão altera o status de uma Registration;
+3. voltar para a aba do participante.
+
+Esperado:
+
+- Portal recarrega automaticamente ao receber foco/visibilidade;
+- status exibido passa a ser o mesmo da Gestão;
+- botão **Atualizar** também força nova leitura do servidor.
+
+Não existe fonte de status separada: ambas as telas usam `Registration.status`.
+
+### R17 — Conta nova durante a competição
+
+Pré-condição:
+
+- Competition = `EM_ANDAMENTO`;
+- criar uma nova conta `PARTICIPANTE`;
+- conta ainda sem Competitor/Team.
+
+Como DEV:
+
+1. abrir **Inscrições**;
+2. clicar **Adicionar participante avulso**;
+3. selecionar a nova conta;
+4. selecionar uma Team ativa;
+5. informar justificativa;
+6. confirmar.
+
+Esperado:
+
+```text
+UserAccount PARTICIPANTE
+→ Competitor criado
+→ Team selecionada
+→ ParticipantCompetitionRegistration APROVADA
+→ auditoria DEV
+```
+
+Depois conferir:
+
+- participante aparece em **Inscrições dos participantes**;
+- Team aparece corretamente;
+- sem comprovante normal, pois é entrada excepcional DEV;
+- o fluxo não adiciona automaticamente a pessoa à composição de Robot já congelada.
+
+Teste complementar:
+
+- **Adicionar robô avulso** também deve aceitar uma conta PARTICIPANTE ainda sem Team, pedindo a Team antes de criar Competitor + Robot + Registration.
