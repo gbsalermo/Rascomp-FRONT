@@ -1820,3 +1820,25 @@ Migrations cross-repo = V1–V27
 O antigo 4.4 não será iniciado. O polimento da Landing será absorvido por uma etapa única futura junto ao trabalho já planejado de Landing/Galeria/conteúdo público. O desenho dessa próxima etapa será decidido após o merge atual.
 
 Não declarar GitHub Actions verde: não havia execução nova registrada nos heads finais.
+
+---
+
+## Próximo ciclo — V1 Beta em produção
+
+Branch de trabalho inicial:
+
+```text
+v1-beta-producao
+```
+
+Próxima frente: **V1-BETA A — Landing pública**.
+
+Depois:
+
+```text
+V1-BETA B → cloud + API + MySQL + secrets/storage/health
+V1-BETA C → cadastro/login/inscrições reais
+V1-BETA D → smoke + estabilização
+```
+
+Após o go-live Beta, frontend e backend continuam evoluindo em branch/ambiente não-prod. Produção recebe apenas versões já validadas.
