@@ -2,16 +2,18 @@
 
 Última atualização: **03/10/2026**
 
-Status:
+Status final:
 
 ```text
-4.1 — Equipe e associação            ✅ implementado
-4.2 — Robôs/responsáveis             ✅ implementado / regras revisadas
-4.3 — Inscrições participante/robô   🧪 implementação revisada / AGUARDANDO BUILD + VALIDAÇÃO MANUAL
-4.4 — Polimento + bateria final      ⏳ NÃO INICIADO
+4.1 — Equipe e associação            ✅ VALIDADO
+4.2 — Robôs/responsáveis             ✅ VALIDADO
+4.3 — Inscrições participante/robô   ✅ VALIDADO
+Bateria 1–40                          ✅ CONCLUÍDA
+Regressão R1–R17                      ✅ CONCLUÍDA
+ETAPA 4                               ✅ CONCLUÍDA / VALIDADA
 ```
 
-Esta bateria valida **somente o escopo alterado até o 4.3**. Não iniciar 4.4 antes deste checklist.
+Este documento preserva a bateria que encerrou o escopo do Portal na ETAPA 4. O antigo 4.4 foi removido como bloco independente; Landing/polimento será consolidado com a etapa futura de Landing/Galeria.
 
 Documento funcional complementar:
 
@@ -1051,3 +1053,29 @@ Depois conferir:
 Teste complementar:
 
 - **Adicionar robô avulso** também deve aceitar uma conta PARTICIPANTE ainda sem Team, pedindo a Team antes de criar Competitor + Robot + Registration.
+
+
+---
+
+## Resultado final da validação — 03/10/2026
+
+Validação informada pelo usuário:
+
+```text
+Testes 1–40  → CONCLUÍDOS
+R1–R15       → CONCLUÍDOS
+R16          → VALIDADO
+R17          → VALIDADO
+```
+
+Os últimos checks confirmaram:
+
+- status do Robot sincronizado entre GESTAO e Portal após atualização/retorno à aba;
+- conta PARTICIPANTE criada durante a Competition pode ser incluída manualmente pelo DEV;
+- DEV pode selecionar Team quando ainda não existir Competitor;
+- inscrição individual manual nasce APROVADA e auditada;
+- entrada manual não altera silenciosamente composição de Robot congelada.
+
+**Resultado: BLOCO 4 / ETAPA 4 aprovados para encerramento e merge.**
+
+Observação: não houve execução nova registrada do GitHub Actions nos heads finais; não registrar CI remoto como verde por inferência.
