@@ -14,7 +14,8 @@ import type {
   RegistrationStatus,
   RegistrationStatusHistory,
   RegistrationCompetitorContext,
-  RegistrationCompetitorChange
+  RegistrationCompetitorChange,
+  Team
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 
@@ -51,13 +52,23 @@ const leaderTransferForm = reactive({
 
 const manualDialog = ref(false)
 const manualSaving = ref(false)
+const manualParticipantDialog = ref(false)
+const manualParticipantSaving = ref(false)
 const manualUsers = ref<UserAccount[]>([])
+const manualTeams = ref<Team[]>([])
 const manualCategories = ref<Category[]>([])
 const manualForm = reactive({
   participantUserId: undefined as number | undefined,
+  teamId: undefined as number | undefined,
   categoryId: undefined as number | undefined,
   robotNome: '',
   robotDescricao: '',
+  justificativa: ''
+})
+
+const manualParticipantForm = reactive({
+  participantUserId: undefined as number | undefined,
+  teamId: undefined as number | undefined,
   justificativa: ''
 })
 
@@ -168,6 +179,7 @@ function formatDateTime(value?: string) {
 
 function resetManualEntry() {
   manualForm.participantUserId = undefined
+  manualForm.teamId = undefined
   manualForm.categoryId = undefined
   manualForm.robotNome = ''
   manualForm.robotDescricao = ''
@@ -176,9 +188,29 @@ function resetManualEntry() {
 
 function selectManualParticipant(userId?: number) {
   const user = manualUsers.value.find((item) => item.id === userId)
-  if (!user?.competitorTeamId) {
-    ElMessage.warning('Este participante ainda não está associado a uma equipe.')
-  }
+  manualForm.teamId = user?.competitorTeamId
+}
+
+function selectManualParticipantOnly(userId?: number) {
+  const user = manualUsers.value.find((item) => item.id === userId)
+  manualParticipantForm.teamId = user?.competitorTeamId
+}
+
+function resetManualParticipantEntry() {
+  manualParticipantForm.participantUserId = undefined
+  manualParticipantForm.teamId = undefined
+  manualParticipantForm.justificativa = ''
+}
+
+async function loadManualCatalog() {
+  const [users, teams, categories] = await Promise.all([
+    adminApi.users('PARTICIPANTE'),
+    adminApi.teams(),
+    adminApi.categories()
+  ])
+  manualUsers.value = users.filter((item) => item.ativo !== false)
+  manualTeams.value = teams.filter((item) => item.ativo !== false)
+  manualCategories.value = categories.filter((item) => item.ativo !== false)
 }
 
 async function openManualEntry() {
@@ -186,21 +218,61 @@ async function openManualEntry() {
   resetManualEntry()
   manualDialog.value = true
   try {
-    const [users, categories] = await Promise.all([
-      adminApi.users('PARTICIPANTE'),
-      adminApi.categories()
-    ])
-    manualUsers.value = users.filter((item) => item.ativo !== false && item.competitorTeamId)
-    manualCategories.value = categories.filter((item) => item.ativo !== false)
+    await loadManualCatalog()
   } catch (error: any) {
     manualDialog.value = false
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da entrada manual.')
   }
 }
 
+async function openManualParticipantEntry() {
+  if (!auth.isDev || !competitionId.value) return
+  resetManualParticipantEntry()
+  manualParticipantDialog.value = true
+  try {
+    await loadManualCatalog()
+  } catch (error: any) {
+    manualParticipantDialog.value = false
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da entrada manual.')
+  }
+}
+
+async function saveManualParticipantEntry() {
+  const user = manualUsers.value.find((item) => item.id === manualParticipantForm.participantUserId)
+  const teamId = user?.competitorTeamId || manualParticipantForm.teamId
+
+  if (!competitionId.value
+      || !manualParticipantForm.participantUserId
+      || !teamId
+      || !manualParticipantForm.justificativa.trim()) {
+    return ElMessage.warning('Informe participante, equipe e justificativa.')
+  }
+
+  manualParticipantSaving.value = true
+  try {
+    await adminApi.manualParticipantEntry({
+      competitionId: competitionId.value,
+      participantUserId: manualParticipantForm.participantUserId,
+      teamId,
+      justificativa: manualParticipantForm.justificativa.trim()
+    })
+    manualParticipantDialog.value = false
+    ElMessage.success('Participante incluído manualmente na competição com auditoria DEV.')
+    await load()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível incluir o participante manualmente.')
+  } finally {
+    manualParticipantSaving.value = false
+  }
+}
+
 async function saveManualEntry() {
+  const selectedUser = manualUsers.value.find((item) => item.id === manualForm.participantUserId)
+  const selectedTeamId = selectedUser?.competitorTeamId || manualForm.teamId
+
   if (!competitionId.value
       || !manualForm.participantUserId
+      || !selectedTeamId
       || !manualForm.categoryId
       || !manualForm.robotNome.trim()
       || !manualForm.justificativa.trim()) {
@@ -212,6 +284,7 @@ async function saveManualEntry() {
     const registration = await adminApi.manualCompetitionEntry({
       competitionId: competitionId.value,
       participantUserId: manualForm.participantUserId,
+      teamId: selectedTeamId,
       categoryId: manualForm.categoryId,
       robotNome: manualForm.robotNome.trim(),
       robotDescricao: manualForm.robotDescricao.trim() || undefined,
@@ -701,6 +774,7 @@ onMounted(loadBase)
         <p class="muted">Analise, cancele, reative e acompanhe as inscrições sem perder o histórico competitivo.</p>
       </div>
       <div class="heading-actions">
+        <el-button v-if="auth.isDev" @click="openManualParticipantEntry">Adicionar participante avulso</el-button>
         <el-button v-if="auth.isDev" class="brand-button" @click="openManualEntry">Adicionar robô avulso</el-button>
         <el-button :loading="loading" @click="load">Atualizar</el-button>
       </div>
@@ -1116,6 +1190,75 @@ onMounted(loadBase)
     </el-dialog>
 
     <el-dialog
+      v-model="manualParticipantDialog"
+      title="Entrada manual de participante"
+      width="min(640px, 94vw)"
+      @closed="resetManualParticipantEntry"
+    >
+      <div class="manual-entry-form">
+        <div class="manual-entry-note">
+          <strong>Participante avulso · DEV</strong>
+          <span>
+            Use quando a pessoa criou uma conta PARTICIPANTE depois do fluxo normal. A operação vincula a conta a uma equipe, se necessário, e cria a inscrição individual APROVADA com justificativa e auditoria.
+          </span>
+        </div>
+
+        <label class="span-2">Conta do participante
+          <el-select
+            v-model="manualParticipantForm.participantUserId"
+            filterable
+            placeholder="Selecione a conta PARTICIPANTE"
+            style="width:100%"
+            @change="selectManualParticipantOnly"
+          >
+            <el-option
+              v-for="item in manualUsers"
+              :key="item.id"
+              :value="item.id"
+              :label="`${item.nome} · ${item.email}${item.competitorTeamNome ? ' · ' + item.competitorTeamNome : ' · sem equipe'}`"
+            />
+          </el-select>
+        </label>
+
+        <div
+          v-if="manualParticipantForm.participantUserId && manualUsers.find((item) => item.id === manualParticipantForm.participantUserId)?.competitorTeamId"
+          class="manual-entry-team-readonly span-2"
+        >
+          <span>Equipe atual</span>
+          <strong>{{ manualUsers.find((item) => item.id === manualParticipantForm.participantUserId)?.competitorTeamNome }}</strong>
+          <small>O participante já possui vínculo competitivo e não será transferido de equipe.</small>
+        </div>
+
+        <label v-else-if="manualParticipantForm.participantUserId" class="span-2">Equipe
+          <el-select v-model="manualParticipantForm.teamId" filterable placeholder="Selecione a equipe" style="width:100%">
+            <el-option v-for="team in manualTeams" :key="team.id" :value="team.id" :label="team.nome" />
+          </el-select>
+          <small class="muted">Será criado o vínculo Competitor → Team para esta conta.</small>
+        </label>
+
+        <label class="span-2">Justificativa
+          <el-input
+            v-model="manualParticipantForm.justificativa"
+            type="textarea"
+            :rows="3"
+            maxlength="500"
+            show-word-limit
+            placeholder="Ex.: participante autorizado pela organização após o início da competição."
+          />
+        </label>
+      </div>
+
+      <template #footer>
+        <el-button @click="manualParticipantDialog = false">Cancelar</el-button>
+        <el-button
+          class="brand-button"
+          :loading="manualParticipantSaving"
+          @click="saveManualParticipantEntry"
+        >Adicionar participante</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog
       v-model="manualDialog"
       title="Entrada manual de participante e robô"
       width="min(680px, 94vw)"
@@ -1124,7 +1267,7 @@ onMounted(loadBase)
       <div class="manual-entry-form">
         <div class="manual-entry-note">
           <strong>Fluxo excepcional DEV</strong>
-          <span>O participante deve criar a própria conta primeiro. Depois o DEV associa a conta a uma equipe/competidor, cria o robô e registra a inscrição já aprovada.</span>
+          <span>A conta PARTICIPANTE deve existir. Se ainda não houver vínculo competitivo, o DEV seleciona uma equipe; o sistema cria o Competitor, aprova a inscrição individual manual e então cria Robot + Registration.</span>
         </div>
 
         <label>Conta do participante
@@ -1144,11 +1287,20 @@ onMounted(loadBase)
           </el-select>
         </label>
 
-        <div v-if="manualForm.participantUserId" class="manual-entry-team-readonly">
+        <div
+          v-if="manualForm.participantUserId && manualUsers.find((item) => item.id === manualForm.participantUserId)?.competitorTeamId"
+          class="manual-entry-team-readonly"
+        >
           <span>Equipe do participante</span>
-          <strong>{{ manualUsers.find((item) => item.id === manualForm.participantUserId)?.competitorTeamNome || '—' }}</strong>
-          <small>Definida automaticamente pelo vínculo do participante com a equipe.</small>
+          <strong>{{ manualUsers.find((item) => item.id === manualForm.participantUserId)?.competitorTeamNome }}</strong>
+          <small>O vínculo existente será preservado.</small>
         </div>
+        <label v-else-if="manualForm.participantUserId">Equipe
+          <el-select v-model="manualForm.teamId" filterable placeholder="Selecione a equipe" style="width:100%">
+            <el-option v-for="team in manualTeams" :key="team.id" :value="team.id" :label="team.nome" />
+          </el-select>
+          <small class="muted">A conta ainda não possui Competitor; o vínculo será criado nesta operação DEV.</small>
+        </label>
 
         <label>Categoria
           <el-select v-model="manualForm.categoryId" filterable placeholder="Categoria da inscrição" style="width:100%">
