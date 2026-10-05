@@ -264,8 +264,8 @@
 .footer-partner-logo--ufrb {
   width: auto !important;
   max-width: 88% !important;
-  height: 39px !important;
-  max-height: 39px !important;
+  height: 60px !important;
+  max-height: 60px !important;
   object-fit: contain;
   transform: none;
 }
@@ -273,8 +273,8 @@
 .footer-partner-logo--ras {
   width: auto !important;
   max-width: 92% !important;
-  height: 44px !important;
-  max-height: 44px !important;
+  height: 74px !important;
+  max-height: 74px !important;
   object-fit: contain;
   transform: none;
 }
