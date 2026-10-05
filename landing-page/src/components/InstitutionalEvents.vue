@@ -314,9 +314,13 @@ function primaryHref(event: LandingEvent) {
             </div>
           </div>
 
-          <a href="#galeria" class="events-recent-link">
+          <button
+            type="button"
+            class="events-recent-link"
+            @click="activeFilter = 'Todos os eventos'; fullAgenda = true"
+          >
             Ver todos os eventos <span aria-hidden="true">→</span>
-          </a>
+          </button>
         </header>
 
         <div class="events-recent-grid">
