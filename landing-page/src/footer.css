@@ -262,19 +262,21 @@
 }
 
 .footer-partner-logo--ufrb {
-  width: 118px !important;
-  max-width: none !important;
-  max-height: none !important;
-  transform: scale(1.10);
-  transform-origin: center;
+  width: auto !important;
+  max-width: 82% !important;
+  height: 30px !important;
+  max-height: 30px !important;
+  object-fit: contain;
+  transform: none;
 }
 
 .footer-partner-logo--ras {
-  width: 138px !important;
-  max-width: none !important;
-  max-height: none !important;
-  transform: scale(1.18);
-  transform-origin: center;
+  width: auto !important;
+  max-width: 86% !important;
+  height: 34px !important;
+  max-height: 34px !important;
+  object-fit: contain;
+  transform: none;
 }
 
 .footer-partner-grid strong {
