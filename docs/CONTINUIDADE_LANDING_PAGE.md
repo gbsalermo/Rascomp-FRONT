@@ -77,7 +77,8 @@ Hero / destaques         ✅ CONCLUÍDO E VALIDADO — 04/10/2026
 Sobre IEEE + RAS UFRB    ✅ CONCLUÍDO E VALIDADO — 04/10/2026
 Equipe e Conquistas      ✅ CONCLUÍDO E VALIDADO — 05/10/2026
 Robôs                    ✅ CONCLUÍDO E VALIDADO — 05/10/2026
-Galeria                  ▶ PRÓXIMA SEÇÃO
+Galeria                  ✅ CONCLUÍDO E VALIDADO — 05/10/2026
+Eventos / postagens      ▶ PRÓXIMA SEÇÃO
 Demais seções            ⏳ aguardando revisão Beta A
 ```
 
@@ -269,6 +270,57 @@ landing-page/src/components/RobotsShowcase.vue
 landing-page/src/robots-showcase.css
 landing-page/src/assets/robots/
 landing-page/src/components/InstitutionalHeader.vue
+```
+
+
+### Galeria — fechamento Beta A
+
+A seção Galeria foi redesenhada e validada como uma **vitrine de prévia** da interface completa de fotos.
+
+Decisões finais:
+
+- layout editorial em duas colunas;
+- lado esquerdo:
+  - kicker `Registros da RAS`;
+  - título `Galeria`;
+  - texto institucional curto;
+  - CTA `Ver galeria completa`;
+- lado direito:
+  - carrossel de imagem grande;
+  - setas discretas;
+  - contador no formato `03 / 08`;
+  - indicadores por pontos;
+  - autoplay suave a cada ~6,5s;
+  - pausa em hover;
+- thumbnails adicionais não são exibidas na Landing;
+- a Landing funciona apenas como vitrine, sem tentar representar todo o acervo;
+- CTA aponta para a aplicação/rota completa via `VITE_GALERIA_URL`;
+- em desenvolvimento, o fallback pode usar `http://localhost:5175`;
+- prévias locais carregadas automaticamente de:
+  `landing-page/src/assets/gallery-preview/`;
+- qualquer JPG/JPEG/PNG/WebP/AVIF adicionado à pasta entra no carrossel via `import.meta.glob`;
+- ordem controlável por prefixos numéricos nos arquivos;
+- layout ampliado no desktop para ocupar melhor a viewport em 100% de zoom;
+- mobile preservado para revisão global final.
+
+Arquitetura definida:
+
+```text
+Landing
+→ prévia visual de algumas fotos
+→ Ver galeria completa
+→ interface separada / acervo persistente
+```
+
+A futura Gestão de Mídia/CMS substituirá a origem local das imagens sem exigir redesenho da Home.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/InstitutionalGallery.vue
+landing-page/src/gallery.css
+landing-page/src/assets/gallery-preview/
+landing-page/src/gallery-external.css
 ```
 
 
