@@ -173,42 +173,30 @@ function selectCategory(category: RobotCategorySlug) {
           :aria-pressed="category.slug === activeCategory"
           @click="selectCategory(category.slug)"
         >
-          <span class="robots-category-tab-media">
-            <img
-              v-if="photosByCategory[category.slug][0]"
-              :src="photosByCategory[category.slug][0].src"
-              alt=""
-            />
-            <span v-else aria-hidden="true">R</span>
+          <span class="robots-category-tab-media" aria-hidden="true">
+            <svg v-if="category.slug === 'sumo'" viewBox="0 0 24 24">
+              <path d="M5 8h14l-1.2 8.5A2 2 0 0 1 15.8 18H8.2a2 2 0 0 1-2-1.5L5 8Zm3-3h8l1 3H7l1-3Zm1.5 7h5M8 21h2M14 21h2"/>
+            </svg>
+
+            <svg v-else-if="category.slug === 'mini-sumo'" viewBox="0 0 24 24">
+              <rect x="5" y="7" width="14" height="10" rx="2"/>
+              <path d="M9 7V5h6v2M8 12h2M14 12h2M9 20h6"/>
+            </svg>
+
+            <svg v-else-if="category.slug === 'hockey'" viewBox="0 0 24 24">
+              <path d="M7 4v10c0 2.2 1.8 4 4 4h6M17 4v9M14 18h5"/>
+              <circle cx="18" cy="18" r="2"/>
+            </svg>
+
+            <svg v-else viewBox="0 0 24 24">
+              <path d="M3 12c3.5-6 6.5-6 9 0s5.5 6 9 0"/>
+              <circle cx="4" cy="12" r="1.4"/>
+              <circle cx="20" cy="12" r="1.4"/>
+            </svg>
           </span>
 
           <span class="robots-category-tab-copy">
-            <span class="robots-category-tab-title">
-              <span class="robots-category-tab-icon" aria-hidden="true">
-                <svg v-if="category.slug === 'sumo'" viewBox="0 0 24 24">
-                  <path d="M5 8h14l-1.2 8.5A2 2 0 0 1 15.8 18H8.2a2 2 0 0 1-2-1.5L5 8Zm3-3h8l1 3H7l1-3Zm1.5 7h5M8 21h2M14 21h2"/>
-                </svg>
-
-                <svg v-else-if="category.slug === 'mini-sumo'" viewBox="0 0 24 24">
-                  <rect x="5" y="7" width="14" height="10" rx="2"/>
-                  <path d="M9 7V5h6v2M8 12h2M14 12h2M9 20h6"/>
-                </svg>
-
-                <svg v-else-if="category.slug === 'hockey'" viewBox="0 0 24 24">
-                  <path d="M7 4v10c0 2.2 1.8 4 4 4h6M17 4v9M14 18h5"/>
-                  <circle cx="18" cy="18" r="2"/>
-                </svg>
-
-                <svg v-else viewBox="0 0 24 24">
-                  <path d="M3 12c3.5-6 6.5-6 9 0s5.5 6 9 0"/>
-                  <circle cx="4" cy="12" r="1.4"/>
-                  <circle cx="20" cy="12" r="1.4"/>
-                </svg>
-              </span>
-
-              <strong>{{ category.label }}</strong>
-            </span>
-
+            <strong>{{ category.label }}</strong>
             <small>
               {{ photosByCategory[category.slug].length }}
               {{ photosByCategory[category.slug].length === 1 ? 'robô' : 'robôs' }}
