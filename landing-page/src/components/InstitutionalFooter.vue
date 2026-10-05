@@ -1,57 +1,66 @@
+<script setup lang="ts">
+const contactEmail = String(import.meta.env.VITE_RAS_EMAIL || '').trim()
+const instagramUrl = String(import.meta.env.VITE_INSTAGRAM_URL || '').trim()
+const whatsappUrl = String(import.meta.env.VITE_WHATSAPP_URL || '').trim()
+
+const emailHref = contactEmail ? `mailto:${contactEmail}` : ''
+</script>
+
 <template>
   <footer id="contato" class="institutional-footer">
-    <section class="institutional-footer-light">
-      <div class="institutional-footer-container footer-light-grid">
+    <section class="institutional-footer-main">
+      <div class="institutional-footer-container footer-main-grid">
         <section class="footer-identity-column">
-          <a href="#top" class="footer-identity" aria-label="IEEE RAS UFRB — voltar ao início">
-            <img
-              class="footer-identity-logo"
-              src="/ieee-ras-official.png"
-              alt="IEEE Robotics & Automation Society"
-            />
-            <span class="footer-identity-copy">
-              <strong><b>IEEE</b> <em>RAS</em> UFRB</strong>
-              <small>Robotics & Automation Society</small>
-              <small>UFRB Student Chapter</small>
-            </span>
-          </a>
+          <img
+            class="footer-main-logo"
+            src="/ieee-ras-official.png"
+            alt="IEEE Robotics & Automation Society"
+          />
 
-          <p class="footer-identity-description">
+          <p class="footer-main-message">
             Promovemos conhecimento, inovação e robótica para transformar ideias em soluções que constroem o futuro.
           </p>
 
-          <div class="footer-location-list">
+          <div class="footer-campus">
+            <span aria-hidden="true">●</span>
             <div>
-              <span class="footer-mini-icon" aria-hidden="true">●</span>
-              <p><strong>UFRB — Campus Cruz das Almas</strong><small>Cruz das Almas, BA — Brasil</small></p>
+              <strong>UFRB — Campus Cruz das Almas</strong>
+              <small>Cruz das Almas, BA — Brasil</small>
             </div>
-            <div>
-              <span class="footer-mini-icon" aria-hidden="true">✉</span>
-              <p><strong>Contato oficial</strong><small>E-mail a confirmar</small></p>
-            </div>
-          </div>
-
-          <div class="footer-socials" aria-label="Redes sociais">
-            <a href="#" @click.prevent aria-label="Instagram">◎</a>
-            <a href="#" @click.prevent aria-label="YouTube">▶</a>
-            <a href="#" @click.prevent aria-label="LinkedIn">in</a>
-            <a href="#" @click.prevent aria-label="GitHub">⌘</a>
           </div>
         </section>
 
-        <nav class="footer-link-column footer-useful-links" aria-label="Links úteis">
-          <span class="footer-useful-eyebrow">Explore e conecte-se</span>
+        <nav class="footer-links-column" aria-label="Links institucionais">
+          <span class="footer-column-eyebrow">Explore e conecte-se</span>
           <h3>Links úteis</h3>
           <span class="footer-heading-line" aria-hidden="true" />
-          <a href="https://www.ieee-ras.org/" target="_blank" rel="noreferrer"><span aria-hidden="true">◎</span><div><strong>IEEE RAS Global</strong><small>Sociedade internacional de robótica e automação</small></div></a>
-          <a href="https://www.ieee.org.br/" target="_blank" rel="noreferrer"><span aria-hidden="true">⚑</span><div><strong>IEEE Brasil</strong><small>Atuação e iniciativas do IEEE no Brasil</small></div></a>
-          <a href="https://ieeexplore.ieee.org/" target="_blank" rel="noreferrer"><span aria-hidden="true">⌕</span><div><strong>IEEE Xplore</strong><small>Biblioteca digital de artigos e publicações</small></div></a>
-          <a href="#eventos"><span aria-hidden="true">□</span><div><strong>Eventos da RAS UFRB</strong><small>Oficinas, visitas, palestras e competições</small></div></a>
-          <a href="#" @click.prevent><span aria-hidden="true">◇</span><div><strong>Recursos para estudantes</strong><small>Conteúdo acadêmico e oportunidades</small></div></a>
-          <a href="#" @click.prevent><span aria-hidden="true">▤</span><div><strong>Guias e materiais</strong><small>Materiais de apoio do capítulo</small></div></a>
+
+          <a href="https://www.ufrb.edu.br/" target="_blank" rel="noreferrer">
+            <strong>UFRB</strong>
+            <small>Universidade Federal do Recôncavo da Bahia</small>
+            <span aria-hidden="true">↗</span>
+          </a>
+
+          <a href="https://www.ieee.org/" target="_blank" rel="noreferrer">
+            <strong>IEEE</strong>
+            <small>Institute of Electrical and Electronics Engineers</small>
+            <span aria-hidden="true">↗</span>
+          </a>
+
+          <a href="https://www.ieee-ras.org/" target="_blank" rel="noreferrer">
+            <strong>IEEE RAS</strong>
+            <small>Robotics & Automation Society</small>
+            <span aria-hidden="true">↗</span>
+          </a>
+
+          <a href="https://www.ieee.org.br/" target="_blank" rel="noreferrer">
+            <strong>IEEE Brasil</strong>
+            <small>Atuação e iniciativas do IEEE no Brasil</small>
+            <span aria-hidden="true">↗</span>
+          </a>
         </nav>
 
-        <section class="footer-partners-column" aria-label="Apoio e parceiros">
+        <section class="footer-support-column" aria-label="Apoio e parceiros">
           <h3>Apoio e parceiros</h3>
           <span class="footer-heading-line" aria-hidden="true" />
 
@@ -62,11 +71,10 @@
             <article><strong>CETEC</strong><small>Centro</small></article>
           </div>
 
-          <a class="footer-partner-cta" href="#contato">
-            <span aria-hidden="true">◇</span>
-            <strong>Seja um parceiro</strong>
-            <b aria-hidden="true">→</b>
-          </a>
+          <p class="footer-support-copy">
+            <strong>Apoie o projeto.</strong>
+            Quer contribuir com nossas ações, eventos e iniciativas? Fale conosco e ajude a fortalecer a robótica e a tecnologia na comunidade.
+          </p>
         </section>
 
         <section class="footer-contact-column">
@@ -75,45 +83,56 @@
           <p>Tem dúvidas, sugestões ou quer saber mais sobre a RAS UFRB? Entre em contato conosco.</p>
 
           <div class="footer-contact-cards">
-            <a href="#" @click.prevent>
+            <a v-if="emailHref" class="footer-contact-card" :href="emailHref">
               <span class="footer-contact-icon" aria-hidden="true">✉</span>
-              <div><strong>E-mail</strong><small>Contato oficial a confirmar</small></div>
+              <div><strong>E-mail</strong><small>{{ contactEmail }}</small></div>
               <b aria-hidden="true">›</b>
             </a>
-            <a href="#" @click.prevent>
+            <div v-else class="footer-contact-card is-pending">
+              <span class="footer-contact-icon" aria-hidden="true">✉</span>
+              <div><strong>E-mail</strong><small>Contato oficial a cadastrar</small></div>
+            </div>
+
+            <a
+              v-if="instagramUrl"
+              class="footer-contact-card"
+              :href="instagramUrl"
+              target="_blank"
+              rel="noreferrer"
+            >
               <span class="footer-contact-icon" aria-hidden="true">◎</span>
-              <div><strong>Instagram</strong><small>Canal oficial a confirmar</small></div>
+              <div><strong>Instagram</strong><small>Canal oficial da RAS UFRB</small></div>
               <b aria-hidden="true">›</b>
             </a>
-            <a href="#" @click.prevent>
-              <span class="footer-contact-icon" aria-hidden="true">♙</span>
-              <div><strong>Mande uma mensagem</strong><small>Formulário de contato futuro</small></div>
+            <div v-else class="footer-contact-card is-pending">
+              <span class="footer-contact-icon" aria-hidden="true">◎</span>
+              <div><strong>Instagram</strong><small>Canal oficial a cadastrar</small></div>
+            </div>
+
+            <a
+              v-if="whatsappUrl"
+              class="footer-contact-card"
+              :href="whatsappUrl"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span class="footer-contact-icon footer-contact-icon--whatsapp" aria-hidden="true">◉</span>
+              <div><strong>WhatsApp</strong><small>Fale diretamente com a RAS UFRB</small></div>
               <b aria-hidden="true">›</b>
             </a>
+            <div v-else class="footer-contact-card is-pending">
+              <span class="footer-contact-icon footer-contact-icon--whatsapp" aria-hidden="true">◉</span>
+              <div><strong>WhatsApp</strong><small>Número oficial a cadastrar</small></div>
+            </div>
           </div>
         </section>
       </div>
     </section>
 
     <section class="institutional-footer-bottom">
-      <div class="institutional-footer-container footer-bottom-grid">
-        <div class="footer-bottom-brand">
-          <span class="footer-bottom-mark" aria-hidden="true">RAS</span>
-          <strong>IEEE RAS UFRB</strong>
-          <p>Organização dedicada ao avanço da tecnologia para o benefício da humanidade.</p>
-        </div>
-
-        <div class="footer-bottom-center">
-          <p>© {{ new Date().getFullYear() }} RAS UFRB — Todos os direitos reservados.</p>
-          <p>Feito com <span aria-label="amor">♥</span> por membros da RAS UFRB</p>
-        </div>
-
-        <nav class="footer-bottom-actions" aria-label="Políticas e navegação final">
-          <a href="/privacidade">Privacidade</a>
-          <i aria-hidden="true" />
-          <a href="/termos-de-uso">Termos de Uso</a>
-          <a class="footer-back-to-top" href="#top" aria-label="Voltar ao topo">↑</a>
-        </nav>
+      <div class="institutional-footer-container footer-bottom-center">
+        <p>© {{ new Date().getFullYear() }} RAS UFRB — Todos os direitos reservados.</p>
+        <p>Feito com <span aria-label="amor">♥</span> por membros da RAS UFRB</p>
       </div>
     </section>
   </footer>
