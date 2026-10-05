@@ -276,7 +276,7 @@
   height: 74px !important;
   max-height: 74px !important;
   object-fit: contain;
-  transform: none;
+  transform: translateY(-6px);
 }
 
 .footer-partner-grid strong {
