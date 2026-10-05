@@ -7,6 +7,7 @@ const props = defineProps<{
   matches: Match[]
   results: MatchResult[]
   readOnly?: boolean
+  participantMode?: boolean
   returnTo?: 'sumo' | 'chaves'
 }>()
 
@@ -69,6 +70,7 @@ function byeRobotName(match: Match) {
 }
 
 function canOpen(match: Match) {
+  if (props.participantMode) return false
   return Boolean(match.id)
     && Boolean(match.registrationAId)
     && Boolean(match.registrationBId)
@@ -161,6 +163,12 @@ function arenaRoute(match: Match) {
             <b v-if="scoreFor(match, 'B') !== undefined">{{ scoreFor(match, 'B') }}</b>
           </div>
 
+          <div v-if="match.dataHora || match.pista || match.statusConvocacao" class="match-schedule">
+            <span v-if="match.dataHora">{{ new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(match.dataHora)) }}</span>
+            <span v-if="match.pista">{{ match.pista }}</span>
+            <span v-if="match.statusConvocacao">{{ match.statusConvocacao }}</span>
+          </div>
+
           <footer class="match-foot">
             <span v-if="resultFor(match.id)" class="winner-note">
               {{ resultFor(match.id)?.winnerRobotNome }} avançou
@@ -175,6 +183,7 @@ function arenaRoute(match: Match) {
             >
               {{ canRegister(match) ? 'Abrir partida' : 'Ver partida' }}
             </router-link>
+            <span v-else-if="participantMode" class="read-only-note">Acompanhamento do participante</span>
             <span v-else-if="readOnly" class="read-only-note">Somente leitura</span>
           </footer>
         </article>
@@ -415,6 +424,9 @@ function arenaRoute(match: Match) {
   font-size: 9px;
   font-weight: 800;
 }
+
+.match-schedule { display:flex; gap:6px; flex-wrap:wrap; padding:6px 10px 0; }
+.match-schedule span { padding:3px 6px; border-radius:999px; background:#f4eef1; color:#75656d; font-size:9px; font-weight:700; }
 
 .match-foot {
   min-height: 34px;
