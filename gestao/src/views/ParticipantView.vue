@@ -21,6 +21,7 @@ import type {
   TeamMembershipRequest
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
+import TournamentBracket from '../components/TournamentBracket.vue'
 
 interface PublicTeamOption {
   id: number
@@ -42,7 +43,10 @@ interface SumoOverview {
   lastMatch?: Match
   lastResult?: MatchResult
   nextMatch?: Match
+  bracketId?: number
   bracketName?: string
+  matches?: Match[]
+  results?: MatchResult[]
   statusLabel?: string
   placement?: 'CAMPEAO' | 'VICE' | 'TERCEIRO' | 'ELIMINADO' | 'EM_DISPUTA' | 'INSCRITO'
 }
@@ -115,6 +119,8 @@ const photoMap = ref<Record<number, RobotImage[]>>({})
 const responsibleMap = ref<Record<number, RobotResponsible[]>>({})
 const followMap = ref<Record<number, FollowOverview>>({})
 const sumoMap = ref<Record<number, SumoOverview>>({})
+const participantBracketDialog = ref(false)
+const participantBracketRegistrationId = ref<number>()
 
 const activeTeam = computed(() => teams.value.find((item) => item.id === teamId.value))
 const isTeamLeader = computed(() =>
@@ -158,6 +164,18 @@ const availableCompetitions = computed(() => {
       && competition.fimInscricoes >= today
   )
 })
+const selectedParticipantBracket = computed(() =>
+  participantBracketRegistrationId.value
+    ? sumoMap.value[participantBracketRegistrationId.value]
+    : undefined
+)
+
+const selectedParticipantBracketRegistration = computed(() =>
+  participantBracketRegistrationId.value
+    ? approvedRegistrations.value.find((item) => item.id === participantBracketRegistrationId.value)
+    : undefined
+)
+
 const availablePersonalRegistrationCompetitions = computed(() => {
   const registeredCompetitionIds = new Set(
     personalRegistrations.value.map((item) => item.competitionId)
@@ -426,11 +444,24 @@ async function loadRegistrationOverview(registration: Registration) {
       nextMatch,
       lastMatch,
       lastResult,
+      bracketId: bracket.id,
       bracketName: bracket.nome,
+      matches,
+      results,
       placement,
       statusLabel
     }
   }
+}
+
+function openParticipantBracket(registration: Registration) {
+  const overview = sumoMap.value[registration.id]
+  if (!overview?.bracketId || !overview.matches?.length) {
+    return ElMessage.info('A chave desta categoria ainda não foi publicada.')
+  }
+
+  participantBracketRegistrationId.value = registration.id
+  participantBracketDialog.value = true
 }
 
 async function createTeam() {
@@ -1258,6 +1289,16 @@ onBeforeUnmount(() => {
                 <strong>{{ sumoMap[registration.id]?.nextMatch?.robotANome }} × {{ sumoMap[registration.id]?.nextMatch?.robotBNome }}</strong>
                 <small>{{ sumoMap[registration.id]?.bracketName }}</small>
               </div>
+
+              <button
+                v-if="sumoMap[registration.id]?.bracketId"
+                type="button"
+                class="participant-bracket-action"
+                @click="openParticipantBracket(registration)"
+              >
+                Ver chave completa
+                <span aria-hidden="true">→</span>
+              </button>
             </template>
           </article>
         </div>
@@ -1667,6 +1708,30 @@ onBeforeUnmount(() => {
       </div>
       <template #footer><el-button @click="joinDialog=false">Cancelar</el-button><el-button class="brand-button" @click="requestJoin">Solicitar entrada</el-button></template>
     </el-dialog>
+
+    <el-dialog
+      v-model="participantBracketDialog"
+      :title="`Chave · ${selectedParticipantBracketRegistration?.categoryNome || 'Sumô'}`"
+      width="min(1180px, 96vw)"
+      class="participant-bracket-dialog"
+    >
+      <div class="participant-bracket-dialog-copy">
+        <strong>{{ selectedParticipantBracketRegistration?.competitionNome }}</strong>
+        <span>
+          Acompanhamento em modo somente leitura. Resultados, BYEs e próximos confrontos são os mesmos publicados pela organização.
+        </span>
+      </div>
+
+      <TournamentBracket
+        v-if="selectedParticipantBracket?.matches?.length"
+        :matches="selectedParticipantBracket.matches"
+        :results="selectedParticipantBracket.results || []"
+        read-only
+        participant-mode
+      />
+
+      <el-empty v-else description="A chave ainda não foi publicada." :image-size="82" />
+    </el-dialog>
   </div>
 </template>
 
@@ -1790,6 +1855,11 @@ onBeforeUnmount(() => {
 .participant-join-request small { color:#82747b; }
 .participant-flow-note { display:grid; gap:4px; padding:11px 13px; border-radius:11px; background:#faf6f8; border:1px solid #eadde3; }
 .participant-flow-note span { color:#786a71; font-size:12px; line-height:1.4; }
+.participant-bracket-action { display:flex; width:100%; min-height:38px; align-items:center; justify-content:space-between; gap:8px; padding:0 12px; border:1px solid #cbaeb9; border-radius:10px; background:#fff7fa; color:#8f1238; font:inherit; font-size:11px; font-weight:900; cursor:pointer; transition:transform .15s ease,box-shadow .15s ease; }
+.participant-bracket-action:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(143,18,56,.09); }
+.participant-bracket-dialog-copy { display:grid; gap:3px; margin-bottom:12px; padding:11px 13px; border-radius:11px; background:#faf6f8; border:1px solid #eadde3; }
+.participant-bracket-dialog-copy strong { color:#4c3942; }
+.participant-bracket-dialog-copy span { color:#786a71; font-size:12px; line-height:1.4; }
 @media (max-width:680px) { .participant-invite-card,.participant-join-request { align-items:flex-start; flex-direction:column; } .participant-section-actions { align-items:flex-start; flex-direction:column; } .registration-competitor-options { grid-template-columns:1fr; } .participant-heading-identity { gap:12px; } .participant-team-logo { flex-basis:68px; width:68px; height:68px; border-radius:15px; } }
 
 .robot-gallery-actions { display:grid; gap:8px; justify-items:stretch; }
