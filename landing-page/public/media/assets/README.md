@@ -11,6 +11,7 @@ Estrutura:
 ```text
 media/assets/
 ├─ institutional/  → equipe, identidade e imagens institucionais
+├─ about/          → carrossel visual da seção Sobre
 ├─ events/         → oficinas, extensão, RAS nas Escolas e eventos
 ├─ competitions/   → competições e acompanhamento competitivo
 ├─ awards/         → premiações e conquistas
@@ -31,6 +32,12 @@ events/
 
 awards/
 └─ conquista-ras.jpg             → Hero Conquistas
+
+about/
+├─ equipe-ras.jpg                → Sobre / Equipe RAS UFRB
+├─ projetos-oficinas.jpg         → Sobre / Projetos e oficinas
+├─ extensao-comunidade.jpg       → Sobre / Extensão e comunidade
+└─ competicoes-conquistas.jpg    → Sobre / Competições e conquistas
 ```
 
 O painel superior de **Últimas novidades** não usa imagens na Beta A. Ele é
