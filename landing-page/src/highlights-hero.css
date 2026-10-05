@@ -277,6 +277,18 @@
     min-height: clamp(500px, calc(100vh - 185px), 620px);
   }
 
+  .highlights-copy {
+    top: auto;
+    bottom: 78px;
+    transform: none;
+  }
+
+  .hero-quick-links {
+    position: relative;
+    z-index: 5;
+    margin-top: -28px;
+  }
+
   .hero-quick-card {
     min-height: 112px;
     gap: 16px;
