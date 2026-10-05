@@ -31,6 +31,8 @@ landing-page/
 │        ├─ awards/
 │        └─ robots/
 └─ src/
+   ├─ assets/
+   │  └─ about/        → descoberta automática das fotos da seção Sobre
    └─ content/
       └─ homeMedia.ts
 ```
@@ -44,6 +46,28 @@ landing-page/
 : associa arquivos aos slots editoriais da Home e concentra texto alternativo.
 
 Os componentes visuais não devem espalhar caminhos de imagens pelo código.
+
+
+### Exceção autoalimentada — seção Sobre
+
+A seção Sobre usa uma estratégia específica durante a Beta A:
+
+```text
+landing-page/src/assets/about/
+→ import.meta.glob
+→ InstitutionalAbout.vue
+→ carrossel automático
+```
+
+Regras:
+
+- qualquer JPG/JPEG/PNG/WebP/AVIF adicionado à pasta entra automaticamente;
+- não há cadastro em `homeMedia.ts`;
+- a ordem é definida pelo nome do arquivo;
+- usar prefixos `01-`, `02-`, `03-` quando for necessário controlar a ordem;
+- em desenvolvimento, uma nova imagem é percebida pelo Vite e aparece após atualização/reload;
+- em produção, novos arquivos exigem novo build/deploy;
+- esta solução é temporária e será substituída pela Gestão de Mídia.
 
 ## Slots iniciais da Home
 
@@ -165,7 +189,8 @@ Logo, a Galeria não deve virar a pasta-fonte das imagens do site.
 
 Até a Gestão de Mídia existir:
 
-- novas fotos reais entram em `public/media/assets/`;
-- a Home referencia os slots por `homeMedia.ts`;
+- novas fotos com slots fixos entram em `public/media/assets/`;
+- o carrossel da seção Sobre recebe fotos automaticamente de `src/assets/about/`;
+- a Home referencia os demais slots fixos por `homeMedia.ts`;
 - nenhuma UI de upload/admin é antecipada;
 - nenhuma dependência de domínio temporário ou storage pessoal é criada.
