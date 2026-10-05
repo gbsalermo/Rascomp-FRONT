@@ -185,7 +185,12 @@ onBeforeUnmount(() => {
     />
 
     <main id="top">
-      <HighlightsHero :competition="currentCompetition" :management-url="managementUrl" />
+      <HighlightsHero
+        :competition="currentCompetition"
+        :categories="categories"
+        :registrations="registrations"
+        :management-url="managementUrl"
+      />
       <InstitutionalAbout />
       <TeamRobotsAwards />
       <RobotsShowcase />
