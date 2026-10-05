@@ -14,9 +14,28 @@ const emit = defineEmits<{
 const mobileOpen = ref(false)
 const competitionMenu = ref<HTMLDetailsElement>()
 
-const competitionLive = computed(() => props.competition?.status === 'EM_ANDAMENTO')
-const competitionNoticeLabel = computed(() =>
-  props.competition?.nome ? `${props.competition.nome} em andamento` : 'RRC em andamento'
+const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
+
+const competitionVisible = computed(() =>
+  publicCompetitionStatuses.includes(props.competition?.status)
+)
+
+const competitionNoticeLabel = computed(() => {
+  const name = props.competition?.nome || 'Competição'
+
+  if (props.competition?.status === 'INSCRICOES_ABERTAS') {
+    return `${name} · inscrições abertas`
+  }
+
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') {
+    return `${name} · inscrições encerradas`
+  }
+
+  return `${name} em andamento`
+})
+
+const competitionNoticeAction = computed(() =>
+  props.competition?.status === 'EM_ANDAMENTO' ? 'Acompanhar competição' : 'Ver competição'
 )
 
 function closeMobile() {
@@ -27,7 +46,7 @@ function closeMobile() {
 
 <template>
   <div class="institutional-header-wrap">
-    <div v-if="competitionLive" class="competition-notice">
+    <div v-if="competitionVisible" class="competition-notice">
       <div class="header-container competition-notice-inner">
         <span class="competition-notice-status">
           <span class="competition-notice-dot" aria-hidden="true" />
@@ -35,7 +54,7 @@ function closeMobile() {
         </span>
 
         <a href="#competicao-atual" @click="closeMobile">
-          Acompanhar competição <span aria-hidden="true">→</span>
+          {{ competitionNoticeAction }} <span aria-hidden="true">→</span>
         </a>
       </div>
     </div>
@@ -66,7 +85,7 @@ function closeMobile() {
           <a href="#galeria" @click="closeMobile">Galeria</a>
           <a href="#eventos" @click="closeMobile">Eventos</a>
 
-          <details v-if="competitionLive" ref="competitionMenu" class="competition-nav-dropdown">
+          <details v-if="competitionVisible" ref="competitionMenu" class="competition-nav-dropdown">
             <summary>Competição <span aria-hidden="true">⌄</span></summary>
             <div class="competition-nav-menu">
               <a href="#competicao-atual" @click="closeMobile">Visão geral</a>
