@@ -19,6 +19,9 @@ const teams = ref<any[]>([])
 const categories = ref<any[]>([])
 const registrations = ref<any[]>([])
 const ranking = ref<any[]>([])
+const followAttempts = ref<any[]>([])
+const followSchedules = ref<any[]>([])
+const followQueue = ref<any[]>([])
 const brackets = ref<any[]>([])
 const matches = ref<any[]>([])
 const results = ref<any[]>([])
@@ -96,6 +99,9 @@ async function refreshCompetition() {
   if (!competitionId.value) {
     registrations.value = []
     ranking.value = []
+    followAttempts.value = []
+    followSchedules.value = []
+    followQueue.value = []
     brackets.value = []
     matches.value = []
     results.value = []
@@ -128,7 +134,21 @@ async function refreshRanking() {
     return
   }
 
-  ranking.value = await api.ranking(competitionId.value, followCategoryId.value)
+  ;[ranking.value, followAttempts.value, followSchedules.value] = await Promise.all([
+    api.ranking(competitionId.value, followCategoryId.value),
+    api.followAttempts(competitionId.value, followCategoryId.value),
+    api.followSchedules(competitionId.value, followCategoryId.value)
+  ])
+
+  const activeSchedule =
+    followSchedules.value.find((item) => item.status === 'EM_ANDAMENTO') ||
+    followSchedules.value.find((item) => item.status === 'EM_CHAMADA') ||
+    followSchedules.value.find((item) => item.status === 'AGENDADA') ||
+    followSchedules.value.at(-1)
+
+  followQueue.value = activeSchedule?.id
+    ? await api.followQueue(activeSchedule.id).catch(() => [])
+    : []
 }
 
 async function refreshBracket() {
@@ -207,6 +227,9 @@ onBeforeUnmount(() => {
         :categories="categories"
         :registrations="registrations"
         :ranking="ranking"
+        :follow-attempts="followAttempts"
+        :follow-schedules="followSchedules"
+        :follow-queue="followQueue"
         :brackets="brackets"
         :matches="matches"
         :results="results"
