@@ -15,6 +15,16 @@ export const api = {
     publicApi
       .get('/ranking/seguidor-linha', { params: { competitionId, categoryId } })
       .then((r) => r.data),
+  followAttempts: (competitionId: number, categoryId: number) =>
+    publicApi
+      .get('/follow/tentativas', { params: { competitionId, categoryId } })
+      .then((r) => r.data),
+  followSchedules: (competitionId: number, categoryId: number) =>
+    publicApi
+      .get('/follow/agenda', { params: { competitionId, categoryId } })
+      .then((r) => r.data),
+  followQueue: (scheduleId: number) =>
+    publicApi.get(`/follow/agenda/${scheduleId}/fila`).then((r) => r.data),
   brackets: (competitionId: number) =>
     publicApi.get('/chaveamentos', { params: { competitionId } }).then((r) => r.data),
   matches: (bracketId: number) =>
