@@ -1864,3 +1864,19 @@ O frontend não deve sugerir inscrições abertas enquanto esse gate não estive
 Futebol de Robôs entra na Beta somente como inscrição simples sem Robot próprio obrigatório. O domínio completo da partida permanece na ETAPA 6.
 
 Ajustes Gerais DEV avançados são pós-Beta e não bloqueiam o go-live inicial.
+
+
+### Lotes de inscrição — integração funcional 05/10/2026
+
+Na interface **Competição**, DEV/GESTAO passam a consultar e configurar lotes da edição.
+
+Comportamento:
+
+- botão `Lotes de inscrição` no cabeçalho da edição;
+- criação/edição com nome, início e fim;
+- períodos devem ficar dentro da janela geral de inscrições;
+- lotes não podem se sobrepor;
+- resumo da competição mostra o lote vigente;
+- após encerramento das inscrições/início da competição, lotes ficam somente leitura;
+- inscrições pessoal e de robô recebem o lote vigente como histórico quando a competição usa lotes;
+- se não houver lotes configurados, o fluxo anterior continua funcionando normalmente.
