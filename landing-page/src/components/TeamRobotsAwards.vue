@@ -73,12 +73,11 @@ const volunteerLoopImages = computed(() =>
     : volunteerImages.value
 )
 
-const robotHeroImage = computed(() => {
-  const entries = Object.entries(robotImageModules)
+const robotImages = computed(() =>
+  Object.entries(robotImageModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
-
-  return entries[0]?.[1] || ''
-})
+    .map(([, src]) => src)
+)
 
 const awards: Award[] = [
   {
@@ -210,22 +209,26 @@ const awards: Award[] = [
         </div>
       </article>
 
-      <article class="team-robots-hero">
-        <img
-          v-if="robotHeroImage"
-          class="team-robots-hero-image"
-          :src="robotHeroImage"
-          alt="Projetos e robôs desenvolvidos pela IEEE RAS UFRB"
-        />
-        <div v-else class="team-robots-hero-placeholder" aria-hidden="true" />
-
-        <div class="team-robots-hero-overlay" aria-hidden="true" />
-
-        <div class="team-robots-hero-copy">
+      <article class="team-robots-mosaic-block">
+        <header class="team-robots-mosaic-heading">
           <span class="team-robots-kicker">Nossos Robôs</span>
-          <h3>Projetos que unem inovação, técnica e propósito.</h3>
-          <p>Desenvolvemos robôs para competições, projetos de pesquisa e ações de extensão, sempre com foco em aprendizado prático e impacto na comunidade.</p>
-          <a href="#eventos" class="team-robots-cta">Conheça nossos projetos <span aria-hidden="true">→</span></a>
+        </header>
+
+        <div v-if="robotImages.length" class="team-robots-mosaic">
+          <figure
+            v-for="(photo, index) in robotImages"
+            :key="photo"
+            class="team-robot-mosaic-item"
+          >
+            <img
+              :src="photo"
+              :alt="`Registro de robô ou projeto da IEEE RAS UFRB ${index + 1}`"
+            />
+          </figure>
+        </div>
+
+        <div v-else class="team-robots-mosaic-placeholder">
+          Adicione imagens em <b>src/assets/team/robots/</b>
         </div>
       </article>
 
