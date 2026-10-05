@@ -193,5 +193,7 @@ onBeforeUnmount(() => {
     </main>
 
     <InstitutionalFooter />
+
+    <a class="global-back-to-top" href="#top" aria-label="Voltar ao topo">↑</a>
   </div>
 </template>
