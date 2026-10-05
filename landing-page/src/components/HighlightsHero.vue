@@ -2,12 +2,14 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { HOME_MEDIA } from '../content/homeMedia'
 
-defineProps<{
+const props = defineProps<{
   competition?: any
+  categories: any[]
+  registrations: any[]
   managementUrl: string
 }>()
 
-type HeroTone = 'institutional' | 'community' | 'workshop' | 'award'
+type HeroTone = 'competition' | 'institutional' | 'community' | 'workshop' | 'award'
 
 type HeroSlide = {
   id: string
@@ -22,6 +24,9 @@ type HeroSlide = {
   image?: string
   imageAlt: string
   mediaLabel: string
+  kind?: 'competition'
+  categories?: string[]
+  lotLabel?: string
 }
 
 type QuickLink = {
@@ -33,7 +38,36 @@ type QuickLink = {
 const current = ref(0)
 let timer: number | undefined
 
-const slides = computed<HeroSlide[]>(() => [
+const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
+
+const competitionVisible = computed(() =>
+  publicCompetitionStatuses.includes(props.competition?.status)
+)
+
+const competitionCategories = computed(() => {
+  const registrationCategoryIds = new Set(
+    props.registrations.map((item) => item.categoryId).filter(Boolean)
+  )
+
+  return props.categories.filter(
+    (item) =>
+      item.competitionId === props.competition?.id ||
+      registrationCategoryIds.has(item.id)
+  )
+})
+
+const competitionLotLabel = computed(() => {
+  const competition = props.competition || {}
+  return (
+    competition.loteAtualNome ||
+    competition.loteNome ||
+    competition.registrationLotName ||
+    competition.currentLotName ||
+    ''
+  )
+})
+
+const institutionalSlides = computed<HeroSlide[]>(() => [
   {
     id: 'ras',
     eyebrow: 'IEEE RAS UFRB',
@@ -96,6 +130,39 @@ const slides = computed<HeroSlide[]>(() => [
   }
 ])
 
+const slides = computed<HeroSlide[]>(() => {
+  const base = institutionalSlides.value
+
+  if (!competitionVisible.value || !props.competition) return base
+
+  return [
+    {
+      id: 'competition-current',
+      eyebrow:
+        props.competition.status === 'INSCRICOES_ABERTAS'
+          ? 'Inscrições abertas'
+          : props.competition.status === 'INSCRICOES_ENCERRADAS'
+            ? 'Inscrições encerradas'
+            : 'Competição em andamento',
+      title: props.competition.nome,
+      description:
+        props.competition.descricao ||
+        'Acompanhe a competição vigente da IEEE RAS UFRB, conheça as categorias e veja as atualizações oficiais desta edição.',
+      cta: 'Inscrever-se',
+      href: props.managementUrl,
+      secondary: 'Acompanhar evento',
+      secondaryHref: '#competicao-atual',
+      tone: 'competition',
+      image: undefined,
+      imageAlt: '',
+      mediaLabel: 'Competição vigente da IEEE RAS UFRB',
+      kind: 'competition',
+      categories: competitionCategories.value.map((item) => item.nome),
+      lotLabel: competitionLotLabel.value
+    },
+    ...base
+  ]
+})
 
 const quickLinks = computed<QuickLink[]>(() => [
   {
@@ -179,13 +246,44 @@ onBeforeUnmount(stopTimer)
 
           <div class="stage-overlay" />
 
-          <div class="highlights-copy">
+          <div class="highlights-copy" :class="{ 'is-competition': activeSlide.kind === 'competition' }">
             <span class="highlights-kicker">{{ activeSlide.eyebrow }}</span>
             <h1>{{ activeSlide.title }}</h1>
             <p>{{ activeSlide.description }}</p>
 
-            <div class="highlights-actions">
-              <a class="highlight-primary" :href="activeSlide.href">
+            <div
+              v-if="activeSlide.kind === 'competition' && activeSlide.categories?.length"
+              class="hero-competition-categories"
+            >
+              <span class="hero-competition-categories-label">Categorias</span>
+              <div class="hero-competition-category-list">
+                <span
+                  v-for="category in activeSlide.categories"
+                  :key="category"
+                  class="hero-competition-category"
+                >
+                  {{ category }}
+                </span>
+              </div>
+            </div>
+
+            <div
+              v-if="activeSlide.kind === 'competition' && activeSlide.lotLabel"
+              class="hero-competition-lot"
+            >
+              <span>Lote atual</span>
+              <strong>{{ activeSlide.lotLabel }}</strong>
+            </div>
+
+            <div class="highlights-actions" :class="{ 'competition-actions': activeSlide.kind === 'competition' }">
+              <a
+                v-if="
+                  activeSlide.kind !== 'competition' ||
+                  (competition?.status === 'INSCRICOES_ABERTAS' && activeSlide.href)
+                "
+                class="highlight-primary"
+                :href="activeSlide.href"
+              >
                 {{ activeSlide.cta }}
               </a>
               <a
