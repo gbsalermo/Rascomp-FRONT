@@ -339,101 +339,48 @@ function handleRegistration() {
     class="active-competition-section"
   >
     <div class="active-competition-container">
-      <section class="competition-showcase-hero">
-        <div class="competition-showcase-copy">
-          <span class="competition-kicker">
-            <i aria-hidden="true" />
-            {{ competitionStageLabel }}
-          </span>
-
-          <span class="competition-showcase-label">Competição oficial · IEEE RAS UFRB</span>
-
-          <div class="competition-heading-title">
-            <h2>{{ competition.nome }}</h2>
-            <strong>{{ competitionCategories.length }} categoria{{ competitionCategories.length === 1 ? '' : 's' }}</strong>
-          </div>
-
-          <p class="competition-showcase-description">
+      <section class="competition-event-intro">
+        <div class="competition-event-intro-copy">
+          <span class="competition-event-kicker">Competição vigente</span>
+          <h2>Sobre o evento</h2>
+          <p>
             {{
               competition.descricao ||
-              'Uma competição de robótica promovida pela IEEE RAS UFRB. Conheça as equipes, acompanhe as categorias e veja o que está acontecendo nesta edição.'
+              'Conheça a competição vigente da IEEE RAS UFRB, suas equipes participantes, categorias e atualizações oficiais.'
             }}
           </p>
 
-          <div class="competition-heading-meta">
-            <span>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="3" y="5" width="18" height="16" rx="2"/>
-                <path d="M7 3v4M17 3v4M3 10h18"/>
-              </svg>
-              {{ formatDate(competition.dataInicio) }} — {{ formatDate(competition.dataFim) }}
-            </span>
-
-            <span>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="8" cy="8" r="3"/>
-                <circle cx="16" cy="8" r="3"/>
-                <path d="M2 21c0-4 2.6-7 6-7s6 3 6 7M12 15c1-.7 2.3-1 4-1 3.4 0 6 3 6 7"/>
-              </svg>
-              {{ participatingTeams.length }} equipe{{ participatingTeams.length === 1 ? '' : 's' }}
-            </span>
-
-            <span>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="5" y="5" width="14" height="14" rx="3"/>
-                <path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3M9 9h6v6H9z"/>
-              </svg>
-              {{ uniqueRobots }} robô{{ uniqueRobots === 1 ? '' : 's' }}
-            </span>
-          </div>
-
-          <div class="competition-hero-stats">
+          <div class="competition-event-meta">
             <article>
-              <span>Equipes</span>
-              <strong>{{ participatingTeams.length }}</strong>
-              <small>participantes aprovados</small>
+              <span>Período do evento</span>
+              <strong>{{ formatDate(competition.dataInicio) }} — {{ formatDate(competition.dataFim) }}</strong>
             </article>
+
             <article>
-              <span>Robôs</span>
-              <strong>{{ uniqueRobots }}</strong>
-              <small>inscritos nesta edição</small>
+              <span>Período de inscrições</span>
+              <strong>{{ formatDate(competition.inicioInscricoes) }} — {{ formatDate(competition.fimInscricoes) }}</strong>
             </article>
+
             <article>
-              <span>Categorias</span>
-              <strong>{{ competitionCategories.length }}</strong>
-              <small>modalidades em disputa</small>
+              <span>Equipes cadastradas</span>
+              <strong>{{ participatingTeams.length }} equipe{{ participatingTeams.length === 1 ? '' : 's' }}</strong>
             </article>
           </div>
         </div>
 
-        <aside class="competition-registration-status" :class="{ open: canRegister }">
-          <span class="competition-registration-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M8 4h8v4c0 3-2 5-4 5s-4-2-4-5V4Z"/>
-              <path d="M6 5H3v2c0 3 2 5 5 5M18 5h3v2c0 3-2 5-5 5M12 13v4M8 21h8M10 17h4"/>
-            </svg>
-          </span>
-
-          <div class="competition-registration-copy">
-            <small>Ainda posso me inscrever?</small>
-            <strong>{{ registrationLabel }}</strong>
-            <p>{{ registrationDescription }}</p>
-          </div>
-
-          <button v-if="canRegister" type="button" @click="handleRegistration">
-            Inscrever-se agora <span aria-hidden="true">→</span>
-          </button>
-
-          <span v-else class="competition-registration-closed">
-            Acompanhe as atualizações desta edição abaixo.
-          </span>
+        <aside class="competition-event-identity">
+          <span>{{ competitionStageLabel }}</span>
+          <strong>{{ competition.nome }}</strong>
+          <small>
+            {{ competitionCategories.length }} categoria{{ competitionCategories.length === 1 ? '' : 's' }} nesta edição
+          </small>
         </aside>
       </section>
 
       <div class="competition-content-heading">
         <span>Participantes e categorias</span>
-        <h3>Conheça quem faz parte desta edição</h3>
-        <p>Equipes aprovadas, robôs inscritos e categorias oficiais da competição vigente.</p>
+        <h3>Acompanhe a competição vigente</h3>
+        <p>Conheça as equipes, veja as categorias e acompanhe as atualizações oficiais desta edição.</p>
       </div>
 
       <div class="competition-public-grid" :class="{ loading }">
