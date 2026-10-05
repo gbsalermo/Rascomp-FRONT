@@ -4,6 +4,11 @@ import { computed, ref } from 'vue'
 const props = defineProps<{
   competition?: any
   managementUrl: string
+  registrationOpen: boolean
+}>()
+
+const emit = defineEmits<{
+  (event: 'registrationUnavailable'): void
 }>()
 
 const mobileOpen = ref(false)
@@ -75,21 +80,21 @@ function closeMobile() {
         </nav>
 
         <a
-          v-if="managementUrl"
+          v-if="registrationOpen && managementUrl"
           class="header-registration-cta desktop-registration-cta"
           :href="managementUrl"
           @click="closeMobile"
         >
           Inscrever-se
         </a>
-        <span
+        <button
           v-else
-          class="header-registration-cta header-registration-cta--disabled desktop-registration-cta"
-          aria-disabled="true"
-          title="Destino de inscrição ainda não configurado"
+          type="button"
+          class="header-registration-cta desktop-registration-cta"
+          @click="closeMobile(); emit('registrationUnavailable')"
         >
           Inscrever-se
-        </span>
+        </button>
 
         <button
           class="public-menu-toggle"
