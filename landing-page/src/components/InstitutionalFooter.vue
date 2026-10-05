@@ -92,12 +92,13 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
 
           <div class="footer-partner-grid">
             <article class="footer-partner-card footer-partner-card--ufrb">
-              <img
-                v-if="partnerLogo('ufrb')"
-                class="footer-partner-logo footer-partner-logo--ufrb"
-                :src="partnerLogo('ufrb')"
-                alt="UFRB"
-              />
+              <span v-if="partnerLogo('ufrb')" class="footer-partner-logo-frame footer-partner-logo-frame--ufrb">
+                <img
+                  class="footer-partner-logo footer-partner-logo--ufrb"
+                  :src="partnerLogo('ufrb')"
+                  alt="UFRB"
+                />
+              </span>
               <strong v-else>UFRB</strong>
               <small>Universidade</small>
             </article>
@@ -109,11 +110,13 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
             </article>
 
             <article class="footer-partner-card footer-partner-card--ras">
-              <img
-                class="footer-partner-logo footer-partner-logo--ras"
-                src="/ieee-ras-official.png"
-                alt="IEEE Robotics & Automation Society"
-              />
+              <span class="footer-partner-logo-frame footer-partner-logo-frame--ras">
+                <img
+                  class="footer-partner-logo footer-partner-logo--ras"
+                  src="/ieee-ras-official.png"
+                  alt="IEEE Robotics & Automation Society"
+                />
+              </span>
               <small>Sociedade</small>
             </article>
 
