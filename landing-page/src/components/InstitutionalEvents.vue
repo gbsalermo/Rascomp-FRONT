@@ -58,10 +58,10 @@ function toggleEvent(event: LandingEvent) {
   expandedEventId.value = expandedEventId.value === event.id ? '' : event.id
 }
 
-function primaryHref(event: LandingEvent) {
-  if (event.id === 'rrc-2026') return '#competicao-atual'
+function eventActionHref(event: LandingEvent) {
+  if (event.href) return event.href
   if (event.temporalLabel === 'Inscrições abertas' && managementUrl) return managementUrl
-  return '#galeria'
+  return ''
 }
 
 </script>
@@ -274,17 +274,15 @@ function primaryHref(event: LandingEvent) {
                     </span>
                   </div>
 
-                  <div class="event-detail-actions">
-                    <a class="event-primary-action" :href="primaryHref(event)">
-                      {{ event.cta }} <span aria-hidden="true">→</span>
-                    </a>
-
+                  <div
+                    v-if="event.cta && eventActionHref(event)"
+                    class="event-detail-actions"
+                  >
                     <a
-                      v-if="event.temporalLabel === 'Inscrições abertas' && managementUrl"
-                      class="event-secondary-action"
-                      :href="managementUrl"
+                      class="event-primary-action"
+                      :href="eventActionHref(event)"
                     >
-                      Inscrever-se <span aria-hidden="true">↗</span>
+                      {{ event.cta }} <span aria-hidden="true">→</span>
                     </a>
                   </div>
                 </div>
