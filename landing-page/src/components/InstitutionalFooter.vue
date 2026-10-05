@@ -103,8 +103,12 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
               <small>Instituição</small>
             </article>
 
-            <article>
-              <img src="/ieee-ras-official.png" alt="IEEE Robotics & Automation Society" />
+            <article class="footer-partner-card footer-partner-card--ras">
+              <img
+                class="footer-partner-logo footer-partner-logo--ras"
+                src="/ieee-ras-official.png"
+                alt="IEEE Robotics & Automation Society"
+              />
               <small>Sociedade</small>
             </article>
 
@@ -164,8 +168,11 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
         <p>© {{ new Date().getFullYear() }} RAS UFRB — Todos os direitos reservados.</p>
         <p>Feito com <span aria-label="amor">♥</span> por membros da RAS UFRB</p>
         <p class="footer-developer-credit">
-          Dev principal:
-          <a href="https://github.com/gbsalermo" target="_blank" rel="noreferrer">gbsalermo</a>
+          <span>Dev principal</span>
+          <a href="https://github.com/gbsalermo" target="_blank" rel="noreferrer">
+            <b aria-hidden="true">⌘</b>
+            gbsalermo
+          </a>
         </p>
       </div>
     </section>
