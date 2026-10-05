@@ -397,6 +397,11 @@ Comportamento atual:
 - Landing passa a carregar também `/api/v1/public/equipes`;
 - equipe com logo pública usa a mídia informada pelo backend;
 - equipe sem logo usa `/rascomp-logo.webp` como fallback;
+- fluxo integrado de logo implementado na Beta A:
+  - V28 adiciona metadados de logo em `teams`;
+  - líder envia/troca/remove a logo pelo Portal do Participante;
+  - `PublicTeamDTO.logoUrl` abastece a Landing;
+  - storage local configurável via `TEAM_LOGOS_DIR` enquanto a estratégia de produção é consolidada;
 - categorias são derivadas dos dados públicos oficiais;
 - card "O que está acontecendo agora?" prioriza:
   - partida `EM_ANDAMENTO`;
