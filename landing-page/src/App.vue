@@ -5,6 +5,7 @@ import InstitutionalHeader from './components/InstitutionalHeader.vue'
 import HighlightsHero from './components/HighlightsHero.vue'
 import InstitutionalAbout from './components/InstitutionalAbout.vue'
 import TeamRobotsAwards from './components/TeamRobotsAwards.vue'
+import RobotsShowcase from './components/RobotsShowcase.vue'
 import InstitutionalGallery from './components/InstitutionalGallery.vue'
 import InstitutionalEvents from './components/InstitutionalEvents.vue'
 import ActiveCompetition from './components/ActiveCompetition.vue'
@@ -161,6 +162,7 @@ onBeforeUnmount(() => {
       <HighlightsHero :competition="currentCompetition" :management-url="managementUrl" />
       <InstitutionalAbout />
       <TeamRobotsAwards />
+      <RobotsShowcase />
       <InstitutionalGallery />
       <InstitutionalEvents />
 
