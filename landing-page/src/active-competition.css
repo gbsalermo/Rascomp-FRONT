@@ -1787,3 +1787,201 @@
     justify-self: center;
   }
 }
+
+
+/* ===== Pódio oficial por categoria ===== */
+
+.competition-category-list article.is-podium::before {
+  background: linear-gradient(180deg, #d7a92e 0%, #b87323 100%);
+}
+
+.competition-category-list article.is-podium {
+  border-color: #e3d09a;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(215,169,46,.10), transparent 36%),
+    linear-gradient(135deg, #fffaf0 0%, #fff 100%);
+}
+
+.competition-category-list article.is-podium em {
+  background: #f8e9b8;
+  color: #735200;
+}
+
+.competition-podium {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 14px;
+  border: 1px solid #e3d8e6;
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(215,169,46,.13), transparent 38%),
+    linear-gradient(180deg, #fff 0%, #fdfafd 100%);
+}
+
+.competition-podium-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.competition-podium-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.competition-podium-heading > div > span {
+  color: #9a7a24;
+  font-size: .5rem;
+  font-weight: 950;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.competition-podium-heading strong {
+  color: #3c2d42;
+  font-size: .82rem;
+}
+
+.competition-podium-heading em {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #f7e8b5;
+  color: #725100;
+  font-size: .48rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.competition-podium-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  align-items: end;
+}
+
+.competition-podium-position {
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 92px;
+  padding: 12px;
+  border: 1px solid #e6dce8;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(49,30,56,.045);
+}
+
+.competition-podium-position.first {
+  min-height: 108px;
+  border-color: #dfc15c;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(236,190,57,.14), transparent 38%),
+    linear-gradient(145deg, #fff8e5 0%, #fff 72%);
+  box-shadow: 0 12px 26px rgba(155,112,18,.10);
+}
+
+.competition-podium-position.second {
+  border-color: #d7d4dd;
+  background: linear-gradient(145deg, #f7f7f9 0%, #fff 72%);
+}
+
+.competition-podium-position.third {
+  border-color: #e2c3ae;
+  background: linear-gradient(145deg, #fff4ed 0%, #fff 72%);
+}
+
+.competition-podium-medal {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: #eee8f0;
+  color: #5e5263;
+  font-size: .64rem;
+  font-weight: 950;
+}
+
+.competition-podium-position.first .competition-podium-medal {
+  background: #e6b92f;
+  color: #5e4200;
+}
+
+.competition-podium-position.second .competition-podium-medal {
+  background: #d7d7df;
+  color: #514e58;
+}
+
+.competition-podium-position.third .competition-podium-medal {
+  background: #c98761;
+  color: #fff;
+}
+
+.competition-podium-position > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.competition-podium-position small {
+  color: #9b8a9f;
+  font-size: .48rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.competition-podium-position strong {
+  overflow: hidden;
+  color: #35283a;
+  font-size: .72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.competition-podium-position > div > span {
+  overflow: hidden;
+  color: #847688;
+  font-size: .54rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.competition-podium-position > em {
+  grid-column: 2;
+  color: #8f1238;
+  font-size: .58rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.competition-podium-note {
+  margin: 0;
+  padding-top: 2px;
+  color: #867889;
+  font-size: .54rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 680px) {
+  .competition-podium-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .competition-podium-position,
+  .competition-podium-position.first {
+    min-height: 82px;
+  }
+
+  .competition-podium-position.first {
+    order: -1;
+  }
+
+  .competition-podium-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
