@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 type RobotCategorySlug = 'sumo' | 'mini-sumo' | 'hockey' | 'follow-line'
 
@@ -47,6 +47,15 @@ const robotImageModules = import.meta.glob(
   }
 ) as Record<string, string>
 
+const robotBannerModules = import.meta.glob(
+  '../assets/robots/banners/*.{jpg,jpeg,png,webp,avif}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default'
+  }
+) as Record<string, string>
+
 function robotNameFromPath(path: string) {
   const fileName = path.split('/').pop() || ''
   const withoutExtension = fileName.replace(/\.[^.]+$/, '')
@@ -56,6 +65,14 @@ function robotNameFromPath(path: string) {
   return words.length
     ? words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
     : 'Robô RAS UFRB'
+}
+
+function categorySlugFromFile(path: string) {
+  const fileName = path.split('/').pop() || ''
+  return fileName
+    .replace(/\.[^.]+$/, '')
+    .replace(/^\d+[\s_-]*/, '')
+    .toLowerCase() as RobotCategorySlug
 }
 
 const photosByCategory = computed<Record<RobotCategorySlug, RobotPhoto[]>>(() => {
@@ -84,71 +101,45 @@ const photosByCategory = computed<Record<RobotCategorySlug, RobotPhoto[]>>(() =>
   return result
 })
 
+const bannersByCategory = computed<Partial<Record<RobotCategorySlug, string>>>(() => {
+  const result: Partial<Record<RobotCategorySlug, string>> = {}
+
+  Object.entries(robotBannerModules)
+    .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
+    .forEach(([path, src]) => {
+      const slug = categorySlugFromFile(path)
+
+      if (categories.some((category) => category.slug === slug)) {
+        result[slug] = src
+      }
+    })
+
+  return result
+})
+
 const activeCategory = ref<RobotCategorySlug>('sumo')
-const activeIndex = ref(0)
-const paused = ref(false)
-let autoplayTimer: number | undefined
 
 const activeCategoryData = computed(
   () => categories.find((category) => category.slug === activeCategory.value) || categories[0]
 )
 
 const activePhotos = computed(() => photosByCategory.value[activeCategory.value] || [])
-const activeRobot = computed(() => activePhotos.value[activeIndex.value] || null)
+const activeBanner = computed(() => bannersByCategory.value[activeCategory.value] || '')
 
 function selectCategory(category: RobotCategorySlug) {
   activeCategory.value = category
 }
-
-function selectRobot(index: number) {
-  activeIndex.value = index
-}
-
-function nextRobot() {
-  if (activePhotos.value.length <= 1) return
-  activeIndex.value = (activeIndex.value + 1) % activePhotos.value.length
-}
-
-function previousRobot() {
-  if (activePhotos.value.length <= 1) return
-  activeIndex.value =
-    (activeIndex.value - 1 + activePhotos.value.length) % activePhotos.value.length
-}
-
-watch(activeCategory, () => {
-  activeIndex.value = 0
-})
-
-watch(activePhotos, (photos) => {
-  if (activeIndex.value >= photos.length) activeIndex.value = 0
-})
-
-onMounted(() => {
-  autoplayTimer = window.setInterval(() => {
-    if (!paused.value && activePhotos.value.length > 1) {
-      nextRobot()
-    }
-  }, 6000)
-})
-
-onBeforeUnmount(() => {
-  if (autoplayTimer) window.clearInterval(autoplayTimer)
-})
 </script>
 
 <template>
   <section id="robos" class="robots-showcase-section" aria-labelledby="robots-showcase-title">
     <div class="robots-showcase-container">
-      <article
-        class="robots-showcase-hero"
-        @mouseenter="paused = true"
-        @mouseleave="paused = false"
-      >
+      <article class="robots-showcase-hero">
         <img
-          v-if="activeRobot"
+          v-if="activeBanner"
           class="robots-showcase-hero-image"
-          :src="activeRobot.src"
-          :alt="`${activeRobot.name} — categoria ${activeCategoryData.label}`"
+          :src="activeBanner"
+          :alt="`Banner da categoria ${activeCategoryData.label}`"
         />
         <div v-else class="robots-showcase-hero-placeholder" aria-hidden="true" />
 
@@ -162,45 +153,14 @@ onBeforeUnmount(() => {
             Nossos Robôs
           </span>
 
-          <span class="robots-showcase-category">{{ activeCategoryData.label }}</span>
+          <span class="robots-showcase-category">Categoria</span>
 
           <h2 id="robots-showcase-title">
-            {{ activeRobot?.name || activeCategoryData.label }}
+            {{ activeCategoryData.label }}
           </h2>
 
           <p>{{ activeCategoryData.description }}</p>
         </div>
-
-        <template v-if="activePhotos.length > 1">
-          <button
-            type="button"
-            class="robots-showcase-arrow robots-showcase-arrow--left"
-            aria-label="Foto anterior"
-            @click="previousRobot"
-          >
-            ‹
-          </button>
-
-          <button
-            type="button"
-            class="robots-showcase-arrow robots-showcase-arrow--right"
-            aria-label="Próxima foto"
-            @click="nextRobot"
-          >
-            ›
-          </button>
-
-          <div class="robots-showcase-dots" aria-label="Fotos do robô">
-            <button
-              v-for="(_, index) in activePhotos"
-              :key="index"
-              type="button"
-              :class="{ active: index === activeIndex }"
-              :aria-label="`Mostrar foto ${index + 1}`"
-              @click="selectRobot(index)"
-            />
-          </div>
-        </template>
       </article>
 
       <nav class="robots-category-tabs" aria-label="Categorias de robôs">
@@ -269,17 +229,14 @@ onBeforeUnmount(() => {
         </header>
 
         <div v-if="activePhotos.length" class="robots-category-grid">
-          <button
-            v-for="(robot, index) in activePhotos"
+          <article
+            v-for="robot in activePhotos"
             :key="robot.path"
-            type="button"
             class="robots-category-card"
-            :class="{ active: index === activeIndex }"
-            @click="selectRobot(index)"
           >
             <img :src="robot.src" :alt="robot.name" />
             <span>{{ robot.name }}</span>
-          </button>
+          </article>
         </div>
 
         <div v-else class="robots-category-empty">
