@@ -67,41 +67,40 @@ const volunteerLoopImages = computed(() =>
 const awards: Award[] = [
   {
     id: 1,
-    place: '1º lugar',
-    title: 'Premiação em robótica',
-    event: 'Evento a confirmar · Categoria a confirmar',
-    description: 'Destaque em competição de robótica, representando evolução técnica, preparação e trabalho em equipe.',
-    year: '2026',
-    tone: 'gold'
-  },
-  {
-    id: 2,
-    place: '2º lugar',
-    title: 'Resultado técnico',
-    event: 'Evento a confirmar · Categoria a confirmar',
-    description: 'Reconhecimento pelo desempenho técnico e pela estratégia desenvolvida pela equipe.',
-    year: '2025',
+    place: 'Vice-campeão',
+    title: 'RCX — Hockey',
+    event: 'RCX 2024 · Categoria Hockey',
+    description: 'Vice-campeonato conquistado pela equipe na categoria Hockey da RCX.',
+    year: '2024',
     tone: 'silver'
   },
   {
+    id: 2,
+    place: 'Campeão',
+    title: 'ERBASE — Follow Line',
+    event: 'ERBASE · Categoria Follow Line',
+    description: 'Título conquistado pela equipe na categoria Follow Line durante a ERBASE.',
+    year: '—',
+    tone: 'gold'
+  },
+  {
     id: 3,
-    place: '3º lugar',
-    title: 'Destaque em competição',
-    event: 'Evento a confirmar · Categoria a confirmar',
-    description: 'Premiação pelo desenvolvimento de soluções criativas e eficientes em ambiente competitivo.',
-    year: '2025',
-    tone: 'bronze'
+    place: 'Campeão',
+    title: 'IEEE — Foto Destaque',
+    event: 'IEEE · Categoria Foto Destaque',
+    description: 'Reconhecimento de campeão na categoria Foto Destaque promovida pelo IEEE.',
+    year: '2024',
+    tone: 'highlight'
   },
   {
     id: 4,
-    place: 'Destaque',
-    title: 'Reconhecimento institucional',
-    event: 'Instituição a confirmar',
-    description: 'Reconhecimento pelo impacto das ações de extensão, formação e contribuição para a comunidade.',
-    year: '2025',
-    tone: 'highlight'
+    place: 'Campeão',
+    title: 'Mega Sumô',
+    event: 'Competição 2024 · Categoria Mega Sumô',
+    description: 'Título de campeão conquistado pela equipe na categoria Mega Sumô.',
+    year: '2024',
+    tone: 'gold'
   }
-]
 </script>
 
 <template>
@@ -208,7 +207,6 @@ const awards: Award[] = [
             </div>
           </div>
 
-          <a href="#galeria" class="team-outline-cta">Ver todas as conquistas <span aria-hidden="true">→</span></a>
         </header>
 
         <div class="team-awards-timeline">
