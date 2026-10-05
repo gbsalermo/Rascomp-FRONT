@@ -1,31 +1,17 @@
-# Mosaico de Robôs / Projetos
+# Pasta descontinuada — Robôs
 
-Esta pasta alimenta a faixa **Nossos Robôs**.
+As imagens de robôs não pertencem mais à section **Equipe e Conquistas**.
 
-Qualquer imagem adicionada aqui entra automaticamente no mosaico estático da Landing.
-
-Formatos aceitos:
+Use a nova estrutura:
 
 ```text
-.jpg
-.jpeg
-.png
-.webp
-.avif
+landing-page/src/assets/robots/
+├── sumo/
+├── mini-sumo/
+├── hockey/
+└── follow-line/
 ```
 
-A ordem é alfabética/numérica pelo nome do arquivo. Exemplo:
+A section dedicada **Nossos Robôs** carrega automaticamente as imagens dessas quatro categorias.
 
-```text
-01-vespa.jpg
-02-pipeta.jpg
-03-projeto.jpg
-04-equipe-robo.jpg
-```
-
-Comportamento atual:
-
-- todas as imagens aparecem juntas;
-- não há carrossel nem autoplay;
-- o layout se adapta responsivamente;
-- as fotos ficam lado a lado em formato de mosaico.
+O nome do arquivo também define o título do robô.
