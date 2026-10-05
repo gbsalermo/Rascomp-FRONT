@@ -11,6 +11,8 @@ export const api = {
   robots: () => publicApi.get('/robos').then((r) => r.data),
   registrations: (competitionId: number) =>
     publicApi.get('/inscricoes', { params: { competitionId } }).then((r) => r.data),
+  podiums: (competitionId: number) =>
+    publicApi.get('/podios', { params: { competitionId } }).then((r) => r.data),
   ranking: (competitionId: number, categoryId: number) =>
     publicApi
       .get('/ranking/seguidor-linha', { params: { competitionId, categoryId } })
