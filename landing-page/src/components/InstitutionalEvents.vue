@@ -43,13 +43,6 @@ const agendaEvents = computed(() =>
 
 const highlightedEvents = computed(() => visibleEvents.value.slice(0, 4))
 
-const expandedEvent = computed(
-  () =>
-    highlightedEvents.value.find((event) => event.id === expandedEventId.value) ||
-    highlightedEvents.value[0] ||
-    null
-)
-
 const managementUrl = String(
   import.meta.env.VITE_GESTAO_URL || (import.meta.env.DEV ? 'http://localhost:5173' : '')
 ).trim()
@@ -71,13 +64,6 @@ function primaryHref(event: LandingEvent) {
   return '#galeria'
 }
 
-function eventIcon(type: LandingEvent['type']) {
-  if (type === 'Competições') return 'trophy'
-  if (type === 'Oficinas') return 'tool'
-  if (type === 'Palestras') return 'mic'
-  if (type === 'Participações') return 'users'
-  return 'heart'
-}
 </script>
 
 <template>
