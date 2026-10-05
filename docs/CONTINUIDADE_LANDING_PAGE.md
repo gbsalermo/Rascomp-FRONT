@@ -73,7 +73,8 @@ A ordem pode ser ajustada durante a revisão, mas sem perder rastreabilidade.
 ```text
 Header / navegação       ✅ CONCLUÍDO E VALIDADO — 04/10/2026
 Hero / destaques         ✅ CONCLUÍDO E VALIDADO — 04/10/2026
-Sobre IEEE + RAS UFRB    ▶ PRÓXIMA SEÇÃO
+Sobre IEEE + RAS UFRB    ✅ CONCLUÍDO E VALIDADO — 04/10/2026
+Equipe / Robôs / Prêmios ▶ PRÓXIMA SEÇÃO
 Demais seções            ⏳ aguardando revisão Beta A
 ```
 
@@ -143,6 +144,40 @@ Imagens atualmente configuradas:
 /media/assets/events/ras-nas-escolas.jpg
 /media/assets/events/oficina-ras.jpg
 /media/assets/awards/conquista-ras.jpg
+```
+
+
+### Sobre IEEE + RAS UFRB — fechamento Beta A
+
+A seção Sobre foi simplificada e validada com foco em leitura institucional e melhor encaixe na viewport.
+
+Decisões finais:
+
+- remoção das miniaturas secundárias e da faixa de métricas;
+- composição principal em duas colunas:
+  - carrossel visual institucional à esquerda;
+  - conteúdo IEEE / RAS UFRB em tabs à direita;
+- carrossel da seção Sobre autoalimentado por:
+  `landing-page/src/assets/about/`;
+- qualquer JPG/JPEG/PNG/WebP/AVIF adicionado à pasta entra automaticamente no carrossel via `import.meta.glob`;
+- ordem controlável por prefixos numéricos no nome do arquivo;
+- título derivado do arquivo não é exibido visualmente;
+- rodapé visual fixo nas fotos: "Registro de projetos, eventos, competições e ações da IEEE RAS UFRB.";
+- tipografia do painel de conteúdo ampliada para maior legibilidade;
+- símbolos genéricos substituídos por ícones SVG contextuais;
+- aba IEEE possui CTA único `Veja mais` apontando para `https://www.ieee.org/`;
+- aba RAS UFRB mantém `Conheça nossas ações` e `Ver equipe`;
+- `scroll-margin-top` aplicado para navegação correta com Header sticky;
+- layout compactado para encaixar melhor em 100% de zoom;
+- responsividade preservada para revisão global final.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/InstitutionalAbout.vue
+landing-page/src/about.css
+landing-page/src/assets/about/
+docs/MIDIA_LANDING_BETA_A.md
 ```
 
 
