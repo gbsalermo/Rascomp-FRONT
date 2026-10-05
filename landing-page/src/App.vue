@@ -15,6 +15,7 @@ import PublicNotFound from './components/PublicNotFound.vue'
 const loading = ref(true)
 const error = ref('')
 const competitions = ref<any[]>([])
+const teams = ref<any[]>([])
 const categories = ref<any[]>([])
 const registrations = ref<any[]>([])
 const ranking = ref<any[]>([])
@@ -62,12 +63,14 @@ async function bootstrap() {
   error.value = ''
 
   try {
-    const [competitionList, categoryList] = await Promise.all([
+    const [competitionList, teamList, categoryList] = await Promise.all([
       api.competitions(),
+      api.teams(),
       api.categories()
     ])
 
     competitions.value = competitionList
+    teams.value = teamList
     categories.value = categoryList
 
     const focus =
@@ -196,6 +199,7 @@ onBeforeUnmount(() => {
       <ActiveCompetition
         :competition="currentCompetition"
         :competitions="competitions"
+        :teams="teams"
         :categories="categories"
         :registrations="registrations"
         :ranking="ranking"
@@ -205,6 +209,8 @@ onBeforeUnmount(() => {
         :follow-category-id="followCategoryId"
         :bracket-id="bracketId"
         :loading="loading"
+        :management-url="managementUrl"
+        @registration-unavailable="showRegistrationUnavailable"
         @update:competition-id="updateCompetition"
         @update:follow-category-id="updateFollowCategory"
         @update:bracket-id="updateBracket"
