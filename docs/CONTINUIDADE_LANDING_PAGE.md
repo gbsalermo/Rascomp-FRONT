@@ -422,6 +422,45 @@ landing-page/src/api.ts
 
 A section permanece **EM VALIDAÇÃO VISUAL** e só deve ser marcada como concluída após aprovação do usuário.
 
+### Competição integrada ao Hero principal — 05/10/2026
+
+A competição vigente passa a ocupar o **primeiro destaque do Hero principal da Landing** durante o ciclo público:
+
+```text
+INSCRICOES_ABERTAS
+→ INSCRICOES_ENCERRADAS
+→ EM_ANDAMENTO
+```
+
+No Hero principal, o visitante vê imediatamente:
+
+- fase/status da competição;
+- nome e descrição;
+- categorias da edição;
+- CTA `Inscrever-se` apenas enquanto as inscrições estiverem abertas;
+- CTA `Acompanhar evento` levando para `#competicao-atual`;
+- espaço preparado para exibir o lote vigente quando o contrato público passar a fornecê-lo.
+
+Os antigos contadores de equipes/robôs foram removidos do Hero competitivo.
+
+A section `#competicao-atual` deixa de repetir um segundo Hero e passa a iniciar com:
+
+- apresentação curta do evento;
+- datas do evento;
+- período de inscrições;
+- quantidade de equipes participantes;
+- identidade/status da competição vigente;
+- participantes;
+- categorias;
+- acompanhamento, ranking e chaveamento.
+
+Importante sobre lotes:
+
+- o frontend está preparado para consumir um nome de lote vigente;
+- o modelo atual `Competition/CompetitionDTO` ainda não possui campo de lote;
+- não usar valores hardcoded como `1º lote`;
+- a integração real do lote deve ser feita na revisão funcional/backend.
+
 ### Ajuste de ciclo público da competição — 05/10/2026
 
 A competição pública não deve nascer apenas quando a Gestão muda para `EM_ANDAMENTO`.
