@@ -6,6 +6,7 @@ const props = defineProps<{
   competition?: any
   categories: any[]
   registrations: any[]
+  currentRegistrationLot?: any
   managementUrl: string
 }>()
 
@@ -56,16 +57,9 @@ const competitionCategories = computed(() => {
   )
 })
 
-const competitionLotLabel = computed(() => {
-  const competition = props.competition || {}
-  return (
-    competition.loteAtualNome ||
-    competition.loteNome ||
-    competition.registrationLotName ||
-    competition.currentLotName ||
-    ''
-  )
-})
+const competitionLotLabel = computed(() =>
+  props.currentRegistrationLot?.nome || ''
+)
 
 const institutionalSlides = computed<HeroSlide[]>(() => [
   {
