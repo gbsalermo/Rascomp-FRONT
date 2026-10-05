@@ -7,6 +7,7 @@ const props = defineProps<{
   teams: any[]
   categories: any[]
   registrations: any[]
+  podiums: any[]
   ranking: any[]
   followAttempts: any[]
   followSchedules: any[]
@@ -97,6 +98,23 @@ const latestResult = computed(() => props.results.at(-1))
 const rankingRows = computed(() =>
   props.ranking.slice(0, showAllRankingRows.value ? props.ranking.length : 5)
 )
+
+function podiumForCategory(categoryId?: number) {
+  if (!categoryId) return undefined
+  return props.podiums.find((item) => Number(item.categoryId) === Number(categoryId))
+}
+
+function isPodiumComplete(podium: any) {
+  return Boolean(
+    podium?.podiumCompleto &&
+    podium?.winnerRobotNome &&
+    podium?.secondRobotNome &&
+    podium?.thirdRobotNome
+  )
+}
+
+const followPodium = computed(() => podiumForCategory(props.followCategoryId))
+const bracketPodium = computed(() => podiumForCategory(currentBracket.value?.categoryId))
 
 const followCurrentSchedule = computed(() =>
   props.followSchedules.find((item) => item.status === 'EM_ANDAMENTO') ||
@@ -259,6 +277,7 @@ const categoryCards = computed(() =>
     const isFollow = category.modalidade === 'FOLLOW_LINE' || name.includes('follow') || name.includes('linha')
     const isHockey = name.includes('hockey')
     const isMini = name.includes('mini')
+    const podium = podiumForCategory(category.id)
 
     let activity = registrations.length
       ? `${registrations.length} robô${registrations.length === 1 ? '' : 's'} inscrito${registrations.length === 1 ? '' : 's'}`
@@ -285,6 +304,11 @@ const categoryCards = computed(() =>
     ) {
       activity = `${liveMatch.value.robotANome || 'A definir'} × ${liveMatch.value.robotBNome || 'A definir'}`
       state = 'Ao vivo'
+    }
+
+    if (isPodiumComplete(podium)) {
+      activity = `🥇 ${podium.winnerRobotNome} · 🥈 ${podium.secondRobotNome} · 🥉 ${podium.thirdRobotNome}`
+      state = 'Pódio definido'
     }
 
     return {
