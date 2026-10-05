@@ -163,6 +163,10 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
       <div class="institutional-footer-container footer-bottom-center">
         <p>© {{ new Date().getFullYear() }} RAS UFRB — Todos os direitos reservados.</p>
         <p>Feito com <span aria-label="amor">♥</span> por membros da RAS UFRB</p>
+        <p class="footer-developer-credit">
+          Dev principal:
+          <a href="https://github.com/gbsalermo" target="_blank" rel="noreferrer">gbsalermo</a>
+        </p>
       </div>
     </section>
   </footer>
