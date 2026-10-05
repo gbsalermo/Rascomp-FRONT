@@ -1058,7 +1058,6 @@ function handleRegistration() {
               </div>
             </template>
           </div>
-          </div>
         </section>
       </div>
     </div>
