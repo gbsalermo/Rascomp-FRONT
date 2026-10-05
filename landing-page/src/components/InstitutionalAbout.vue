@@ -156,7 +156,6 @@ onBeforeUnmount(stopPhotoTimer)
             <span class="about-photo-badge">RAS UFRB</span>
 
             <div class="about-photo-copy">
-              <strong>{{ activePhotoItem.label }}</strong>
               <p>{{ activePhotoItem.detail }}</p>
             </div>
 
