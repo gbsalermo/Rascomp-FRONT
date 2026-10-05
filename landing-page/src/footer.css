@@ -73,13 +73,12 @@
 }
 
 .footer-main-logo {
-  width: min(190px, 78%);
-  max-height: 104px;
+  display: block;
+  width: min(245px, 88%);
+  max-height: 112px;
   object-fit: contain;
-  padding: 11px 16px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(86, 7, 30, .14);
+  background: transparent;
+  mix-blend-mode: screen;
 }
 
 .footer-main-message {
@@ -541,7 +540,7 @@ a.footer-contact-card:hover {
   }
 
   .footer-main-logo {
-    width: min(180px, 72%);
+    width: min(220px, 82%);
   }
 
   .footer-support-copy {
