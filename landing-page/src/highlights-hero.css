@@ -294,7 +294,7 @@
   .hero-quick-links {
     position: relative;
     z-index: 5;
-    margin-top: -6px;
+    margin-top: 4px;
   }
 
   .hero-quick-card {
