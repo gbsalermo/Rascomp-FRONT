@@ -541,7 +541,7 @@
 
 @media(min-width: 901px) {
   .tone-competition.highlights-stage {
-    min-height: clamp(540px, calc(100vh - 155px), 650px);
+    min-height: clamp(500px, calc(100vh - 185px), 620px);
   }
 
   .highlights-copy.is-competition {
@@ -551,7 +551,7 @@
 
 @media(max-width: 760px) {
   .tone-competition.highlights-stage {
-    min-height: 660px;
+    min-height: 540px;
   }
 
   .highlights-copy.is-competition {
@@ -573,6 +573,6 @@
 
 @media(max-width: 520px) {
   .tone-competition.highlights-stage {
-    min-height: 700px;
+    min-height: 520px;
   }
 }
