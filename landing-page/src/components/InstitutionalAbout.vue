@@ -1,10 +1,53 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { HOME_MEDIA } from '../content/homeMedia'
 
 type AboutTab = 'ieee' | 'ras'
 
+type AboutSlide = {
+  id: string
+  label: string
+  detail: string
+  src: string
+  alt: string
+}
+
 const activeTab = ref<AboutTab>('ieee')
+const activePhoto = ref(0)
+let photoTimer: number | undefined
+
+const photos = computed<AboutSlide[]>(() => [
+  {
+    id: 'team',
+    label: 'Equipe RAS UFRB',
+    detail: 'Membros reunidos em atividades, projetos e eventos do capítulo.',
+    src: HOME_MEDIA.about.team.src,
+    alt: HOME_MEDIA.about.team.alt
+  },
+  {
+    id: 'projects',
+    label: 'Projetos e oficinas',
+    detail: 'Aprendizado prático, prototipagem e formação tecnológica.',
+    src: HOME_MEDIA.about.projects.src,
+    alt: HOME_MEDIA.about.projects.alt
+  },
+  {
+    id: 'extension',
+    label: 'Extensão e comunidade',
+    detail: 'Ações que aproximam robótica, ciência e tecnologia da comunidade.',
+    src: HOME_MEDIA.about.extension.src,
+    alt: HOME_MEDIA.about.extension.alt
+  },
+  {
+    id: 'achievements',
+    label: 'Competições e conquistas',
+    detail: 'Experiências, resultados e momentos construídos em equipe.',
+    src: HOME_MEDIA.about.achievements.src,
+    alt: HOME_MEDIA.about.achievements.alt
+  }
+])
+
+const activePhotoItem = computed(() => photos.value[activePhoto.value] || photos.value[0])
 
 const content = computed(() => {
   if (activeTab.value === 'ieee') {
@@ -33,6 +76,40 @@ const content = computed(() => {
     ]
   }
 })
+
+function goToPhoto(index: number) {
+  activePhoto.value = index
+  restartPhotoTimer()
+}
+
+function previousPhoto() {
+  activePhoto.value = (activePhoto.value - 1 + photos.value.length) % photos.value.length
+  restartPhotoTimer()
+}
+
+function nextPhoto() {
+  activePhoto.value = (activePhoto.value + 1) % photos.value.length
+  restartPhotoTimer()
+}
+
+function startPhotoTimer() {
+  stopPhotoTimer()
+  photoTimer = window.setInterval(() => {
+    activePhoto.value = (activePhoto.value + 1) % photos.value.length
+  }, 7000)
+}
+
+function stopPhotoTimer() {
+  if (photoTimer) window.clearInterval(photoTimer)
+  photoTimer = undefined
+}
+
+function restartPhotoTimer() {
+  startPhotoTimer()
+}
+
+onMounted(startPhotoTimer)
+onBeforeUnmount(stopPhotoTimer)
 </script>
 
 <template>
@@ -45,13 +122,17 @@ const content = computed(() => {
       </div>
 
       <div class="institutional-about-grid institutional-about-grid-demo">
-        <div class="about-media-panel" aria-label="Imagem institucional da RAS UFRB">
-          <div class="about-photo-main">
+        <div class="about-media-panel" aria-label="Destaques visuais da RAS UFRB">
+          <div
+            class="about-photo-main"
+            @mouseenter="stopPhotoTimer"
+            @mouseleave="startPhotoTimer"
+          >
             <img
-              v-if="HOME_MEDIA.about.ras.src"
+              v-if="activePhotoItem.src"
               class="about-photo-image"
-              :src="HOME_MEDIA.about.ras.src"
-              :alt="HOME_MEDIA.about.ras.alt"
+              :src="activePhotoItem.src"
+              :alt="activePhotoItem.alt"
             />
             <div v-else class="about-photo-placeholder" aria-hidden="true" />
 
@@ -59,8 +140,22 @@ const content = computed(() => {
             <span class="about-photo-badge">RAS UFRB</span>
 
             <div class="about-photo-copy">
-              <strong>Equipe RAS UFRB</strong>
-              <p>Membros reunidos em atividades, projetos e eventos do capítulo.</p>
+              <strong>{{ activePhotoItem.label }}</strong>
+              <p>{{ activePhotoItem.detail }}</p>
+            </div>
+
+            <button class="about-photo-arrow previous" type="button" aria-label="Imagem anterior" @click="previousPhoto">←</button>
+            <button class="about-photo-arrow next" type="button" aria-label="Próxima imagem" @click="nextPhoto">→</button>
+
+            <div class="about-photo-dots" aria-label="Selecionar imagem">
+              <button
+                v-for="(photo, index) in photos"
+                :key="photo.id"
+                type="button"
+                :class="{ active: index === activePhoto }"
+                :aria-label="`Mostrar ${photo.label}`"
+                @click="goToPhoto(index)"
+              />
             </div>
           </div>
         </div>
