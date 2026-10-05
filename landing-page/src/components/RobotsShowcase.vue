@@ -116,6 +116,12 @@ function selectCategory(category: RobotCategorySlug) {
 <template>
   <section id="robos" class="robots-showcase-section" aria-labelledby="robots-showcase-title">
     <div class="robots-showcase-container">
+      <header class="robots-showcase-heading">
+        <span>Projetos e tecnologia</span>
+        <h2>Robôs</h2>
+        <p>Conheça os robôs desenvolvidos pela IEEE RAS UFRB e explore cada categoria competitiva.</p>
+      </header>
+
       <article class="robots-showcase-hero">
         <img
           v-if="genericBanner"
