@@ -1618,3 +1618,172 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ===== Disputa de 3º lugar ===== */
+
+.competition-third-place {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #d7b37a;
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(190, 125, 54, .13), transparent 36%),
+    linear-gradient(135deg, #fff8ef 0%, #fffdf8 72%);
+  box-shadow: 0 10px 24px rgba(116, 79, 31, .08);
+}
+
+.competition-third-place > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.competition-third-place > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.competition-third-place-kicker {
+  color: #9a6425;
+  font-size: .5rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.competition-third-place > header strong {
+  color: #6f4517;
+  font-size: .9rem;
+}
+
+.competition-third-place > header em {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #f6e3c2;
+  color: #7c531f;
+  font-size: .48rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.competition-third-place-body {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+  gap: 9px;
+  align-items: center;
+}
+
+.competition-third-place-robot {
+  display: grid;
+  grid-template-columns: 24px minmax(0,1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 58px;
+  padding: 9px 10px;
+  border: 1px solid #e7d4b7;
+  border-radius: 11px;
+  background: rgba(255,255,255,.8);
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.competition-third-place-robot:hover {
+  transform: translateY(-2px);
+  border-color: #bd7b31;
+  box-shadow: 0 10px 20px rgba(128, 82, 31, .09);
+}
+
+.competition-third-place-robot > span {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f2dfc2;
+  color: #76501f;
+  font-size: .48rem;
+  font-weight: 900;
+}
+
+.competition-third-place-robot > div {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.competition-third-place-robot strong {
+  overflow: hidden;
+  color: #4d351e;
+  font-size: .65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.competition-third-place-robot small {
+  overflow: hidden;
+  color: #927b65;
+  font-size: .49rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.competition-third-place-robot > b {
+  display: grid;
+  min-width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 7px;
+  background: #f1dfc6;
+  color: #80551d;
+  font-size: .58rem;
+}
+
+.competition-third-place-robot.winner {
+  border-color: #bd7b31;
+  background: linear-gradient(90deg, #f7e2bf 0%, #fff8ed 60%, #fff 100%);
+}
+
+.competition-third-place-robot.winner strong {
+  color: #7d4c10;
+  font-weight: 950;
+}
+
+.competition-third-place-robot.winner > span,
+.competition-third-place-robot.winner > b {
+  background: #b87428;
+  color: #fff;
+}
+
+.competition-third-place-versus {
+  color: #a87945;
+  font-size: .9rem;
+  font-weight: 950;
+}
+
+.competition-third-place > footer {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  padding-top: 3px;
+  border-top: 1px solid rgba(185, 130, 66, .22);
+  color: #886c4d;
+  font-size: .52rem;
+}
+
+.competition-third-place-winner {
+  color: #7b4c11;
+  font-weight: 950;
+}
+
+@media (max-width: 680px) {
+  .competition-third-place-body {
+    grid-template-columns: 1fr;
+  }
+
+  .competition-third-place-versus {
+    justify-self: center;
+  }
+}
