@@ -5,6 +5,10 @@ const publicApi = axios.create({ baseURL: `${API_URL}/api/v1/public`, timeout: 1
 
 export const api = {
   competitions: () => publicApi.get('/competicoes').then((r) => r.data),
+  currentRegistrationLot: (competitionId: number) =>
+    publicApi
+      .get(`/competicoes/${competitionId}/lote-atual`)
+      .then((r) => r.status === 204 ? undefined : r.data),
   categories: (modalidade?: string) =>
     publicApi.get('/categorias', { params: modalidade ? { modalidade } : undefined }).then((r) => r.data),
   teams: () => publicApi.get('/equipes').then((r) => r.data),
