@@ -11,9 +11,22 @@ export type LandingEvent = {
   dateLabel: string
   location: string
   summary: string
+  description: string
   status?: string
+  temporalLabel: 'Próximo' | 'Inscrições abertas' | 'Em breve'
   tone: EventTone
   cta: string
+  image: string
+}
+
+export type RecentLandingEvent = {
+  id: string
+  title: string
+  category: 'Competição' | 'Oficina' | 'Evento'
+  dateLabel: string
+  summary: string
+  image: string
+  tone: EventTone
 }
 
 export const LANDING_EVENTS: LandingEvent[] = [
@@ -27,10 +40,13 @@ export const LANDING_EVENTS: LandingEvent[] = [
     dateMonth: 'NOV',
     dateLabel: '07 a 10 NOV 2026',
     location: 'UFRB — Campus Cruz das Almas',
-    summary: 'Desafios, inovação e muita tecnologia em uma das principais ações competitivas promovidas pelo capítulo.',
+    summary: 'Desafios, inovação e tecnologia em uma das principais ações competitivas promovidas pelo capítulo.',
+    description: 'A RoboCup Regional Competition (RRC) reúne equipes de diferentes instituições em desafios de robótica, estratégia e inovação. A RAS UFRB participa da organização e das atividades competitivas do evento.',
     status: 'Destaque',
+    temporalLabel: 'Próximo',
     tone: 'red',
-    cta: 'Saiba mais'
+    cta: 'Saiba mais',
+    image: '/media/assets/awards/conquista-ras.jpg'
   },
   {
     id: 'oficina-arduino',
@@ -39,41 +55,50 @@ export const LANDING_EVENTS: LandingEvent[] = [
     type: 'Oficinas',
     organizedByRas: true,
     dateDay: '12',
-    dateMonth: 'SET',
-    dateLabel: '12 SET 2026',
+    dateMonth: 'OUT',
+    dateLabel: '12 OUT 2026',
     location: 'Lab. de Robótica — UFRB',
     summary: 'Uma atividade prática para apresentar fundamentos de eletrônica, programação e prototipagem com Arduino.',
+    description: 'A oficina apresenta conceitos básicos de eletrônica e programação por meio de atividades práticas. A proposta é permitir que participantes sem experiência prévia construam e testem pequenos projetos com Arduino.',
     status: 'Inscrições abertas',
+    temporalLabel: 'Inscrições abertas',
     tone: 'purple',
-    cta: 'Inscrever-se'
+    cta: 'Inscrever-se',
+    image: '/media/assets/events/oficina-ras.jpg'
   },
   {
     id: 'palestra-ia',
     title: 'Palestra: IA na Robótica',
-    eyebrow: 'Inteligência Artificial na Robótica',
+    eyebrow: 'Inteligência Artificial',
     type: 'Palestras',
     organizedByRas: true,
     dateDay: '28',
-    dateMonth: 'AGO',
-    dateLabel: '28 AGO 2026',
+    dateMonth: 'OUT',
+    dateLabel: '28 OUT 2026',
     location: 'Auditório do CETEC — UFRB',
     summary: 'Conversa com convidados sobre aplicações atuais de inteligência artificial, automação e robótica.',
+    description: 'Uma conversa introdutória sobre inteligência artificial aplicada à robótica, passando por percepção, tomada de decisão e automação. O encontro também abre espaço para perguntas e troca de experiências.',
+    temporalLabel: 'Em breve',
     tone: 'blue',
-    cta: 'Saiba mais'
+    cta: 'Saiba mais',
+    image: '/media/assets/institutional/ras-ufrb-geral.jpg'
   },
   {
     id: 'ras-escolas',
     title: 'RAS nas Escolas',
-    eyebrow: 'Inspirando o futuro',
+    eyebrow: 'Projeto Social',
     type: 'Projeto Social',
     organizedByRas: true,
     dateDay: '18',
-    dateMonth: 'SET',
-    dateLabel: '18 SET 2026',
+    dateMonth: 'OUT',
+    dateLabel: '18 OUT 2026',
     location: 'Escolas públicas — Cruz das Almas',
     summary: 'Levamos experiências de robótica e tecnologia para aproximar estudantes de ciência, engenharia e programação.',
+    description: 'A ação leva atividades demonstrativas e experiências práticas para escolas da região, aproximando estudantes de robótica, programação, engenharia e tecnologia de maneira acessível.',
+    temporalLabel: 'Em breve',
     tone: 'green',
-    cta: 'Saiba mais'
+    cta: 'Saiba mais',
+    image: '/media/assets/events/ras-nas-escolas.jpg'
   },
   {
     id: 'robodori',
@@ -82,12 +107,15 @@ export const LANDING_EVENTS: LandingEvent[] = [
     type: 'Participações',
     organizedByRas: true,
     dateDay: '05',
-    dateMonth: 'OUT',
-    dateLabel: '05 OUT 2026',
+    dateMonth: 'NOV',
+    dateLabel: '05 NOV 2026',
     location: 'Local a confirmar',
-    summary: 'Espaço reservado para apresentar o Robodori e seus destaques quando o material oficial estiver consolidado.',
+    summary: 'Encontro de robótica, integração e demonstração de projetos desenvolvidos pelo capítulo.',
+    description: 'Espaço de integração entre estudantes, projetos e iniciativas de robótica, com demonstrações e troca de experiências entre participantes.',
+    temporalLabel: 'Em breve',
     tone: 'purple',
-    cta: 'Ver detalhes'
+    cta: 'Ver detalhes',
+    image: '/media/assets/institutional/ras-ufrb-geral.jpg'
   },
   {
     id: 'competicao-externa',
@@ -96,11 +124,53 @@ export const LANDING_EVENTS: LandingEvent[] = [
     type: 'Participações',
     organizedByRas: false,
     dateDay: '22',
-    dateMonth: 'OUT',
-    dateLabel: '22 OUT 2026',
+    dateMonth: 'NOV',
+    dateLabel: '22 NOV 2026',
     location: 'Local a confirmar',
-    summary: 'Registro para participações da equipe em competições, mostras e encontros promovidos por outras instituições.',
+    summary: 'Participação da equipe em competições e encontros promovidos por outras instituições.',
+    description: 'Registro destinado às participações externas da equipe, incluindo competições, mostras técnicas e encontros promovidos por instituições parceiras.',
+    temporalLabel: 'Em breve',
     tone: 'red',
-    cta: 'Ver participação'
+    cta: 'Ver participação',
+    image: '/media/assets/awards/conquista-ras.jpg'
+  }
+]
+
+export const RECENT_LANDING_EVENTS: RecentLandingEvent[] = [
+  {
+    id: 'erbase-2025',
+    title: 'ERBASE 2025',
+    category: 'Competição',
+    dateLabel: '2025',
+    summary: 'Campeão na categoria Follow Line.',
+    image: '/media/assets/awards/conquista-ras.jpg',
+    tone: 'purple'
+  },
+  {
+    id: 'rcx-2024',
+    title: 'RCX 2024',
+    category: 'Competição',
+    dateLabel: '2024',
+    summary: 'Vice-campeão na categoria Hockey.',
+    image: '/media/assets/institutional/ras-ufrb-geral.jpg',
+    tone: 'red'
+  },
+  {
+    id: 'workshop-robotica',
+    title: 'Workshop de Robótica',
+    category: 'Oficina',
+    dateLabel: '2024',
+    summary: 'Oficina prática para novos membros.',
+    image: '/media/assets/events/oficina-ras.jpg',
+    tone: 'green'
+  },
+  {
+    id: 'semana-engenharia',
+    title: 'Semana da Engenharia',
+    category: 'Evento',
+    dateLabel: '2024',
+    summary: 'Participação com estande e demonstrações.',
+    image: '/media/assets/events/ras-nas-escolas.jpg',
+    tone: 'blue'
   }
 ]
