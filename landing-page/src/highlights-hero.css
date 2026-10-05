@@ -273,6 +273,10 @@
 
 
 @media(min-width: 901px) {
+  .highlights-hero {
+    padding-bottom: 6px;
+  }
+
   .highlights-stage {
     min-height: clamp(500px, calc(100vh - 185px), 620px);
   }
@@ -290,7 +294,7 @@
   .hero-quick-links {
     position: relative;
     z-index: 5;
-    margin-top: -20px;
+    margin-top: -6px;
   }
 
   .hero-quick-card {
