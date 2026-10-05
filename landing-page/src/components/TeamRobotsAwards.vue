@@ -101,6 +101,7 @@ const awards: Award[] = [
     year: '2024',
     tone: 'gold'
   }
+]
 </script>
 
 <template>
