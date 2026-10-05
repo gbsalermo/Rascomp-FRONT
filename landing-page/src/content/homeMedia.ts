@@ -24,19 +24,19 @@ export const HOME_MEDIA = {
   },
   about: {
     team: {
-      src: '/media/assets/institutional/ras-ufrb-geral.jpg',
+      src: '/media/assets/about/equipe-ras.jpg',
       alt: 'Equipe da IEEE RAS UFRB reunida em atividade institucional'
     },
     projects: {
-      src: '/media/assets/events/oficina-ras.jpg',
+      src: '/media/assets/about/projetos-oficinas.jpg',
       alt: 'Atividade de projetos e oficinas da IEEE RAS UFRB'
     },
     extension: {
-      src: '/media/assets/events/ras-nas-escolas.jpg',
+      src: '/media/assets/about/extensao-comunidade.jpg',
       alt: 'Ação de extensão da IEEE RAS UFRB'
     },
     achievements: {
-      src: '/media/assets/awards/conquista-ras.jpg',
+      src: '/media/assets/about/competicoes-conquistas.jpg',
       alt: 'Equipe da IEEE RAS UFRB em competição e conquista'
     }
   }
