@@ -48,7 +48,7 @@ const robotImageModules = import.meta.glob(
 ) as Record<string, string>
 
 const robotBannerModules = import.meta.glob(
-  '../assets/robots/banners/**/*.{jpg,jpeg,png,webp,avif}',
+  '../assets/robots/banners/*.{jpg,jpeg,png,webp,avif}',
   {
     eager: true,
     query: '?url',
@@ -65,27 +65,6 @@ function robotNameFromPath(path: string) {
   return words.length
     ? words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
     : 'Robô RAS UFRB'
-}
-
-function categorySlugFromBannerPath(path: string): RobotCategorySlug | null {
-  const normalized = path.toLowerCase().replace(/\\/g, '/')
-  const relativePath = normalized.split('/assets/robots/banners/')[1] || ''
-  const folder = relativePath.split('/')[0]
-
-  if (folder === 'sumo' || folder === 'mini-sumo' || folder === 'hockey' || folder === 'follow-line') {
-    return folder
-  }
-
-  const fileName = relativePath.split('/').pop() || ''
-  const withoutExtension = fileName.replace(/\.[^.]+$/, '')
-  const normalizedName = withoutExtension.replace(/[_\s]+/g, '-')
-
-  if (normalizedName.includes('mini-sumo')) return 'mini-sumo'
-  if (normalizedName.includes('follow-line')) return 'follow-line'
-  if (normalizedName.includes('hockey')) return 'hockey'
-  if (normalizedName.includes('sumo')) return 'sumo'
-
-  return null
 }
 
 const photosByCategory = computed<Record<RobotCategorySlug, RobotPhoto[]>>(() => {
@@ -114,20 +93,11 @@ const photosByCategory = computed<Record<RobotCategorySlug, RobotPhoto[]>>(() =>
   return result
 })
 
-const bannersByCategory = computed<Partial<Record<RobotCategorySlug, string>>>(() => {
-  const result: Partial<Record<RobotCategorySlug, string>> = {}
-
-  Object.entries(robotBannerModules)
+const genericBanner = computed(() => {
+  const entries = Object.entries(robotBannerModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
-    .forEach(([path, src]) => {
-      const slug = categorySlugFromBannerPath(path)
 
-      if (slug && !result[slug]) {
-        result[slug] = src
-      }
-    })
-
-  return result
+  return entries[0]?.[1] || ''
 })
 
 const activeCategory = ref<RobotCategorySlug>('sumo')
@@ -137,7 +107,6 @@ const activeCategoryData = computed(
 )
 
 const activePhotos = computed(() => photosByCategory.value[activeCategory.value] || [])
-const activeBanner = computed(() => bannersByCategory.value[activeCategory.value] || '')
 
 function selectCategory(category: RobotCategorySlug) {
   activeCategory.value = category
@@ -149,10 +118,10 @@ function selectCategory(category: RobotCategorySlug) {
     <div class="robots-showcase-container">
       <article class="robots-showcase-hero">
         <img
-          v-if="activeBanner"
+          v-if="genericBanner"
           class="robots-showcase-hero-image"
-          :src="activeBanner"
-          :alt="`Banner da categoria ${activeCategoryData.label}`"
+          :src="genericBanner"
+          alt="Robôs e projetos da IEEE RAS UFRB"
         />
         <div v-else class="robots-showcase-hero-placeholder" aria-hidden="true" />
 
