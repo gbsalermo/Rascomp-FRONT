@@ -209,27 +209,68 @@
   font-size: .62rem;
 }
 
-.team-volunteer-gallery {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+.team-volunteer-carousel {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 3%, #000 97%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 3%, #000 97%, transparent 100%);
 }
 
-.team-volunteer-gallery figure {
-  min-height: 190px;
+.team-volunteer-track {
+  display: flex;
+  width: max-content;
+  gap: 8px;
+  animation: volunteer-scroll 34s linear infinite;
+  will-change: transform;
+}
+
+.team-volunteer-carousel:hover .team-volunteer-track,
+.team-volunteer-carousel:focus-within .team-volunteer-track {
+  animation-play-state: paused;
+}
+
+.team-volunteer-track.is-static {
+  animation: none;
+}
+
+.team-volunteer-slide {
+  width: clamp(280px, 27vw, 390px);
+  aspect-ratio: 16 / 9;
+  flex: 0 0 auto;
   overflow: hidden;
-  border-radius: 13px;
+  margin: 0;
+  border-radius: 11px;
   background: #f4eff6;
 }
 
-.team-volunteer-gallery img {
+.team-volunteer-slide img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.team-volunteer-gallery figure:nth-child(n + 4) {
-  display: none;
+@keyframes volunteer-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 4px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-volunteer-track {
+    animation: none;
+  }
+
+  .team-volunteer-carousel {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
 }
 
 .team-volunteer-placeholder {
@@ -458,12 +499,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .team-volunteer-gallery {
-    grid-template-columns: 1fr;
-  }
-
-  .team-volunteer-gallery figure {
-    min-height: 220px;
+  .team-volunteer-slide {
+    width: 300px;
   }
 
   .team-robots-hero {
@@ -518,8 +555,8 @@
     font-size: .78rem;
   }
 
-  .team-volunteer-gallery figure {
-    min-height: 180px;
+  .team-volunteer-slide {
+    width: 240px;
   }
 
   .team-robots-hero {
