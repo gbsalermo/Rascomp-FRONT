@@ -1,6 +1,6 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
-Última revisão: **04/10/2026**
+Última revisão: **05/10/2026**
 
 Este documento é um **checkpoint específico da aplicação `landing-page/`**. Ele preserva decisões visuais/funcionais da Landing, mas não define a etapa global do RasComp.
 
@@ -56,7 +56,8 @@ Ordem-base:
 Header / navegação
 → Hero / destaques
 → Sobre
-→ Equipe / Diretoria / Robôs / Premiações
+→ Equipe / Diretoria / Premiações
+→ Robôs
 → Galeria
 → Eventos / postagens
 → Competição pública
@@ -74,7 +75,9 @@ A ordem pode ser ajustada durante a revisão, mas sem perder rastreabilidade.
 Header / navegação       ✅ CONCLUÍDO E VALIDADO — 04/10/2026
 Hero / destaques         ✅ CONCLUÍDO E VALIDADO — 04/10/2026
 Sobre IEEE + RAS UFRB    ✅ CONCLUÍDO E VALIDADO — 04/10/2026
-Equipe / Robôs / Prêmios ▶ PRÓXIMA SEÇÃO
+Equipe e Conquistas      ✅ CONCLUÍDO E VALIDADO — 05/10/2026
+Robôs                    ✅ CONCLUÍDO E VALIDADO — 05/10/2026
+Galeria                  ▶ PRÓXIMA SEÇÃO
 Demais seções            ⏳ aguardando revisão Beta A
 ```
 
@@ -85,7 +88,7 @@ O Header foi redesenhado e validado em desktop e mobile com:
 - identidade IEEE RAS UFRB ampliada e legível;
 - logo oficial em `/ieee-ras-official.png`;
 - navegação institucional simplificada;
-- itens principais: Sobre, Equipe, Galeria, Eventos, Contato;
+- itens principais: Sobre, Equipe, Robôs, Galeria, Eventos, Contato;
 - área competitiva exibida quando houver competição em andamento;
 - CTA permanente `Inscrever-se`;
 - `VITE_GESTAO_URL` como destino configurável do CTA;
@@ -178,6 +181,94 @@ landing-page/src/components/InstitutionalAbout.vue
 landing-page/src/about.css
 landing-page/src/assets/about/
 docs/MIDIA_LANDING_BETA_A.md
+```
+
+
+### Equipe e Conquistas — fechamento Beta A
+
+A antiga composição única de equipe, diretoria, robôs e premiações foi simplificada e validada como uma seção vertical de conteúdo.
+
+Decisões finais:
+
+- título principal: `Equipe e Conquistas`;
+- seção não é forçada a caber em uma única viewport;
+- Diretoria em destaque com 6 cargos:
+  - Presidente;
+  - Vice-presidente;
+  - Tesoureiro;
+  - Secretário;
+  - Marketing;
+  - Orientador;
+- fotos da Diretoria carregadas automaticamente de:
+  `landing-page/src/assets/team/board/`;
+- voluntários exibidos em uma faixa horizontal automática com fotos coletivas;
+- faixa de voluntários aceita múltiplas imagens de:
+  `landing-page/src/assets/team/volunteers/`;
+- autoplay contínuo da faixa de voluntários com pausa em hover e respeito a `prefers-reduced-motion`;
+- Robôs removidos desta seção e promovidos para section própria;
+- premiações reorganizadas em timeline/lista vertical;
+- CTA `Ver todas as conquistas` removido;
+- premiações reais atualmente registradas:
+  - Vice-campeão — RCX 2024 · Hockey;
+  - Campeão — ERBASE 2025 · Follow Line;
+  - Campeão — IEEE 2024 · Foto Destaque;
+  - Campeão — Mega Sumô 2024;
+- métricas/cards antigos do rodapé removidos.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/TeamRobotsAwards.vue
+landing-page/src/team-robots-awards.css
+landing-page/src/assets/team/board/
+landing-page/src/assets/team/volunteers/
+```
+
+
+### Robôs — fechamento Beta A
+
+A área de Robôs foi separada da seção de Equipe e passou a existir como section própria na Home.
+
+Decisões finais:
+
+- nova section com `id="robos"`;
+- item `Robôs` adicionado à navegação principal do Header;
+- cabeçalho institucional próprio com título `Robôs`;
+- Hero superior usa uma única foto genérica fixa, independente da categoria;
+- banner genérico carregado automaticamente de:
+  `landing-page/src/assets/robots/banners/`;
+- categorias disponíveis:
+  - Sumô;
+  - Mini Sumô;
+  - Hockey;
+  - Follow Line;
+- categorias possuem ícones SVG próprios no quadrado principal do seletor;
+- selecionar uma categoria altera apenas os robôs exibidos abaixo, não o banner;
+- fotos individuais ficam separadas por categoria em:
+  `landing-page/src/assets/robots/<categoria>/`;
+- nome do arquivo define automaticamente o título do robô;
+- prefixos numéricos podem ordenar arquivos sem aparecer no título;
+- Hero e cabeçalho foram compactados para melhor encaixe em 100% de zoom;
+- responsividade preservada para revisão global final.
+
+Estrutura de mídia:
+
+```text
+landing-page/src/assets/robots/
+├── banners/
+├── sumo/
+├── mini-sumo/
+├── hockey/
+└── follow-line/
+```
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/RobotsShowcase.vue
+landing-page/src/robots-showcase.css
+landing-page/src/assets/robots/
+landing-page/src/components/InstitutionalHeader.vue
 ```
 
 
@@ -341,11 +432,12 @@ Referência visual histórica: ERBASE como inspiração de ritmo/arquitetura, se
 1. Header
 2. Hero / Painel de Destaques
 3. Sobre IEEE + RAS UFRB
-4. Equipe / Diretoria / Robôs / Premiações
-5. Galeria
-6. Eventos da RAS
-7. Competição atual + acompanhamento [CONDICIONAL]
-8. Footer institucional
+4. Equipe e Conquistas
+5. Robôs
+6. Galeria
+7. Eventos da RAS
+8. Competição atual + acompanhamento [CONDICIONAL]
+9. Footer institucional
 ```
 
 `Edições anteriores` não faz parte da Home.
@@ -385,6 +477,7 @@ InstitutionalHeader.vue
 HighlightsHero.vue
 InstitutionalAbout.vue
 TeamRobotsAwards.vue
+RobotsShowcase.vue
 InstitutionalGallery.vue
 InstitutionalEvents.vue
 ActiveCompetition.vue
