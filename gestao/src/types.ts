@@ -6,6 +6,7 @@ export type {
   SumoPhysicalClass,
   SumoControlMode,
   Competition,
+  RegistrationLot,
   CompetitionRegistrationWindowChange,
   Category,
   ConfigSumo,
