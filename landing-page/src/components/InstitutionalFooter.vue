@@ -1,9 +1,35 @@
 <script setup lang="ts">
-const contactEmail = String(import.meta.env.VITE_RAS_EMAIL || '').trim()
-const instagramUrl = String(import.meta.env.VITE_INSTAGRAM_URL || '').trim()
-const whatsappUrl = String(import.meta.env.VITE_WHATSAPP_URL || '').trim()
+const partnerLogoModules = import.meta.glob(
+  '../assets/footer/partners/*.{jpg,jpeg,png,webp,avif,svg}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default'
+  }
+) as Record<string, string>
 
-const emailHref = contactEmail ? `mailto:${contactEmail}` : ''
+const contactEmail = String(
+  import.meta.env.VITE_RAS_EMAIL || 'ieeerasufrb@gmail.com'
+).trim()
+
+const instagramUrl = String(
+  import.meta.env.VITE_INSTAGRAM_URL || 'https://www.instagram.com/ieeerasufrb/'
+).trim()
+
+const whatsappUrl = String(
+  import.meta.env.VITE_WHATSAPP_URL || 'https://wa.me/5573981264674'
+).trim()
+
+const emailHref = `mailto:${contactEmail}`
+
+function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
+  const entry = Object.entries(partnerLogoModules).find(([path]) => {
+    const fileName = path.split('/').pop()?.replace(/\.[^.]+$/, '').toLowerCase() || ''
+    return fileName === name
+  })
+
+  return entry?.[1] || ''
+}
 </script>
 
 <template>
@@ -65,10 +91,28 @@ const emailHref = contactEmail ? `mailto:${contactEmail}` : ''
           <span class="footer-heading-line" aria-hidden="true" />
 
           <div class="footer-partner-grid">
-            <article><strong>UFRB</strong><small>Universidade</small></article>
-            <article><strong>IEEE</strong><small>Instituição</small></article>
-            <article><strong>IEEE RAS</strong><small>Sociedade</small></article>
-            <article><strong>CETEC</strong><small>Centro</small></article>
+            <article>
+              <img v-if="partnerLogo('ufrb')" :src="partnerLogo('ufrb')" alt="UFRB" />
+              <strong v-else>UFRB</strong>
+              <small>Universidade</small>
+            </article>
+
+            <article>
+              <img v-if="partnerLogo('ieee')" :src="partnerLogo('ieee')" alt="IEEE" />
+              <strong v-else>IEEE</strong>
+              <small>Instituição</small>
+            </article>
+
+            <article>
+              <img src="/ieee-ras-official.png" alt="IEEE Robotics & Automation Society" />
+              <small>Sociedade</small>
+            </article>
+
+            <article>
+              <img v-if="partnerLogo('cetec')" :src="partnerLogo('cetec')" alt="CETEC" />
+              <strong v-else>CETEC</strong>
+              <small>Centro</small>
+            </article>
           </div>
 
           <p class="footer-support-copy">
@@ -83,47 +127,33 @@ const emailHref = contactEmail ? `mailto:${contactEmail}` : ''
           <p>Tem dúvidas, sugestões ou quer saber mais sobre a RAS UFRB? Entre em contato conosco.</p>
 
           <div class="footer-contact-cards">
-            <a v-if="emailHref" class="footer-contact-card" :href="emailHref">
+            <a class="footer-contact-card" :href="emailHref">
               <span class="footer-contact-icon" aria-hidden="true">✉</span>
               <div><strong>E-mail</strong><small>{{ contactEmail }}</small></div>
               <b aria-hidden="true">›</b>
             </a>
-            <div v-else class="footer-contact-card is-pending">
-              <span class="footer-contact-icon" aria-hidden="true">✉</span>
-              <div><strong>E-mail</strong><small>Contato oficial a cadastrar</small></div>
-            </div>
 
             <a
-              v-if="instagramUrl"
               class="footer-contact-card"
               :href="instagramUrl"
               target="_blank"
               rel="noreferrer"
             >
               <span class="footer-contact-icon" aria-hidden="true">◎</span>
-              <div><strong>Instagram</strong><small>Canal oficial da RAS UFRB</small></div>
+              <div><strong>Instagram</strong><small>@ieeerasufrb</small></div>
               <b aria-hidden="true">›</b>
             </a>
-            <div v-else class="footer-contact-card is-pending">
-              <span class="footer-contact-icon" aria-hidden="true">◎</span>
-              <div><strong>Instagram</strong><small>Canal oficial a cadastrar</small></div>
-            </div>
 
             <a
-              v-if="whatsappUrl"
               class="footer-contact-card"
               :href="whatsappUrl"
               target="_blank"
               rel="noreferrer"
             >
               <span class="footer-contact-icon footer-contact-icon--whatsapp" aria-hidden="true">◉</span>
-              <div><strong>WhatsApp</strong><small>Fale diretamente com a RAS UFRB</small></div>
+              <div><strong>WhatsApp</strong><small>+55 73 98126-4674</small></div>
               <b aria-hidden="true">›</b>
             </a>
-            <div v-else class="footer-contact-card is-pending">
-              <span class="footer-contact-icon footer-contact-icon--whatsapp" aria-hidden="true">◉</span>
-              <div><strong>WhatsApp</strong><small>Número oficial a cadastrar</small></div>
-            </div>
           </div>
         </section>
       </div>
