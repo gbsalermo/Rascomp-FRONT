@@ -39,7 +39,7 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
         <section class="footer-identity-column">
           <img
             class="footer-main-logo"
-            src="/ieee-ras-official.png"
+            src="/ieee-ras-footer-white.png"
             alt="IEEE Robotics & Automation Society"
           />
 
