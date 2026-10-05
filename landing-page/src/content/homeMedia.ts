@@ -21,9 +21,16 @@ export const HOME_MEDIA = {
       src: '/media/assets/awards/conquista-ras.jpg',
       alt: 'Equipe da IEEE RAS UFRB em premiação'
     }
+  },
+  about: {
+    ras: {
+      src: '',
+      alt: 'Equipe da IEEE RAS UFRB reunida em atividade institucional'
+    }
   }
 } satisfies {
   hero: Record<'ras' | 'schools' | 'workshops' | 'awards', HomeMediaSlot>
+  about: Record<'ras', HomeMediaSlot>
 }
 
 /**
