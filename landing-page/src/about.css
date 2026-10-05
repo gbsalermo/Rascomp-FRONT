@@ -216,7 +216,7 @@
   border-right: 1px solid #ece6ef;
   background: #fff;
   color: #2c2631;
-  font-size: .76rem;
+  font-size: .82rem;
   font-weight: 850;
   cursor: pointer;
 }
@@ -267,20 +267,20 @@
 }
 
 .about-copy-brandline span {
-  max-width: 205px;
+  max-width: 220px;
   padding-left: 13px;
   border-left: 1px solid #d7cddd;
   color: #6f5680;
-  font-size: .74rem;
+  font-size: .8rem;
   font-style: italic;
   line-height: 1.25;
 }
 
 .about-copy-intro {
-  margin: 0 0 9px;
+  margin: 0 0 10px;
   color: #4f4552;
-  font-size: .77rem;
-  line-height: 1.42;
+  font-size: .88rem;
+  line-height: 1.5;
 }
 
 .about-feature-list {
@@ -289,9 +289,9 @@
 
 .about-feature-item {
   display: grid;
-  grid-template-columns: 30px 1fr;
-  gap: 8px;
-  padding: 8px 0;
+  grid-template-columns: 38px 1fr;
+  gap: 10px;
+  padding: 9px 0;
   border-top: 1px solid #eee9f0;
 }
 
@@ -301,27 +301,32 @@
 
 .about-feature-icon {
   display: grid;
-  width: 27px;
-  height: 27px;
+  width: 34px;
+  height: 34px;
   place-items: center;
-  border-radius: 50%;
-  background: #f6f0f8;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #f7f0fa, #f1e7f6);
   color: #6b1f8a;
-  font-size: .68rem;
-  font-weight: 900;
+  box-shadow: inset 0 0 0 1px rgba(107, 31, 138, .06);
+}
+
+.about-feature-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .about-feature-item strong {
   display: block;
   color: #542271;
-  font-size: .76rem;
+  font-size: .86rem;
 }
 
 .about-feature-item p {
-  margin: 2px 0 0;
+  margin: 3px 0 0;
   color: #6e6470;
-  font-size: .68rem;
-  line-height: 1.34;
+  font-size: .78rem;
+  line-height: 1.42;
 }
 
 .about-actions {
@@ -336,9 +341,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 9px 13px;
   border-radius: 8px;
-  font-size: .7rem;
+  font-size: .76rem;
   font-weight: 850;
 }
 
