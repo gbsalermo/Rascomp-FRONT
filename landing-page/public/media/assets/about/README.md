@@ -1,36 +1,15 @@
-# Imagens da seção Sobre IEEE + RAS UFRB
+# Pasta descontinuada para a seção Sobre
 
-Esta pasta alimenta exclusivamente o carrossel visual da seção **Sobre** na V1-BETA A.
+A seção **Sobre IEEE + RAS UFRB** não usa mais esta pasta.
 
-Adicione os arquivos mantendo exatamente estes nomes:
-
-```text
-equipe-ras.jpg
-projetos-oficinas.jpg
-extensao-comunidade.jpg
-competicoes-conquistas.jpg
-```
-
-Correspondência:
+A partir de 04/10/2026, o carrossel é autoalimentado por:
 
 ```text
-equipe-ras.jpg
-→ Equipe RAS UFRB
-
-projetos-oficinas.jpg
-→ Projetos e oficinas
-
-extensao-comunidade.jpg
-→ Extensão e comunidade
-
-competicoes-conquistas.jpg
-→ Competições e conquistas
+landing-page/src/assets/about/
 ```
 
-Os caminhos já estão configurados em:
+Adicione as fotos diretamente nessa nova pasta. Não é necessário manter nomes
+fixos nem editar `homeMedia.ts`.
 
-```text
-landing-page/src/content/homeMedia.ts
-```
-
-Durante a Beta A, basta substituir os arquivos nesta pasta. Na futura Gestão de Mídia, esses slots serão migrados para ContentSlot/ContentItem/MediaAsset.
+Este diretório em `public/media/assets/about/` permanece apenas como registro
+de transição e não deve receber novas imagens.
