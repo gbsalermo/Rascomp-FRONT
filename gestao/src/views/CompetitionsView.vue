@@ -167,6 +167,14 @@ function modalityLabel(value: string) {
   return 'Categoria'
 }
 
+function lotStatusLabel(lot: RegistrationLot) {
+  if (lot.atual) return 'Vigente'
+  const today = new Date().toISOString().slice(0, 10)
+  if (lot.dataFim < today) return 'Encerrado'
+  if (lot.dataInicio > today) return 'Programado'
+  return 'Inativo'
+}
+
 async function loadFocus() {
   const competitionId = competition.selectedId
   if (!competitionId) {
@@ -697,7 +705,7 @@ onMounted(load)
           <el-table-column label="Situação" width="130">
             <template #default="{ row }">
               <el-tag :type="row.atual ? 'success' : 'info'" effect="light">
-                {{ row.atual ? 'Vigente' : 'Programado' }}
+                {{ lotStatusLabel(row) }}
               </el-tag>
             </template>
           </el-table-column>
