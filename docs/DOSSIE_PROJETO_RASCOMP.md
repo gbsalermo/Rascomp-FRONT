@@ -2043,3 +2043,16 @@ Antes da primeira competição oficial, além dos testes de carga/segurança, de
 Cloud e local não devem receber escritas independentes simultaneamente sem estratégia de sincronização. Em contingência, um ambiente deve ser declarado fonte de verdade.
 
 A arquitetura Cloudflare também deve evitar dependência desnecessária de quotas diárias de Worker para todas as requisições dinâmicas; limites e preços serão revalidados na V1-BETA B e antes do evento.
+
+
+### Adição preservada no fechamento do roadmap — Hero de campeões
+
+Na ETAPA 10, após consolidação dos resultados oficiais da edição, a revisão pública deve validar a evolução do Hero introdutório da competição para também destacar os **campeões por categoria**.
+
+Princípios:
+
+- somente resultado oficial consolidado;
+- sem histórico detalhado no Hero;
+- várias categorias devem continuar legíveis/responsivas;
+- comportamento com categorias ainda em disputa deve ser definido sem antecipar vencedor;
+- a section competitiva continua sendo a visão detalhada.
