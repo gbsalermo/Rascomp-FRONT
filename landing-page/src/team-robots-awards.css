@@ -58,6 +58,7 @@
 }
 
 .team-awards-block {
+  scroll-margin-top: 90px;
   margin-top: 18px;
   padding: 18px;
 }
