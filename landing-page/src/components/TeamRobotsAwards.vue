@@ -67,6 +67,12 @@ const volunteerImages = computed(() =>
     .map(([, src]) => src)
 )
 
+const volunteerLoopImages = computed(() =>
+  volunteerImages.value.length > 1
+    ? [...volunteerImages.value, ...volunteerImages.value]
+    : volunteerImages.value
+)
+
 const robotHeroImage = computed(() => {
   const entries = Object.entries(robotImageModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
@@ -176,10 +182,27 @@ const awards: Award[] = [
           </div>
         </header>
 
-        <div v-if="volunteerImages.length" class="team-volunteer-gallery">
-          <figure v-for="(photo, index) in volunteerImages.slice(0, 4)" :key="photo">
-            <img :src="photo" :alt="`Registro coletivo de voluntários da RAS UFRB ${index + 1}`" />
-          </figure>
+        <div
+          v-if="volunteerImages.length"
+          class="team-volunteer-carousel"
+          aria-label="Registros coletivos dos voluntários da RAS UFRB"
+        >
+          <div
+            class="team-volunteer-track"
+            :class="{ 'is-static': volunteerImages.length === 1 }"
+          >
+            <figure
+              v-for="(photo, index) in volunteerLoopImages"
+              :key="`${photo}-${index}`"
+              class="team-volunteer-slide"
+              :aria-hidden="index >= volunteerImages.length ? 'true' : undefined"
+            >
+              <img
+                :src="photo"
+                :alt="index < volunteerImages.length ? `Registro coletivo de voluntários da RAS UFRB ${index + 1}` : ''"
+              />
+            </figure>
+          </div>
         </div>
 
         <div v-else class="team-volunteer-placeholder">
