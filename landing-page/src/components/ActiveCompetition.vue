@@ -28,6 +28,7 @@ const emit = defineEmits<{
 
 const showAllTeams = ref(false)
 const showFullRanking = ref(false)
+const showAllRankingRows = ref(false)
 const showFullBracket = ref(false)
 
 const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
@@ -93,7 +94,9 @@ const nextMatch = computed(() =>
 )
 
 const latestResult = computed(() => props.results.at(-1))
-const rankingRows = computed(() => props.ranking.slice(0, showFullRanking.value ? 12 : 5))
+const rankingRows = computed(() =>
+  props.ranking.slice(0, showAllRankingRows.value ? props.ranking.length : 5)
+)
 
 const followCurrentSchedule = computed(() =>
   props.followSchedules.find((item) => item.status === 'EM_ANDAMENTO') ||
@@ -786,9 +789,9 @@ function handleRegistration() {
               v-if="ranking.length > 5"
               type="button"
               class="competition-inline-action"
-              @click="showFullRanking = true"
+              @click="showAllRankingRows = !showAllRankingRows"
             >
-              Ranking completo · {{ ranking.length }} robôs
+              {{ showAllRankingRows ? 'Mostrar top 5' : `Ver ranking completo · ${ranking.length} robôs` }}
             </button>
           </div>
 
