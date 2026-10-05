@@ -2,13 +2,29 @@
 
 Esta pasta alimenta exclusivamente o Hero superior da section **Nossos Robôs**.
 
-Use uma imagem independente para cada categoria:
+## Estrutura recomendada
+
+Você pode usar qualquer nome de arquivo dentro da subpasta da categoria:
+
+```text
+landing-page/src/assets/robots/banners/
+├── sumo/
+│   └── banner.jpg
+├── mini-sumo/
+│   └── foto-principal.png
+├── hockey/
+│   └── equipe-hockey.webp
+└── follow-line/
+    └── destaque.jpg
+```
+
+Também continuam aceitos arquivos diretamente em `banners/` quando o nome contém a categoria:
 
 ```text
 sumo.jpg
-mini-sumo.jpg
-hockey.jpg
-follow-line.jpg
+banner-mini-sumo.jpg
+hockey-principal.png
+follow-line.webp
 ```
 
 Formatos aceitos:
@@ -23,20 +39,15 @@ Formatos aceitos:
 
 Essas imagens NÃO entram na galeria de robôs.
 
-Estrutura completa:
+As pastas:
 
 ```text
-landing-page/src/assets/robots/
-├── banners/
-│   ├── sumo.jpg
-│   ├── mini-sumo.jpg
-│   ├── hockey.jpg
-│   └── follow-line.jpg
-├── sumo/
-├── mini-sumo/
-├── hockey/
-└── follow-line/
+assets/robots/sumo/
+assets/robots/mini-sumo/
+assets/robots/hockey/
+assets/robots/follow-line/
 ```
 
-As pastas das categorias continuam destinadas às fotos individuais dos robôs.
-O nome de cada arquivo dentro dessas pastas vira o título do robô na Landing.
+continuam destinadas às fotos individuais dos robôs, e o nome de cada arquivo vira o título mostrado na Landing.
+
+Se uma imagem nova não aparecer imediatamente durante o desenvolvimento, reinicie o `npm run dev` para o Vite reconstruir os padrões de `import.meta.glob`.
