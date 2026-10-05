@@ -113,7 +113,7 @@ async function refreshCompetition() {
   const [registrationList, bracketList, podiumList] = await Promise.all([
     api.registrations(competitionId.value),
     api.brackets(competitionId.value),
-    api.podiums(competitionId.value)
+    api.podiums(competitionId.value).catch(() => [])
   ])
 
   registrations.value = registrationList
