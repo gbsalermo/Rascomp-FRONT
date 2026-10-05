@@ -220,7 +220,39 @@
 
 .robots-category-tab-copy {
   display: grid;
-  gap: 3px;
+  gap: 4px;
+}
+
+.robots-category-tab-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.robots-category-tab-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  border-radius: 8px;
+  background: #f3edf6;
+  color: #6b1f8a;
+}
+
+.robots-category-tab-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.robots-category-tab.active .robots-category-tab-icon {
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
 }
 
 .robots-category-tab-copy strong {
