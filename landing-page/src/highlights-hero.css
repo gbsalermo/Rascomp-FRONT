@@ -283,40 +283,44 @@
     transform: none;
   }
 
+  .hero-navigation {
+    z-index: 7;
+  }
+
   .hero-quick-links {
     position: relative;
     z-index: 5;
-    margin-top: -54px;
+    margin-top: -20px;
   }
 
   .hero-quick-card {
-    min-height: 102px;
-    gap: 15px;
-    padding: 15px 18px;
+    min-height: 84px;
+    gap: 12px;
+    padding: 11px 14px;
   }
 
   .hero-quick-icon {
-    width: 48px;
-    height: 48px;
-    flex-basis: 48px;
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
   }
 
   .hero-quick-icon svg {
-    width: 25px;
-    height: 25px;
+    width: 21px;
+    height: 21px;
   }
 
   .hero-quick-copy {
-    gap: 6px;
+    gap: 4px;
   }
 
   .hero-quick-copy strong {
-    font-size: 1.02rem;
+    font-size: .94rem;
   }
 
   .hero-quick-copy small {
-    font-size: .8rem;
-    line-height: 1.42;
+    font-size: .73rem;
+    line-height: 1.35;
   }
 }
 
