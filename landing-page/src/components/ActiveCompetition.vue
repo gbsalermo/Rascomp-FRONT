@@ -117,12 +117,6 @@ const followCurrentEntry = computed(() =>
   props.followQueue.find((item) => item.status === 'CONVOCADA')
 )
 
-const followNextEntry = computed(() =>
-  props.followQueue.find((item) =>
-    ['AGUARDANDO', 'CONVOCADA'].includes(item.status) &&
-    item.id !== followCurrentEntry.value?.id
-  )
-)
 
 const followTotalTakes = computed(() => {
   const scheduled = props.followSchedules.map((item) => Number(item.tomada || 0))
