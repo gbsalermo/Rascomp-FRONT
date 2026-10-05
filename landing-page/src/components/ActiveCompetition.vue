@@ -153,6 +153,10 @@ const bracketRounds = computed(() => {
     ] as const)
 })
 
+const thirdPlaceMatch = computed(() =>
+  props.matches.find((match) => match.tipoPartida === 'TERCEIRO_LUGAR')
+)
+
 const bracketMaxRound = computed(() =>
   Math.max(0, ...bracketRounds.value.map(([round]) => Number(round)))
 )
@@ -866,6 +870,59 @@ function handleRegistration() {
                 </section>
               </div>
             </div>
+
+            <section v-if="thirdPlaceMatch" class="competition-third-place">
+              <header>
+                <div>
+                  <span class="competition-third-place-kicker">Disputa de colocação</span>
+                  <strong>3º lugar</strong>
+                </div>
+                <em>{{ matchStatusLabel(thirdPlaceMatch) }}</em>
+              </header>
+
+              <div class="competition-third-place-body">
+                <div
+                  class="competition-third-place-robot"
+                  :class="{ winner: isWinner(thirdPlaceMatch, thirdPlaceMatch.registrationAId) }"
+                >
+                  <span>A</span>
+                  <div>
+                    <strong>{{ thirdPlaceMatch.robotANome || 'A definir' }}</strong>
+                    <small>{{ thirdPlaceMatch.teamANome || 'Equipe a definir' }}</small>
+                  </div>
+                  <b v-if="resultFor(thirdPlaceMatch.id)?.pontosA !== undefined">
+                    {{ resultFor(thirdPlaceMatch.id)?.pontosA }}
+                  </b>
+                </div>
+
+                <span class="competition-third-place-versus">×</span>
+
+                <div
+                  class="competition-third-place-robot"
+                  :class="{ winner: isWinner(thirdPlaceMatch, thirdPlaceMatch.registrationBId) }"
+                >
+                  <span>B</span>
+                  <div>
+                    <strong>{{ thirdPlaceMatch.robotBNome || 'A definir' }}</strong>
+                    <small>{{ thirdPlaceMatch.teamBNome || 'Equipe a definir' }}</small>
+                  </div>
+                  <b v-if="resultFor(thirdPlaceMatch.id)?.pontosB !== undefined">
+                    {{ resultFor(thirdPlaceMatch.id)?.pontosB }}
+                  </b>
+                </div>
+              </div>
+
+              <footer>
+                <span v-if="resultFor(thirdPlaceMatch.id)" class="competition-third-place-winner">
+                  {{ resultFor(thirdPlaceMatch.id)?.winnerRobotNome }} conquistou o 3º lugar
+                </span>
+                <span v-else-if="thirdPlaceMatch.dataHora">
+                  {{ formatDateTime(thirdPlaceMatch.dataHora) }}
+                  <template v-if="thirdPlaceMatch.pista"> · {{ thirdPlaceMatch.pista }}</template>
+                </span>
+                <span v-else>Horário a definir</span>
+              </footer>
+            </section>
 
             <div v-else class="competition-public-empty">
               <strong>Chave ainda não publicada.</strong>
