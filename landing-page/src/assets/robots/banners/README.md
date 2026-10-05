@@ -1,31 +1,24 @@
-# Banners das categorias de robôs
+# Banner genérico — Nossos Robôs
 
-Esta pasta alimenta exclusivamente o Hero superior da section **Nossos Robôs**.
+Esta pasta alimenta exclusivamente o **Hero superior** da section **Nossos Robôs**.
 
-## Estrutura recomendada
+O Hero usa **uma única foto genérica fixa**, independente da categoria selecionada.
 
-Você pode usar qualquer nome de arquivo dentro da subpasta da categoria:
+Você pode colocar qualquer imagem diretamente nesta pasta, por exemplo:
 
 ```text
 landing-page/src/assets/robots/banners/
-├── sumo/
-│   └── banner.jpg
-├── mini-sumo/
-│   └── foto-principal.png
-├── hockey/
-│   └── equipe-hockey.webp
-└── follow-line/
-    └── destaque.jpg
+├── README.md
+└── WhatsApp Image 2026-10-04.jpg
 ```
 
-Também continuam aceitos arquivos diretamente em `banners/` quando o nome contém a categoria:
+ou:
 
 ```text
-sumo.jpg
-banner-mini-sumo.jpg
-hockey-principal.png
-follow-line.webp
+banner.jpg
 ```
+
+A primeira imagem encontrada em ordem alfabética será usada como banner.
 
 Formatos aceitos:
 
@@ -37,9 +30,20 @@ Formatos aceitos:
 .avif
 ```
 
-Essas imagens NÃO entram na galeria de robôs.
+## Importante
 
-As pastas:
+As categorias:
+
+```text
+Sumô
+Mini Sumô
+Hockey
+Follow Line
+```
+
+controlam apenas o conteúdo específico exibido abaixo do Hero.
+
+As fotos individuais dos robôs continuam em:
 
 ```text
 assets/robots/sumo/
@@ -48,6 +52,4 @@ assets/robots/hockey/
 assets/robots/follow-line/
 ```
 
-continuam destinadas às fotos individuais dos robôs, e o nome de cada arquivo vira o título mostrado na Landing.
-
-Se uma imagem nova não aparecer imediatamente durante o desenvolvimento, reinicie o `npm run dev` para o Vite reconstruir os padrões de `import.meta.glob`.
+O banner genérico não entra nessas galerias.
