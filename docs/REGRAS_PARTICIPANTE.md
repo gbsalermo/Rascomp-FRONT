@@ -116,9 +116,9 @@ UserAccount → Competitor → Team
 Estar na equipe não significa estar inscrito em uma Competition.
 
 
-## 2.4 Logo pública da equipe — requisito para a experiência pública
+## 2.4 Logo pública da equipe — implementado na Beta A
 
-A Team poderá possuir uma **logo/foto opcional** enviada pelo líder da equipe.
+A Team possui suporte a uma **logo/foto opcional** enviada pelo líder da equipe.
 
 Objetivo:
 
@@ -140,7 +140,17 @@ Regras:
 - trocar a logo não altera inscrições, responsáveis, resultados ou histórico competitivo;
 - a URL pública deve ser exposta no `PublicTeamDTO` ou contrato equivalente.
 
-Na V1-BETA A, a Landing já está preparada para consumir campos como `logoUrl` / `teamLogoUrl` e usa `/rascomp-logo.webp` como fallback.
+Implementação atual da V1-BETA A:
+
+- migration `V28__add_team_public_logo.sql`;
+- líder envia/troca/remove a logo pelo Portal do Participante;
+- formatos aceitos: JPEG, PNG e WEBP;
+- limite: 5 MB;
+- endpoint autenticado: `PUT /api/v1/participante/equipes/{teamId}/logo`;
+- remoção: `DELETE /api/v1/participante/equipes/{teamId}/logo`;
+- contrato público expõe `logoUrl`;
+- arquivo público: `GET /api/v1/public/equipes/{teamId}/logo`;
+- Landing usa `/rascomp-logo.webp` como fallback quando não existe logo.
 
 ---
 
