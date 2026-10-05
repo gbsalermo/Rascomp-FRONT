@@ -6,6 +6,15 @@ import {
   type LandingEvent
 } from '../content/events'
 
+const props = defineProps<{
+  managementUrl: string
+  registrationOpen: boolean
+}>()
+
+const emit = defineEmits<{
+  (event: 'registrationUnavailable'): void
+}>()
+
 type EventFilter =
   | 'Todos os eventos'
   | 'Organizados pela RAS'
@@ -43,10 +52,6 @@ const agendaEvents = computed(() =>
 
 const highlightedEvents = computed(() => visibleEvents.value.slice(0, 4))
 
-const managementUrl = String(
-  import.meta.env.VITE_GESTAO_URL || (import.meta.env.DEV ? 'http://localhost:5173' : '')
-).trim()
-
 watch(visibleEvents, (events) => {
   if (!events.some((event) => event.id === expandedEventId.value)) {
     expandedEventId.value = events[0]?.id || ''
@@ -58,9 +63,15 @@ function toggleEvent(event: LandingEvent) {
   expandedEventId.value = expandedEventId.value === event.id ? '' : event.id
 }
 
+function isRegistrationAction(event: LandingEvent) {
+  return event.cta === 'Inscrever-se' || event.temporalLabel === 'Inscrições abertas'
+}
+
 function eventActionHref(event: LandingEvent) {
   if (event.href) return event.href
-  if (event.temporalLabel === 'Inscrições abertas' && managementUrl) return managementUrl
+  if (isRegistrationAction(event) && props.registrationOpen && props.managementUrl) {
+    return props.managementUrl
+  }
   return ''
 }
 
@@ -275,15 +286,25 @@ function eventActionHref(event: LandingEvent) {
                   </div>
 
                   <div
-                    v-if="event.cta && eventActionHref(event)"
+                    v-if="event.cta && (eventActionHref(event) || isRegistrationAction(event))"
                     class="event-detail-actions"
                   >
                     <a
+                      v-if="eventActionHref(event)"
                       class="event-primary-action"
                       :href="eventActionHref(event)"
                     >
                       {{ event.cta }} <span aria-hidden="true">→</span>
                     </a>
+
+                    <button
+                      v-else-if="isRegistrationAction(event)"
+                      type="button"
+                      class="event-primary-action"
+                      @click="emit('registrationUnavailable')"
+                    >
+                      {{ event.cta }} <span aria-hidden="true">→</span>
+                    </button>
                   </div>
                 </div>
               </div>
