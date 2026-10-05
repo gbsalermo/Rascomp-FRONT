@@ -664,6 +664,36 @@ Simular de ponta a ponta:
 
 Saída da etapa: **MVP funcional, coerente, utilizável e apresentável**.
 
+### Fechamento público da competição — Hero de campeões
+
+Na parte final do roadmap original, validar e concluir também a transição editorial do Hero de introdução da competição depois que os resultados oficiais forem consolidados.
+
+Regra planejada:
+
+```text
+categoria ainda em disputa
+→ Hero mantém foco em competição/status/acompanhamento
+
+categoria com 1º + 2º + 3º definidos
+→ resultado continua disponível na section competitiva
+
+edição com resultados consolidados
+→ Hero de introdução pode destacar os campeões por categoria
+→ mostrar somente informação final/oficial
+→ não substituir a section detalhada de resultados
+```
+
+Objetivo visual:
+
+- transformar o Hero em uma vitrine final da edição depois da definição dos resultados;
+- destacar os campeões das categorias sem carregar histórico de partidas no Hero;
+- consumir exclusivamente o resultado oficial consolidado pelo backend;
+- preservar responsividade e legibilidade quando houver várias categorias;
+- definir na ETAPA 10 o comportamento quando apenas parte das categorias já estiver concluída;
+- não hardcodar campeão, equipe ou categoria.
+
+Essa melhoria é preservada no **roadmap original** e não é requisito para reabrir o fechamento visual já aprovado da V1-BETA A.
+
 ---
 
 # CHECKPOINT TRANSVERSAL — Otimização Mobile do MVP
