@@ -409,6 +409,22 @@ Comportamento atual:
   - liderança do Follow Line;
   - último resultado;
 - ranking e chaveamento continuam consultáveis sob demanda;
+- Follow público passa a expor também tentativas, agenda e fila de convocação:
+  - tomadas registradas por robô;
+  - robô em execução/chamada;
+  - próxima convocação;
+  - próxima tomada agendada;
+- ranking Follow diferencia top 3, mostra tomadas/tentativas e possui microinterações de hover;
+- chave pública espelha a linguagem visual da Gestão:
+  - rodada/fase;
+  - vencedor;
+  - BYE;
+  - placar quando disponível;
+  - data/hora;
+  - pista;
+  - próxima batalha;
+- seleção de chave deixa de usar dropdown e passa a usar botões por categoria;
+- equipe sem logo usa fallback visual próprio do RasComp;
 - layout possui breakpoints específicos para tablet/mobile.
 
 Arquivos centrais:
