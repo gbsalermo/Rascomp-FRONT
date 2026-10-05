@@ -1,13 +1,8 @@
-# Hero de Robôs / Projetos
+# Mosaico de Robôs / Projetos
 
-Esta pasta alimenta o Hero "Nossos Robôs".
+Esta pasta alimenta a faixa **Nossos Robôs**.
 
-O layout atual usa a primeira imagem encontrada em ordem alfabética.
-Por isso, para definir a imagem principal, prefira:
-
-```text
-01-robos.jpg
-```
+Qualquer imagem adicionada aqui entra automaticamente no mosaico estático da Landing.
 
 Formatos aceitos:
 
@@ -19,4 +14,18 @@ Formatos aceitos:
 .avif
 ```
 
-A seção não lista robôs individualmente nesta Beta A; ela apresenta o tema de forma institucional.
+A ordem é alfabética/numérica pelo nome do arquivo. Exemplo:
+
+```text
+01-vespa.jpg
+02-pipeta.jpg
+03-projeto.jpg
+04-equipe-robo.jpg
+```
+
+Comportamento atual:
+
+- todas as imagens aparecem juntas;
+- não há carrossel nem autoplay;
+- o layout se adapta responsivamente;
+- as fotos ficam lado a lado em formato de mosaico.
