@@ -1,44 +1,82 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { LANDING_EVENTS } from '../content/events'
+import { computed, ref, watch } from 'vue'
+import {
+  LANDING_EVENTS,
+  RECENT_LANDING_EVENTS,
+  type LandingEvent
+} from '../content/events'
 
-type EventFilter = 'Todos os eventos' | 'Organizados pela RAS' | 'Participações' | 'Oficinas' | 'Palestras' | 'Competições'
-type EventTone = 'red' | 'purple' | 'blue' | 'green'
+type EventFilter =
+  | 'Todos os eventos'
+  | 'Organizados pela RAS'
+  | 'Participações'
+  | 'Oficinas'
+  | 'Palestras'
+  | 'Competições'
 
-type PastEvent = {
-  id: string
-  title: string
-  category: string
-  date: string
-  tone: EventTone
-}
-
-const activeFilter = ref<EventFilter>('Todos os eventos')
-const newsletterEmail = ref('')
-const newsletterSent = ref(false)
-
-const filters: EventFilter[] = ['Todos os eventos', 'Organizados pela RAS', 'Participações', 'Oficinas', 'Palestras', 'Competições']
-
-const events = LANDING_EVENTS
-
-const pastEvents: PastEvent[] = [
-  { id: 'rrc-2025', title: 'RRC 2025', category: 'Competição de Robótica', date: 'Nov 2025', tone: 'red' },
-  { id: 'impressao-3d', title: 'Oficina de Impressão 3D', category: 'Modelagem e impressão', date: 'Out 2025', tone: 'purple' },
-  { id: 'robos-autonomos', title: 'Palestra: Robôs Autônomos', category: 'Desafios e aplicações', date: 'Set 2025', tone: 'blue' },
-  { id: 'escolas-2025', title: 'RAS nas Escolas', category: 'Colégio Estadual', date: 'Ago 2025', tone: 'green' }
+const filters: EventFilter[] = [
+  'Todos os eventos',
+  'Organizados pela RAS',
+  'Participações',
+  'Oficinas',
+  'Palestras',
+  'Competições'
 ]
 
+const activeFilter = ref<EventFilter>('Todos os eventos')
+const expandedEventId = ref<string>(LANDING_EVENTS[0]?.id || '')
+const fullAgenda = ref(false)
+
 const visibleEvents = computed(() => {
-  if (activeFilter.value === 'Todos os eventos') return events.slice(0, 4)
-  if (activeFilter.value === 'Organizados pela RAS') return events.filter((event) => event.organizedByRas).slice(0, 4)
-  return events.filter((event) => event.type === activeFilter.value).slice(0, 4)
+  if (activeFilter.value === 'Todos os eventos') return LANDING_EVENTS
+
+  if (activeFilter.value === 'Organizados pela RAS') {
+    return LANDING_EVENTS.filter((event) => event.organizedByRas)
+  }
+
+  return LANDING_EVENTS.filter((event) => event.type === activeFilter.value)
 })
 
-const agendaEvents = computed(() => events.slice(0, 4))
+const agendaEvents = computed(() =>
+  fullAgenda.value ? visibleEvents.value : visibleEvents.value.slice(0, 4)
+)
 
-function submitNewsletter() {
-  if (!newsletterEmail.value.trim()) return
-  newsletterSent.value = true
+const highlightedEvents = computed(() => visibleEvents.value.slice(0, 4))
+
+const expandedEvent = computed(
+  () =>
+    highlightedEvents.value.find((event) => event.id === expandedEventId.value) ||
+    highlightedEvents.value[0] ||
+    null
+)
+
+const managementUrl = String(
+  import.meta.env.VITE_GESTAO_URL || (import.meta.env.DEV ? 'http://localhost:5173' : '')
+).trim()
+
+watch(visibleEvents, (events) => {
+  if (!events.some((event) => event.id === expandedEventId.value)) {
+    expandedEventId.value = events[0]?.id || ''
+  }
+  fullAgenda.value = false
+})
+
+function toggleEvent(event: LandingEvent) {
+  expandedEventId.value = expandedEventId.value === event.id ? '' : event.id
+}
+
+function primaryHref(event: LandingEvent) {
+  if (event.id === 'rrc-2026') return '#competicao-atual'
+  if (event.temporalLabel === 'Inscrições abertas' && managementUrl) return managementUrl
+  return '#galeria'
+}
+
+function eventIcon(type: LandingEvent['type']) {
+  if (type === 'Competições') return 'trophy'
+  if (type === 'Oficinas') return 'tool'
+  if (type === 'Palestras') return 'mic'
+  if (type === 'Participações') return 'users'
+  return 'heart'
 }
 </script>
 
@@ -46,149 +84,276 @@ function submitNewsletter() {
   <section id="eventos" class="institutional-events-section">
     <div class="institutional-events-container">
       <header class="institutional-events-heading">
-        <div>
-          <span>Atuação e comunidade</span>
-          <h2>Eventos da RAS</h2>
-          <p>Participamos, organizamos e promovemos eventos que conectam conhecimento, inovação e comunidade.</p>
-        </div>
-
-        <div class="events-filter-row" aria-label="Filtrar eventos">
-          <button
-            v-for="filter in filters"
-            :key="filter"
-            type="button"
-            :class="{ active: activeFilter === filter }"
-            @click="activeFilter = filter"
-          >
-            {{ filter }}
-          </button>
-        </div>
+        <span>Atuação e comunidade</span>
+        <h2>Eventos da RAS</h2>
+        <p>Participamos, organizamos e promovemos eventos que conectam conhecimento, inovação e comunidade.</p>
       </header>
 
-      <div class="events-layout-grid">
-        <div class="events-main-column">
-          <section class="events-surface upcoming-events-surface">
-            <header class="events-surface-heading">
+      <div class="events-filter-row" aria-label="Filtrar eventos">
+        <button
+          v-for="filter in filters"
+          :key="filter"
+          type="button"
+          :class="{ active: activeFilter === filter }"
+          @click="activeFilter = filter"
+        >
+          <span class="event-filter-icon" aria-hidden="true">
+            <svg v-if="filter === 'Todos os eventos'" viewBox="0 0 24 24">
+              <rect x="4" y="4" width="6" height="6" rx="1"/>
+              <rect x="14" y="4" width="6" height="6" rx="1"/>
+              <rect x="4" y="14" width="6" height="6" rx="1"/>
+              <rect x="14" y="14" width="6" height="6" rx="1"/>
+            </svg>
+            <svg v-else-if="filter === 'Organizados pela RAS'" viewBox="0 0 24 24">
+              <circle cx="9" cy="8" r="3"/>
+              <circle cx="17" cy="9" r="2.5"/>
+              <path d="M3 20c0-4 2.7-7 6-7s6 3 6 7M14 14c3.7 0 7 2.2 7 6"/>
+            </svg>
+            <svg v-else-if="filter === 'Participações'" viewBox="0 0 24 24">
+              <path d="M8 4h8v4c0 3-2 5-4 5s-4-2-4-5V4Z"/>
+              <path d="M6 5H3v2c0 3 2 5 5 5M18 5h3v2c0 3-2 5-5 5M12 13v4M8 21h8M10 17h4"/>
+            </svg>
+            <svg v-else-if="filter === 'Oficinas'" viewBox="0 0 24 24">
+              <path d="m14 6 4-4 4 4-4 4M4 20l8-8M3 16l5 5M10 5l3 3"/>
+            </svg>
+            <svg v-else-if="filter === 'Palestras'" viewBox="0 0 24 24">
+              <rect x="9" y="3" width="6" height="11" rx="3"/>
+              <path d="M6 10v1a6 6 0 0 0 12 0v-1M12 17v4M8 21h8"/>
+            </svg>
+            <svg v-else viewBox="0 0 24 24">
+              <path d="M5 21V4M5 5h11l-2 4 2 4H5"/>
+            </svg>
+          </span>
+          {{ filter }}
+        </button>
+      </div>
+
+      <div class="events-primary-grid">
+        <aside class="events-surface events-agenda-panel">
+          <header class="events-panel-heading">
+            <div>
+              <span class="events-panel-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="3" y="5" width="18" height="16" rx="2"/>
+                  <path d="M7 3v4M17 3v4M3 10h18"/>
+                </svg>
+              </span>
               <div>
-                <span class="surface-icon" aria-hidden="true">◫</span>
-                <h3>Próximos Eventos</h3>
-              </div>
-              <small>{{ visibleEvents.length }} em destaque</small>
-            </header>
-
-            <div v-if="visibleEvents.length" class="upcoming-event-grid">
-              <article v-for="event in visibleEvents" :key="event.id" class="upcoming-event-card" :class="`tone-${event.tone}`">
-                <div class="upcoming-event-media">
-                  <span v-if="event.status" class="event-status-badge">{{ event.status }}</span>
-                  <div class="event-media-copy">
-                    <small>{{ event.eyebrow }}</small>
-                    <strong>{{ event.title }}</strong>
-                  </div>
-                </div>
-
-                <div class="upcoming-event-body">
-                  <div class="event-meta-line"><span aria-hidden="true">◷</span><strong>{{ event.dateLabel }}</strong></div>
-                  <div class="event-meta-line"><span aria-hidden="true">⌖</span><span>{{ event.location }}</span></div>
-                  <p>{{ event.summary }}</p>
-                  <a :href="event.id === 'rrc-2026' ? '#competicao-atual' : '#galeria'">{{ event.cta }} <span aria-hidden="true">→</span></a>
-                </div>
-              </article>
-            </div>
-
-            <div v-else class="events-empty-state">
-              <strong>Nenhum evento nesta categoria por enquanto.</strong>
-              <p>Quando houver uma atividade correspondente, ela aparecerá aqui automaticamente.</p>
-            </div>
-
-            <a class="events-outline-cta" href="#calendario">Ver todos os eventos <span aria-hidden="true">→</span></a>
-          </section>
-
-          <section class="events-surface past-events-surface">
-            <header class="events-surface-heading">
-              <div>
-                <span class="surface-icon" aria-hidden="true">▧</span>
-                <h3>Destaques de eventos anteriores</h3>
-              </div>
-            </header>
-
-            <div class="past-events-grid">
-              <a v-for="event in pastEvents" :key="event.id" href="#galeria" class="past-event-card" :class="`tone-${event.tone}`">
-                <div class="past-event-media"><span>{{ event.category }}</span></div>
-                <div class="past-event-copy">
-                  <div>
-                    <strong>{{ event.title }}</strong>
-                    <small>{{ event.category }}</small>
-                  </div>
-                  <span>{{ event.date }}</span>
-                </div>
-              </a>
-            </div>
-          </section>
-        </div>
-
-        <aside class="events-side-column">
-          <section class="events-surface agenda-surface" id="calendario">
-            <header class="events-surface-heading">
-              <div>
-                <span class="surface-icon" aria-hidden="true">◷</span>
                 <h3>Próximos na agenda</h3>
-              </div>
-            </header>
-
-            <div class="agenda-list">
-              <article v-for="event in agendaEvents" :key="event.id" class="agenda-row">
-                <div class="agenda-date">
-                  <strong>{{ event.dateDay }}</strong>
-                  <span>{{ event.dateMonth }}</span>
-                </div>
-                <div class="agenda-copy">
-                  <strong>{{ event.title }}</strong>
-                  <small>{{ event.eyebrow }}</small>
-                </div>
-                <span class="agenda-tag" :class="`tone-${event.tone}`">{{ event.type }}</span>
-              </article>
-            </div>
-
-            <a class="agenda-link" href="#eventos">Ver agenda completa <span aria-hidden="true">→</span></a>
-          </section>
-
-          <section class="events-surface newsletter-surface">
-            <header class="events-surface-heading">
-              <div>
-                <span class="surface-icon" aria-hidden="true">♢</span>
-                <h3>Fique por dentro</h3>
-              </div>
-            </header>
-
-            <p>Receba novidades sobre nossos eventos, inscrições e oportunidades.</p>
-
-            <form class="newsletter-form" @submit.prevent="submitNewsletter">
-              <input v-model="newsletterEmail" type="email" placeholder="Seu e-mail" aria-label="Seu e-mail" required />
-              <button type="submit">Inscrever-se</button>
-            </form>
-
-            <small v-if="newsletterSent" class="newsletter-success">Cadastro demonstrativo realizado. A integração real será definida depois.</small>
-
-            <div class="social-follow">
-              <span>Ou acompanhe nossas redes</span>
-              <div>
-                <a href="#contato" aria-label="Instagram">◎</a>
-                <a href="#contato" aria-label="YouTube">▶</a>
-                <a href="#contato" aria-label="LinkedIn">in</a>
-                <a href="#contato" aria-label="GitHub">⌘</a>
+                <p>Fique por dentro dos nossos próximos eventos.</p>
               </div>
             </div>
-          </section>
+          </header>
+
+          <div v-if="agendaEvents.length" class="events-agenda-list">
+            <button
+              v-for="event in agendaEvents"
+              :key="event.id"
+              type="button"
+              class="events-agenda-row"
+              :class="{ active: event.id === expandedEventId }"
+              @click="expandedEventId = event.id"
+            >
+              <span class="events-agenda-date">
+                <strong>{{ event.dateDay }}</strong>
+                <small>{{ event.dateMonth }}</small>
+              </span>
+
+              <span class="events-agenda-copy">
+                <strong>{{ event.title }}</strong>
+                <small>{{ event.eyebrow }}</small>
+              </span>
+
+              <span class="events-temporal-badge" :class="`tone-${event.tone}`">
+                {{ event.temporalLabel }}
+              </span>
+            </button>
+          </div>
+
+          <div v-else class="events-empty-state events-empty-state--agenda">
+            <strong>Nenhum evento nesta categoria.</strong>
+          </div>
+
+          <button
+            v-if="visibleEvents.length > 4"
+            type="button"
+            class="events-agenda-more"
+            @click="fullAgenda = !fullAgenda"
+          >
+            {{ fullAgenda ? 'Mostrar menos' : 'Ver agenda completa' }}
+            <span aria-hidden="true">→</span>
+          </button>
         </aside>
+
+        <section class="events-surface events-featured-panel">
+          <header class="events-panel-heading">
+            <div>
+              <span class="events-panel-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="m12 3 2.6 5.2 5.7.8-4.1 4 1 5.7-5.2-2.7-5.2 2.7 1-5.7-4.1-4 5.7-.8L12 3Z"/>
+                </svg>
+              </span>
+              <div>
+                <h3>Eventos em destaque</h3>
+                <p>Explore nossos principais eventos. Clique em um card para ver mais detalhes.</p>
+              </div>
+            </div>
+          </header>
+
+          <div v-if="highlightedEvents.length" class="events-accordion">
+            <article
+              v-for="event in highlightedEvents"
+              :key="event.id"
+              class="event-accordion-card"
+              :class="{ expanded: event.id === expandedEventId }"
+            >
+              <button
+                type="button"
+                class="event-accordion-trigger"
+                :aria-expanded="event.id === expandedEventId"
+                @click="toggleEvent(event)"
+              >
+                <img :src="event.image" :alt="event.title" />
+
+                <span class="event-accordion-summary">
+                  <span class="event-accordion-date">{{ event.dateLabel }}</span>
+                  <strong>{{ event.title }}</strong>
+                  <small>{{ event.summary }}</small>
+                </span>
+
+                <span class="event-accordion-badges">
+                  <span class="event-type-badge" :class="`tone-${event.tone}`">{{ event.type }}</span>
+                  <span class="event-time-badge">{{ event.temporalLabel }}</span>
+                </span>
+
+                <span class="event-accordion-chevron" aria-hidden="true">
+                  {{ event.id === expandedEventId ? '⌃' : '⌄' }}
+                </span>
+              </button>
+
+              <div v-if="event.id === expandedEventId" class="event-accordion-content">
+                <div class="event-accordion-visual">
+                  <img :src="event.image" :alt="event.title" />
+                </div>
+
+                <div class="event-accordion-details">
+                  <div class="event-detail-meta">
+                    <span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2"/>
+                        <path d="M7 3v4M17 3v4M3 10h18"/>
+                      </svg>
+                      {{ event.dateLabel }}
+                    </span>
+                    <span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z"/>
+                        <circle cx="12" cy="10" r="2"/>
+                      </svg>
+                      {{ event.location }}
+                    </span>
+                  </div>
+
+                  <h4>{{ event.title }}</h4>
+                  <p>{{ event.description }}</p>
+
+                  <div class="event-detail-highlights">
+                    <span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M8 4h8v4c0 3-2 5-4 5s-4-2-4-5V4Z"/>
+                        <path d="M6 5H3v2c0 3 2 5 5 5M18 5h3v2c0 3-2 5-5 5"/>
+                      </svg>
+                      {{ event.type }}
+                    </span>
+                    <span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m12 2 2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5L12 2Z"/>
+                      </svg>
+                      Inovação
+                    </span>
+                    <span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="5" y="5" width="14" height="14" rx="2"/>
+                        <path d="M9 9h6v6H9zM9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>
+                      </svg>
+                      Tecnologia
+                    </span>
+                    <span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="8" cy="8" r="3"/>
+                        <circle cx="16" cy="8" r="3"/>
+                        <path d="M2 21c0-4 2.6-7 6-7s6 3 6 7M12 15c1-.7 2.3-1 4-1 3.4 0 6 3 6 7"/>
+                      </svg>
+                      Comunidade
+                    </span>
+                  </div>
+
+                  <div class="event-detail-actions">
+                    <a class="event-primary-action" :href="primaryHref(event)">
+                      {{ event.cta }} <span aria-hidden="true">→</span>
+                    </a>
+
+                    <a
+                      v-if="event.temporalLabel === 'Inscrições abertas' && managementUrl"
+                      class="event-secondary-action"
+                      :href="managementUrl"
+                    >
+                      Inscrever-se <span aria-hidden="true">↗</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div v-else class="events-empty-state">
+            <strong>Nenhum evento nesta categoria por enquanto.</strong>
+            <p>Quando houver uma atividade correspondente, ela aparecerá aqui.</p>
+          </div>
+        </section>
       </div>
 
-      <div class="events-impact-strip" aria-label="Indicadores de eventos">
-        <article><span aria-hidden="true">◫</span><div><strong>20+</strong><small>Eventos realizados</small></div></article>
-        <article><span aria-hidden="true">◉</span><div><strong>5k+</strong><small>Participantes impactados</small></div></article>
-        <article><span aria-hidden="true">▥</span><div><strong>15+</strong><small>Escolas alcançadas</small></div></article>
-        <article><span aria-hidden="true">✦</span><div><strong>8+</strong><small>Anos de tradição</small></div></article>
-        <article><span aria-hidden="true">◎</span><div><strong>3</strong><small>Estados alcançados</small></div></article>
-      </div>
+      <section class="events-surface events-recent-panel">
+        <header class="events-recent-heading">
+          <div>
+            <span class="events-panel-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 7v5l3 2"/>
+              </svg>
+            </span>
+            <div>
+              <h3>Eventos recentes</h3>
+              <p>Registros das nossas últimas atividades realizadas.</p>
+            </div>
+          </div>
+
+          <a href="#galeria" class="events-recent-link">
+            Ver todos os eventos <span aria-hidden="true">→</span>
+          </a>
+        </header>
+
+        <div class="events-recent-grid">
+          <article
+            v-for="event in RECENT_LANDING_EVENTS"
+            :key="event.id"
+            class="event-recent-card"
+          >
+            <div class="event-recent-media">
+              <img :src="event.image" :alt="event.title" />
+            </div>
+
+            <div class="event-recent-copy">
+              <div class="event-recent-meta">
+                <span>{{ event.dateLabel }}</span>
+                <span class="event-type-badge" :class="`tone-${event.tone}`">{{ event.category }}</span>
+              </div>
+              <strong>{{ event.title }}</strong>
+              <p>{{ event.summary }}</p>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
   </section>
 </template>
