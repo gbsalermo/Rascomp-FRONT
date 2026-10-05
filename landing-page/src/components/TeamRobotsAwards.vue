@@ -47,12 +47,12 @@ const robotImageModules = import.meta.glob(
 ) as Record<string, string>
 
 const board: BoardMember[] = [
-  { id: 1, name: 'Diretor(a) 01', role: 'Presidência', area: 'Gestão do capítulo', initials: 'P' },
-  { id: 2, name: 'Diretor(a) 02', role: 'Vice-presidência', area: 'Gestão do capítulo', initials: 'VP' },
-  { id: 3, name: 'Diretor(a) 03', role: 'Tesouraria', area: 'Organização', initials: 'T' },
-  { id: 4, name: 'Diretor(a) 04', role: 'Secretaria', area: 'Organização', initials: 'S' },
-  { id: 5, name: 'Diretor(a) 05', role: 'Diretoria técnica', area: 'Projetos', initials: 'DT' },
-  { id: 6, name: 'Diretor(a) 06', role: 'Diretoria de comunicação', area: 'Comunicação', initials: 'DC' }
+  { id: 1, name: 'Diretor(a) 01', role: 'Presidente', area: 'Gestão do capítulo', initials: 'P' },
+  { id: 2, name: 'Diretor(a) 02', role: 'Vice-presidente', area: 'Gestão do capítulo', initials: 'VP' },
+  { id: 3, name: 'Diretor(a) 03', role: 'Tesoureiro', area: 'Financeiro', initials: 'T' },
+  { id: 4, name: 'Diretor(a) 04', role: 'Secretário', area: 'Organização', initials: 'S' },
+  { id: 5, name: 'Diretor(a) 05', role: 'Marketing', area: 'Comunicação', initials: 'M' },
+  { id: 6, name: 'Diretor(a) 06', role: 'Orientador', area: 'Orientação acadêmica', initials: 'O' }
 ]
 
 const boardImages = computed(() =>
