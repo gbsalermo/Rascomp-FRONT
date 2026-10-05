@@ -78,7 +78,9 @@ Sobre IEEE + RAS UFRB    ✅ CONCLUÍDO E VALIDADO — 04/10/2026
 Equipe e Conquistas      ✅ CONCLUÍDO E VALIDADO — 05/10/2026
 Robôs                    ✅ CONCLUÍDO E VALIDADO — 05/10/2026
 Galeria                  ✅ CONCLUÍDO E VALIDADO — 05/10/2026
-Eventos / postagens      ▶ PRÓXIMA SEÇÃO
+Footer                    ✅ CONCLUÍDO E VALIDADO — 05/10/2026
+Eventos / postagens      ▶ EM REVISÃO
+Competição pública       ⏳ aguardando revisão Beta A
 Demais seções            ⏳ aguardando revisão Beta A
 ```
 
@@ -323,6 +325,57 @@ landing-page/src/assets/gallery-preview/
 landing-page/src/gallery-external.css
 ```
 
+
+### Footer — fechamento Beta A
+
+O Footer institucional foi simplificado e validado para publicação.
+
+Decisões finais:
+
+- bloco principal em fundo rubro;
+- coluna institucional com logo IEEE RAS, frase institucional e referência à UFRB — Campus Cruz das Almas;
+- links institucionais centrais:
+  - UFRB;
+  - IEEE;
+  - IEEE RAS;
+  - IEEE Brasil;
+- bloco Apoio e parceiros com UFRB, IEEE, IEEE RAS e CETEC;
+- logos de parceiros locais em:
+  `landing-page/src/assets/footer/partners/`;
+- contatos oficiais:
+  - `ieeerasufrb@gmail.com`;
+  - Instagram `@ieeerasufrb`;
+  - WhatsApp `+55 73 98126-4674`;
+- faixa inferior roxa reduzida a direitos autorais, crédito aos membros e crédito do desenvolvedor principal;
+- `gbsalermo` aponta para o perfil GitHub;
+- botão voltar ao topo removido do Footer e transformado em ação flutuante global;
+- contatos podem ser sobrescritos por variáveis de ambiente em produção.
+
+### Regra global de período de inscrições
+
+O CTA `Inscrever-se` da Landing não deve redirecionar o visitante quando não existir competição com:
+
+```text
+status === 'INSCRICOES_ABERTAS'
+```
+
+Com inscrições abertas:
+
+```text
+Inscrever-se
+→ VITE_GESTAO_URL
+→ fluxo Gestão/Participante
+```
+
+Sem inscrições abertas:
+
+```text
+Inscrever-se
+→ permanece na Landing
+→ exibe aviso: "Não estamos no período de inscrições no momento."
+```
+
+A regra é aplicada ao Header e a CTAs de inscrição da seção Eventos.
 
 ### Revisão especial pós-seções — modo competição
 
