@@ -377,6 +377,46 @@ Inscrever-se
 
 A regra é aplicada ao Header e a CTAs de inscrição da seção Eventos.
 
+### Competição pública — revisão Beta A em validação
+
+A section competitiva foi redesenhada para responder quatro perguntas do visitante sem assumir aparência de dashboard administrativo:
+
+```text
+1. Que competição é essa?
+2. Quem está competindo?
+3. Quais categorias existem e o que está acontecendo agora?
+4. Ainda posso me inscrever?
+```
+
+Comportamento atual:
+
+- section continua condicional a `competition.status === 'EM_ANDAMENTO'`;
+- cabeçalho mostra nome, descrição, período, número de equipes, robôs e categorias;
+- bloco de inscrição informa explicitamente se a janela está aberta/encerrada;
+- lista de equipes usa apenas inscrições `APROVADA`;
+- Landing passa a carregar também `/api/v1/public/equipes`;
+- equipe com logo pública usa a mídia informada pelo backend;
+- equipe sem logo usa `/rascomp-logo.webp` como fallback;
+- categorias são derivadas dos dados públicos oficiais;
+- card "O que está acontecendo agora?" prioriza:
+  - partida `EM_ANDAMENTO`;
+  - próxima partida;
+  - liderança do Follow Line;
+  - último resultado;
+- ranking e chaveamento continuam consultáveis sob demanda;
+- layout possui breakpoints específicos para tablet/mobile.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/ActiveCompetition.vue
+landing-page/src/active-competition.css
+landing-page/src/App.vue
+landing-page/src/api.ts
+```
+
+A section permanece **EM VALIDAÇÃO VISUAL** e só deve ser marcada como concluída após aprovação do usuário.
+
 ### Revisão especial pós-seções — modo competição
 
 Depois da revisão individual de todas as seções da Landing, executar uma rodada específica da experiência **em época de competição**.
