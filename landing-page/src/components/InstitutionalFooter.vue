@@ -91,8 +91,13 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
           <span class="footer-heading-line" aria-hidden="true" />
 
           <div class="footer-partner-grid">
-            <article>
-              <img v-if="partnerLogo('ufrb')" :src="partnerLogo('ufrb')" alt="UFRB" />
+            <article class="footer-partner-card footer-partner-card--ufrb">
+              <img
+                v-if="partnerLogo('ufrb')"
+                class="footer-partner-logo footer-partner-logo--ufrb"
+                :src="partnerLogo('ufrb')"
+                alt="UFRB"
+              />
               <strong v-else>UFRB</strong>
               <small>Universidade</small>
             </article>
