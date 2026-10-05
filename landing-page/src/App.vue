@@ -30,6 +30,23 @@ const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
 const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html'
 
 const currentCompetition = computed(() => competitions.value.find((item) => item.id === competitionId.value))
+const registrationOpen = computed(() =>
+  competitions.value.some((item) => item.status === 'INSCRICOES_ABERTAS')
+)
+const registrationNoticeVisible = ref(false)
+let registrationNoticeTimer: number | undefined
+
+function showRegistrationUnavailable() {
+  registrationNoticeVisible.value = true
+
+  if (registrationNoticeTimer) {
+    window.clearTimeout(registrationNoticeTimer)
+  }
+
+  registrationNoticeTimer = window.setTimeout(() => {
+    registrationNoticeVisible.value = false
+  }, 4200)
+}
 
 function competitionFollowCategories() {
   const registrationCategoryIds = new Set(registrations.value.map((item) => item.categoryId))
@@ -149,6 +166,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (timer) clearInterval(timer)
+  if (registrationNoticeTimer) window.clearTimeout(registrationNoticeTimer)
 })
 </script>
 
@@ -156,7 +174,12 @@ onBeforeUnmount(() => {
   <PublicNotFound v-if="isNotFound" />
 
   <div v-else class="public-app">
-    <InstitutionalHeader :competition="currentCompetition" :management-url="managementUrl" />
+    <InstitutionalHeader
+      :competition="currentCompetition"
+      :management-url="managementUrl"
+      :registration-open="registrationOpen"
+      @registration-unavailable="showRegistrationUnavailable"
+    />
 
     <main id="top">
       <HighlightsHero :competition="currentCompetition" :management-url="managementUrl" />
@@ -164,7 +187,11 @@ onBeforeUnmount(() => {
       <TeamRobotsAwards />
       <RobotsShowcase />
       <InstitutionalGallery />
-      <InstitutionalEvents />
+      <InstitutionalEvents
+        :management-url="managementUrl"
+        :registration-open="registrationOpen"
+        @registration-unavailable="showRegistrationUnavailable"
+      />
 
       <ActiveCompetition
         :competition="currentCompetition"
@@ -193,6 +220,28 @@ onBeforeUnmount(() => {
     </main>
 
     <InstitutionalFooter />
+
+    <Transition name="registration-notice">
+      <aside
+        v-if="registrationNoticeVisible"
+        class="registration-period-notice"
+        role="status"
+        aria-live="polite"
+      >
+        <span class="registration-period-notice-icon" aria-hidden="true">i</span>
+        <div>
+          <strong>Inscrições indisponíveis</strong>
+          <p>Não estamos no período de inscrições no momento.</p>
+        </div>
+        <button
+          type="button"
+          aria-label="Fechar aviso"
+          @click="registrationNoticeVisible = false"
+        >
+          ×
+        </button>
+      </aside>
+    </Transition>
 
     <a class="global-back-to-top" href="#top" aria-label="Voltar ao topo">↑</a>
   </div>
