@@ -31,6 +31,7 @@ const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
 const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html'
 
 const currentCompetition = computed(() => competitions.value.find((item) => item.id === competitionId.value))
+const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
 const registrationOpen = computed(() =>
   competitions.value.some((item) => item.status === 'INSCRICOES_ABERTAS')
 )
@@ -76,6 +77,7 @@ async function bootstrap() {
     const focus =
       competitionList.find((item: any) => item.status === 'EM_ANDAMENTO') ||
       competitionList.find((item: any) => item.status === 'INSCRICOES_ABERTAS') ||
+      competitionList.find((item: any) => item.status === 'INSCRICOES_ENCERRADAS') ||
       competitionList[0]
 
     competitionId.value = focus?.id
@@ -161,7 +163,7 @@ onMounted(async () => {
   const refreshMs = Number(import.meta.env.VITE_REFRESH_MS || 20000)
 
   timer = window.setInterval(() => {
-    if (currentCompetition.value?.status === 'EM_ANDAMENTO') {
+    if (publicCompetitionStatuses.includes(currentCompetition.value?.status)) {
       refreshCompetition().catch(() => undefined)
     }
   }, refreshMs)
@@ -220,7 +222,7 @@ onBeforeUnmount(() => {
         <div class="public-alert">
           <strong>Interface institucional disponível.</strong>
           <p>{{ error }}</p>
-          <small>A janela competitiva só aparece quando a API pública e uma competição em andamento estiverem disponíveis.</small>
+          <small>A janela competitiva aparece desde a abertura das inscrições e acompanha a competição até o período em andamento.</small>
         </div>
       </section>
     </main>
