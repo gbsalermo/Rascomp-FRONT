@@ -19,6 +19,15 @@ export const participantApi = {
     http.post<{ id: number; nome: string; sigla: string }>('/api/v1/participante/instituicoes', payload).then((r) => r.data),
   teams: () => http.get<Team[]>('/api/v1/participante/equipes').then((r) => r.data),
   createTeam: (payload: { nome: string; institutionId: number }) => http.post<Team>('/api/v1/participante/equipes', payload).then((r) => r.data),
+  uploadTeamLogo: (teamId: number, file: File) => {
+    const form = new FormData()
+    form.append('arquivo', file)
+    return http.put<Team>(`/api/v1/participante/equipes/${teamId}/logo`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then((r) => r.data)
+  },
+  deleteTeamLogo: (teamId: number) =>
+    http.delete<Team>(`/api/v1/participante/equipes/${teamId}/logo`).then((r) => r.data),
   inviteTeamMember: (teamId: number, payload: { email: string; mensagem?: string }) =>
     http.post<TeamMembershipRequest>(`/api/v1/participante/equipes/${teamId}/convites`, payload).then((r) => r.data),
   requestTeamJoin: (teamId: number, payload: { mensagem?: string }) =>
