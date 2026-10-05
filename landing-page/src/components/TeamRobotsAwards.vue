@@ -194,7 +194,7 @@ const awards: Award[] = [
         </div>
       </article>
 
-      <article class="team-awards-block">
+      <article id="premiacoes" class="team-awards-block">
         <header class="team-section-heading">
           <div>
             <span class="team-section-icon team-section-icon--award" aria-hidden="true">
