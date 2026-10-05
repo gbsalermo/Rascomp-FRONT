@@ -37,15 +37,6 @@ const volunteerImageModules = import.meta.glob(
   }
 ) as Record<string, string>
 
-const robotImageModules = import.meta.glob(
-  '../assets/team/robots/*.{jpg,jpeg,png,webp,avif}',
-  {
-    eager: true,
-    query: '?url',
-    import: 'default'
-  }
-) as Record<string, string>
-
 const board: BoardMember[] = [
   { id: 1, name: 'Presidente', role: 'Presidente', area: 'Gestão do capítulo', initials: 'P' },
   { id: 2, name: 'Vice-presidente', role: 'Vice-presidente', area: 'Gestão do capítulo', initials: 'VP' },
@@ -71,12 +62,6 @@ const volunteerLoopImages = computed(() =>
   volunteerImages.value.length > 1
     ? [...volunteerImages.value, ...volunteerImages.value]
     : volunteerImages.value
-)
-
-const robotImages = computed(() =>
-  Object.entries(robotImageModules)
-    .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
-    .map(([, src]) => src)
 )
 
 const awards: Award[] = [
@@ -123,9 +108,9 @@ const awards: Award[] = [
   <section id="equipe" class="team-robots-awards-section">
     <div class="team-robots-awards-container">
       <header class="team-robots-awards-heading">
-        <span>Pessoas, robôs e conquistas</span>
+        <span>Pessoas e conquistas</span>
         <h2>Equipe e Conquistas</h2>
-        <p>Conheça as pessoas que movem a RAS UFRB, os projetos que construímos e algumas conquistas que marcam nossa trajetória.</p>
+        <p>Conheça as pessoas que movem a RAS UFRB e algumas conquistas que ajudam a contar a trajetória do capítulo.</p>
       </header>
 
       <article class="team-board-block">
@@ -206,29 +191,6 @@ const awards: Award[] = [
 
         <div v-else class="team-volunteer-placeholder">
           <span>Adicione fotos coletivas em <b>src/assets/team/volunteers/</b></span>
-        </div>
-      </article>
-
-      <article class="team-robots-mosaic-block">
-        <header class="team-robots-mosaic-heading">
-          <span class="team-robots-kicker">Nossos Robôs</span>
-        </header>
-
-        <div v-if="robotImages.length" class="team-robots-mosaic">
-          <figure
-            v-for="(photo, index) in robotImages"
-            :key="photo"
-            class="team-robot-mosaic-item"
-          >
-            <img
-              :src="photo"
-              :alt="`Registro de robô ou projeto da IEEE RAS UFRB ${index + 1}`"
-            />
-          </figure>
-        </div>
-
-        <div v-else class="team-robots-mosaic-placeholder">
-          Adicione imagens em <b>src/assets/team/robots/</b>
         </div>
       </article>
 
