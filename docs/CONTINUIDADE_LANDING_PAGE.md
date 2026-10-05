@@ -478,10 +478,14 @@ A section `#competicao-atual` deixa de repetir um segundo Hero e passa a iniciar
 
 Importante sobre lotes:
 
-- o frontend está preparado para consumir um nome de lote vigente;
-- o modelo atual `Competition/CompetitionDTO` ainda não possui campo de lote;
+- integração real concluída em 05/10/2026;
+- a Gestão configura lotes por nome + período dentro da janela geral de inscrições;
+- o backend resolve o lote vigente pela data;
+- inscrição pessoal e inscrição de robô preservam o lote vigente como histórico;
+- a Landing consulta `/api/v1/public/competicoes/{competitionId}/lote-atual`;
+- o Hero mostra `Lote atual` somente quando existir um lote vigente;
 - não usar valores hardcoded como `1º lote`;
-- a integração real do lote deve ser feita na revisão funcional/backend.
+- lote não implica preço/taxa automática neste domínio.
 
 ### Ajuste de ciclo público da competição — 05/10/2026
 
