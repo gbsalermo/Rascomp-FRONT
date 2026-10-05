@@ -11,7 +11,6 @@ Estrutura:
 ```text
 media/assets/
 ├─ institutional/  → equipe, identidade e imagens institucionais
-├─ about/          → carrossel visual da seção Sobre
 ├─ events/         → oficinas, extensão, RAS nas Escolas e eventos
 ├─ competitions/   → competições e acompanhamento competitivo
 ├─ awards/         → premiações e conquistas
@@ -32,13 +31,16 @@ events/
 
 awards/
 └─ conquista-ras.jpg             → Hero Conquistas
-
-about/
-├─ equipe-ras.jpg                → Sobre / Equipe RAS UFRB
-├─ projetos-oficinas.jpg         → Sobre / Projetos e oficinas
-├─ extensao-comunidade.jpg       → Sobre / Extensão e comunidade
-└─ competicoes-conquistas.jpg    → Sobre / Competições e conquistas
 ```
+
+A seção **Sobre** é uma exceção temporária e usa descoberta automática em:
+
+```text
+landing-page/src/assets/about/
+```
+
+Qualquer JPG/JPEG/PNG/WebP/AVIF adicionado ali entra no carrossel no próximo
+refresh do ambiente de desenvolvimento ou no próximo build.
 
 O painel superior de **Últimas novidades** não usa imagens na Beta A. Ele é
 alimentado por `src/content/updates.ts`, que pode reutilizar eventos de
