@@ -29,9 +29,21 @@ const showAllTeams = ref(false)
 const showFullRanking = ref(false)
 const showFullBracket = ref(false)
 
+const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
+
 const activeCompetitions = computed(() =>
-  props.competitions.filter((item) => item.status === 'EM_ANDAMENTO')
+  props.competitions.filter((item) => publicCompetitionStatuses.includes(item.status))
 )
+
+const competitionPublicVisible = computed(() =>
+  publicCompetitionStatuses.includes(props.competition?.status)
+)
+
+const competitionStageLabel = computed(() => {
+  if (props.competition?.status === 'INSCRICOES_ABERTAS') return 'Inscrições abertas'
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') return 'Inscrições encerradas · preparação'
+  return 'Competição em andamento'
+})
 
 const approvedRegistrations = computed(() =>
   props.registrations.filter((item) => item.status === 'APROVADA')
@@ -206,14 +218,28 @@ const canRegister = computed(() => {
 
 const registrationLabel = computed(() => {
   if (canRegister.value) return 'Inscrições abertas'
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') return 'Inscrições encerradas'
   if (props.competition?.status === 'EM_ANDAMENTO') return 'Inscrições encerradas'
   return 'Inscrições indisponíveis'
+})
+
+const registrationDescription = computed(() => {
+  if (canRegister.value) return 'Você ainda pode participar desta edição.'
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') {
+    return 'O período de inscrições terminou e a organização está preparando a competição.'
+  }
+  if (props.competition?.status === 'EM_ANDAMENTO') {
+    return 'A competição já está em andamento e a janela de inscrições foi encerrada.'
+  }
+  return 'Não estamos no período de inscrições no momento.'
 })
 
 const liveHeadline = computed(() => {
   if (liveMatch.value) return 'Partida acontecendo agora'
   if (nextMatch.value) return 'Próxima disputa'
   if (props.ranking[0]) return 'Ranking sendo atualizado'
+  if (props.competition?.status === 'INSCRICOES_ABERTAS') return 'Inscrições abertas'
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') return 'Preparação da competição'
   return 'Aguardando atualização oficial'
 })
 
@@ -226,6 +252,14 @@ const liveDescription = computed(() => {
 
   if (props.ranking[0]) {
     return `${props.ranking[0].robotNome || 'Robô líder'} está na liderança do Follow Line.`
+  }
+
+  if (props.competition?.status === 'INSCRICOES_ABERTAS') {
+    return 'Equipes e robôs estão entrando na competição. As disputas aparecerão aqui quando a organização iniciar o evento.'
+  }
+
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') {
+    return 'As inscrições foram encerradas. A organização está consolidando participantes, categorias e chaveamentos.'
   }
 
   return 'Assim que uma partida, tomada ou resultado for publicado, ele aparecerá aqui.'
@@ -305,7 +339,7 @@ function handleRegistration() {
 
 <template>
   <section
-    v-if="competition?.status === 'EM_ANDAMENTO'"
+    v-if="competitionPublicVisible"
     id="competicao-atual"
     class="active-competition-section"
   >
@@ -314,7 +348,7 @@ function handleRegistration() {
         <div class="competition-heading-copy">
           <span class="competition-kicker">
             <i aria-hidden="true" />
-            Competição em andamento
+            {{ competitionStageLabel }}
           </span>
 
           <div class="competition-heading-title">
@@ -365,8 +399,7 @@ function handleRegistration() {
           <div>
             <small>Ainda posso me inscrever?</small>
             <strong>{{ registrationLabel }}</strong>
-            <p v-if="canRegister">Você ainda pode participar desta edição.</p>
-            <p v-else>A competição já está em andamento e a janela de inscrições foi encerrada.</p>
+            <p>{{ registrationDescription }}</p>
           </div>
 
           <button type="button" @click="handleRegistration">
