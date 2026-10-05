@@ -15,7 +15,8 @@ export type LandingEvent = {
   status?: string
   temporalLabel: 'Próximo' | 'Inscrições abertas' | 'Em breve'
   tone: EventTone
-  cta: string
+  cta?: string
+  href?: string
   image: string
 }
 
@@ -45,7 +46,6 @@ export const LANDING_EVENTS: LandingEvent[] = [
     status: 'Destaque',
     temporalLabel: 'Próximo',
     tone: 'red',
-    cta: 'Saiba mais',
     image: '/media/assets/awards/conquista-ras.jpg'
   },
   {
@@ -80,7 +80,6 @@ export const LANDING_EVENTS: LandingEvent[] = [
     description: 'Uma conversa introdutória sobre inteligência artificial aplicada à robótica, passando por percepção, tomada de decisão e automação. O encontro também abre espaço para perguntas e troca de experiências.',
     temporalLabel: 'Em breve',
     tone: 'blue',
-    cta: 'Saiba mais',
     image: '/media/assets/institutional/ras-ufrb-geral.jpg'
   },
   {
@@ -97,7 +96,8 @@ export const LANDING_EVENTS: LandingEvent[] = [
     description: 'A ação leva atividades demonstrativas e experiências práticas para escolas da região, aproximando estudantes de robótica, programação, engenharia e tecnologia de maneira acessível.',
     temporalLabel: 'Em breve',
     tone: 'green',
-    cta: 'Saiba mais',
+    cta: 'Ver registros',
+    href: '#galeria',
     image: '/media/assets/events/ras-nas-escolas.jpg'
   },
   {
@@ -114,7 +114,6 @@ export const LANDING_EVENTS: LandingEvent[] = [
     description: 'Espaço de integração entre estudantes, projetos e iniciativas de robótica, com demonstrações e troca de experiências entre participantes.',
     temporalLabel: 'Em breve',
     tone: 'purple',
-    cta: 'Ver detalhes',
     image: '/media/assets/institutional/ras-ufrb-geral.jpg'
   },
   {
@@ -131,7 +130,6 @@ export const LANDING_EVENTS: LandingEvent[] = [
     description: 'Registro destinado às participações externas da equipe, incluindo competições, mostras técnicas e encontros promovidos por instituições parceiras.',
     temporalLabel: 'Em breve',
     tone: 'red',
-    cta: 'Ver participação',
     image: '/media/assets/awards/conquista-ras.jpg'
   }
 ]
