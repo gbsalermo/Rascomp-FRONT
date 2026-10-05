@@ -232,13 +232,22 @@
   object-fit: contain;
 }
 
-.footer-partner-card--ras {
+.footer-partner-card--ufrb {
   padding: 8px 6px !important;
 }
 
+.footer-partner-logo--ufrb {
+  width: min(108px, 92%) !important;
+  max-height: 50px !important;
+}
+
+.footer-partner-card--ras {
+  padding: 6px 4px !important;
+}
+
 .footer-partner-logo--ras {
-  width: min(118px, 94%) !important;
-  max-height: 54px !important;
+  width: min(132px, 97%) !important;
+  max-height: 62px !important;
 }
 
 .footer-partner-grid strong {
