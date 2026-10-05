@@ -576,3 +576,316 @@
     min-height: 520px;
   }
 }
+
+
+/* ===== Revisão responsiva Beta A — Hero ===== */
+
+@media (max-width: 900px) {
+  .highlights-stage {
+    min-height: 500px;
+  }
+
+  .highlights-copy {
+    left: 24px;
+    right: 24px;
+    width: auto;
+  }
+
+  .hero-navigation {
+    left: 24px;
+    right: 24px;
+  }
+
+  .hero-quick-links {
+    width: calc(100% - 24px);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .highlights-hero {
+    padding-bottom: 14px;
+  }
+
+  .highlights-stage {
+    min-height: 530px;
+  }
+
+  .stage-media {
+    object-position: center center;
+  }
+
+  .highlights-copy {
+    left: 18px;
+    right: 18px;
+    bottom: 76px;
+  }
+
+  .highlights-kicker {
+    min-height: 26px;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px 9px;
+    font-size: .58rem;
+  }
+
+  .highlights-copy h1 {
+    font-size: clamp(1.72rem, 8.4vw, 2.35rem);
+    line-height: 1.03;
+  }
+
+  .highlights-copy p {
+    margin-top: 10px;
+    font-size: .82rem;
+    line-height: 1.43;
+  }
+
+  .highlights-actions {
+    gap: 7px;
+    margin-top: 14px;
+  }
+
+  .highlight-primary,
+  .highlight-secondary {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: .72rem;
+  }
+
+  .hero-navigation {
+    left: 18px;
+    right: 18px;
+    bottom: 14px;
+  }
+
+  .hero-navigation > button {
+    width: 38px;
+    height: 38px;
+    font-size: 1.7rem;
+  }
+
+  .hero-dots {
+    gap: 6px;
+  }
+
+  .hero-quick-links {
+    width: calc(100% - 20px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 9px;
+  }
+
+  .hero-quick-card {
+    min-height: 78px;
+    gap: 9px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .hero-quick-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .hero-quick-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .hero-quick-copy {
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .hero-quick-copy strong {
+    font-size: .78rem;
+  }
+
+  .hero-quick-copy small {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: .62rem;
+    line-height: 1.28;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .highlights-copy.is-competition {
+    left: 18px;
+    right: 18px;
+    bottom: 74px;
+    width: auto;
+  }
+
+  .highlights-copy.is-competition h1 {
+    font-size: clamp(1.95rem, 9.4vw, 2.55rem);
+  }
+
+  .highlights-copy.is-competition p {
+    max-width: none;
+    font-size: .78rem;
+  }
+
+  .hero-competition-categories {
+    gap: 5px;
+    margin-top: 10px;
+  }
+
+  .hero-competition-categories-label {
+    font-size: .5rem;
+  }
+
+  .hero-competition-category-list {
+    flex-wrap: nowrap;
+    gap: 5px;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .hero-competition-category-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero-competition-category {
+    flex: 0 0 auto;
+    min-height: 25px;
+    padding: 0 8px;
+    font-size: .54rem;
+  }
+
+  .hero-competition-lot {
+    margin-top: 8px;
+    padding: 5px 8px;
+  }
+
+  .highlights-actions.competition-actions {
+    gap: 7px;
+    margin-top: 12px;
+  }
+
+  .tone-competition.highlights-stage {
+    min-height: 550px;
+  }
+}
+
+@media (max-width: 520px) {
+  .highlights-stage {
+    min-height: 500px;
+  }
+
+  .highlights-copy {
+    bottom: 72px;
+  }
+
+  .highlights-copy h1 {
+    font-size: clamp(1.62rem, 8.5vw, 2.15rem);
+  }
+
+  .highlights-copy p {
+    font-size: .78rem;
+    line-height: 1.4;
+  }
+
+  .hero-quick-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-quick-card {
+    min-height: 74px;
+    padding: 9px;
+  }
+
+  .hero-quick-icon {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  .hero-quick-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .hero-quick-copy strong {
+    font-size: .72rem;
+  }
+
+  .hero-quick-copy small {
+    font-size: .57rem;
+  }
+
+  .tone-competition.highlights-stage {
+    min-height: 550px;
+  }
+
+  .highlights-copy.is-competition h1 {
+    font-size: clamp(1.82rem, 9.1vw, 2.35rem);
+  }
+
+  .highlights-copy.is-competition p {
+    font-size: .74rem;
+  }
+
+  .highlights-actions.competition-actions .highlight-primary,
+  .highlights-actions.competition-actions .highlight-secondary {
+    min-height: 38px;
+  }
+}
+
+@media (max-width: 390px) {
+  .highlights-stage {
+    min-height: 490px;
+  }
+
+  .highlights-copy {
+    left: 14px;
+    right: 14px;
+    bottom: 68px;
+  }
+
+  .highlights-copy h1 {
+    font-size: clamp(1.5rem, 8.3vw, 1.95rem);
+  }
+
+  .highlights-copy p {
+    font-size: .73rem;
+  }
+
+  .hero-navigation {
+    left: 14px;
+    right: 14px;
+    bottom: 10px;
+  }
+
+  .hero-quick-links {
+    width: calc(100% - 16px);
+    gap: 6px;
+  }
+
+  .hero-quick-card {
+    min-height: 70px;
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .hero-quick-copy small {
+    -webkit-line-clamp: 1;
+  }
+
+  .tone-competition.highlights-stage {
+    min-height: 540px;
+  }
+
+  .highlights-copy.is-competition {
+    left: 14px;
+    right: 14px;
+    bottom: 68px;
+  }
+
+  .highlights-copy.is-competition h1 {
+    font-size: clamp(1.7rem, 8.9vw, 2.1rem);
+  }
+}
