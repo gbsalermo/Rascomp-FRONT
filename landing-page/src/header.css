@@ -58,7 +58,7 @@
   align-items: center;
   justify-content: center;
   justify-self: center;
-  gap: 44px;
+  gap: 34px;
   color: #37313d;
   font-family: inherit;
   font-size: 1.08rem;
@@ -231,7 +231,7 @@
   }
 
   .institutional-header .institutional-nav {
-    gap: 28px;
+    gap: 20px;
     font-family: inherit;
     font-size: .98rem;
     font-weight: 700;
