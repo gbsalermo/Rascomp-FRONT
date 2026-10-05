@@ -57,6 +57,7 @@ function closeMobile() {
         >
           <a href="#sobre" @click="closeMobile">Sobre</a>
           <a href="#equipe" @click="closeMobile">Equipe</a>
+          <a href="#robos" @click="closeMobile">Robôs</a>
           <a href="#galeria" @click="closeMobile">Galeria</a>
           <a href="#eventos" @click="closeMobile">Eventos</a>
 
