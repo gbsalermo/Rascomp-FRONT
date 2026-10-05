@@ -75,6 +75,9 @@ async function bootstrap() {
     categories.value = categoryList
 
     const focus =
+      competitionList.find(
+        (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
+      ) ||
       competitionList.find((item: any) => item.status === 'EM_ANDAMENTO') ||
       competitionList.find((item: any) => item.status === 'INSCRICOES_ABERTAS') ||
       competitionList.find((item: any) => item.status === 'INSCRICOES_ENCERRADAS') ||
@@ -200,7 +203,6 @@ onBeforeUnmount(() => {
 
       <ActiveCompetition
         :competition="currentCompetition"
-        :competitions="competitions"
         :teams="teams"
         :categories="categories"
         :registrations="registrations"
@@ -213,7 +215,6 @@ onBeforeUnmount(() => {
         :loading="loading"
         :management-url="managementUrl"
         @registration-unavailable="showRegistrationUnavailable"
-        @update:competition-id="updateCompetition"
         @update:follow-category-id="updateFollowCategory"
         @update:bracket-id="updateBracket"
       />
