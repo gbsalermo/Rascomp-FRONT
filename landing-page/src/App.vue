@@ -18,6 +18,7 @@ const competitions = ref<any[]>([])
 const teams = ref<any[]>([])
 const categories = ref<any[]>([])
 const registrations = ref<any[]>([])
+const currentRegistrationLot = ref<any>()
 const podiums = ref<any[]>([])
 const ranking = ref<any[]>([])
 const followAttempts = ref<any[]>([])
@@ -99,6 +100,7 @@ async function bootstrap() {
 async function refreshCompetition() {
   if (!competitionId.value) {
     registrations.value = []
+    currentRegistrationLot.value = undefined
     podiums.value = []
     ranking.value = []
     followAttempts.value = []
@@ -110,15 +112,17 @@ async function refreshCompetition() {
     return
   }
 
-  const [registrationList, bracketList, podiumList] = await Promise.all([
+  const [registrationList, bracketList, podiumList, lot] = await Promise.all([
     api.registrations(competitionId.value),
     api.brackets(competitionId.value),
-    api.podiums(competitionId.value).catch(() => [])
+    api.podiums(competitionId.value).catch(() => []),
+    api.currentRegistrationLot(competitionId.value).catch(() => undefined)
   ])
 
   registrations.value = registrationList
   brackets.value = bracketList
   podiums.value = podiumList
+  currentRegistrationLot.value = lot
 
   const followOptions = competitionFollowCategories()
   if (!followOptions.some((item) => item.id === followCategoryId.value)) {
@@ -213,6 +217,7 @@ onBeforeUnmount(() => {
         :competition="currentCompetition"
         :categories="categories"
         :registrations="registrations"
+        :current-registration-lot="currentRegistrationLot"
         :management-url="managementUrl"
       />
       <InstitutionalAbout />
