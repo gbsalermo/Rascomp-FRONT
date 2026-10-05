@@ -130,15 +130,6 @@ const followTotalTakes = computed(() => {
   return Math.max(0, ...scheduled, ...attempted)
 })
 
-function completedTakesFor(registrationId: number) {
-  return new Set(
-    props.followAttempts
-      .filter((item) => Number(item.registrationId) === Number(registrationId))
-      .filter((item) => item.concluida || item.tempoFinalSegundos != null)
-      .map((item) => Number(item.tomada))
-  ).size
-}
-
 function attemptsFor(registrationId: number) {
   return props.followAttempts.filter(
     (item) => Number(item.registrationId) === Number(registrationId)
@@ -664,19 +655,14 @@ function handleRegistration() {
 
             <article class="competition-live-stat competition-live-stat--follow">
               <span>Follow Line</span>
-              <strong v-if="followCurrentEntry">
-                {{ followCurrentEntry.robotNome || 'Robô em chamada' }}
-              </strong>
-              <strong v-else-if="ranking[0]">{{ ranking[0].robotNome || 'Líder atual' }}</strong>
-              <strong v-else>Aguardando ranking</strong>
-              <small v-if="followCurrentEntry">
-                Tomada {{ followCurrentEntry.tomada || followCurrentSchedule?.tomada }} ·
-                {{ followCurrentEntry.status === 'EM_EXECUCAO' ? 'em execução' : 'em chamada' }}
+              <strong v-if="followCurrentSchedule">Tomada {{ followCurrentSchedule.tomada }} em andamento</strong>
+              <strong v-else-if="followNextSchedule">Próxima tomada · T{{ followNextSchedule.tomada }}</strong>
+              <strong v-else>Aguardando agenda</strong>
+              <small v-if="followCurrentSchedule && followNextSchedule">
+                Próxima: T{{ followNextSchedule.tomada }} · {{ formatDateTime(followNextSchedule.dataHora) }}
               </small>
-              <small v-else-if="ranking[0]">
-                Líder com {{ formatSeconds(ranking[0].tempoFinalSegundos) }}
-              </small>
-              <small v-else>Resultados aparecem quando as tomadas começarem.</small>
+              <small v-else-if="followNextSchedule">{{ formatDateTime(followNextSchedule.dataHora) }}</small>
+              <small v-else>As tomadas aparecem quando a organização publicar a agenda.</small>
             </article>
 
             <article class="competition-live-stat competition-live-stat--result">
@@ -718,33 +704,24 @@ function handleRegistration() {
               </select>
             </div>
 
-            <div class="follow-operation-grid">
+            <div class="follow-operation-grid follow-operation-grid--takes">
               <article class="follow-operation-card active">
-                <span>Agora</span>
-                <strong v-if="followCurrentEntry">{{ followCurrentEntry.robotNome }}</strong>
-                <strong v-else>Sem robô em pista</strong>
-                <small v-if="followCurrentEntry">
-                  Tomada {{ followCurrentEntry.tomada || followCurrentSchedule?.tomada }} ·
-                  {{ followCurrentEntry.teamNome }}
+                <span>Tomada atual</span>
+                <strong v-if="followCurrentSchedule">Tomada {{ followCurrentSchedule.tomada }}</strong>
+                <strong v-else>Sem tomada em andamento</strong>
+                <small v-if="followCurrentSchedule">
+                  {{ followCurrentSchedule.status === 'EM_ANDAMENTO' ? 'Em execução' : 'Em chamada' }}
+                  <template v-if="followCurrentSchedule.pista"> · {{ followCurrentSchedule.pista }}</template>
                 </small>
-                <small v-else>Nenhuma execução em andamento neste momento.</small>
+                <small v-else>Aguardando início da próxima tomada.</small>
               </article>
 
-              <article class="follow-operation-card">
-                <span>Próxima chamada</span>
-                <strong>{{ followNextEntry?.robotNome || 'Aguardando convocação' }}</strong>
-                <small v-if="followNextEntry">{{ followNextEntry.teamNome }} · posição {{ followNextEntry.ordemConvocacao }}</small>
-                <small v-else>Fila ainda não publicada.</small>
-              </article>
-
-              <article class="follow-operation-card">
+              <article class="follow-operation-card next">
                 <span>Próxima tomada</span>
                 <strong v-if="followNextSchedule">Tomada {{ followNextSchedule.tomada }}</strong>
-                <strong v-else-if="followCurrentSchedule">Tomada {{ followCurrentSchedule.tomada }}</strong>
-                <strong v-else>Sem agenda</strong>
+                <strong v-else>Sem próxima tomada</strong>
                 <small v-if="followNextSchedule">{{ formatDateTime(followNextSchedule.dataHora) }}</small>
-                <small v-else-if="followCurrentSchedule">{{ formatDateTime(followCurrentSchedule.dataHora) }}</small>
-                <small v-else>A organização ainda não publicou a agenda.</small>
+                <small v-else>A organização ainda não publicou a próxima tomada.</small>
               </article>
 
               <article class="follow-operation-card">
@@ -767,8 +744,7 @@ function handleRegistration() {
                   <strong>{{ item.robotNome || `Inscrição #${item.registrationId}` }}</strong>
                   <small>{{ item.teamNome }}</small>
                   <div class="competition-ranking-tags">
-                    <span>{{ completedTakesFor(item.registrationId) }} tomada(s) registrada(s)</span>
-                    <span>{{ attemptsFor(item.registrationId) }} tentativa(s)</span>
+                    <span>{{ attemptsFor(item.registrationId) }} tentativa(s) registrada(s)</span>
                     <span v-if="item.tomada">melhor na T{{ item.tomada }}</span>
                   </div>
                 </div>
