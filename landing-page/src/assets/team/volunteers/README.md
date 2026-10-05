@@ -9,7 +9,12 @@ E outros voluntários que fazem tudo acontecer
 Use somente fotos coletivas/grupais, não perfis individuais.
 
 Qualquer JPG/JPEG/PNG/WebP/AVIF adicionado aqui entra automaticamente.
-A Landing exibe até 3 fotos no desktop no layout atual.
+
+A Landing exibe todas as fotos em uma faixa horizontal automática:
+- movimento contínuo;
+- pausa ao passar o mouse;
+- fotos em formato horizontal;
+- adaptação responsiva para telas menores.
 
 Para controlar a ordem:
 
