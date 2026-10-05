@@ -318,7 +318,8 @@
 }
 
 .team-robot-mosaic-item {
-  min-height: 210px;
+  height: clamp(190px, 22vw, 280px);
+  min-height: 0;
   margin: 0;
   overflow: hidden;
   border-radius: 8px;
@@ -491,7 +492,8 @@
   }
 
   .team-robot-mosaic-item {
-    min-height: 190px;
+    height: 210px;
+    min-height: 0;
   }
 
   .team-award-row {
@@ -544,7 +546,8 @@
   }
 
   .team-robot-mosaic-item {
-    min-height: 150px;
+    height: 165px;
+    min-height: 0;
   }
 
   .team-awards-block,
