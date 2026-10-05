@@ -144,11 +144,6 @@ async function refreshBracket() {
   ])
 }
 
-async function updateCompetition(value: number) {
-  competitionId.value = value
-  await refreshCompetition()
-}
-
 async function updateFollowCategory(value: number) {
   followCategoryId.value = value
   await refreshRanking()
