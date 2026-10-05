@@ -604,7 +604,10 @@ function handleRegistration() {
             <article
               v-for="category in categoryCards"
               :key="category.id"
-              :class="{ 'is-live': category.state === 'Ao vivo' }"
+              :class="{
+                'is-live': category.state === 'Ao vivo',
+                'is-podium': category.state === 'Pódio definido'
+              }"
             >
               <span class="competition-category-icon" aria-hidden="true">
                 <svg v-if="category.icon === 'follow'" viewBox="0 0 24 24">
@@ -637,7 +640,7 @@ function handleRegistration() {
           </div>
         </section>
 
-        <section class="competition-public-card competition-live-card">
+        <section id="resultados" class="competition-public-card competition-live-card">
           <header class="competition-public-card-heading competition-live-heading">
             <div>
               <span class="competition-card-icon live" aria-hidden="true">
@@ -700,14 +703,22 @@ function handleRegistration() {
             class="competition-live-actions"
           >
             <button type="button" @click="showFullRanking = !showFullRanking">
-              {{ showFullRanking ? 'Ocultar Follow Line' : 'Acompanhar Follow Line' }}
+              {{
+                showFullRanking
+                  ? (isPodiumComplete(followPodium) ? 'Ocultar pódio Follow Line' : 'Ocultar Follow Line')
+                  : (isPodiumComplete(followPodium) ? 'Ver pódio Follow Line' : 'Acompanhar Follow Line')
+              }}
             </button>
             <button type="button" @click="showFullBracket = !showFullBracket">
-              {{ showFullBracket ? 'Ocultar chaveamento' : 'Acompanhar chaveamento' }}
+              {{
+                showFullBracket
+                  ? (isPodiumComplete(bracketPodium) ? 'Ocultar pódio da categoria' : 'Ocultar chaveamento')
+                  : (isPodiumComplete(bracketPodium) ? 'Ver pódio da categoria' : 'Acompanhar chaveamento')
+              }}
             </button>
           </div>
 
-          <div v-if="showFullRanking" id="resultados" class="competition-detail-panel competition-follow-panel">
+          <div v-if="showFullRanking" class="competition-detail-panel competition-follow-panel">
             <div class="competition-detail-panel-heading">
               <div>
                 <span class="competition-panel-kicker">Follow Line</span>
