@@ -8,6 +8,9 @@ const props = defineProps<{
   categories: any[]
   registrations: any[]
   ranking: any[]
+  followAttempts: any[]
+  followSchedules: any[]
+  followQueue: any[]
   brackets: any[]
   matches: any[]
   results: any[]
@@ -90,19 +93,122 @@ const nextMatch = computed(() =>
 )
 
 const latestResult = computed(() => props.results.at(-1))
-const rankingRows = computed(() => props.ranking.slice(0, showFullRanking.value ? 8 : 3))
+const rankingRows = computed(() => props.ranking.slice(0, showFullRanking.value ? 12 : 5))
+
+const followCurrentSchedule = computed(() =>
+  props.followSchedules.find((item) => item.status === 'EM_ANDAMENTO') ||
+  props.followSchedules.find((item) => item.status === 'EM_CHAMADA')
+)
+
+const followNextSchedule = computed(() =>
+  props.followSchedules.find((item) =>
+    ['AGENDADA', 'EM_CHAMADA'].includes(item.status) &&
+    item.id !== followCurrentSchedule.value?.id
+  ) ||
+  props.followSchedules.find((item) => item.status === 'AGENDADA')
+)
+
+const followCurrentEntry = computed(() =>
+  props.followQueue.find((item) => item.status === 'EM_EXECUCAO') ||
+  props.followQueue.find((item) => item.status === 'EM_APRESENTACAO') ||
+  props.followQueue.find((item) => item.status === 'CONVOCADA')
+)
+
+const followNextEntry = computed(() =>
+  props.followQueue.find((item) =>
+    ['AGUARDANDO', 'CONVOCADA'].includes(item.status) &&
+    item.id !== followCurrentEntry.value?.id
+  )
+)
+
+const followTotalTakes = computed(() => {
+  const scheduled = props.followSchedules.map((item) => Number(item.tomada || 0))
+  const attempted = props.followAttempts.map((item) => Number(item.tomada || 0))
+  return Math.max(0, ...scheduled, ...attempted)
+})
+
+function completedTakesFor(registrationId: number) {
+  return new Set(
+    props.followAttempts
+      .filter((item) => Number(item.registrationId) === Number(registrationId))
+      .filter((item) => item.concluida || item.tempoFinalSegundos != null)
+      .map((item) => Number(item.tomada))
+  ).size
+}
+
+function attemptsFor(registrationId: number) {
+  return props.followAttempts.filter(
+    (item) => Number(item.registrationId) === Number(registrationId)
+  ).length
+}
+
+function rankingLayer(index: number) {
+  return index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'standard'
+}
 
 const bracketRounds = computed(() => {
   const grouped = new Map<number, any[]>()
 
-  props.matches.forEach((match) => {
-    const round = Number(match.rodada || 1)
-    if (!grouped.has(round)) grouped.set(round, [])
-    grouped.get(round)?.push(match)
-  })
+  props.matches
+    .filter((match) => match.tipoPartida !== 'TERCEIRO_LUGAR')
+    .forEach((match) => {
+      const round = Number(match.rodada || 1)
+      if (!grouped.has(round)) grouped.set(round, [])
+      grouped.get(round)?.push(match)
+    })
 
-  return [...grouped.entries()].sort(([a], [b]) => a - b)
+  return [...grouped.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([round, roundMatches]) => [
+      round,
+      [...roundMatches].sort((a, b) => Number(a.ordem || 0) - Number(b.ordem || 0))
+    ] as const)
 })
+
+const bracketMaxRound = computed(() =>
+  Math.max(0, ...bracketRounds.value.map(([round]) => Number(round)))
+)
+
+function bracketRoundLabel(round: number) {
+  const remaining = bracketMaxRound.value - round
+  if (remaining === 0) return 'Final'
+  if (remaining === 1) return 'Semifinal'
+  if (remaining === 2) return 'Quartas de final'
+  if (remaining === 3) return 'Oitavas de final'
+  return `Rodada ${round}`
+}
+
+function resultFor(matchId: number) {
+  return props.results.find((item) => Number(item.matchId) === Number(matchId))
+}
+
+function isWinner(match: any, registrationId?: number) {
+  const result = resultFor(match.id)
+  return Boolean(result?.winnerRegistrationId && Number(result.winnerRegistrationId) === Number(registrationId))
+}
+
+function isByeAdvance(match: any) {
+  const participants = Number(Boolean(match.registrationAId)) + Number(Boolean(match.registrationBId))
+  return participants === 1 && match.status === 'FINALIZADA' && !resultFor(match.id)
+}
+
+function matchStatusLabel(match: any) {
+  if (isByeAdvance(match)) return 'BYE'
+  return ({
+    EM_ANDAMENTO: 'Ao vivo',
+    FINALIZADA: 'Finalizada',
+    AGENDADA: 'Agendada',
+    AGUARDANDO_PARTICIPANTES: 'Aguardando',
+    CANCELADA: 'Cancelada'
+  } as Record<string, string>)[match.status] || String(match.status || 'Aguardando')
+}
+
+function bracketTabLabel(bracket: any) {
+  const name = String(bracket.categoryNome || bracket.nome || 'Categoria')
+  return name
+    .replace(/^DEMO\s*·\s*/i, '')
+    .replace(/\s*·\s*BYEs$/i, '')
+}
 
 const participatingTeams = computed(() => {
   const teamMap = new Map<string, any>()
@@ -263,16 +369,25 @@ const liveDescription = computed(() => {
   return 'Assim que uma partida, tomada ou resultado for publicado, ele aparecerá aqui.'
 })
 
-function teamLogoSource(team: any) {
-  const raw =
+function teamLogoRaw(team: any) {
+  return (
     team?.raw?.logoUrl ||
     team?.raw?.teamLogoUrl ||
     team?.raw?.equipeLogoUrl ||
     team?.raw?.logo ||
     team?.raw?.imagemUrl ||
-    team?.raw?.fotoUrl
+    team?.raw?.fotoUrl ||
+    ''
+  )
+}
 
-  return raw ? assetUrl(raw) : '/rascomp-logo.webp'
+function teamHasLogo(team: any) {
+  return Boolean(teamLogoRaw(team))
+}
+
+function teamLogoSource(team: any) {
+  const raw = teamLogoRaw(team)
+  return raw ? assetUrl(raw) : ''
 }
 
 function categoryName(categoryId?: number) {
@@ -319,6 +434,10 @@ function selectFollowCategory(event: Event) {
 
 function selectBracket(event: Event) {
   emit('update:bracketId', Number((event.target as HTMLSelectElement).value))
+}
+
+function chooseBracket(id: number) {
+  emit('update:bracketId', id)
 }
 
 function handleRegistration() {
