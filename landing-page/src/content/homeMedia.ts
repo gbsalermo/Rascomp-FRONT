@@ -21,28 +21,9 @@ export const HOME_MEDIA = {
       src: '/media/assets/awards/conquista-ras.jpg',
       alt: 'Equipe da IEEE RAS UFRB em premiação'
     }
-  },
-  about: {
-    team: {
-      src: '/media/assets/about/equipe-ras.jpg',
-      alt: 'Equipe da IEEE RAS UFRB reunida em atividade institucional'
-    },
-    projects: {
-      src: '/media/assets/about/projetos-oficinas.jpg',
-      alt: 'Atividade de projetos e oficinas da IEEE RAS UFRB'
-    },
-    extension: {
-      src: '/media/assets/about/extensao-comunidade.jpg',
-      alt: 'Ação de extensão da IEEE RAS UFRB'
-    },
-    achievements: {
-      src: '/media/assets/about/competicoes-conquistas.jpg',
-      alt: 'Equipe da IEEE RAS UFRB em competição e conquista'
-    }
   }
 } satisfies {
   hero: Record<'ras' | 'schools' | 'workshops' | 'awards', HomeMediaSlot>
-  about: Record<'team' | 'projects' | 'extension' | 'achievements', HomeMediaSlot>
 }
 
 /**
