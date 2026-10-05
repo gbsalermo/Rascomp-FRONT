@@ -390,7 +390,7 @@ A section competitiva foi redesenhada para responder quatro perguntas do visitan
 
 Comportamento atual:
 
-- section continua condicional a `competition.status === 'EM_ANDAMENTO'`;
+- section aparece durante todo o ciclo público da competição: `INSCRICOES_ABERTAS`, `INSCRICOES_ENCERRADAS` e `EM_ANDAMENTO`;
 - cabeçalho mostra nome, descrição, período, número de equipes, robôs e categorias;
 - bloco de inscrição informa explicitamente se a janela está aberta/encerrada;
 - lista de equipes usa apenas inscrições `APROVADA`;
@@ -421,6 +421,38 @@ landing-page/src/api.ts
 ```
 
 A section permanece **EM VALIDAÇÃO VISUAL** e só deve ser marcada como concluída após aprovação do usuário.
+
+### Ajuste de ciclo público da competição — 05/10/2026
+
+A competição pública não deve nascer apenas quando a Gestão muda para `EM_ANDAMENTO`.
+
+Regra correta:
+
+```text
+PLANEJADA
+→ não aparece na Landing
+
+INSCRICOES_ABERTAS
+→ section aparece
+→ CTA de inscrição ativo
+→ equipes/robôs aprovados começam a aparecer
+→ estado principal comunica inscrições abertas
+
+INSCRICOES_ENCERRADAS
+→ section permanece
+→ CTA informa inscrições encerradas
+→ organização prepara participantes/chaves/agenda
+
+EM_ANDAMENTO
+→ section permanece
+→ acompanhamento ao vivo, ranking, chaveamento e resultados
+
+FINALIZADA / CANCELADA
+→ sai da section ativa da Home
+→ histórico ficará em fluxo próprio
+```
+
+O refresh público também permanece ativo durante os três estados visíveis, para refletir novas aprovações e participantes ainda no período de inscrição.
 
 ### Revisão especial pós-seções — modo competição
 
@@ -592,13 +624,23 @@ Referência visual histórica: ERBASE como inspiração de ritmo/arquitetura, se
 
 `Edições anteriores` não faz parte da Home.
 
-A janela competitiva só aparece quando:
+A janela competitiva aparece a partir da abertura das inscrições:
 
 ```text
-competition.status === 'EM_ANDAMENTO'
+INSCRICOES_ABERTAS
+→ INSCRICOES_ENCERRADAS
+→ EM_ANDAMENTO
 ```
 
-Sem competição ativa:
+A seção fica oculta em:
+
+```text
+PLANEJADA
+FINALIZADA
+CANCELADA
+```
+
+Sem competição em ciclo público:
 
 ```text
 Eventos → Footer
