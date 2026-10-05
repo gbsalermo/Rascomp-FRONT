@@ -367,6 +367,22 @@ a.footer-contact-card:hover {
   font-size: .94rem;
 }
 
+.footer-developer-credit {
+  color: #d8cddd !important;
+  font-size: .66rem !important;
+}
+
+.footer-developer-credit a {
+  color: #fff;
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer-developer-credit a:hover {
+  color: #d9b4ea;
+}
+
 .global-back-to-top {
   position: fixed;
   right: 24px;
