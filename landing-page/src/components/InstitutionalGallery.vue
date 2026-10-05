@@ -1,173 +1,154 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-type GalleryFilter = 'Todos' | 'RRC' | 'Oficinas' | 'RAS nas Escolas' | 'Premiações' | 'Eventos'
-
-type GalleryAlbum = {
-  id: number
-  slug: string
-  title: string
-  category: Exclude<GalleryFilter, 'Todos'>
-  description: string
-  date: string
-  count: number
-  tone: 'purple' | 'red' | 'neutral'
+type GalleryPreview = {
+  src: string
+  alt: string
+  path: string
 }
 
-const filters: GalleryFilter[] = ['Todos', 'RRC', 'Oficinas', 'RAS nas Escolas', 'Premiações', 'Eventos']
-const activeFilter = ref<GalleryFilter>('Todos')
-const selectedAlbum = ref<GalleryAlbum | null>(null)
-const galleryBaseUrl = (import.meta.env.VITE_GALERIA_URL || 'http://localhost:5175').replace(/\/$/, '')
-
-const albums: GalleryAlbum[] = [
+const galleryImageModules = import.meta.glob(
+  '../assets/gallery-preview/*.{jpg,jpeg,png,webp,avif}',
   {
-    id: 1,
-    slug: 'rrc-2026',
-    title: 'RRC 2026',
-    category: 'RRC',
-    description: 'Momentos das edições do RRC e da nossa equipe em ação dentro e fora das pistas.',
-    date: '11–13 abr. 2026',
-    count: 48,
-    tone: 'red'
-  },
-  {
-    id: 2,
-    slug: 'oficina-de-robotica',
-    title: 'Oficina de Robótica',
-    category: 'Oficinas',
-    description: 'Capacitação, aprendizado e compartilhamento de conhecimento com a comunidade.',
-    date: '22 mai. 2026',
-    count: 32,
-    tone: 'purple'
-  },
-  {
-    id: 3,
-    slug: 'ras-nas-escolas',
-    title: 'RAS nas Escolas',
-    category: 'RAS nas Escolas',
-    description: 'Levando tecnologia, inspiração e ciência para estudantes de escolas da nossa região.',
-    date: '03 jun. 2026',
-    count: 27,
-    tone: 'red'
-  },
-  {
-    id: 4,
-    slug: 'conquistas-e-premiacoes',
-    title: 'Conquistas e Premiações',
-    category: 'Premiações',
-    description: 'Registros de conquistas que representam trabalho, dedicação e evolução técnica.',
-    date: '2025–2026',
-    count: 41,
-    tone: 'purple'
-  },
-  {
-    id: 5,
-    slug: 'eventos-institucionais',
-    title: 'Eventos Institucionais',
-    category: 'Eventos',
-    description: 'Palestras, workshops, integrações e momentos que fortalecem nossa comunidade.',
-    date: '2025–2026',
-    count: 36,
-    tone: 'neutral'
+    eager: true,
+    query: '?url',
+    import: 'default'
   }
-]
+) as Record<string, string>
 
-const visibleAlbums = computed(() => {
-  if (activeFilter.value === 'Todos') return albums
-  return albums.filter((album) => album.category === activeFilter.value)
+const galleryUrl = String(
+  import.meta.env.VITE_GALERIA_URL || (import.meta.env.DEV ? 'http://localhost:5175' : '')
+).trim().replace(/\/$/, '')
+
+const previews = computed<GalleryPreview[]>(() =>
+  Object.entries(galleryImageModules)
+    .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
+    .map(([path, src], index) => ({
+      src,
+      path,
+      alt: `Registro da IEEE RAS UFRB ${index + 1}`
+    }))
+)
+
+const activeIndex = ref(0)
+const paused = ref(false)
+let autoplayTimer: number | undefined
+
+const activePreview = computed(() => previews.value[activeIndex.value] || null)
+
+function nextPreview() {
+  if (previews.value.length <= 1) return
+  activeIndex.value = (activeIndex.value + 1) % previews.value.length
+}
+
+function previousPreview() {
+  if (previews.value.length <= 1) return
+  activeIndex.value =
+    (activeIndex.value - 1 + previews.value.length) % previews.value.length
+}
+
+function selectPreview(index: number) {
+  activeIndex.value = index
+}
+
+onMounted(() => {
+  autoplayTimer = window.setInterval(() => {
+    if (!paused.value && previews.value.length > 1) {
+      nextPreview()
+    }
+  }, 6500)
 })
 
-function selectAlbum(album: GalleryAlbum) {
-  selectedAlbum.value = album
-}
-
-function closePreview() {
-  selectedAlbum.value = null
-}
-
-function albumUrl(album: GalleryAlbum) {
-  return `${galleryBaseUrl}/albuns/${album.slug}`
-}
+onBeforeUnmount(() => {
+  if (autoplayTimer) window.clearInterval(autoplayTimer)
+})
 </script>
 
 <template>
   <section id="galeria" class="institutional-gallery-section">
     <div class="institutional-gallery-container">
-      <header class="institutional-gallery-heading">
-        <div class="gallery-heading-copy">
-          <span class="gallery-heading-icon" aria-hidden="true">▣</span>
-          <div>
-            <span class="gallery-eyebrow">Memórias e registros</span>
-            <h2>Galeria</h2>
-            <p>Registros que contam nossa história e mostram o impacto da robótica. Confira fotos de eventos, competições, oficinas, visitas às escolas e premiações.</p>
+      <div class="gallery-showcase-grid">
+        <div class="gallery-showcase-copy">
+          <span class="gallery-eyebrow">Registros da RAS</span>
+          <h2>Galeria</h2>
+          <p>Projetos, eventos, competições e momentos que fazem parte da nossa trajetória.</p>
+
+          <a
+            v-if="galleryUrl"
+            class="gallery-primary-cta"
+            :href="galleryUrl"
+          >
+            Ver galeria completa <span aria-hidden="true">→</span>
+          </a>
+
+          <span
+            v-else
+            class="gallery-primary-cta gallery-primary-cta--disabled"
+            aria-disabled="true"
+            title="Destino da galeria ainda não configurado"
+          >
+            Ver galeria completa <span aria-hidden="true">→</span>
+          </span>
+        </div>
+
+        <div
+          class="gallery-showcase-visual"
+          @mouseenter="paused = true"
+          @mouseleave="paused = false"
+        >
+          <div class="gallery-showcase-frame">
+            <img
+              v-if="activePreview"
+              :src="activePreview.src"
+              :alt="activePreview.alt"
+              class="gallery-showcase-image"
+            />
+
+            <div v-else class="gallery-showcase-placeholder">
+              <span>Adicione fotos em <b>src/assets/gallery-preview/</b></span>
+            </div>
+
+            <template v-if="previews.length > 1">
+              <button
+                type="button"
+                class="gallery-showcase-arrow gallery-showcase-arrow--left"
+                aria-label="Foto anterior"
+                @click="previousPreview"
+              >
+                ←
+              </button>
+
+              <button
+                type="button"
+                class="gallery-showcase-arrow gallery-showcase-arrow--right"
+                aria-label="Próxima foto"
+                @click="nextPreview"
+              >
+                →
+              </button>
+            </template>
+          </div>
+
+          <div v-if="previews.length" class="gallery-showcase-navigation">
+            <span class="gallery-showcase-counter">
+              <strong>{{ String(activeIndex + 1).padStart(2, '0') }}</strong>
+              <span>/</span>
+              <span>{{ String(previews.length).padStart(2, '0') }}</span>
+            </span>
+
+            <div v-if="previews.length > 1" class="gallery-showcase-dots" aria-label="Fotos da galeria">
+              <button
+                v-for="(_, index) in previews"
+                :key="index"
+                type="button"
+                :class="{ active: index === activeIndex }"
+                :aria-label="`Mostrar foto ${index + 1}`"
+                @click="selectPreview(index)"
+              />
+            </div>
           </div>
         </div>
-      </header>
-
-      <div class="gallery-filter-row" aria-label="Filtrar galeria">
-        <button
-          v-for="filter in filters"
-          :key="filter"
-          type="button"
-          :class="{ active: activeFilter === filter }"
-          @click="activeFilter = filter"
-        >
-          {{ filter }}
-        </button>
-      </div>
-
-      <div class="gallery-albums-grid">
-        <article v-for="album in visibleAlbums" :key="album.id" class="gallery-album-card">
-          <button
-            type="button"
-            class="gallery-album-media"
-            :class="`tone-${album.tone}`"
-            :aria-label="`Abrir prévia de ${album.title}`"
-            @click="selectAlbum(album)"
-          >
-            <div class="gallery-album-main-placeholder">
-              <span>{{ album.category }}</span>
-            </div>
-
-            <div class="gallery-album-thumbs" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
-          </button>
-
-          <div class="gallery-album-copy">
-            <span class="gallery-album-category">{{ album.category }}</span>
-            <h3>{{ album.title }}</h3>
-            <div class="gallery-album-meta">
-              <span>▧ {{ album.count }} fotos</span>
-              <span>▣ {{ album.date }}</span>
-            </div>
-            <p>{{ album.description }}</p>
-            <a class="gallery-open-album" :href="albumUrl(album)">Ver álbum <span aria-hidden="true">→</span></a>
-          </div>
-        </article>
-      </div>
-
-      <div class="gallery-help-note">
-        <span aria-hidden="true">▧</span>
-        <p>Clique na capa para uma prévia rápida ou em “Ver álbum” para abrir a galeria completa.</p>
       </div>
     </div>
-
-    <aside v-if="selectedAlbum" class="gallery-preview-card" aria-live="polite">
-      <header>
-        <strong>▧ Prévia do álbum</strong>
-        <button type="button" aria-label="Fechar prévia" @click="closePreview">×</button>
-      </header>
-      <div class="gallery-preview-media" :class="`tone-${selectedAlbum.tone}`">
-        <span>{{ selectedAlbum.category }}</span>
-        <a :href="albumUrl(selectedAlbum)" aria-label="Abrir álbum completo">›</a>
-      </div>
-      <footer>
-        <span>Prévia · {{ selectedAlbum.count }} fotos</span>
-        <a :href="albumUrl(selectedAlbum)">Abrir álbum →</a>
-      </footer>
-    </aside>
   </section>
 </template>
