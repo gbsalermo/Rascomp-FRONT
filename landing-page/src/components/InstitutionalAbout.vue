@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { HOME_MEDIA } from '../content/homeMedia'
 
 type AboutTab = 'ieee' | 'ras'
 
@@ -12,42 +11,55 @@ type AboutSlide = {
   alt: string
 }
 
+const aboutImageModules = import.meta.glob(
+  '../assets/about/*.{jpg,jpeg,png,webp,avif}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default'
+  }
+) as Record<string, string>
+
 const activeTab = ref<AboutTab>('ieee')
 const activePhoto = ref(0)
 let photoTimer: number | undefined
 
-const photos = computed<AboutSlide[]>(() => [
-  {
-    id: 'team',
-    label: 'Equipe RAS UFRB',
-    detail: 'Membros reunidos em atividades, projetos e eventos do capítulo.',
-    src: HOME_MEDIA.about.team.src,
-    alt: HOME_MEDIA.about.team.alt
-  },
-  {
-    id: 'projects',
-    label: 'Projetos e oficinas',
-    detail: 'Aprendizado prático, prototipagem e formação tecnológica.',
-    src: HOME_MEDIA.about.projects.src,
-    alt: HOME_MEDIA.about.projects.alt
-  },
-  {
-    id: 'extension',
-    label: 'Extensão e comunidade',
-    detail: 'Ações que aproximam robótica, ciência e tecnologia da comunidade.',
-    src: HOME_MEDIA.about.extension.src,
-    alt: HOME_MEDIA.about.extension.alt
-  },
-  {
-    id: 'achievements',
-    label: 'Competições e conquistas',
-    detail: 'Experiências, resultados e momentos construídos em equipe.',
-    src: HOME_MEDIA.about.achievements.src,
-    alt: HOME_MEDIA.about.achievements.alt
-  }
-])
+function filenameToLabel(path: string) {
+  const filename = path.split('/').pop()?.replace(/\.[^.]+$/, '') || 'RAS UFRB'
 
-const activePhotoItem = computed(() => photos.value[activePhoto.value] || photos.value[0])
+  return filename
+    .replace(/^\d+[-_ ]*/, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+const photos = computed<AboutSlide[]>(() =>
+  Object.entries(aboutImageModules)
+    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB, 'pt-BR', { numeric: true }))
+    .map(([path, src], index) => {
+      const label = filenameToLabel(path)
+
+      return {
+        id: `about-photo-${index}-${path}`,
+        label,
+        detail: 'Registro de projetos, eventos, competições e ações da IEEE RAS UFRB.',
+        src,
+        alt: `${label} — IEEE RAS UFRB`
+      }
+    })
+)
+
+const emptyPhoto: AboutSlide = {
+  id: 'about-empty',
+  label: 'RAS UFRB',
+  detail: 'Adicione imagens em src/assets/about para alimentar este carrossel automaticamente.',
+  src: '',
+  alt: 'Área de imagens institucionais da IEEE RAS UFRB'
+}
+
+const activePhotoItem = computed(
+  () => photos.value[activePhoto.value] || photos.value[0] || emptyPhoto
+)
 
 const content = computed(() => {
   if (activeTab.value === 'ieee') {
@@ -83,17 +95,21 @@ function goToPhoto(index: number) {
 }
 
 function previousPhoto() {
+  if (photos.value.length <= 1) return
   activePhoto.value = (activePhoto.value - 1 + photos.value.length) % photos.value.length
   restartPhotoTimer()
 }
 
 function nextPhoto() {
+  if (photos.value.length <= 1) return
   activePhoto.value = (activePhoto.value + 1) % photos.value.length
   restartPhotoTimer()
 }
 
 function startPhotoTimer() {
   stopPhotoTimer()
+  if (photos.value.length <= 1) return
+
   photoTimer = window.setInterval(() => {
     activePhoto.value = (activePhoto.value + 1) % photos.value.length
   }, 7000)
@@ -144,10 +160,22 @@ onBeforeUnmount(stopPhotoTimer)
               <p>{{ activePhotoItem.detail }}</p>
             </div>
 
-            <button class="about-photo-arrow previous" type="button" aria-label="Imagem anterior" @click="previousPhoto">←</button>
-            <button class="about-photo-arrow next" type="button" aria-label="Próxima imagem" @click="nextPhoto">→</button>
+            <button
+              v-if="photos.length > 1"
+              class="about-photo-arrow previous"
+              type="button"
+              aria-label="Imagem anterior"
+              @click="previousPhoto"
+            >←</button>
+            <button
+              v-if="photos.length > 1"
+              class="about-photo-arrow next"
+              type="button"
+              aria-label="Próxima imagem"
+              @click="nextPhoto"
+            >→</button>
 
-            <div class="about-photo-dots" aria-label="Selecionar imagem">
+            <div v-if="photos.length > 1" class="about-photo-dots" aria-label="Selecionar imagem">
               <button
                 v-for="(photo, index) in photos"
                 :key="photo.id"
