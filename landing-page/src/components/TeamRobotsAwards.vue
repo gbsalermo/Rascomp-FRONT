@@ -78,9 +78,9 @@ const awards: Award[] = [
     id: 2,
     place: 'Campeão',
     title: 'ERBASE — Follow Line',
-    event: 'ERBASE · Categoria Follow Line',
-    description: 'Título conquistado pela equipe na categoria Follow Line durante a ERBASE.',
-    year: '—',
+    event: 'ERBASE 2025 · Categoria Follow Line',
+    description: 'Título conquistado pela equipe na categoria Follow Line durante a ERBASE 2025.',
+    year: '2025',
     tone: 'gold'
   },
   {
