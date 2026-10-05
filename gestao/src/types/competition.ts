@@ -25,6 +25,17 @@ export interface Competition {
   dataCadastro?: string
 }
 
+export interface RegistrationLot {
+  id?: number
+  competitionId?: number
+  nome: string
+  dataInicio: string
+  dataFim: string
+  ativo?: boolean
+  atual?: boolean
+  dataCadastro?: string
+}
+
 export interface CompetitionRegistrationWindowChange {
   id?: number
   competitionId: number
