@@ -250,8 +250,22 @@ onBeforeUnmount(stopPhotoTimer)
             </div>
 
             <div class="about-actions">
-              <a href="#eventos" class="about-primary-link">Conheça nossas ações <span aria-hidden="true">→</span></a>
-              <a href="#equipe" class="about-secondary-link">Ver equipe</a>
+              <a
+                v-if="activeTab === 'ieee'"
+                href="https://www.ieee.org/"
+                class="about-primary-link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Veja mais <span aria-hidden="true">↗</span>
+              </a>
+
+              <template v-else>
+                <a href="#eventos" class="about-primary-link">
+                  Conheça nossas ações <span aria-hidden="true">→</span>
+                </a>
+                <a href="#equipe" class="about-secondary-link">Ver equipe</a>
+              </template>
             </div>
           </div>
         </div>
