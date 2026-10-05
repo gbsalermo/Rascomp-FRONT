@@ -285,66 +285,6 @@
   text-align: center;
 }
 
-.team-robots-mosaic-block {
-  margin-top: 18px;
-  overflow: hidden;
-  border: 1px solid #e8e3eb;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 16px 40px rgba(49, 33, 55, .045);
-}
-
-.team-robots-mosaic-heading {
-  padding: 14px 16px 10px;
-}
-
-.team-robots-kicker {
-  display: inline-flex;
-  padding: 6px 9px;
-  border-radius: 7px;
-  background: #6b1f8a;
-  color: #fff;
-  font-size: .64rem;
-  font-weight: 900;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-
-.team-robots-mosaic {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 4px;
-  padding: 0 4px 4px;
-}
-
-.team-robot-mosaic-item {
-  height: clamp(190px, 22vw, 280px);
-  min-height: 0;
-  margin: 0;
-  overflow: hidden;
-  border-radius: 8px;
-  background: #f3eef5;
-}
-
-.team-robot-mosaic-item img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.team-robots-mosaic-placeholder {
-  display: grid;
-  min-height: 220px;
-  place-items: center;
-  margin: 0 4px 4px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #2d1f35, #4b3256);
-  color: rgba(255, 255, 255, .78);
-  font-size: .78rem;
-  text-align: center;
-}
-
 .team-awards-timeline {
   position: relative;
   display: grid;
@@ -487,15 +427,6 @@
     width: 300px;
   }
 
-  .team-robots-mosaic {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .team-robot-mosaic-item {
-    height: 210px;
-    min-height: 0;
-  }
-
   .team-award-row {
     grid-template-columns: 40px 1fr auto;
     gap: 10px;
@@ -533,21 +464,6 @@
 
   .team-volunteer-slide {
     width: 240px;
-  }
-
-  .team-robots-mosaic-block {
-    border-radius: 16px;
-  }
-
-  .team-robots-mosaic {
-    grid-template-columns: 1fr 1fr;
-    gap: 3px;
-    padding: 0 3px 3px;
-  }
-
-  .team-robot-mosaic-item {
-    height: 165px;
-    min-height: 0;
   }
 
   .team-awards-block,
