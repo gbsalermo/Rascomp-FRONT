@@ -495,8 +495,15 @@
   gap: 8px;
   padding: 0 18px;
   border-radius: 9px;
+  font-family: inherit;
   font-size: .69rem;
   font-weight: 900;
+}
+
+button.event-primary-action,
+button.event-secondary-action {
+  border: 0;
+  cursor: pointer;
 }
 
 .event-primary-action {
