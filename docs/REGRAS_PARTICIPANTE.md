@@ -115,6 +115,33 @@ UserAccount → Competitor → Team
 
 Estar na equipe não significa estar inscrito em uma Competition.
 
+
+## 2.4 Logo pública da equipe — requisito para a experiência pública
+
+A Team poderá possuir uma **logo/foto opcional** enviada pelo líder da equipe.
+
+Objetivo:
+
+```text
+Gestão / Portal do Participante
+→ líder envia logo da equipe
+→ backend/storage persiste o arquivo
+→ endpoint público de equipes expõe a URL
+→ Landing usa a logo na section Competição
+```
+
+Regras:
+
+- o envio da logo **não é obrigatório** para criar a equipe ou competir;
+- apenas o líder, DEV ou fluxo administrativo autorizado pode alterar a logo;
+- formatos previstos: JPEG, PNG ou WEBP;
+- a imagem deve ser tratada como mídia pública institucional da Team;
+- se a equipe não possuir logo, a Landing exibe o **logo/robô genérico do RasComp**;
+- trocar a logo não altera inscrições, responsáveis, resultados ou histórico competitivo;
+- a URL pública deve ser exposta no `PublicTeamDTO` ou contrato equivalente.
+
+Na V1-BETA A, a Landing já está preparada para consumir campos como `logoUrl` / `teamLogoUrl` e usa `/rascomp-logo.webp` como fallback.
+
 ---
 
 # 3. Minha inscrição
