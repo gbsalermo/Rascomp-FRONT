@@ -924,7 +924,7 @@ function handleRegistration() {
               </footer>
             </section>
 
-            <div v-else class="competition-public-empty">
+            <div v-if="!bracketRounds.length" class="competition-public-empty">
               <strong>Chave ainda não publicada.</strong>
               <span>A organização publicará os confrontos quando estiverem definidos.</span>
             </div>
