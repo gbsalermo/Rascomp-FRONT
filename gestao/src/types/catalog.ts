@@ -6,6 +6,7 @@ export interface Team {
   responsibleUserId?: number
   responsibleUserNome?: string
   responsibleUserEmail?: string
+  logoUrl?: string
   ativo?: boolean
   [key: string]: unknown
 }
