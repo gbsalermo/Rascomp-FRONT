@@ -423,6 +423,12 @@ Comportamento atual:
   - data/hora;
   - pista;
   - próxima batalha;
+- resultado público passa a ser consolidado por categoria:
+  - enquanto o pódio estiver incompleto, mantém ranking/chave/histórico operacional;
+  - quando 1º, 2º e 3º estiverem definidos, a categoria troca automaticamente para o pódio oficial;
+  - a troca ocorre independentemente por categoria;
+  - o histórico continua existente no backend/Gestão, apenas deixa de ser o destaque público;
+  - endpoint público `/api/v1/public/podios?competitionId=...` expõe somente dados necessários ao pódio;
 - seleção de chave deixa de usar dropdown e passa a usar botões por categoria;
 - equipe sem logo usa fallback visual próprio do RasComp;
 - layout possui breakpoints específicos para tablet/mobile.
