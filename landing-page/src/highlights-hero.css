@@ -99,7 +99,7 @@
   max-width: 680px;
   margin: 0;
   color: #fff;
-  font-size: clamp(2.45rem, 4.25vw, 4.35rem);
+  font-size: clamp(2.2rem, 3.65vw, 3.75rem);
   line-height: 1;
   letter-spacing: -.05em;
 }
@@ -271,9 +271,46 @@
   line-height: 1.35;
 }
 
+
+@media(min-width: 901px) {
+  .highlights-stage {
+    min-height: clamp(500px, calc(100vh - 185px), 620px);
+  }
+
+  .hero-quick-card {
+    min-height: 112px;
+    gap: 16px;
+    padding: 18px 20px;
+  }
+
+  .hero-quick-icon {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+  }
+
+  .hero-quick-icon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .hero-quick-copy {
+    gap: 6px;
+  }
+
+  .hero-quick-copy strong {
+    font-size: 1.02rem;
+  }
+
+  .hero-quick-copy small {
+    font-size: .8rem;
+    line-height: 1.42;
+  }
+}
+
 @media(max-width: 1100px) {
   .highlights-copy h1 {
-    font-size: clamp(2.25rem, 4.5vw, 3.8rem);
+    font-size: clamp(2.1rem, 3.8vw, 3.45rem);
   }
 }
 
@@ -326,8 +363,8 @@
   }
 
   .highlights-copy h1 {
-    font-size: clamp(2.05rem, 10.6vw, 3.1rem);
-    line-height: 1;
+    font-size: clamp(1.75rem, 8.8vw, 2.45rem);
+    line-height: 1.04;
   }
 
   .highlights-copy p {
@@ -374,7 +411,7 @@
   }
 
   .highlights-copy h1 {
-    font-size: clamp(1.95rem, 10.8vw, 2.7rem);
+    font-size: clamp(1.7rem, 9vw, 2.3rem);
   }
 
   .hero-quick-links {
