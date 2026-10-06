@@ -1,6 +1,6 @@
 # RasComp — Índice da Documentação
 
-Última revisão: **03/10/2026**
+Última revisão: **05/10/2026**
 
 Este é o ponto de entrada para qualquer pessoa ou IA que precise entender ou continuar o RasComp.
 
@@ -30,7 +30,7 @@ A documentação foi revisada para evitar roadmaps paralelos, snapshots de demon
    → checkpoint vivo do backend
 ```
 
-Estado oficial em 03/10/2026:
+Estado oficial em 05/10/2026:
 
 ```text
 ETAPAS 0–4    ✅ concluídas / validadas
@@ -105,7 +105,7 @@ O backend é fonte de verdade de autorização, ownership e regras/resultados co
 
 ## `ETAPAS_POS_PROJETO.md`
 
-Planejamento único do ciclo. Define o estado das ETAPAS 0–16 e o trilho prioritário V1 Beta. As ETAPAS 0–4 estão concluídas; o próximo trabalho é V1-BETA A — Landing pública.
+Planejamento único do ciclo. Define o estado das ETAPAS 0–16 e o trilho prioritário V1 Beta. As ETAPAS 0–4 e a V1-BETA A estão concluídas; o próximo trabalho é discutir e aprovar a V1-BETA B antes da implementação.
 
 ## `DOSSIE_PROJETO_RASCOMP.md`
 
