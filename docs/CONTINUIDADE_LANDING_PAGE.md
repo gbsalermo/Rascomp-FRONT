@@ -1081,3 +1081,14 @@ Landing Checks #21
 Durante o fechamento, o primeiro run do backend revelou testes antigos desalinhados com regras já consolidadas. Os testes foram corrigidos para refletir os contratos atuais — sem relaxar as regras de negócio — e a suíte completa voltou a ficar verde.
 
 Com validação manual + CI final verde, a V1-BETA A está autorizada para merge em `main`.
+
+
+## Ajustes mobile pós-validação externa — 06/10/2026
+
+Após validar a Landing por Quick Tunnel em smartphone real:
+
+- logo IEEE RAS do header aumentada no breakpoint mobile, removendo a regressão específica de <=390 px;
+- Hero competitivo normalizado para a mesma altura-base dos demais destaques no mobile;
+- botão global "Voltar ao topo" passa a aparecer somente após o usuário sair da região inicial, evitando sobreposição com a seta direita do carrossel de Hero.
+
+Objetivo: preservar o layout desktop e corrigir somente as regressões observadas em aparelho real.

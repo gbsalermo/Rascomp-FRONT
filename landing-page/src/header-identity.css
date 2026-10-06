@@ -25,17 +25,18 @@
 
 @media(max-width:620px) {
   .institutional-brand-logo {
-    width: 76px;
-    height: 60px;
-    transform: scale(1.06);
+    width: 104px;
+    height: 68px;
+    transform: scale(1.12);
     transform-origin: left center;
   }
 }
 
 @media(max-width:390px) {
   .institutional-brand-logo {
-    width: 68px;
-    height: 56px;
-    transform: none;
+    width: 96px;
+    height: 64px;
+    transform: scale(1.12);
+    transform-origin: left center;
   }
 }

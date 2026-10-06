@@ -41,7 +41,12 @@ const registrationOpen = computed(() =>
   competitions.value.some((item) => item.status === 'INSCRICOES_ABERTAS')
 )
 const registrationNoticeVisible = ref(false)
+const backToTopVisible = ref(false)
 let registrationNoticeTimer: number | undefined
+
+function updateBackToTopVisibility() {
+  backToTopVisible.value = window.scrollY > Math.max(360, window.innerHeight * 0.55)
+}
 
 function showRegistrationUnavailable() {
   registrationNoticeVisible.value = true
@@ -183,6 +188,9 @@ async function updateBracket(value: number) {
 }
 
 onMounted(async () => {
+  updateBackToTopVisibility()
+  window.addEventListener('scroll', updateBackToTopVisibility, { passive: true })
+
   if (isNotFound) return
 
   await bootstrap()
@@ -196,6 +204,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('scroll', updateBackToTopVisibility)
   if (timer) clearInterval(timer)
   if (registrationNoticeTimer) window.clearTimeout(registrationNoticeTimer)
 })
@@ -285,6 +294,11 @@ onBeforeUnmount(() => {
       </aside>
     </Transition>
 
-    <a class="global-back-to-top" href="#top" aria-label="Voltar ao topo">↑</a>
+    <a
+      v-show="backToTopVisible"
+      class="global-back-to-top"
+      href="#top"
+      aria-label="Voltar ao topo"
+    >↑</a>
   </div>
 </template>
