@@ -1,6 +1,6 @@
 # V1-BETA B — Bloco 1 — Identidade e recuperação de acesso
 
-Status em 06/10/2026: **implementado; validação manual 12/15 concluída**.
+Status em 06/10/2026: **✅ IMPLEMENTADO E VALIDADO — 15/15 testes manuais concluídos**.
 
 Branch cross-repo:
 
@@ -8,7 +8,7 @@ Branch cross-repo:
 v1-beta-b-identidade-cloud
 ```
 
-Não fazer merge em `main` antes da validação manual.
+Bloco 1 liberado após validação manual completa; o avanço seguinte é a homologação remota.
 
 ## Escopo fechado
 
@@ -88,9 +88,9 @@ Bateria manual — checkpoint 06/10/2026:
 10. ✅ copiar do console o link `/redefinir-senha?token=...`;
 11. ✅ definir nova senha e entrar com ela;
 12. ✅ confirmar que o link de reset não pode ser reutilizado;
-13. ⏳ confirmar que a senha antiga deixou de funcionar;
-14. ⏳ confirmar que sessões/JWT anteriores ao reset deixam de autenticar;
-15. ⏳ solicitar dois links do mesmo tipo respeitando o cooldown e confirmar que somente o mais novo permanece válido.
+13. ✅ confirmar que a senha antiga deixou de funcionar;
+14. ✅ confirmar que sessões/JWT anteriores ao reset deixam de autenticar;
+15. ✅ solicitar dois links do mesmo tipo respeitando o cooldown e confirmar que somente o mais novo permanece válido.
 
 ## Fora deste bloco
 
@@ -104,4 +104,4 @@ Ainda não implementado neste checkpoint:
 - rate limiting/WAF específico da autenticação;
 - abertura de inscrições reais.
 
-Depois da aprovação manual deste bloco, o próximo passo é **homologação remota**: publicar a instalação local por Cloudflare Tunnel, protegida por Cloudflare Access, sem transformar o ambiente em produção.
+Com o Bloco 1 validado, o próximo passo é **homologação remota**: publicar a instalação local por Cloudflare Tunnel, protegida por Cloudflare Access, sem transformar o ambiente em produção.
