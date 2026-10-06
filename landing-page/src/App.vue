@@ -38,7 +38,7 @@ const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html'
 const currentCompetition = computed(() => competitions.value.find((item) => item.id === competitionId.value))
 const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
 const registrationOpen = computed(() =>
-  competitions.value.some((item) => item.status === 'INSCRICOES_ABERTAS')
+  currentCompetition.value?.status === 'INSCRICOES_ABERTAS'
 )
 const registrationNoticeVisible = ref(false)
 const backToTopVisible = ref(false)
@@ -84,14 +84,9 @@ async function bootstrap() {
     teams.value = teamList
     categories.value = categoryList
 
-    const focus =
-      competitionList.find(
-        (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
-      ) ||
-      competitionList.find((item: any) => item.status === 'EM_ANDAMENTO') ||
-      competitionList.find((item: any) => item.status === 'INSCRICOES_ABERTAS') ||
-      competitionList.find((item: any) => item.status === 'INSCRICOES_ENCERRADAS') ||
-      competitionList[0]
+    const focus = competitionList.find(
+      (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
+    )
 
     competitionId.value = focus?.id
     await refreshCompetition()
@@ -100,6 +95,18 @@ async function bootstrap() {
   } finally {
     loading.value = false
   }
+}
+
+async function syncPublishedCompetition() {
+  const competitionList = await api.competitions()
+  competitions.value = competitionList
+
+  const published = competitionList.find(
+    (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
+  )
+
+  competitionId.value = published?.id
+  await refreshCompetition()
 }
 
 async function refreshCompetition() {
@@ -197,9 +204,7 @@ onMounted(async () => {
   const refreshMs = Number(import.meta.env.VITE_REFRESH_MS || 20000)
 
   timer = window.setInterval(() => {
-    if (publicCompetitionStatuses.includes(currentCompetition.value?.status)) {
-      refreshCompetition().catch(() => undefined)
-    }
+    syncPublishedCompetition().catch(() => undefined)
   }, refreshMs)
 })
 

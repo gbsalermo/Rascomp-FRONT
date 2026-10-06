@@ -222,6 +222,15 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     return updated
   }
 
+  async function clearCurrent() {
+    if (!auth.isDev) return
+    await adminApi.clearCurrentCompetition()
+    competitions.value = competitions.value.map((item) => ({
+      ...item,
+      vigente: false
+    }))
+  }
+
   async function load(force = false) {
     if (competitions.value.length && !force) return competitions.value
     loading.value = true
@@ -248,6 +257,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     selectedCompetition,
     select,
     defineCurrent,
+    clearCurrent,
     load
   }
 })

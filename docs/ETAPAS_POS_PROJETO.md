@@ -2670,3 +2670,12 @@ Landing Checks #21
 Durante o fechamento, o primeiro run do backend revelou testes antigos desalinhados com regras já consolidadas. Os testes foram corrigidos para refletir os contratos atuais — sem relaxar as regras de negócio — e a suíte completa voltou a ficar verde.
 
 Com validação manual + CI final verde, a V1-BETA A está autorizada para merge em `main`.
+
+
+### Regra de publicação competitiva — 06/10/2026
+
+- ausência de competição vigente é estado válido;
+- GESTAO deve continuar navegável sem edição vigente;
+- foco DEV é local e não publica uma edição;
+- Landing e novas inscrições só enxergam a competição explicitamente vigente quando ela estiver em status público;
+- remover a vigente devolve o site ao modo institucional sem apagar a edição/histórico.

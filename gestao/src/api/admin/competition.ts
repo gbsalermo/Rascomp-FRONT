@@ -21,6 +21,8 @@ export const adminCompetitionApi = {
     http.get<Competition | undefined>('/api/v1/competicoes/vigente').then((r) => r.status === 204 ? undefined : r.data),
   setCurrentCompetition: (id: number) =>
     http.patch<Competition>(`/api/v1/competicoes/${id}/vigente`).then((r) => r.data),
+  clearCurrentCompetition: () =>
+    http.delete('/api/v1/competicoes/vigente').then(() => undefined),
   extendCompetitionRegistrationWindow: (id: number, payload: { novaDataFim: string; motivo: string }) =>
     http.post<CompetitionRegistrationWindowChange>(`/api/v1/competicoes/${id}/prorrogar-inscricoes`, payload).then((r) => r.data),
   competitionRegistrationWindowHistory: (id: number) =>

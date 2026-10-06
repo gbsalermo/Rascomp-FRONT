@@ -2007,3 +2007,29 @@ Enquanto a conta estiver pendente, a UI oferece **Reenviar convite**.
 O DEV nunca recebe, define ou visualiza a senha definitiva da conta alheia.
 
 A única exceção é o primeiro DEV do banco novo, criado por bootstrap de infraestrutura.
+
+
+---
+
+## Operação sem competição vigente — 06/10/2026
+
+Estado suportado explicitamente:
+
+```text
+DEV
+→ mantém foco local mesmo quando não existe vigente
+→ pode Definir vigente
+→ pode Retirar vigente
+
+GESTAO
+→ autentica e navega por todas as telas permitidas
+→ sem vigente, telas competitivas entram em estado vazio
+→ ações que exigem contexto ficam indisponíveis
+→ nenhuma edição é escolhida como fallback
+
+LANDING
+→ somente competição vigente + ativa + status público
+→ sem vigente pública, permanece institucional
+→ não usa primeira competição, histórica ou futura como fallback
+→ polling reconsulta o contexto publicado para também retirar uma competição da tela quando o DEV remover a vigente
+```
