@@ -342,3 +342,30 @@ Princípios já aceitos para discussão:
 - escolher provedor de e-mail antes da implementação;
 - acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
 - modo local e Cloudflare Tunnel permanecem como contingência oficial.
+
+
+### Checkpoint automatizado final da V1-BETA A — 05/10/2026
+
+Validação executada no PR de fechamento:
+
+```text
+Backend Tests #527
+→ 211 testes
+→ 0 falhas
+→ 0 erros
+→ 0 skipped
+→ BUILD SUCCESS
+→ portal-testdata ✅
+
+Frontend Checks #233
+→ Gestão typecheck ✅
+→ Gestão build ✅
+
+Landing Checks #21
+→ Landing typecheck ✅
+→ Landing build ✅
+```
+
+Durante o fechamento, o primeiro run do backend revelou testes antigos desalinhados com regras já consolidadas. Os testes foram corrigidos para refletir os contratos atuais — sem relaxar as regras de negócio — e a suíte completa voltou a ficar verde.
+
+Com validação manual + CI final verde, a V1-BETA A está autorizada para merge em `main`.
