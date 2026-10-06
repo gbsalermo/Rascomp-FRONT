@@ -103,13 +103,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function register(
-    payload: { nome: string; email: string; senha: string; telefone?: string },
-    remember = true
+    payload: { nome: string; email: string; senha: string; telefone?: string }
   ) {
     loading.value = true
     try {
-      const response = await authApi.register(payload, remember)
-      applyAuth(response, remember)
+      return await authApi.register(payload)
     } finally {
       loading.value = false
     }
