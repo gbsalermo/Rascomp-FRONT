@@ -1,6 +1,6 @@
 # V1-BETA B — Bloco 1 — Identidade e recuperação de acesso
 
-Status em 06/10/2026: **implementado em branch e aguardando validação manual**.
+Status em 06/10/2026: **implementado; validação manual 12/15 concluída**.
 
 Branch cross-repo:
 
@@ -74,23 +74,23 @@ JWT_SECRET=<chave local com 32+ bytes>
 
 Com `EMAIL_PROVIDER=log`, o conteúdo do e-mail e o link aparecem no console do backend. Isso permite validar o fluxo inteiro antes de configurar domínio/API do provedor real.
 
-Bateria manual:
+Bateria manual — checkpoint 06/10/2026:
 
-1. criar uma conta nova de participante;
-2. confirmar que o cadastro termina na tela de verificação e não cria sessão;
-3. tentar login antes da confirmação e verificar bloqueio;
-4. copiar do console o link `/verificar-email?token=...`;
-5. abrir o link e confirmar o e-mail;
-6. entrar normalmente com a conta;
-7. tentar reutilizar o mesmo link e confirmar rejeição;
-8. solicitar recuperação de senha;
-9. confirmar que a tela usa resposta genérica;
-10. copiar do console o link `/redefinir-senha?token=...`;
-11. definir nova senha e entrar com ela;
-12. confirmar que o link de reset não pode ser reutilizado;
-13. confirmar que a senha antiga deixou de funcionar;
-14. confirmar que sessões/JWT anteriores ao reset deixam de autenticar;
-15. solicitar dois links do mesmo tipo respeitando o cooldown e confirmar que somente o mais novo permanece válido.
+1. ✅ criar uma conta nova de participante;
+2. ✅ confirmar que o cadastro termina na tela de verificação e não cria sessão;
+3. ✅ tentar login antes da confirmação e verificar bloqueio;
+4. ✅ copiar do console o link `/verificar-email?token=...`;
+5. ✅ abrir o link e confirmar o e-mail;
+6. ✅ entrar normalmente com a conta;
+7. ✅ tentar reutilizar o mesmo link e confirmar rejeição;
+8. ✅ solicitar recuperação de senha;
+9. ✅ confirmar que a tela usa resposta genérica;
+10. ✅ copiar do console o link `/redefinir-senha?token=...`;
+11. ✅ definir nova senha e entrar com ela;
+12. ✅ confirmar que o link de reset não pode ser reutilizado;
+13. ⏳ confirmar que a senha antiga deixou de funcionar;
+14. ⏳ confirmar que sessões/JWT anteriores ao reset deixam de autenticar;
+15. ⏳ solicitar dois links do mesmo tipo respeitando o cooldown e confirmar que somente o mais novo permanece válido.
 
 ## Fora deste bloco
 
