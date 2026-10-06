@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **05/10/2026**
+Última atualização: **06/10/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -27,7 +27,7 @@ docs/README.md
 ```text
 ETAPAS 0–4  ✅ concluídas / validadas
 V1-BETA A   ✅ concluída / validada — Landing pública
-V1-BETA B   ⏭️ próxima — discussão de identidade/e-mail + infraestrutura
+V1-BETA B   🚧 Bloco 1 implementado — identidade/e-mail/recuperação aguardando validação manual
 V1-BETA C   ⏳ acesso/inscrições reais
 V1-BETA D   ⏳ smoke + estabilização
 ```

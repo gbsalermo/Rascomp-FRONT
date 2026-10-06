@@ -79,7 +79,7 @@ ETAPA 4  ✅ CONCLUÍDA / VALIDADA — Consolidação funcional do MVP atual
 
 TRILHO PRIORITÁRIO — V1 BETA EM PRODUÇÃO
 V1-BETA A  ✅ CONCLUÍDA / VALIDADA — Landing pública finalizada
-V1-BETA B  ⏭️ PRÓXIMA — planejar identidade/e-mail + infraestrutura: cloud + banco + storage/secrets + observabilidade mínima
+V1-BETA B  🚧 EM ANDAMENTO — Bloco 1 identidade/e-mail implementado; aguardando validação manual antes de homologação/cloud
 V1-BETA C  ⏳ — Abertura controlada: cadastro/login + inscrições reais + acesso ao sistema
 V1-BETA D  ⏳ — Smoke de produção + estabilização inicial
 
@@ -100,7 +100,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening de segurança + preparação de carga
 ETAPA 15 ⏳ NÃO INICIADA — Validação final + testes de carga pré-competição
 ETAPA 16 ⚠️ REINTERPRETADA — consolidação/hardening da produção definitiva; não é mais o primeiro deploy
 
-**Próximo trabalho: discutir e aprovar o desenho da V1-BETA B antes de criar a branch da fase.**
+**Trabalho atual: validar manualmente o Bloco 1 da V1-BETA B (identidade/e-mail/recuperação). Após aprovação, seguir para homologação remota com Cloudflare Tunnel/Access e depois infraestrutura cloud.**
 
 A V1 Beta não encerra o roadmap. Ela cria uma linha estável de produção para divulgação, cadastro e inscrições enquanto o restante do produto continua evoluindo em ambiente não-prod.
 ---
