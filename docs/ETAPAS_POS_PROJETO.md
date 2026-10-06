@@ -822,7 +822,7 @@ A comunicação/avisos não bloqueia o fechamento desta etapa; ela entra formalm
 
 ## ETAPA 8 — Gestor de Mídia / CMS
 
-**Objetivo:** permitir alimentar o conteúdo público sem editar Vue nem realizar commit para cada mudança editorial.
+**Objetivo:** permitir alimentar e controlar a apresentação do conteúdo público sem editar Vue nem realizar commit para cada mudança editorial.
 
 Área editorial para MIDIA/DEV, com conceitos como:
 
@@ -832,11 +832,59 @@ A comunicação/avisos não bloqueia o fechamento desta etapa; ela entra formalm
 - publicação/despublicação;
 - ordem/destaque;
 - créditos e metadados;
-- imagens e mídia reutilizáveis.
+- imagens e mídia reutilizáveis;
+- **modo editorial global da Landing: INSTITUCIONAL | COMPETITIVO**.
+
+### Controle editorial do modo da Landing
+
+O Gestor de Mídia deve permitir que `MIDIA | DEV` alterem a apresentação pública entre:
+
+```text
+MODO INSTITUCIONAL
+→ Landing exibe somente conteúdo institucional/editorial
+→ conteúdo competitivo atual fica oculto da Home
+→ não altera Competition.vigente
+→ não altera status da competição
+→ não fecha/reabre inscrições
+→ não altera chaves, resultados, ranking ou operação
+
+MODO COMPETITIVO
+→ Landing pode exibir a Competition vigente quando ela também estiver ativa e em status público
+→ sem Competition vigente/publicável, a Landing permanece institucional
+```
+
+A configuração é **editorial e independente da semântica competitiva**. Seu objetivo é permitir retirar temporariamente informações competitivas da Landing — por revisão, correção, manutenção ou decisão de comunicação — sem desmontar o contexto operacional usado pela GESTAO.
+
+Requisitos previstos:
+
+- fonte de verdade no backend/MySQL, não em `localStorage` ou variável de build;
+- leitura pública do modo atual pela Landing;
+- alteração permitida somente a `MIDIA | DEV`;
+- mudança sem novo build/deploy;
+- registrar quem alterou e quando; justificativa pode ser incluída no histórico editorial;
+- a UI deve deixar claro que **MODO INSTITUCIONAL não pausa inscrições nem a competição**;
+- o modo `COMPETITIVO` nunca força publicação de competição inexistente, não vigente, inativa ou fora dos status públicos;
+- preservar o comportamento atual de segurança: ausência de vigente publicável sempre resulta em apresentação institucional.
+
+Modelo conceitual esperado:
+
+```text
+LandingPublicationMode
+├─ INSTITUTIONAL
+└─ COMPETITIVE
+
+Competition.vigente
+→ contexto esportivo/operacional
+
+LandingPublicationMode
+→ decisão editorial de exposição pública
+```
+
+Os dois conceitos não devem ser acoplados.
 
 Reutilizar `ObjectStorageService` + Cloudflare R2 quando aplicável. Não criar um terceiro mecanismo de upload.
 
-Esta etapa é parte do MVP porque hoje a permissão MIDIA existe, mas o site ainda não possui fluxo real de alimentação editorial.
+Esta etapa é parte do MVP porque hoje a permissão MIDIA existe, mas o site ainda não possui fluxo real de alimentação e controle editorial.
 
 ## ETAPA 9 — Landing + Galeria + conteúdo público real — ⚠️ SERÁ CONSOLIDADA/REPLANEJADA
 

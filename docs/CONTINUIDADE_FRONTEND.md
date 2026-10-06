@@ -553,6 +553,27 @@ Regras:
 
 Painel para conteúdo e mídia, reutilizando `ObjectStorageService`/R2.
 
+Decisão adicionada em 06/10/2026:
+
+```text
+LandingPublicationMode
+├─ INSTITUTIONAL
+└─ COMPETITIVE
+```
+
+`MIDIA | DEV` poderão alternar a Landing entre apresentação institucional e competitiva **sem alterar a Competition vigente**.
+
+Regras:
+
+- estado persistido pelo backend;
+- mudança auditável e sem deploy;
+- modo institucional esconde a apresentação competitiva pública;
+- inscrições/operação/status/chaves permanecem intactos;
+- modo competitivo só publica a competição vigente quando ela também for publicável;
+- ausência de competição vigente/publicável continua resultando em Landing institucional.
+
+Essa função pertence à ETAPA 8 e **não deve ser antecipada na V1-BETA B** apenas para resolver publicação cloud.
+
 ## ETAPA 13 — Regras, Ajuda e Segurança
 
 Derivar texto público do contrato competitivo, sem detalhes internos de implementação.
