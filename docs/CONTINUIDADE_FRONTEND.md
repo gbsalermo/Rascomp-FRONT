@@ -27,7 +27,7 @@ docs/README.md
 ```text
 ETAPAS 0–4  ✅ concluídas / validadas
 V1-BETA A   ✅ concluída / validada — Landing pública
-V1-BETA B   🚧 Bloco 1 ✅ validado · Bloco 2 homologação remota em implementação
+V1-BETA B   🚧 Bloco 1 ✅ · Landing remota ✅ · base cloud Workers/Container em preparação
 V1-BETA C   ⏳ acesso/inscrições reais
 V1-BETA D   ⏳ smoke + estabilização
 ```

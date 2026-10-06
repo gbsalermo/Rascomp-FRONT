@@ -281,3 +281,27 @@ Opcionalmente, se existir uma URL externa válida do Gestão/Participante, ela p
 Sem argumento, o build de homologação não aponta o CTA para localhost.
 
 Essa configuração é adequada para validar externamente a Landing sem antecipar a configuração definitiva de domínio, Access ou produção.
+
+
+## Checkpoint 06/10/2026 — Landing remota validada
+
+A Landing pública foi executada externamente com sucesso por Quick Tunnel:
+
+```text
+Internet
+→ Quick Tunnel público
+→ Landing preview local
+→ /api/v1/public/**
+→ Spring Boot local
+```
+
+Status:
+
+```text
+Landing externa                 ✅ VALIDADA
+API pública via Tunnel          ✅ VALIDADA
+Gestão/Portal local             ✅ VALIDADO
+Gestão/Portal Quick + Access    ⚠️ POST /auth/login recebe 401 na camada protegida
+```
+
+Esse achado não bloqueia a infraestrutura definitiva. A partir deste checkpoint, o foco muda para a base de deploy na conta Cloudflare temporária.
