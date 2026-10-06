@@ -43,6 +43,8 @@ trap cleanup EXIT INT TERM
 cd "$GESTAO_DIR"
 
 echo "==> Gerando build da aplicação Gestão/Participante..."
+echo "    Forçando API same-origin (/api) para evitar localhost no navegador remoto."
+export VITE_API_URL=""
 npm run build
 
 echo "==> Iniciando preview local em 127.0.0.1:$PREVIEW_PORT..."

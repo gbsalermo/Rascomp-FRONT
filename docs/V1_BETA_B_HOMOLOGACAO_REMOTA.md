@@ -63,8 +63,8 @@ Para dois ou mais testadores:
 O script:
 
 1. verifica se backend, npm, curl e cloudflared estão disponíveis;
-2. executa o build do `gestao/`;
-3. inicia `vite preview` somente em `127.0.0.1:4173`;
+2. força `VITE_API_URL` vazio no build para usar `/api` same-origin, ignorando configuração local que aponte para `localhost:8080`;
+3. executa o build do `gestao/` e inicia `vite preview` somente em `127.0.0.1:4173`;
 4. mantém o proxy `/api → 127.0.0.1:8080`;
 5. abre um Quick Tunnel;
 6. troca o Host enviado ao Vite por `localhost`, evitando liberar hosts arbitrários;
@@ -202,3 +202,48 @@ Bloco 2:
 2A Quick Tunnel protegido → preparado / aguardando validação externa
 2B Tunnel estável + Access → aguardando configuração da conta/domínio Cloudflare
 ```
+
+
+## Dois frontends na homologação
+
+O RasComp possui duas aplicações frontend independentes e elas permanecem separadas:
+
+```text
+Landing pública
+→ landing-page/
+
+Gestão + Portal do Participante
+→ gestao/
+```
+
+No Quick Tunnel inicial, primeiro validamos `gestao/` isoladamente.
+
+Na homologação estável, a topologia prevista é:
+
+```text
+homolog.<dominio>
+→ Landing
+→ proxy /api → Spring Boot local
+
+app-homolog.<dominio>
+→ Gestão/Participante
+→ proxy /api → Spring Boot local
+```
+
+A Landing recebe:
+
+```text
+VITE_GESTAO_URL=https://app-homolog.<dominio>
+```
+
+Assim o CTA **Inscrever-se** leva ao segundo frontend sem hardcode.
+
+Em produção, a separação continua:
+
+```text
+site público → Landing
+aplicação autenticada → Gestão/Participante
+API → backend
+```
+
+Cloudflare Access protege apenas os ambientes de homologação. O site público real não deve exigir Access.
