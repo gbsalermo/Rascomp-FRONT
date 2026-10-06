@@ -632,7 +632,7 @@ onMounted(load)
         <label>Data inicial<el-date-picker v-model="form.dataInicio" value-format="YYYY-MM-DD" type="date" /></label>
         <label>Data final<el-date-picker v-model="form.dataFim" value-format="YYYY-MM-DD" type="date" /></label>
         <label class="span-2">Status operacional
-          <el-input :model-value="statusLabels[form.status]" disabled />
+          <el-input :model-value="statusLabels[form.status || 'PLANEJADA']" disabled />
           <small class="muted">
             O status não é alterado pela edição comum. Use as ações operacionais da página:
             Abrir inscrições → Encerrar inscrições → Iniciar competição.
