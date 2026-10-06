@@ -180,7 +180,9 @@ const availablePersonalRegistrationCompetitions = computed(() => {
   const registeredCompetitionIds = new Set(
     personalRegistrations.value.map((item) => item.competitionId)
   )
-  return availableCompetitions.value.filter((item) => !registeredCompetitionIds.has(item.id))
+  return availableCompetitions.value.filter(
+    (item) => item.id != null && !registeredCompetitionIds.has(item.id)
+  )
 })
 
 const availableRobotRegistrationCompetitions = computed(() => {
@@ -189,7 +191,9 @@ const availableRobotRegistrationCompetitions = computed(() => {
       .filter((item) => ['PENDENTE', 'APROVADA'].includes(item.status))
       .map((item) => item.competitionId)
   )
-  return availableCompetitions.value.filter((item) => initiatedCompetitionIds.has(item.id))
+  return availableCompetitions.value.filter(
+    (item) => item.id != null && initiatedCompetitionIds.has(item.id)
+  )
 })
 
 const robotRegistrationUnlockMessage = computed(() => {
@@ -707,7 +711,7 @@ function categoryOptionLabel(category: Category) {
   return `${category.nome} · ${physical} · ${control}`
 }
 
-function syncRegistrationCompetitors() {
+function syncRegistrationCompetitors(_robotId?: number) {
   registrationForm.competitorIds = []
 }
 
