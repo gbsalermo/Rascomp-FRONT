@@ -78,8 +78,8 @@ ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 ETAPA 4  ✅ CONCLUÍDA / VALIDADA — Consolidação funcional do MVP atual
 
 TRILHO PRIORITÁRIO — V1 BETA EM PRODUÇÃO
-V1-BETA A  🚧 PRÓXIMA — Landing pública: finalização + polimento
-V1-BETA B  ⏳ — Infraestrutura de produção: cloud + banco + storage/secrets + observabilidade mínima
+V1-BETA A  ✅ CONCLUÍDA / VALIDADA — Landing pública finalizada
+V1-BETA B  ⏭️ PRÓXIMA — planejar identidade/e-mail + infraestrutura: cloud + banco + storage/secrets + observabilidade mínima
 V1-BETA C  ⏳ — Abertura controlada: cadastro/login + inscrições reais + acesso ao sistema
 V1-BETA D  ⏳ — Smoke de produção + estabilização inicial
 
@@ -100,7 +100,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening de segurança + preparação de carga
 ETAPA 15 ⏳ NÃO INICIADA — Validação final + testes de carga pré-competição
 ETAPA 16 ⚠️ REINTERPRETADA — consolidação/hardening da produção definitiva; não é mais o primeiro deploy
 
-**Próximo trabalho autorizado: V1-BETA A — finalizar e polir a Landing pública.**
+**Próximo trabalho: discutir e aprovar o desenho da V1-BETA B antes de criar a branch da fase.**
 
 A V1 Beta não encerra o roadmap. Ela cria uma linha estável de produção para divulgação, cadastro e inscrições enquanto o restante do produto continua evoluindo em ambiente não-prod.
 ---
@@ -160,6 +160,23 @@ Landing pública
 ```
 
 A URL de destino deve ser configurável por ambiente. Não hardcodar localhost nem domínio temporário.
+
+### Gate 0 — identidade e acesso antes da infraestrutura
+
+Antes do primeiro commit da V1-BETA B, definir e validar a arquitetura mínima de identidade:
+
+- verificação de posse do e-mail;
+- ativação de conta;
+- recuperação segura de senha;
+- política para reduzir contas falsas/descartáveis sem coletar dados pessoais desnecessários;
+- provedor de e-mail transacional;
+- tokens/códigos de uso único e expiração;
+- resposta anti-enumeração;
+- fluxo excepcional DEV auditado sem acesso à senha definitiva;
+- ambiente remoto de homologação acessível externamente já no início da fase;
+- preservação do modo local e da contingência via Cloudflare Tunnel.
+
+A decisão deve ser documentada antes da implementação.
 
 ## V1-BETA B — Infraestrutura de produção
 
@@ -2379,3 +2396,54 @@ A configuração de API, banco, storage e URLs deve permanecer por ambiente.
 Se VIA B for adotada no evento, o servidor local passa a ser a fonte de verdade durante aquela operação.
 
 Não manter VIA A e VIA B gravando em bancos independentes ao mesmo tempo sem mecanismo explícito de sincronização.
+
+
+## Fechamento formal da V1-BETA A — 05/10/2026
+
+Status: **✅ CONCLUÍDA / VALIDADA / PRONTA PARA MERGE**
+
+Escopo fechado:
+
+- Landing institucional pública revisada e polida;
+- responsividade desktop/tablet/mobile validada;
+- Header, Hero, Sobre, Equipe, Robôs, Premiações, Galeria, Eventos e Footer;
+- competição pública integrada ao ciclo real;
+- ranking Follow, agenda/tomadas, chaveamento, BYE, 3º lugar e pódios;
+- regra pública: histórico durante disputa e somente Top 3 após pódio completo;
+- logos públicas de equipes com fallback;
+- chave read-only no Portal do Participante;
+- lotes de inscrição integrados e validados;
+- Hero mostrando lote vigente real;
+- documentação e regras sincronizadas;
+- modo local preservado.
+
+Pendência deliberadamente movida para o roadmap original:
+
+- Hero pós-competição destacando campeões por categoria na etapa final de fechamento do MVP.
+
+A branch `v1-beta-a-landing` não deve receber novos requisitos após o merge, salvo correção de regressão.
+
+## Gate de planejamento antes da V1-BETA B
+
+A B ainda **não está iniciada**. Antes do primeiro commit, discutir e aprovar:
+
+```text
+identidade real de conta
+→ verificação de e-mail
+→ ativação
+→ login
+→ recuperação segura de senha
+```
+
+Princípios já aceitos para discussão:
+
+- coletar somente o mínimo necessário;
+- posse do e-mail deve ser verificada;
+- reduzir contas falsas/descartáveis sem introduzir coleta excessiva de dados pessoais;
+- recuperação de senha deve funcionar por token/código de uso único, com expiração;
+- resposta de recuperação não pode revelar se a conta existe;
+- senha definitiva nunca deve ser visível ao DEV;
+- fluxo assistido pelo DEV pode existir apenas como fallback auditado;
+- escolher provedor de e-mail antes da implementação;
+- acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
+- modo local e Cloudflare Tunnel permanecem como contingência oficial.
