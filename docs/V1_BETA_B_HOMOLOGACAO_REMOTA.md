@@ -247,3 +247,37 @@ API → backend
 ```
 
 Cloudflare Access protege apenas os ambientes de homologação. O site público real não deve exigir Access.
+
+
+## Landing pública via Quick Tunnel
+
+Como a Landing é pública por definição, ela pode ser validada externamente sem Cloudflare Access.
+
+Script:
+
+```bash
+./scripts/homologacao-landing-quick-tunnel.sh
+```
+
+Fluxo:
+
+```text
+Internet
+→ Quick Tunnel público
+→ Landing em 127.0.0.1:4174
+→ somente /api/v1/public/**
+→ proxy local
+→ Spring Boot 127.0.0.1:8080
+```
+
+O proxy da Landing expõe apenas a API pública do backend. Login, endpoints administrativos e MySQL não são publicados por esse caminho.
+
+Opcionalmente, se existir uma URL externa válida do Gestão/Participante, ela pode ser passada como primeiro argumento:
+
+```bash
+./scripts/homologacao-landing-quick-tunnel.sh https://app-exemplo
+```
+
+Sem argumento, o build de homologação não aponta o CTA para localhost.
+
+Essa configuração é adequada para validar externamente a Landing sem antecipar a configuração definitiva de domínio, Access ou produção.
