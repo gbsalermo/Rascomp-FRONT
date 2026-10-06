@@ -3,6 +3,8 @@ import { useAuthStore } from './store'
 import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 import PasswordRecoveryView from './views/PasswordRecoveryView.vue'
+import VerifyEmailView from './views/VerifyEmailView.vue'
+import ResetPasswordView from './views/ResetPasswordView.vue'
 import ShellLayout from './views/ShellLayout.vue'
 import DashboardView from './views/DashboardView.vue'
 import AgendaView from './views/AgendaView.vue'
@@ -34,6 +36,8 @@ const router = createRouter({
     { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
     { path: '/cadastro', name: 'register', component: RegisterView, meta: { public: true } },
     { path: '/recuperar-senha', name: 'password-recovery', component: PasswordRecoveryView, meta: { public: true } },
+    { path: '/verificar-email', name: 'verify-email', component: VerifyEmailView, meta: { public: true } },
+    { path: '/redefinir-senha', name: 'password-reset', component: ResetPasswordView, meta: { public: true } },
     {
       path: '/',
       component: ShellLayout,
@@ -105,6 +109,14 @@ router.afterEach((to) => {
   }
   if (to.name === 'register') {
     document.title = 'RasComp · Cadastro'
+    return
+  }
+  if (to.name === 'verify-email') {
+    document.title = 'RasComp · Verificar e-mail'
+    return
+  }
+  if (to.name === 'password-recovery' || to.name === 'password-reset') {
+    document.title = 'RasComp · Recuperar acesso'
     return
   }
   if (auth.isParticipant) {

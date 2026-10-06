@@ -164,3 +164,42 @@
     min-height: 100vh;
   }
 }
+
+
+.auth-security-copy {
+  margin: 12px 4px 18px;
+  color: #827b86;
+  font-size: .7rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.auth-status-card {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid #e4dde7;
+  border-radius: 10px;
+  background: #faf8fb;
+  color: #655d69;
+}
+
+.auth-status-card strong {
+  color: var(--ras-purple);
+  font-size: .82rem;
+}
+
+.auth-status-card span {
+  font-size: .74rem;
+  line-height: 1.5;
+}
+
+.auth-status-success {
+  border-color: #cfe5d6;
+  background: #f5faf7;
+}
+
+.auth-status-success strong {
+  color: #287345;
+}
