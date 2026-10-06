@@ -146,3 +146,22 @@ Ainda são bloqueantes para dados/inscrições reais:
 - smoke ponta a ponta;
 - observabilidade mínima;
 - rollback documentado.
+
+
+## Gate de banco limpo
+
+A infraestrutura cloud não deve importar o banco local/testdata.
+
+Primeiro boot esperado:
+
+```text
+MySQL novo/vazio
+→ Flyway cria schema
+→ seeds/testdata = false
+→ 1 DEV real via bootstrap
+→ demais contas/dados criados conscientemente
+```
+
+O backend possui `CloudProfileSafetyGuard` para impedir startup cloud com `testdata` ou seeds habilitados.
+
+Não subir equipes, robôs, competidores, competições, inscrições, rounds, chaves ou contas demo do ambiente local.

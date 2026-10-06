@@ -216,6 +216,8 @@ Todos os itens abaixo são **bloqueantes**:
 - logs e healthcheck mínimos;
 - rollback operacional documentado;
 - nenhum profile `testdata`, usuário demo ou senha demo em produção;
+- **banco cloud novo deve nascer sem massa de teste**: nenhum Team, Competitor, Robot, Competition, Registration, Match, Bracket ou Round demo;
+- primeiro boot permite somente schema/Flyway + primeiro DEV real via bootstrap; demais contas internas são criadas pelo DEV;
 - **storage persistente dos comprovantes de inscrição**, sem depender do filesystem efêmero/local;
 - storage persistente de outros uploads que já forem usados pela Beta.
 
