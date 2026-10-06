@@ -1873,7 +1873,7 @@ BLOCO 4.4
 → NÃO INICIADO
 ```
 
-Migrations atuais: **V1–V27**. Próxima migration estrutural: **V28+**.
+Migrations atuais: **V1–V30**. Próxima migration estrutural: **V31+**.
 
 
 ---
