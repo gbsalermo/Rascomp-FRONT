@@ -17,7 +17,7 @@ CLOUD
 → Cloudflare para DNS, frontend, backend containerizado e mídia
 ```
 
-O primeiro deploy foi antecipado para o **TRILHO V1 BETA**. Este guia passa a apoiar a V1-BETA B; a ETAPA 16 fica reservada à consolidação/hardening final.
+A **V1-BETA A foi concluída/validada em 05/10/2026**. Este guia passa a apoiar a discussão da V1-BETA B; a B ainda não foi iniciada. A ETAPA 16 continua reservada à consolidação/hardening final.
 
 ---
 
@@ -1209,3 +1209,18 @@ Na VIA B, preparar:
 - restore testado;
 - URLs por ambiente;
 - smoke via internet e LAN.
+
+
+## Gate zero antes do deploy da V1-BETA B
+
+Antes de executar as fases de infraestrutura deste documento, discutir e aprovar:
+
+- verificação real de e-mail e ativação de conta;
+- recuperação segura de senha;
+- provedor de e-mail;
+- separação entre homologação remota e produção real;
+- acesso remoto inicial para testes externos;
+- modo local preservado;
+- Cloudflare Tunnel como contingência/publicação de servidor local quando necessário.
+
+A meta de acesso remoto imediato não autoriza abrir dados/inscrições reais sem os demais gates.
