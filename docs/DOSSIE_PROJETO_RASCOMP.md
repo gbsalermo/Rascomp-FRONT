@@ -1,6 +1,6 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **01/10/2026**
+Última revisão estrutural: **05/10/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
@@ -23,20 +23,22 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
-ETAPA 4                                        🚧 em andamento — BLOCO 4 / Portal do Participante
+ETAPA 4                                        ✅ concluída / validada
 BLOCO 3 — Operação competitiva                 ✅ concluído / validado
-BLOCO 4.1 — Equipe e associação                ✅ implementado
-BLOCO 4.2 — Responsáveis por robô              ✅ base funcional implementada
-BLOCO 4.3 — Inscrições participante/robô       🧪 implementação principal pronta / aguardando build + validação
-BLOCO 4.4 — Polimento + bateria final           ⏳ não iniciado
-Backend/Frontend                               revalidar suíte/build após alterações do BLOCO 4.3
+BLOCO 4.1 — Equipe e associação                ✅ concluído / validado
+BLOCO 4.2 — Responsáveis por robô              ✅ concluído / validado
+BLOCO 4.3 — Inscrições participante/robô       ✅ concluído / validado
+BLOCO 4.4 — Landing/polimento                   ↪ replanejado e concluído na V1-BETA A
+Backend/Frontend                               ✅ baseline funcional validada para fechamento da V1-BETA A
 Banco ativo                                    MySQL
 Migrations                                     V1–V30
 Próxima migration estrutural                   V31+
 Profile testdata                               ✅ contra MySQL real
 Roles atuais                                   DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                                        backend ✅ / frontend ✅ / validada ✅
-Deploy cloud                                   ⏳ ETAPA 16
+V1-BETA A                                      ✅ concluída / validada
+V1-BETA B                                      ⏭️ próxima — discussão antes do início
+Deploy cloud                                   ⏳ inicia no trilho Beta B; ETAPA 16 = hardening final
 ```
 
 Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, sem mudança de etapa. A limpeza técnica de código/artefatos foi iniciada em 13/09/2026 na ETAPA 2.
