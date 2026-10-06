@@ -79,7 +79,7 @@ ETAPA 4  ✅ CONCLUÍDA / VALIDADA — Consolidação funcional do MVP atual
 
 TRILHO PRIORITÁRIO — V1 BETA EM PRODUÇÃO
 V1-BETA A  ✅ CONCLUÍDA / VALIDADA — Landing pública finalizada
-V1-BETA B  🚧 EM ANDAMENTO — Bloco 1 identidade/e-mail ✅ validado; próximo: homologação remota Tunnel/Access
+V1-BETA B  🚧 EM ANDAMENTO — Bloco 1 ✅ validado; Bloco 2 homologação remota Tunnel/Access em implementação
 V1-BETA C  ⏳ — Abertura controlada: cadastro/login + inscrições reais + acesso ao sistema
 V1-BETA D  ⏳ — Smoke de produção + estabilização inicial
 
@@ -100,7 +100,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening de segurança + preparação de carga
 ETAPA 15 ⏳ NÃO INICIADA — Validação final + testes de carga pré-competição
 ETAPA 16 ⚠️ REINTERPRETADA — consolidação/hardening da produção definitiva; não é mais o primeiro deploy
 
-**Trabalho atual: iniciar o Bloco 2 da V1-BETA B — homologação remota com Cloudflare Tunnel/Access, preservando execução local; depois seguir para infraestrutura cloud/staging.**
+**Trabalho atual: Bloco 2 da V1-BETA B — homologação remota. Primeiro validar o caminho imediato por Quick Tunnel protegido por e-mail; em seguida fixar hostname com Cloudflare Tunnel + Access. O modo local/LAN permanece preservado.**
 
 A V1 Beta não encerra o roadmap. Ela cria uma linha estável de produção para divulgação, cadastro e inscrições enquanto o restante do produto continua evoluindo em ambiente não-prod.
 ---

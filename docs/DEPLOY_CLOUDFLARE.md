@@ -17,7 +17,7 @@ CLOUD
 → Cloudflare para DNS, frontend, backend containerizado e mídia
 ```
 
-A **V1-BETA A foi concluída/validada em 05/10/2026**. Este guia passa a apoiar a discussão da V1-BETA B; a B ainda não foi iniciada. A ETAPA 16 continua reservada à consolidação/hardening final.
+A **V1-BETA A foi concluída/validada em 05/10/2026**. A **V1-BETA B está em andamento**: Bloco 1 de identidade foi validado em 06/10/2026 e o Bloco 2 prepara homologação remota por Tunnel. A ETAPA 16 continua reservada à consolidação/hardening final.
 
 ---
 
@@ -1224,3 +1224,31 @@ Antes de executar as fases de infraestrutura deste documento, discutir e aprovar
 - Cloudflare Tunnel como contingência/publicação de servidor local quando necessário.
 
 A meta de acesso remoto imediato não autoriza abrir dados/inscrições reais sem os demais gates.
+
+
+---
+
+# Checkpoint V1-BETA B — Bloco 2 / homologação remota — 06/10/2026
+
+Antes do staging cloud definitivo, o RasComp terá uma homologação externa dependente da máquina local.
+
+Fluxo:
+
+```text
+Cloudflare Tunnel
+→ aplicação Gestão/Participante em 127.0.0.1:4173
+→ /api por proxy para Spring Boot 127.0.0.1:8080
+→ MySQL local
+```
+
+Primeiro gate: Quick Tunnel protegido por e-mail para validar o caminho ponta a ponta.
+
+Segundo gate: hostname estável + Cloudflare Access.
+
+Fonte operacional detalhada:
+
+```text
+docs/V1_BETA_B_HOMOLOGACAO_REMOTA.md
+```
+
+Nenhuma porta do MySQL deve ser publicada, e a API não precisa de hostname externo separado enquanto a homologação usar o proxy same-origin do frontend.
