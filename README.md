@@ -364,7 +364,7 @@ Dados públicos são consumidos por contratos específicos e sanitizados.
 
 ## 📚 Documentação
 
-As ETAPAS 1, 2 e 3 estão concluídas/validadas. O novo roadmap está organizado por maturidade do produto: **PRIORIDADE 1 — finalização e polimento do MVP** e **PRIORIDADE 2 — adições, testes e portabilidade**. A próxima etapa é a **ETAPA 4 — Consolidação funcional e polimento do MVP**, ainda não iniciada. O roadmap também possui um **checkpoint transversal de Otimização Mobile do MVP** dentro da PRIORIDADE 1. Ele acompanha as telas revisadas/criadas nas ETAPAS 4, 7, 8 e 9 e precisa estar concluído antes do fechamento do MVP na ETAPA 10; até aqui, o login é a interface com tratamento responsivo dedicado já revisado.
+As ETAPAS 0–4 e a **V1-BETA A** estão concluídas/validadas. O roadmap continua organizado por maturidade do produto. O próximo trabalho é a discussão arquitetural da **V1-BETA B**, antes de qualquer implementação. O roadmap também possui um **checkpoint transversal de Otimização Mobile do MVP** dentro da PRIORIDADE 1. Ele acompanha as telas revisadas/criadas nas ETAPAS 4, 7, 8 e 9 e precisa estar concluído antes do fechamento do MVP na ETAPA 10; até aqui, o login é a interface com tratamento responsivo dedicado já revisado.
 
 A documentação técnica detalhada permanece separada da página de apresentação do projeto.
 
@@ -428,3 +428,54 @@ v1-beta-d-estabilizacao
 ```
 
 A próxima branch só deve nascer a partir do `main` após merge/validação da anterior.
+
+
+## Fechamento formal da V1-BETA A — 05/10/2026
+
+Status: **✅ CONCLUÍDA / VALIDADA / PRONTA PARA MERGE**
+
+Escopo fechado:
+
+- Landing institucional pública revisada e polida;
+- responsividade desktop/tablet/mobile validada;
+- Header, Hero, Sobre, Equipe, Robôs, Premiações, Galeria, Eventos e Footer;
+- competição pública integrada ao ciclo real;
+- ranking Follow, agenda/tomadas, chaveamento, BYE, 3º lugar e pódios;
+- regra pública: histórico durante disputa e somente Top 3 após pódio completo;
+- logos públicas de equipes com fallback;
+- chave read-only no Portal do Participante;
+- lotes de inscrição integrados e validados;
+- Hero mostrando lote vigente real;
+- documentação e regras sincronizadas;
+- modo local preservado.
+
+Pendência deliberadamente movida para o roadmap original:
+
+- Hero pós-competição destacando campeões por categoria na etapa final de fechamento do MVP.
+
+A branch `v1-beta-a-landing` não deve receber novos requisitos após o merge, salvo correção de regressão.
+
+## Gate de planejamento antes da V1-BETA B
+
+A B ainda **não está iniciada**. Antes do primeiro commit, discutir e aprovar:
+
+```text
+identidade real de conta
+→ verificação de e-mail
+→ ativação
+→ login
+→ recuperação segura de senha
+```
+
+Princípios já aceitos para discussão:
+
+- coletar somente o mínimo necessário;
+- posse do e-mail deve ser verificada;
+- reduzir contas falsas/descartáveis sem introduzir coleta excessiva de dados pessoais;
+- recuperação de senha deve funcionar por token/código de uso único, com expiração;
+- resposta de recuperação não pode revelar se a conta existe;
+- senha definitiva nunca deve ser visível ao DEV;
+- fluxo assistido pelo DEV pode existir apenas como fallback auditado;
+- escolher provedor de e-mail antes da implementação;
+- acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
+- modo local e Cloudflare Tunnel permanecem como contingência oficial.
