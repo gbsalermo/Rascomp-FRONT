@@ -21,6 +21,7 @@ import type {
   TeamMembershipRequest
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
+import TournamentBracket from '../components/TournamentBracket.vue'
 
 interface PublicTeamOption {
   id: number
@@ -42,7 +43,10 @@ interface SumoOverview {
   lastMatch?: Match
   lastResult?: MatchResult
   nextMatch?: Match
+  bracketId?: number
   bracketName?: string
+  matches?: Match[]
+  results?: MatchResult[]
   statusLabel?: string
   placement?: 'CAMPEAO' | 'VICE' | 'TERCEIRO' | 'ELIMINADO' | 'EM_DISPUTA' | 'INSCRITO'
 }
@@ -51,6 +55,7 @@ const auth = useAuthStore()
 const loading = ref(false)
 const creatingTeam = ref(false)
 const uploadRobotId = ref<number>()
+const uploadingTeamLogo = ref(false)
 const registrationActionId = ref<number>()
 const loadingAvailableTeams = ref(false)
 const teamDialog = ref(false)
@@ -114,6 +119,8 @@ const photoMap = ref<Record<number, RobotImage[]>>({})
 const responsibleMap = ref<Record<number, RobotResponsible[]>>({})
 const followMap = ref<Record<number, FollowOverview>>({})
 const sumoMap = ref<Record<number, SumoOverview>>({})
+const participantBracketDialog = ref(false)
+const participantBracketRegistrationId = ref<number>()
 
 const activeTeam = computed(() => teams.value.find((item) => item.id === teamId.value))
 const isTeamLeader = computed(() =>
@@ -157,11 +164,25 @@ const availableCompetitions = computed(() => {
       && competition.fimInscricoes >= today
   )
 })
+const selectedParticipantBracket = computed(() =>
+  participantBracketRegistrationId.value
+    ? sumoMap.value[participantBracketRegistrationId.value]
+    : undefined
+)
+
+const selectedParticipantBracketRegistration = computed(() =>
+  participantBracketRegistrationId.value
+    ? approvedRegistrations.value.find((item) => item.id === participantBracketRegistrationId.value)
+    : undefined
+)
+
 const availablePersonalRegistrationCompetitions = computed(() => {
   const registeredCompetitionIds = new Set(
     personalRegistrations.value.map((item) => item.competitionId)
   )
-  return availableCompetitions.value.filter((item) => !registeredCompetitionIds.has(item.id))
+  return availableCompetitions.value.filter(
+    (item) => item.id != null && !registeredCompetitionIds.has(item.id)
+  )
 })
 
 const availableRobotRegistrationCompetitions = computed(() => {
@@ -170,7 +191,9 @@ const availableRobotRegistrationCompetitions = computed(() => {
       .filter((item) => ['PENDENTE', 'APROVADA'].includes(item.status))
       .map((item) => item.competitionId)
   )
-  return availableCompetitions.value.filter((item) => initiatedCompetitionIds.has(item.id))
+  return availableCompetitions.value.filter(
+    (item) => item.id != null && initiatedCompetitionIds.has(item.id)
+  )
 })
 
 const robotRegistrationUnlockMessage = computed(() => {
@@ -425,11 +448,24 @@ async function loadRegistrationOverview(registration: Registration) {
       nextMatch,
       lastMatch,
       lastResult,
+      bracketId: bracket.id,
       bracketName: bracket.nome,
+      matches,
+      results,
       placement,
       statusLabel
     }
   }
+}
+
+function openParticipantBracket(registration: Registration) {
+  const overview = sumoMap.value[registration.id]
+  if (!overview?.bracketId || !overview.matches?.length) {
+    return ElMessage.info('A chave desta categoria ainda não foi publicada.')
+  }
+
+  participantBracketRegistrationId.value = registration.id
+  participantBracketDialog.value = true
 }
 
 async function createTeam() {
@@ -482,6 +518,62 @@ async function createTeam() {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a equipe.')
   } finally {
     creatingTeam.value = false
+  }
+}
+
+async function uploadTeamLogo(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+
+  if (!file || !activeTeam.value || !isTeamLeader.value) return
+
+  if (file.size > 5 * 1024 * 1024) {
+    return ElMessage.warning('A logo da equipe deve possuir no máximo 5 MB.')
+  }
+
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    return ElMessage.warning('Use uma imagem JPEG, PNG ou WEBP.')
+  }
+
+  uploadingTeamLogo.value = true
+  try {
+    await participantApi.uploadTeamLogo(activeTeam.value.id, file)
+    ElMessage.success('Logo pública da equipe atualizada.')
+    await loadTeams()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar a logo da equipe.')
+  } finally {
+    uploadingTeamLogo.value = false
+  }
+}
+
+async function removeTeamLogo() {
+  if (!activeTeam.value || !isTeamLeader.value || !activeTeam.value.logoUrl) return
+
+  try {
+    await ElMessageBox.confirm(
+      'Remover a logo pública da equipe? A Landing voltará a usar a imagem padrão do RasComp.',
+      'Remover logo da equipe',
+      {
+        type: 'warning',
+        confirmButtonText: 'Remover logo',
+        cancelButtonText: 'Cancelar'
+      }
+    )
+  } catch {
+    return
+  }
+
+  uploadingTeamLogo.value = true
+  try {
+    await participantApi.deleteTeamLogo(activeTeam.value.id)
+    ElMessage.success('Logo da equipe removida.')
+    await loadTeams()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível remover a logo da equipe.')
+  } finally {
+    uploadingTeamLogo.value = false
   }
 }
 
@@ -619,7 +711,7 @@ function categoryOptionLabel(category: Category) {
   return `${category.nome} · ${physical} · ${control}`
 }
 
-function syncRegistrationCompetitors() {
+function syncRegistrationCompetitors(_robotId?: number) {
   registrationForm.competitorIds = []
 }
 
@@ -949,14 +1041,48 @@ onBeforeUnmount(() => {
 <template>
   <div class="page-stack participant-dashboard" v-loading="loading">
     <div class="page-heading">
-      <div>
-        <span class="eyebrow">Portal do participante</span>
-        <h1>{{ activeTeam?.nome || 'Minha equipe' }}</h1>
-        <p class="muted">Robôs, inscrições e desempenho competitivo em um só lugar.</p>
-        <p v-if="activeTeam?.responsibleUserNome" class="team-leader-inline">
-          Líder da equipe: <strong>{{ activeTeam.responsibleUserNome }}</strong>
-          <el-tag v-if="isTeamLeader" size="small" type="success" effect="light">Você</el-tag>
-        </p>
+      <div class="participant-heading-identity">
+        <div v-if="activeTeam" class="participant-team-logo">
+          <img
+            :src="activeTeam.logoUrl ? assetUrl(activeTeam.logoUrl) : '/rascomp-logo.webp'"
+            :alt="`Logo da equipe ${activeTeam.nome}`"
+            :class="{ generic: !activeTeam.logoUrl }"
+          />
+        </div>
+
+        <div>
+          <span class="eyebrow">Portal do participante</span>
+          <h1>{{ activeTeam?.nome || 'Minha equipe' }}</h1>
+          <p class="muted">Robôs, inscrições e desempenho competitivo em um só lugar.</p>
+          <p v-if="activeTeam?.responsibleUserNome" class="team-leader-inline">
+            Líder da equipe: <strong>{{ activeTeam.responsibleUserNome }}</strong>
+            <el-tag v-if="isTeamLeader" size="small" type="success" effect="light">Você</el-tag>
+          </p>
+
+          <div v-if="activeTeam && isTeamLeader" class="participant-team-logo-actions">
+            <label class="participant-team-logo-upload" :class="{ disabled: uploadingTeamLogo }">
+              {{ activeTeam.logoUrl ? 'Trocar logo da equipe' : 'Adicionar logo da equipe' }}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                :disabled="uploadingTeamLogo"
+                @change="uploadTeamLogo"
+              />
+            </label>
+
+            <button
+              v-if="activeTeam.logoUrl"
+              type="button"
+              class="participant-team-logo-remove"
+              :disabled="uploadingTeamLogo"
+              @click="removeTeamLogo"
+            >
+              Remover
+            </button>
+
+            <small>PNG, JPG ou WEBP · até 5 MB · exibida publicamente na Landing.</small>
+          </div>
+        </div>
       </div>
       <div class="heading-actions">
         <el-button v-if="teams.length" :loading="loading" @click="loadTeams">Atualizar</el-button>
@@ -1167,6 +1293,16 @@ onBeforeUnmount(() => {
                 <strong>{{ sumoMap[registration.id]?.nextMatch?.robotANome }} × {{ sumoMap[registration.id]?.nextMatch?.robotBNome }}</strong>
                 <small>{{ sumoMap[registration.id]?.bracketName }}</small>
               </div>
+
+              <button
+                v-if="sumoMap[registration.id]?.bracketId"
+                type="button"
+                class="participant-bracket-action"
+                @click="openParticipantBracket(registration)"
+              >
+                Ver chave completa
+                <span aria-hidden="true">→</span>
+              </button>
             </template>
           </article>
         </div>
@@ -1576,10 +1712,45 @@ onBeforeUnmount(() => {
       </div>
       <template #footer><el-button @click="joinDialog=false">Cancelar</el-button><el-button class="brand-button" @click="requestJoin">Solicitar entrada</el-button></template>
     </el-dialog>
+
+    <el-dialog
+      v-model="participantBracketDialog"
+      :title="`Chave · ${selectedParticipantBracketRegistration?.categoryNome || 'Sumô'}`"
+      width="min(1180px, 96vw)"
+      class="participant-bracket-dialog"
+    >
+      <div class="participant-bracket-dialog-copy">
+        <strong>{{ selectedParticipantBracketRegistration?.competitionNome }}</strong>
+        <span>
+          Acompanhamento em modo somente leitura. Resultados, BYEs e próximos confrontos são os mesmos publicados pela organização.
+        </span>
+      </div>
+
+      <TournamentBracket
+        v-if="selectedParticipantBracket?.matches?.length"
+        :matches="selectedParticipantBracket.matches"
+        :results="selectedParticipantBracket.results || []"
+        read-only
+        participant-mode
+      />
+
+      <el-empty v-else description="A chave ainda não foi publicada." :image-size="82" />
+    </el-dialog>
   </div>
 </template>
 
 <style scoped>
+.participant-heading-identity { display:flex; align-items:flex-start; gap:16px; min-width:0; }
+.participant-team-logo { display:grid; place-items:center; flex:0 0 82px; width:82px; height:82px; overflow:hidden; border:1px solid #e6dbe0; border-radius:18px; background:#fff; box-shadow:0 8px 24px rgba(70,20,44,.06); }
+.participant-team-logo img { width:84%; height:84%; object-fit:contain; }
+.participant-team-logo img.generic { width:72%; height:72%; opacity:.78; }
+.participant-team-logo-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:9px; }
+.participant-team-logo-actions > small { flex-basis:100%; color:#8a7a82; font-size:10px; }
+.participant-team-logo-upload,.participant-team-logo-remove { min-height:30px; padding:0 10px; border:1px solid #cbaeb9; border-radius:9px; background:#fff; color:#8f1238; font:inherit; font-size:10px; font-weight:850; cursor:pointer; }
+.participant-team-logo-upload { display:inline-flex; align-items:center; }
+.participant-team-logo-upload input { display:none; }
+.participant-team-logo-upload.disabled,.participant-team-logo-remove:disabled { opacity:.5; cursor:wait; }
+.participant-team-logo-remove { color:#706168; border-color:#dfd5da; }
 .team-leader-inline { display:flex; align-items:center; gap:7px; margin:6px 0 0; color:#71636a; font-size:12px; }
 .team-leader-inline strong { color:#33262d; }
 .participant-competitor-name { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
@@ -1688,7 +1859,12 @@ onBeforeUnmount(() => {
 .participant-join-request small { color:#82747b; }
 .participant-flow-note { display:grid; gap:4px; padding:11px 13px; border-radius:11px; background:#faf6f8; border:1px solid #eadde3; }
 .participant-flow-note span { color:#786a71; font-size:12px; line-height:1.4; }
-@media (max-width:680px) { .participant-invite-card,.participant-join-request { align-items:flex-start; flex-direction:column; } .participant-section-actions { align-items:flex-start; flex-direction:column; } .registration-competitor-options { grid-template-columns:1fr; } }
+.participant-bracket-action { display:flex; width:100%; min-height:38px; align-items:center; justify-content:space-between; gap:8px; padding:0 12px; border:1px solid #cbaeb9; border-radius:10px; background:#fff7fa; color:#8f1238; font:inherit; font-size:11px; font-weight:900; cursor:pointer; transition:transform .15s ease,box-shadow .15s ease; }
+.participant-bracket-action:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(143,18,56,.09); }
+.participant-bracket-dialog-copy { display:grid; gap:3px; margin-bottom:12px; padding:11px 13px; border-radius:11px; background:#faf6f8; border:1px solid #eadde3; }
+.participant-bracket-dialog-copy strong { color:#4c3942; }
+.participant-bracket-dialog-copy span { color:#786a71; font-size:12px; line-height:1.4; }
+@media (max-width:680px) { .participant-invite-card,.participant-join-request { align-items:flex-start; flex-direction:column; } .participant-section-actions { align-items:flex-start; flex-direction:column; } .registration-competitor-options { grid-template-columns:1fr; } .participant-heading-identity { gap:12px; } .participant-team-logo { flex-basis:68px; width:68px; height:68px; border-radius:15px; } }
 
 .robot-gallery-actions { display:grid; gap:8px; justify-items:stretch; }
 .robot-responsible-summary { display:grid; gap:2px; margin-top:5px; }

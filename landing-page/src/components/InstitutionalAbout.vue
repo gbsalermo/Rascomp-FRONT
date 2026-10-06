@@ -3,24 +3,63 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 type AboutTab = 'ieee' | 'ras'
 
+type AboutSlide = {
+  id: string
+  label: string
+  detail: string
+  src: string
+  alt: string
+}
+
+const aboutImageModules = import.meta.glob(
+  '../assets/about/*.{jpg,jpeg,png,webp,avif}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default'
+  }
+) as Record<string, string>
+
 const activeTab = ref<AboutTab>('ieee')
 const activePhoto = ref(0)
-let timer: number | undefined
+let photoTimer: number | undefined
 
-const photos = [
-  { label: 'Equipe RAS UFRB', detail: 'Membros reunidos em atividades, projetos e eventos do capítulo.', tone: 'team' },
-  { label: 'Premiações', detail: 'Conquistas e reconhecimentos que registram a evolução do capítulo.', tone: 'award' },
-  { label: 'Robótica em ação', detail: 'Competições, testes e desenvolvimento prático de robôs.', tone: 'robot' },
-  { label: 'Projetos e oficinas', detail: 'Aprendizado colaborativo e formação tecnológica dentro e fora da UFRB.', tone: 'workshop' }
-]
+function filenameToLabel(path: string) {
+  const filename = path.split('/').pop()?.replace(/\.[^.]+$/, '') || 'RAS UFRB'
 
-const metrics = [
-  { value: '25+', label: 'Membros ativos', detail: 'Estudantes dedicados', icon: '◉', tone: 'purple' },
-  { value: '7+', label: 'Robôs desenvolvidos', detail: 'Projetos que inovam', icon: '🤖', tone: 'red' },
-  { value: '18+', label: 'Prêmios conquistados', detail: 'Em competições e eventos', icon: '🏆', tone: 'purple' },
-  { value: '10+', label: 'Eventos realizados', detail: 'Oficinas, palestras e visitas', icon: '▣', tone: 'red' },
-  { value: '8+', label: 'Escolas visitadas', detail: 'Levando ciência e tecnologia', icon: '⌂', tone: 'purple' }
-]
+  return filename
+    .replace(/^\d+[-_ ]*/, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+const photos = computed<AboutSlide[]>(() =>
+  Object.entries(aboutImageModules)
+    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB, 'pt-BR', { numeric: true }))
+    .map(([path, src], index) => {
+      const label = filenameToLabel(path)
+
+      return {
+        id: `about-photo-${index}-${path}`,
+        label,
+        detail: 'Registro de projetos, eventos, competições e ações da IEEE RAS UFRB.',
+        src,
+        alt: `${label} — IEEE RAS UFRB`
+      }
+    })
+)
+
+const emptyPhoto: AboutSlide = {
+  id: 'about-empty',
+  label: 'RAS UFRB',
+  detail: 'Adicione imagens em src/assets/about para alimentar este carrossel automaticamente.',
+  src: '',
+  alt: 'Área de imagens institucionais da IEEE RAS UFRB'
+}
+
+const activePhotoItem = computed(
+  () => photos.value[activePhoto.value] || photos.value[0] || emptyPhoto
+)
 
 const content = computed(() => {
   if (activeTab.value === 'ieee') {
@@ -30,9 +69,9 @@ const content = computed(() => {
       intro:
         'O IEEE (Institute of Electrical and Electronics Engineers) é uma organização técnica profissional global dedicada ao avanço da tecnologia e à conexão entre estudantes, pesquisadores e profissionais.',
       points: [
-        { icon: '◎', title: 'Alcance global', text: 'Uma rede internacional que conecta conhecimento, pessoas e diferentes áreas da engenharia e tecnologia.' },
-        { icon: '◇', title: 'Inovação e impacto', text: 'Publicações, conferências, padrões e comunidades técnicas que impulsionam o desenvolvimento tecnológico.' },
-        { icon: '△', title: 'Educação e desenvolvimento', text: 'Formação contínua, troca de experiências e incentivo ao crescimento de jovens talentos.' }
+        { icon: 'global', title: 'Alcance global', text: 'Uma rede internacional que conecta conhecimento, pessoas e diferentes áreas da engenharia e tecnologia.' },
+        { icon: 'innovation', title: 'Inovação e impacto', text: 'Publicações, conferências, padrões e comunidades técnicas que impulsionam o desenvolvimento tecnológico.' },
+        { icon: 'education', title: 'Educação e desenvolvimento', text: 'Formação contínua, troca de experiências e incentivo ao crescimento de jovens talentos.' }
       ]
     }
   }
@@ -43,32 +82,50 @@ const content = computed(() => {
     intro:
       'A RAS UFRB é o capítulo estudantil da IEEE Robotics & Automation Society na Universidade Federal do Recôncavo da Bahia, reunindo estudantes em torno de robótica, automação, inovação e extensão.',
     points: [
-      { icon: '◎', title: 'Projetos práticos', text: 'Desenvolvimento de robôs e soluções que aproximam teoria, experimentação e engenharia aplicada.' },
-      { icon: '◇', title: 'Extensão e comunidade', text: 'Oficinas, visitas e ações que compartilham conhecimento dentro e fora da universidade.' },
-      { icon: '△', title: 'Formação em equipe', text: 'Experiências em competições, organização de eventos e trabalho colaborativo multidisciplinar.' }
+      { icon: 'robot', title: 'Projetos práticos', text: 'Desenvolvimento de robôs e soluções que aproximam teoria, experimentação e engenharia aplicada.' },
+      { icon: 'community', title: 'Extensão e comunidade', text: 'Oficinas, visitas e ações que compartilham conhecimento dentro e fora da universidade.' },
+      { icon: 'team', title: 'Formação em equipe', text: 'Experiências em competições, organização de eventos e trabalho colaborativo multidisciplinar.' }
     ]
   }
 })
 
-function setPhoto(index: number) {
+function goToPhoto(index: number) {
   activePhoto.value = index
-}
-
-function nextPhoto() {
-  activePhoto.value = (activePhoto.value + 1) % photos.length
+  restartPhotoTimer()
 }
 
 function previousPhoto() {
-  activePhoto.value = (activePhoto.value - 1 + photos.length) % photos.length
+  if (photos.value.length <= 1) return
+  activePhoto.value = (activePhoto.value - 1 + photos.value.length) % photos.value.length
+  restartPhotoTimer()
 }
 
-onMounted(() => {
-  timer = window.setInterval(nextPhoto, 6500)
-})
+function nextPhoto() {
+  if (photos.value.length <= 1) return
+  activePhoto.value = (activePhoto.value + 1) % photos.value.length
+  restartPhotoTimer()
+}
 
-onBeforeUnmount(() => {
-  if (timer) window.clearInterval(timer)
-})
+function startPhotoTimer() {
+  stopPhotoTimer()
+  if (photos.value.length <= 1) return
+
+  photoTimer = window.setInterval(() => {
+    activePhoto.value = (activePhoto.value + 1) % photos.value.length
+  }, 7000)
+}
+
+function stopPhotoTimer() {
+  if (photoTimer) window.clearInterval(photoTimer)
+  photoTimer = undefined
+}
+
+function restartPhotoTimer() {
+  startPhotoTimer()
+}
+
+onMounted(startPhotoTimer)
+onBeforeUnmount(stopPhotoTimer)
 </script>
 
 <template>
@@ -81,39 +138,52 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="institutional-about-grid institutional-about-grid-demo">
-        <div class="about-media-panel" aria-label="Destaques institucionais da RAS UFRB">
-          <div class="about-photo-main" :class="`tone-${photos[activePhoto].tone}`">
-            <span class="about-photo-badge">RAS UFRB</span>
-            <div class="about-photo-copy">
-              <strong>{{ photos[activePhoto].label }}</strong>
-              <p>{{ photos[activePhoto].detail }}</p>
-            </div>
-            <button class="about-photo-arrow previous" type="button" aria-label="Imagem anterior" @click="previousPhoto">‹</button>
-            <button class="about-photo-arrow next" type="button" aria-label="Próxima imagem" @click="nextPhoto">›</button>
-          </div>
-
-          <div class="about-photo-thumbnails">
-            <button
-              v-for="(photo, index) in photos.slice(1)"
-              :key="photo.label"
-              type="button"
-              class="about-photo-thumb"
-              :class="[`tone-${photo.tone}`, { active: index + 1 === activePhoto }]"
-              @click="setPhoto(index + 1)"
-            >
-              <span>{{ photo.label }}</span>
-            </button>
-          </div>
-
-          <div class="about-photo-dots" aria-label="Selecionar destaque visual">
-            <button
-              v-for="(photo, index) in photos"
-              :key="photo.label"
-              type="button"
-              :class="{ active: index === activePhoto }"
-              :aria-label="`Mostrar ${photo.label}`"
-              @click="setPhoto(index)"
+        <div class="about-media-panel" aria-label="Destaques visuais da RAS UFRB">
+          <div
+            class="about-photo-main"
+            @mouseenter="stopPhotoTimer"
+            @mouseleave="startPhotoTimer"
+          >
+            <img
+              v-if="activePhotoItem.src"
+              class="about-photo-image"
+              :src="activePhotoItem.src"
+              :alt="activePhotoItem.alt"
             />
+            <div v-else class="about-photo-placeholder" aria-hidden="true" />
+
+            <div class="about-photo-overlay" />
+            <span class="about-photo-badge">RAS UFRB</span>
+
+            <div class="about-photo-copy">
+              <p>{{ activePhotoItem.detail }}</p>
+            </div>
+
+            <button
+              v-if="photos.length > 1"
+              class="about-photo-arrow previous"
+              type="button"
+              aria-label="Imagem anterior"
+              @click="previousPhoto"
+            >←</button>
+            <button
+              v-if="photos.length > 1"
+              class="about-photo-arrow next"
+              type="button"
+              aria-label="Próxima imagem"
+              @click="nextPhoto"
+            >→</button>
+
+            <div v-if="photos.length > 1" class="about-photo-dots" aria-label="Selecionar imagem">
+              <button
+                v-for="(photo, index) in photos"
+                :key="photo.id"
+                type="button"
+                :class="{ active: index === activePhoto }"
+                :aria-label="`Mostrar ${photo.label}`"
+                @click="goToPhoto(index)"
+              />
+            </div>
           </div>
         </div>
 
@@ -129,6 +199,7 @@ onBeforeUnmount(() => {
               <span class="about-tab-icon">▥</span>
               <span>O que é o IEEE</span>
             </button>
+
             <button
               type="button"
               role="tab"
@@ -151,7 +222,26 @@ onBeforeUnmount(() => {
 
             <div class="about-feature-list">
               <article v-for="point in content.points" :key="point.title" class="about-feature-item">
-                <span class="about-feature-icon">{{ point.icon }}</span>
+                <span class="about-feature-icon" aria-hidden="true">
+                  <svg v-if="point.icon === 'global'" viewBox="0 0 24 24">
+                    <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm6.9 6h-3.1a15 15 0 0 0-1.5-3.3A8.1 8.1 0 0 1 18.9 8ZM12 4c.9 1.1 1.6 2.4 2 4h-4c.4-1.6 1.1-2.9 2-4ZM4.6 14a8 8 0 0 1 0-4h3.8a17 17 0 0 0 0 4H4.6Zm.5 2h3.3c.3 1.2.8 2.4 1.5 3.3A8.1 8.1 0 0 1 5.1 16ZM8.4 8H5.1a8.1 8.1 0 0 1 4.8-3.3A15 15 0 0 0 8.4 8Zm3.6 12c-.9-1.1-1.6-2.4-2-4h4c-.4 1.6-1.1 2.9-2 4Zm2.4-6H9.6a15 15 0 0 1 0-4h4.8a15 15 0 0 1 0 4Zm-.3 5.3c.7-.9 1.2-2.1 1.5-3.3h3.3a8.1 8.1 0 0 1-4.8 3.3ZM15.6 14a17 17 0 0 0 0-4h3.8a8 8 0 0 1 0 4h-3.8Z"/>
+                  </svg>
+                  <svg v-else-if="point.icon === 'innovation'" viewBox="0 0 24 24">
+                    <path d="M12 2a7 7 0 0 0-4.2 12.6c.8.6 1.2 1.1 1.3 1.7h5.8c.1-.6.5-1.1 1.3-1.7A7 7 0 0 0 12 2Zm-2 16h4v2h-4v-2Zm1 3h2v1h-2v-1Zm.1-7.7c-.3-1.8-1.2-3.3-2.5-4.4l1.3-1.5c.9.8 1.6 1.7 2.1 2.8.5-1.1 1.2-2 2.1-2.8l1.3 1.5a8 8 0 0 0-2.5 4.4l-1.8-.1Z"/>
+                  </svg>
+                  <svg v-else-if="point.icon === 'education'" viewBox="0 0 24 24">
+                    <path d="m2 7 10-5 10 5-10 5L2 7Zm4 4.2 6 3 6-3V16c-3.8 2.4-8.2 2.4-12 0v-4.8ZM20 9h2v7h-2V9Z"/>
+                  </svg>
+                  <svg v-else-if="point.icon === 'robot'" viewBox="0 0 24 24">
+                    <path d="M11 2h2v3h3a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4h3V2ZM8 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8 6v2h8v-2H8ZM2 10h2v6H2v-6Zm18 0h2v6h-2v-6Z"/>
+                  </svg>
+                  <svg v-else-if="point.icon === 'community'" viewBox="0 0 24 24">
+                    <path d="M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM1 21v-2c0-3.3 2.7-6 6-6h2c3.3 0 6 2.7 6 6v2H1Zm14-8c4.4 0 8 2.7 8 6v2h-6v-2c0-2.2-.8-4.2-2.2-5.7l.2-.3Z"/>
+                  </svg>
+                  <svg v-else viewBox="0 0 24 24">
+                    <path d="M12 2 3 6v6c0 5.1 3.8 9.8 9 10 5.2-.2 9-4.9 9-10V6l-9-4Zm0 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm5 10.2A7 7 0 0 1 12 19a7 7 0 0 1-5-2.8V15c1.3-1.3 3.1-2 5-2s3.7.7 5 2v1.2Z"/>
+                  </svg>
+                </span>
                 <div>
                   <strong>{{ point.title }}</strong>
                   <p>{{ point.text }}</p>
@@ -160,25 +250,26 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="about-actions">
-              <a href="#eventos" class="about-primary-link">Conheça nossas ações <span aria-hidden="true">→</span></a>
-              <a href="#equipe" class="about-secondary-link">Ver equipe</a>
+              <a
+                v-if="activeTab === 'ieee'"
+                href="https://www.ieee.org/"
+                class="about-primary-link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Veja mais <span aria-hidden="true">↗</span>
+              </a>
+
+              <template v-else>
+                <a href="#eventos" class="about-primary-link">
+                  Conheça nossas ações <span aria-hidden="true">→</span>
+                </a>
+                <a href="#equipe" class="about-secondary-link">Ver equipe</a>
+              </template>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="about-impact-strip" aria-label="Indicadores institucionais temporários">
-        <article v-for="item in metrics" :key="item.label" :class="`tone-${item.tone}`">
-          <span class="impact-icon">{{ item.icon }}</span>
-          <div>
-            <strong>{{ item.value }}</strong>
-            <b>{{ item.label }}</b>
-            <small>{{ item.detail }}</small>
-          </div>
-        </article>
-      </div>
-
-      <p class="about-temporary-note">* Números e imagens desta seção são placeholders editoriais e serão substituídos pelos dados/arquivos oficiais da RAS UFRB.</p>
     </div>
   </section>
 </template>

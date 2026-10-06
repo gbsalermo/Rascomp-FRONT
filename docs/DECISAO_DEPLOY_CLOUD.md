@@ -278,3 +278,68 @@ impacto no modo local
 custo
 nova decisão
 ```
+
+
+---
+
+## Regra congelada — Cloud não elimina operação local
+
+A hospedagem Cloudflare é uma camada de publicação, proteção e distribuição. **O domínio do RasComp não pode depender da existência da Cloudflare para funcionar.**
+
+O modo local permanece obrigatório:
+
+```text
+Spring Boot local
+MySQL local
+frontends locais/builds estáticos
+storage local configurável
+```
+
+### Quotas/Workers
+
+Não projetar a API de modo que toda requisição dinâmica dependa obrigatoriamente de uma execução de Worker sujeita a quota diária do plano.
+
+Na V1-BETA B:
+
+- conferir novamente limites/preços vigentes;
+- medir o tráfego esperado;
+- usar Cloudflare para static/CDN/DNS/TLS/proteção quando adequado;
+- manter backend/MySQL desacoplados de quota comercial específica.
+
+### Plano B para competição
+
+O projeto deve possuir runbook testado para operar em rede local caso a cloud fique indisponível ou seja deliberadamente retirada do caminho no dia do evento.
+
+Esse runbook deve incluir:
+
+- snapshot/backup recente;
+- restore local do MySQL;
+- disponibilidade local dos arquivos necessários;
+- configuração de URLs;
+- acesso via LAN;
+- smoke de Gestão/Portal/competição;
+- definição de fonte única de verdade durante o período local;
+- procedimento de retorno/reconciliação para cloud.
+
+Não operar duas bases independentes recebendo escritas simultâneas sem mecanismo explícito de sincronização.
+
+
+---
+
+## Decisão adicional — segunda via operacional
+
+A Cloud principal não é a única forma autorizada de operar o RasComp.
+
+Existe uma segunda via oficial:
+
+```text
+Cloudflare Tunnel
+→ servidor local
+→ Spring Boot + MySQL + frontends + storage local
+```
+
+Essa via poderá ser escolhida para a competição caso os testes de carga indiquem pouca margem ou baixa confiança na infraestrutura cloud/Workers escolhida.
+
+O domínio pode continuar público pelo Tunnel enquanto o processamento acontece localmente.
+
+A decisão entre cloud principal e servidor local deve acontecer após os testes de carga e antes do congelamento da versão do evento.

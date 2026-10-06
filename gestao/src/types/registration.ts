@@ -12,8 +12,11 @@ export interface Registration {
   id: number
   competitionId: number
   competitionNome: string
+  registrationLotId?: number
+  registrationLotNome?: string
   categoryId: number
   categoryNome: string
+  teamId: number
   teamNome: string
   robotId: number
   robotNome: string
@@ -113,6 +116,8 @@ export interface ParticipantCompetitionRegistration {
   id: number
   competitionId: number
   competitionNome: string
+  registrationLotId?: number
+  registrationLotNome?: string
   competitorId: number
   competitorNome: string
   teamId: number

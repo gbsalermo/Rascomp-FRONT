@@ -1,6 +1,6 @@
 # RasComp — Roadmap Pós-Projeto
 
-Última revisão: **03/10/2026**
+Última revisão: **05/10/2026**
 
 Este é o **único documento canônico para ordem de execução, prioridade, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -78,8 +78,8 @@ ETAPA 3  ✅ CONCLUÍDA / VALIDADA — Nova matriz de permissões
 ETAPA 4  ✅ CONCLUÍDA / VALIDADA — Consolidação funcional do MVP atual
 
 TRILHO PRIORITÁRIO — V1 BETA EM PRODUÇÃO
-V1-BETA A  🚧 PRÓXIMA — Landing pública: finalização + polimento
-V1-BETA B  ⏳ — Infraestrutura de produção: cloud + banco + storage/secrets + observabilidade mínima
+V1-BETA A  ✅ CONCLUÍDA / VALIDADA — Landing pública finalizada
+V1-BETA B  ⏭️ PRÓXIMA — planejar identidade/e-mail + infraestrutura: cloud + banco + storage/secrets + observabilidade mínima
 V1-BETA C  ⏳ — Abertura controlada: cadastro/login + inscrições reais + acesso ao sistema
 V1-BETA D  ⏳ — Smoke de produção + estabilização inicial
 
@@ -96,11 +96,11 @@ PRIORIDADE 2 — ADIÇÕES, TESTES E PORTABILIDADE
 ETAPA 11 ⏳ NÃO INICIADA — Avisos IN_APP + Telegram
 ETAPA 12 ⏳ NÃO INICIADA — Portabilidade institucional
 ETAPA 13 ⏳ NÃO INICIADA — Regras, Ajuda e Segurança
-ETAPA 14 ⏳ NÃO INICIADA — Hardening + preparação para uso externo
-ETAPA 15 ⏳ NÃO INICIADA — Validação final completa
+ETAPA 14 ⏳ NÃO INICIADA — Hardening de segurança + preparação de carga
+ETAPA 15 ⏳ NÃO INICIADA — Validação final + testes de carga pré-competição
 ETAPA 16 ⚠️ REINTERPRETADA — consolidação/hardening da produção definitiva; não é mais o primeiro deploy
 
-**Próximo trabalho autorizado: V1-BETA A — finalizar e polir a Landing pública.**
+**Próximo trabalho: discutir e aprovar o desenho da V1-BETA B antes de criar a branch da fase.**
 
 A V1 Beta não encerra o roadmap. Ela cria uma linha estável de produção para divulgação, cadastro e inscrições enquanto o restante do produto continua evoluindo em ambiente não-prod.
 ---
@@ -160,6 +160,23 @@ Landing pública
 ```
 
 A URL de destino deve ser configurável por ambiente. Não hardcodar localhost nem domínio temporário.
+
+### Gate 0 — identidade e acesso antes da infraestrutura
+
+Antes do primeiro commit da V1-BETA B, definir e validar a arquitetura mínima de identidade:
+
+- verificação de posse do e-mail;
+- ativação de conta;
+- recuperação segura de senha;
+- política para reduzir contas falsas/descartáveis sem coletar dados pessoais desnecessários;
+- provedor de e-mail transacional;
+- tokens/códigos de uso único e expiração;
+- resposta anti-enumeração;
+- fluxo excepcional DEV auditado sem acesso à senha definitiva;
+- ambiente remoto de homologação acessível externamente já no início da fase;
+- preservação do modo local e da contingência via Cloudflare Tunnel.
+
+A decisão deve ser documentada antes da implementação.
 
 ## V1-BETA B — Infraestrutura de produção
 
@@ -232,6 +249,67 @@ Obrigatório:
 - nenhum identificador da conta temporária hardcoded na aplicação.
 
 A migração futura não pode exigir reescrever o sistema.
+
+### Regra permanente — modo local e contingência de competição
+
+O deploy em nuvem **não pode remover nem degradar o modo local**.
+
+O RasComp deve continuar podendo operar com:
+
+```text
+Landing/Vite local ou build estático local
++
+Gestão/Participante local
++
+Spring Boot local
++
+MySQL local/rede local
++
+storage local configurável
+```
+
+Objetivos:
+
+- desenvolvimento sem dependência da cloud;
+- homologação local;
+- demonstrações;
+- contingência operacional no dia da competição.
+
+Cloudflare é infraestrutura de publicação/proteção, não requisito funcional do domínio.
+
+#### Cloudflare e quotas
+
+Na V1-BETA B, revalidar limites e preços vigentes antes do provisionamento.
+
+Diretriz arquitetural:
+
+- Landing/assets estáticos podem aproveitar CDN/static hosting;
+- evitar arquitetar toda chamada dinâmica da API como execução obrigatória de Worker com quota diária;
+- backend Spring Boot e MySQL devem continuar acessíveis/operáveis independentemente dessa quota;
+- nenhum limite comercial específico deve ser assumido permanentemente no código ou na documentação operacional sem nova conferência.
+
+#### Contingência local de evento
+
+Antes da primeira competição oficial, executar um ensaio de operação sem cloud:
+
+```text
+backup/snapshot recente da produção
+→ restore em MySQL local
+→ arquivos necessários disponíveis localmente
+→ URLs/API configuradas para rede local
+→ Gestão + Portal + operação competitiva funcionando
+```
+
+Regras:
+
+- documentar passo a passo do cutover;
+- testar acesso por outros computadores/celulares na rede local;
+- validar Follow, Sumô, chaves, ranking e inscrições já existentes;
+- evitar operação simultânea cloud + local com escritas independentes;
+- durante contingência, definir explicitamente qual ambiente é a fonte de verdade;
+- ao retornar à cloud, executar procedimento controlado de reconciliação/restauração, nunca copiar dados manualmente sem rastreabilidade.
+
+O plano local é uma **contingência**, não substitui backup, observabilidade ou infraestrutura de produção adequada.
 
 ## V1-BETA C — Cadastro, acesso e inscrições reais
 
@@ -603,6 +681,36 @@ Simular de ponta a ponta:
 
 Saída da etapa: **MVP funcional, coerente, utilizável e apresentável**.
 
+### Fechamento público da competição — Hero de campeões
+
+Na parte final do roadmap original, validar e concluir também a transição editorial do Hero de introdução da competição depois que os resultados oficiais forem consolidados.
+
+Regra planejada:
+
+```text
+categoria ainda em disputa
+→ Hero mantém foco em competição/status/acompanhamento
+
+categoria com 1º + 2º + 3º definidos
+→ resultado continua disponível na section competitiva
+
+edição com resultados consolidados
+→ Hero de introdução pode destacar os campeões por categoria
+→ mostrar somente informação final/oficial
+→ não substituir a section detalhada de resultados
+```
+
+Objetivo visual:
+
+- transformar o Hero em uma vitrine final da edição depois da definição dos resultados;
+- destacar os campeões das categorias sem carregar histórico de partidas no Hero;
+- consumir exclusivamente o resultado oficial consolidado pelo backend;
+- preservar responsividade e legibilidade quando houver várias categorias;
+- definir na ETAPA 10 o comportamento quando apenas parte das categorias já estiver concluída;
+- não hardcodar campeão, equipe ou categoria.
+
+Essa melhoria é preservada no **roadmap original** e não é requisito para reabrir o fechamento visual já aprovado da V1-BETA A.
+
 ---
 
 # CHECKPOINT TRANSVERSAL — Otimização Mobile do MVP
@@ -759,76 +867,121 @@ Validar e implementar:
 
 Na ETAPA 4, a responsabilidade é apenas garantir que a interface atual não prometa um fluxo inexistente e registrar a pendência. A implementação definitiva fica nesta ETAPA 13 para ser revisada novamente no hardening da ETAPA 14 e exercitada na validação final da ETAPA 15.
 
-## ETAPA 14 — Hardening + preparação para uso externo
+## ETAPA 14 — Hardening de segurança + preparação de carga
 
-**Objetivo:** endurecer o produto já completo antes da validação final.
+**Objetivo:** preparar o RasComp para exposição real e para o pico operacional de uma competição.
 
-Revisar sistematicamente:
+### Segurança obrigatória
 
-- autorização endpoint a endpoint;
-- erros, logs e auditoria;
-- CORS e segredos;
-- upload/storage;
-- migrations do zero e upgrade sobre banco existente;
-- backup/restore;
-- primeiro DEV;
-- instalação/upgrade;
-- testdata bloqueado em produção;
-- hardcodes institucionais remanescentes;
-- acessibilidade;
-- responsividade;
-- falhas de API/Telegram/R2;
-- concorrência crítica e rollback administrativo.
+Revisar e testar, entre outros:
 
-### Testes físicos em smartphones/tablets
+- SQL injection e manipulação de filtros/parâmetros;
+- queries sempre parametrizadas via JPA/repositories, sem concatenação insegura;
+- validação de payloads e limites de tamanho;
+- autenticação, JWT, expiração e autorização por role/ownership;
+- brute force/login abusivo;
+- rate limiting por IP/usuário/endpoint sensível;
+- proteção contra rajadas de requisições que possam saturar API ou banco;
+- limites de upload e tipos de arquivo;
+- timeouts, connection pool e limites de concorrência;
+- CORS, headers de segurança e HTTPS;
+- secrets fora do código;
+- usuário do banco com menor privilégio necessário;
+- logs/auditoria de eventos suspeitos;
+- respostas 429/4xx sem derrubar o processo;
+- proteção no edge/WAF quando disponível;
+- nenhum endpoint administrativo exposto sem autenticação/autorização.
 
-Adicionar explicitamente testes reais pela rede local ou ambiente de teste:
+### Teste de carga genérico
 
-- Android e iOS quando disponíveis;
-- diferentes larguras/alturas e orientação;
-- Chrome/Safari quando disponíveis;
-- login e sessão;
-- formulários, tabelas, diálogos e navegação;
-- Portal do Participante;
-- Gestão nas telas que fizerem sentido em mobile;
-- Landing pública;
-- chamadas reais ao backend usando IP/host acessível pelo dispositivo.
+Preparar uma suíte reproduzível para medir:
 
-DevTools continuam úteis, mas não substituem o teste físico final.
+- leitura pública;
+- login/autenticação;
+- APIs do participante;
+- APIs da GESTAO;
+- operações de escrita;
+- uploads controlados;
+- picos curtos e carga sustentada;
+- recuperação depois do pico.
 
-## ETAPA 15 — Validação final completa
+Registrar pelo menos:
 
-**Objetivo:** executar a bateria final do produto consolidado antes do deploy.
+```text
+throughput
+latência p50 / p95 / p99
+taxa de erro
+CPU
+memória
+pool de conexões
+uso do MySQL
+timeouts
+429/5xx
+tempo de recuperação
+```
 
-Inclui:
+O teste deve rodar em ambiente autorizado de staging/homologação equivalente à produção. Não executar carga destrutiva contra serviços de terceiros ou produção real sem janela/controladoria específica.
 
-- instalação/configuração limpa;
-- competição completa;
-- todos os módulos da Prioridade 1 e 2;
-- falhas e recuperação;
-- uso concorrente representativo;
-- instalação com identidade institucional alternativa;
-- mobile real;
-- smoke de storage/integradores.
+## ETAPA 15 — Validação final + testes de carga pré-competição
 
-### Validação final de permissões
+**Objetivo:** provar que a versão candidata à primeira competição oficial está funcional, segura e suporta a escala prevista.
 
-Repetir a matriz completa sobre o produto final:
+### 15.1 Validação funcional final
 
-- DEV;
-- GESTAO;
-- MIDIA;
-- PARTICIPANTE líder;
-- PARTICIPANTE membro comum;
-- rotas frontend;
-- autorização HTTP real;
-- acesso direto por URL/API;
-- criação/edição/desativação de contas internas;
-- proteção do último DEV ativo;
-- isolamento entre identidade institucional e participante;
-- acesso aos módulos adicionados depois da ETAPA 3.
+Reexecutar fluxos críticos e permissões com dados próximos do real.
 
-Essa validação substitui o antigo checkpoint separado 'ETAPA 13.5'.
+### 15.2 Carga genérica
+
+Executar a suíte genérica definida na ETAPA 14 e estabelecer baseline da versão candidata.
+
+### 15.3 Cenário específico — competição com 300 a 500 participantes
+
+Criar massa sintética representativa de uma edição real com **300–500 pessoas**, equipes, Robots, categorias e Registrations.
+
+A simulação deve cobrir o ciclo completo, incluindo tráfego concorrente representativo de:
+
+```text
+cadastro / login
+→ criação/entrada em equipe
+→ Minha inscrição
+→ comprovantes
+→ cadastro/associação de Robot
+→ inscrições competitivas
+→ análise/aprovação pela GESTAO
+→ consultas públicas/Portal
+→ geração e leitura de chaves
+→ atualizações de partidas
+→ Follow: tomadas/tentativas/tempos/ranking
+→ Sumô: partidas/rounds/resultados/progressão
+→ atualização de ranking/resultados públicos
+→ múltiplos usuários consultando enquanto a GESTAO grava resultados
+```
+
+Não basta cadastrar 500 registros e fazer uma única requisição. O cenário precisa reproduzir:
+
+- carga sustentada;
+- concorrência de leituras e escritas;
+- picos após divulgação de resultado/chave/ranking;
+- operações administrativas simultâneas;
+- atualização pública frequente durante a competição.
+
+A quantidade exata de usuários simultâneos/RPS deve ser calibrada para um evento de 300–500 participantes e revisada com métricas da Beta, em vez de assumir que todos estarão enviando requisições ao mesmo tempo.
+
+### 15.4 Critério de aceite
+
+Definir limites objetivos antes do teste, incluindo:
+
+- zero corrupção/perda de dados;
+- zero duplicidade causada por concorrência;
+- integridade de chaves/progressão;
+- rankings coerentes;
+- operações críticas concluídas dentro de latência aceitável;
+- ausência de crescimento descontrolado de memória/conexões;
+- taxa de erro dentro do limite aprovado;
+- recuperação automática após pico;
+- proteção/rate limiting funcionando sem bloquear o uso legítimo.
+
+Qualquer gargalo encontrado volta para correção em ambiente não-prod e o teste é repetido.
 
 ## ETAPA 16 — Deploy em nuvem / Cloudflare
 
@@ -2167,3 +2320,157 @@ fase atual
 ```
 
 Não criar todas as branches antecipadamente, evitando que fases futuras partam de uma base desatualizada.
+
+
+---
+
+## CHECKPOINT OBRIGATÓRIO — primeira competição oficial
+
+A existência da V1 Beta online **não autoriza automaticamente** usar a plataforma na primeira competição oficial.
+
+Antes da competição, confirmar:
+
+```text
+[ ] hardening de segurança concluído
+[ ] testes de injection/validação/autorização aprovados
+[ ] rate limiting/proteção contra rajadas configurados
+[ ] carga genérica aprovada
+[ ] cenário RRC 300–500 aprovado
+[ ] integridade de inscrições/chaves/resultados/rankings aprovada
+[ ] backup + restore novamente verificados
+[ ] observabilidade/alertas operacionais disponíveis
+[ ] plano de rollback/contingência documentado
+[ ] versão candidata congelada e validada em staging
+```
+
+Se o cenário de carga ou segurança falhar, a primeira competição oficial não deve usar aquela versão até correção e nova validação.
+
+
+---
+
+### Duas vias aprovadas para operação da competição
+
+A arquitetura da V1 Beta e da primeira competição oficial deve preservar duas formas válidas de operação.
+
+#### VIA A — Cloud principal
+
+```text
+Internet
+→ Cloudflare
+→ frontend publicado
+→ backend/API em produção
+→ MySQL persistente
+→ storage persistente
+```
+
+É a via preferencial quando os testes de carga, limites do provedor e estabilidade forem satisfatórios.
+
+#### VIA B — Servidor local + Cloudflare Tunnel
+
+```text
+Internet
+→ domínio Cloudflare
+→ Cloudflare Tunnel
+→ servidor/PC local do evento
+   ├─ Landing/Gestão
+   ├─ Spring Boot
+   ├─ MySQL
+   └─ storage local
+```
+
+Também deve ser possível acessar o mesmo servidor pela rede local/LAN quando necessário.
+
+A VIA B pode ser adotada:
+
+- como contingência;
+- como operação principal temporária do evento;
+- quando houver dúvida sobre capacidade/custo/limite da VIA A;
+- quando os testes mostrarem que a máquina local oferece margem mais previsível.
+
+A escolha final deve ser tomada após os testes de carga e o ensaio de contingência.
+
+Não depender de reescrita do RasComp para alternar entre VIA A e VIA B.
+
+A configuração de API, banco, storage e URLs deve permanecer por ambiente.
+
+Se VIA B for adotada no evento, o servidor local passa a ser a fonte de verdade durante aquela operação.
+
+Não manter VIA A e VIA B gravando em bancos independentes ao mesmo tempo sem mecanismo explícito de sincronização.
+
+
+## Fechamento formal da V1-BETA A — 05/10/2026
+
+Status: **✅ CONCLUÍDA / VALIDADA / PRONTA PARA MERGE**
+
+Escopo fechado:
+
+- Landing institucional pública revisada e polida;
+- responsividade desktop/tablet/mobile validada;
+- Header, Hero, Sobre, Equipe, Robôs, Premiações, Galeria, Eventos e Footer;
+- competição pública integrada ao ciclo real;
+- ranking Follow, agenda/tomadas, chaveamento, BYE, 3º lugar e pódios;
+- regra pública: histórico durante disputa e somente Top 3 após pódio completo;
+- logos públicas de equipes com fallback;
+- chave read-only no Portal do Participante;
+- lotes de inscrição integrados e validados;
+- Hero mostrando lote vigente real;
+- documentação e regras sincronizadas;
+- modo local preservado.
+
+Pendência deliberadamente movida para o roadmap original:
+
+- Hero pós-competição destacando campeões por categoria na etapa final de fechamento do MVP.
+
+A branch `v1-beta-a-landing` não deve receber novos requisitos após o merge, salvo correção de regressão.
+
+## Gate de planejamento antes da V1-BETA B
+
+A B ainda **não está iniciada**. Antes do primeiro commit, discutir e aprovar:
+
+```text
+identidade real de conta
+→ verificação de e-mail
+→ ativação
+→ login
+→ recuperação segura de senha
+```
+
+Princípios já aceitos para discussão:
+
+- coletar somente o mínimo necessário;
+- posse do e-mail deve ser verificada;
+- reduzir contas falsas/descartáveis sem introduzir coleta excessiva de dados pessoais;
+- recuperação de senha deve funcionar por token/código de uso único, com expiração;
+- resposta de recuperação não pode revelar se a conta existe;
+- senha definitiva nunca deve ser visível ao DEV;
+- fluxo assistido pelo DEV pode existir apenas como fallback auditado;
+- escolher provedor de e-mail antes da implementação;
+- acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
+- modo local e Cloudflare Tunnel permanecem como contingência oficial.
+
+
+### Checkpoint automatizado final da V1-BETA A — 05/10/2026
+
+Validação executada no PR de fechamento:
+
+```text
+Backend Tests #527
+→ 211 testes
+→ 0 falhas
+→ 0 erros
+→ 0 skipped
+→ BUILD SUCCESS
+→ portal-testdata ✅
+
+Frontend Checks #233
+→ Gestão typecheck ✅
+→ Gestão build ✅
+
+Landing Checks #21
+→ Landing typecheck ✅
+→ Landing build ✅
+```
+
+Durante o fechamento, o primeiro run do backend revelou testes antigos desalinhados com regras já consolidadas. Os testes foram corrigidos para refletir os contratos atuais — sem relaxar as regras de negócio — e a suíte completa voltou a ficar verde.
+
+Com validação manual + CI final verde, a V1-BETA A está autorizada para merge em `main`.

@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **01/10/2026**
+Última atualização: **05/10/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -25,11 +25,11 @@ docs/README.md
 # 1. Situação atual
 
 ```text
-ETAPA 0  ✅ concluída / validada
-ETAPA 1  ✅ concluída / validada
-ETAPA 2   ✅ concluída / validada
-ETAPA 3   ✅ concluída / validada
-ETAPA 4   🚧 EM ANDAMENTO — BLOCO 3 ✅ / BLOCO 4.3 🧪 aguardando validação manual
+ETAPAS 0–4  ✅ concluídas / validadas
+V1-BETA A   ✅ concluída / validada — Landing pública
+V1-BETA B   ⏭️ próxima — discussão de identidade/e-mail + infraestrutura
+V1-BETA C   ⏳ acesso/inscrições reais
+V1-BETA D   ⏳ smoke + estabilização
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -86,7 +86,7 @@ Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, inclui
 
 Em 12/09/2026 o **Bloco 5 — Fluxos integrados completos** foi concluído no backend. Ele não exigiu nova funcionalidade visual: validou, com services e repositories reais, que os contratos já refletidos no `gestao/` funcionam juntos e que falhas não deixam persistência parcial.
 
-**As ETAPAS 1, 2 e 3 estão concluídas/validadas. A ETAPA 4 está em andamento: BLOCO 3 foi concluído/validado; no BLOCO 4, 4.1 e 4.2 estão implementados e 4.3 está implementado aguardando validação manual. 4.4 ainda não foi iniciado.**
+**As ETAPAS 0–4 e a V1-BETA A estão concluídas/validadas. A próxima atividade é discutir a arquitetura da V1-BETA B antes de iniciar sua branch.**
 
 ---
 
@@ -1784,7 +1784,7 @@ BLOCO 4.4
 → NÃO INICIADO
 ```
 
-Migrations atuais: **V1–V27**. Próxima migration estrutural: **V28+**.
+Migrations atuais: **V1–V30**. Próxima migration estrutural: **V31+**.
 
 
 ### Ajustes finais pós-regressão — 03/10/2026
@@ -1864,3 +1864,101 @@ O frontend não deve sugerir inscrições abertas enquanto esse gate não estive
 Futebol de Robôs entra na Beta somente como inscrição simples sem Robot próprio obrigatório. O domínio completo da partida permanece na ETAPA 6.
 
 Ajustes Gerais DEV avançados são pós-Beta e não bloqueiam o go-live inicial.
+
+
+### Lotes de inscrição — integração funcional 05/10/2026
+
+Na interface **Competição**, DEV/GESTAO passam a consultar e configurar lotes da edição.
+
+Comportamento:
+
+- botão `Lotes de inscrição` no cabeçalho da edição;
+- criação/edição com nome, início e fim;
+- períodos devem ficar dentro da janela geral de inscrições;
+- lotes não podem se sobrepor;
+- resumo da competição mostra o lote vigente;
+- após encerramento das inscrições/início da competição, lotes ficam somente leitura;
+- inscrições pessoal e de robô recebem o lote vigente como histórico quando a competição usa lotes;
+- se não houver lotes configurados, o fluxo anterior continua funcionando normalmente.
+
+
+### Fechamento dos lotes de inscrição — 05/10/2026
+
+Status: **✅ CONCLUÍDO E VALIDADO MANUALMENTE**
+
+Validação realizada:
+
+- criação de múltiplos lotes;
+- identificação automática do lote vigente pela data;
+- sincronização automática do lote vigente na Landing;
+- Hero exibindo o lote atual corretamente;
+- lotes futuros preservados e assumindo vigência automaticamente quando a data chegar;
+- prorrogação da janela geral de inscrições não altera automaticamente as datas dos lotes;
+- ausência de lote vigente em competição que usa lotes bloqueia novas inscrições normais;
+- histórico do lote permanece associado à inscrição já realizada.
+
+Regra consolidada:
+
+```text
+janela geral de inscrições
+→ pode ser prorrogada/reaberta separadamente
+
+lotes
+→ permanecem independentes
+→ não são estendidos automaticamente
+→ mudam de vigente pela data
+→ inscrição preserva o lote histórico
+```
+
+Nenhum ajuste adicional é necessário neste checkpoint.
+
+
+## Fechamento formal da V1-BETA A — 05/10/2026
+
+Status: **✅ CONCLUÍDA / VALIDADA / PRONTA PARA MERGE**
+
+Escopo fechado:
+
+- Landing institucional pública revisada e polida;
+- responsividade desktop/tablet/mobile validada;
+- Header, Hero, Sobre, Equipe, Robôs, Premiações, Galeria, Eventos e Footer;
+- competição pública integrada ao ciclo real;
+- ranking Follow, agenda/tomadas, chaveamento, BYE, 3º lugar e pódios;
+- regra pública: histórico durante disputa e somente Top 3 após pódio completo;
+- logos públicas de equipes com fallback;
+- chave read-only no Portal do Participante;
+- lotes de inscrição integrados e validados;
+- Hero mostrando lote vigente real;
+- documentação e regras sincronizadas;
+- modo local preservado.
+
+Pendência deliberadamente movida para o roadmap original:
+
+- Hero pós-competição destacando campeões por categoria na etapa final de fechamento do MVP.
+
+A branch `v1-beta-a-landing` não deve receber novos requisitos após o merge, salvo correção de regressão.
+
+## Gate de planejamento antes da V1-BETA B
+
+A B ainda **não está iniciada**. Antes do primeiro commit, discutir e aprovar:
+
+```text
+identidade real de conta
+→ verificação de e-mail
+→ ativação
+→ login
+→ recuperação segura de senha
+```
+
+Princípios já aceitos para discussão:
+
+- coletar somente o mínimo necessário;
+- posse do e-mail deve ser verificada;
+- reduzir contas falsas/descartáveis sem introduzir coleta excessiva de dados pessoais;
+- recuperação de senha deve funcionar por token/código de uso único, com expiração;
+- resposta de recuperação não pode revelar se a conta existe;
+- senha definitiva nunca deve ser visível ao DEV;
+- fluxo assistido pelo DEV pode existir apenas como fallback auditado;
+- escolher provedor de e-mail antes da implementação;
+- acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
+- modo local e Cloudflare Tunnel permanecem como contingência oficial.

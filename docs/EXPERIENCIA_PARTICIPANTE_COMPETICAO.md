@@ -367,3 +367,36 @@ Fonte de verdade:
 - somente após `APROVADA` a inscrição alimenta os fluxos competitivos existentes.
 
 O BLOCO 4.4 continua fora deste checkpoint.
+
+
+---
+
+## 14. Chave no Portal do Participante — antecipado antes da Beta B
+
+Participantes com inscrição aprovada em categoria que possui chaveamento podem abrir a chave oficial diretamente pelo Portal.
+
+Comportamento:
+
+```text
+inscrição aprovada em categoria com chave
+→ card competitivo do robô
+→ Ver chave completa
+→ modal responsivo
+→ TournamentBracket em modo somente leitura
+```
+
+A experiência reutiliza as projeções públicas já existentes:
+
+```text
+/api/v1/public/chaveamentos
+/api/v1/public/partidas
+/api/v1/public/resultados
+```
+
+Regras:
+
+- participante não altera partida, vencedor ou progressão;
+- BYE, resultado, vencedor, agenda e próxima disputa vêm do mesmo contrato utilizado pela Gestão;
+- participante apenas de Follow Line não recebe botão de chave;
+- no celular, a chave permanece horizontalmente navegável;
+- não foi criada regra competitiva nova no frontend.

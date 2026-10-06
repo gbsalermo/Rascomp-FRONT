@@ -1,48 +1,82 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { assetUrl } from '../api'
 
 const props = defineProps<{
   competition?: any
-  competitions: any[]
+  teams: any[]
   categories: any[]
   registrations: any[]
+  podiums: any[]
   ranking: any[]
+  followAttempts: any[]
+  followSchedules: any[]
+  followQueue: any[]
   brackets: any[]
   matches: any[]
   results: any[]
   followCategoryId?: number
   bracketId?: number
   loading?: boolean
+  managementUrl: string
 }>()
 
 const emit = defineEmits<{
-  (event: 'update:competitionId', value: number): void
   (event: 'update:followCategoryId', value: number): void
   (event: 'update:bracketId', value: number): void
+  (event: 'registrationUnavailable'): void
 }>()
 
+const showAllTeams = ref(false)
 const showFullRanking = ref(false)
+const showAllRankingRows = ref(false)
 const showFullBracket = ref(false)
 
-const activeCompetitions = computed(() => props.competitions.filter((item) => item.status === 'EM_ANDAMENTO'))
-const approvedRegistrations = computed(() => props.registrations.filter((item) => item.status === 'APROVADA'))
-const registrationCategoryIds = computed(() => new Set(props.registrations.map((item) => item.categoryId)))
+const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
+
+const competitionPublicVisible = computed(() =>
+  publicCompetitionStatuses.includes(props.competition?.status)
+)
+
+const competitionStageLabel = computed(() => {
+  if (props.competition?.status === 'INSCRICOES_ABERTAS') return 'Inscrições abertas'
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') return 'Inscrições encerradas · preparação'
+  return 'Competição em andamento'
+})
+
+const approvedRegistrations = computed(() =>
+  props.registrations.filter((item) => item.status === 'APROVADA')
+)
+
+const registrationCategoryIds = computed(() =>
+  new Set(props.registrations.map((item) => item.categoryId).filter(Boolean))
+)
 
 const competitionCategories = computed(() =>
   props.categories.filter(
-    (item) => item.competitionId === props.competition?.id || registrationCategoryIds.value.has(item.id)
+    (item) =>
+      item.competitionId === props.competition?.id ||
+      registrationCategoryIds.value.has(item.id)
   )
 )
 
-const followCategories = computed(() => competitionCategories.value.filter((item) => item.modalidade === 'FOLLOW_LINE'))
-const modalityCount = computed(() => new Set(competitionCategories.value.map((item) => item.modalidade).filter(Boolean)).size)
-const uniqueTeams = computed(() => new Set(approvedRegistrations.value.map((item) => item.teamId).filter(Boolean)).size)
-const uniqueRobots = computed(() => new Set(approvedRegistrations.value.map((item) => item.robotId).filter(Boolean)).size)
-const currentBracket = computed(() => props.brackets.find((item) => item.id === props.bracketId) || props.brackets[0])
+const followCategories = computed(() =>
+  competitionCategories.value.filter((item) => item.modalidade === 'FOLLOW_LINE')
+)
+
+const uniqueRobots = computed(() =>
+  new Set(approvedRegistrations.value.map((item) => item.robotId).filter(Boolean)).size
+)
+
+const currentBracket = computed(
+  () => props.brackets.find((item) => item.id === props.bracketId) || props.brackets[0]
+)
 
 const sortedMatches = computed(() =>
   [...props.matches].sort((a, b) => {
-    if (a.dataHora && b.dataHora) return new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
+    if (a.dataHora && b.dataHora) {
+      return new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
+    }
     if (a.dataHora) return -1
     if (b.dataHora) return 1
     const roundDiff = Number(a.rodada || 0) - Number(b.rodada || 0)
@@ -50,62 +84,364 @@ const sortedMatches = computed(() =>
   })
 )
 
-const upcomingMatches = computed(() =>
-  sortedMatches.value.filter((item) => ['EM_ANDAMENTO', 'AGENDADA', 'AGUARDANDO_PARTICIPANTES'].includes(item.status)).slice(0, 2)
+const liveMatch = computed(() =>
+  sortedMatches.value.find((item) => item.status === 'EM_ANDAMENTO')
 )
 
-const nextMatch = computed(() => upcomingMatches.value[0])
-const latestResult = computed(() => props.results[props.results.length - 1])
-const rankingRows = computed(() => props.ranking.slice(0, showFullRanking.value ? 8 : 3))
+const nextMatch = computed(() =>
+  sortedMatches.value.find((item) =>
+    ['AGENDADA', 'AGUARDANDO_PARTICIPANTES'].includes(item.status)
+  )
+)
+
+const latestResult = computed(() => props.results.at(-1))
+const rankingRows = computed(() =>
+  props.ranking.slice(0, showAllRankingRows.value ? props.ranking.length : 5)
+)
+
+function podiumForCategory(categoryId?: number) {
+  if (!categoryId) return undefined
+  return props.podiums.find((item) => Number(item.categoryId) === Number(categoryId))
+}
+
+function isPodiumComplete(podium: any) {
+  return Boolean(
+    podium?.podiumCompleto &&
+    podium?.winnerRobotNome &&
+    podium?.secondRobotNome &&
+    podium?.thirdRobotNome
+  )
+}
+
+const followPodium = computed(() => podiumForCategory(props.followCategoryId))
+const bracketPodium = computed(() => podiumForCategory(currentBracket.value?.categoryId))
+
+const followCurrentSchedule = computed(() =>
+  props.followSchedules.find((item) => item.status === 'EM_ANDAMENTO') ||
+  props.followSchedules.find((item) => item.status === 'EM_CHAMADA')
+)
+
+const followNextSchedule = computed(() =>
+  props.followSchedules.find((item) =>
+    ['AGENDADA', 'EM_CHAMADA'].includes(item.status) &&
+    item.id !== followCurrentSchedule.value?.id
+  ) ||
+  props.followSchedules.find((item) => item.status === 'AGENDADA')
+)
+
+const followCurrentEntry = computed(() =>
+  props.followQueue.find((item) => item.status === 'EM_EXECUCAO') ||
+  props.followQueue.find((item) => item.status === 'EM_APRESENTACAO') ||
+  props.followQueue.find((item) => item.status === 'CONVOCADA')
+)
+
+
+const followTotalTakes = computed(() => {
+  const scheduled = props.followSchedules.map((item) => Number(item.tomada || 0))
+  const attempted = props.followAttempts.map((item) => Number(item.tomada || 0))
+  return Math.max(0, ...scheduled, ...attempted)
+})
+
+function attemptsFor(registrationId: number) {
+  return props.followAttempts.filter(
+    (item) => Number(item.registrationId) === Number(registrationId)
+  ).length
+}
+
+function rankingLayer(index: number) {
+  return index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : 'standard'
+}
 
 const bracketRounds = computed(() => {
   const grouped = new Map<number, any[]>()
-  props.matches.forEach((match) => {
-    const round = Number(match.rodada || 1)
-    if (!grouped.has(round)) grouped.set(round, [])
-    grouped.get(round)?.push(match)
+
+  props.matches
+    .filter((match) => match.tipoPartida !== 'TERCEIRO_LUGAR')
+    .forEach((match) => {
+      const round = Number(match.rodada || 1)
+      if (!grouped.has(round)) grouped.set(round, [])
+      grouped.get(round)?.push(match)
+    })
+
+  return [...grouped.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([round, roundMatches]) => [
+      round,
+      [...roundMatches].sort((a, b) => Number(a.ordem || 0) - Number(b.ordem || 0))
+    ] as const)
+})
+
+const thirdPlaceMatch = computed(() =>
+  props.matches.find((match) => match.tipoPartida === 'TERCEIRO_LUGAR')
+)
+
+const bracketMaxRound = computed(() =>
+  Math.max(0, ...bracketRounds.value.map(([round]) => Number(round)))
+)
+
+function bracketRoundLabel(round: number) {
+  const remaining = bracketMaxRound.value - round
+  if (remaining === 0) return 'Final'
+  if (remaining === 1) return 'Semifinal'
+  if (remaining === 2) return 'Quartas de final'
+  if (remaining === 3) return 'Oitavas de final'
+  return `Rodada ${round}`
+}
+
+function resultFor(matchId: number) {
+  return props.results.find((item) => Number(item.matchId) === Number(matchId))
+}
+
+function isWinner(match: any, registrationId?: number) {
+  const result = resultFor(match.id)
+  return Boolean(result?.winnerRegistrationId && Number(result.winnerRegistrationId) === Number(registrationId))
+}
+
+function isByeAdvance(match: any) {
+  const participants = Number(Boolean(match.registrationAId)) + Number(Boolean(match.registrationBId))
+  return participants === 1 && match.status === 'FINALIZADA' && !resultFor(match.id)
+}
+
+function matchStatusLabel(match: any) {
+  if (isByeAdvance(match)) return 'BYE'
+  return ({
+    EM_ANDAMENTO: 'Ao vivo',
+    FINALIZADA: 'Finalizada',
+    AGENDADA: 'Agendada',
+    AGUARDANDO_PARTICIPANTES: 'Aguardando',
+    CANCELADA: 'Cancelada'
+  } as Record<string, string>)[match.status] || String(match.status || 'Aguardando')
+}
+
+function bracketTabLabel(bracket: any) {
+  const name = String(bracket.categoryNome || bracket.nome || 'Categoria')
+  return name
+    .replace(/^DEMO\s*·\s*/i, '')
+    .replace(/\s*·\s*BYEs$/i, '')
+}
+
+const participatingTeams = computed(() => {
+  const teamMap = new Map<string, any>()
+
+  approvedRegistrations.value.forEach((registration) => {
+    const teamId = registration.teamId ?? registration.equipeId
+    const teamFromApi = props.teams.find((team) => Number(team.id) === Number(teamId))
+    const key = String(teamId ?? registration.teamNome ?? registration.equipeNome ?? 'equipe')
+
+    const current = teamMap.get(key) || {
+      id: teamId,
+      nome:
+        teamFromApi?.nome ||
+        registration.teamNome ||
+        registration.equipeNome ||
+        'Equipe participante',
+      institutionSigla:
+        teamFromApi?.institutionSigla ||
+        registration.institutionSigla ||
+        registration.instituicaoSigla ||
+        '',
+      institutionNome:
+        teamFromApi?.institutionNome ||
+        registration.institutionNome ||
+        registration.instituicaoNome ||
+        '',
+      robotIds: new Set<number>(),
+      categoryIds: new Set<number>(),
+      raw: teamFromApi || registration
+    }
+
+    if (registration.robotId) current.robotIds.add(registration.robotId)
+    if (registration.categoryId) current.categoryIds.add(registration.categoryId)
+
+    teamMap.set(key, current)
   })
-  return [...grouped.entries()].sort(([a], [b]) => a - b)
+
+  return [...teamMap.values()].map((team) => ({
+    ...team,
+    robotCount: team.robotIds.size,
+    categoryCount: team.categoryIds.size
+  }))
 })
 
-const progressSteps = computed(() => {
-  const hasBracket = props.brackets.length > 0
-  const hasMatches = props.matches.length > 0
-  const hasLiveOrPendingMatches = props.matches.some((item) => ['EM_ANDAMENTO', 'AGENDADA', 'AGUARDANDO_PARTICIPANTES'].includes(item.status))
-  const bracketFinished = String(currentBracket.value?.status || '').toUpperCase() === 'FINALIZADO'
+const visibleTeams = computed(() =>
+  participatingTeams.value.slice(0, showAllTeams.value ? participatingTeams.value.length : 6)
+)
 
-  return [
-    { label: 'Inscrições', state: 'done' },
-    { label: 'Inspeção', state: hasBracket ? 'done' : 'current' },
-    { label: 'Chaves', state: hasBracket ? (hasMatches ? 'done' : 'current') : 'pending' },
-    { label: 'Partidas', state: bracketFinished ? 'done' : hasLiveOrPendingMatches || hasMatches ? 'current' : 'pending' },
-    { label: 'Finais', state: bracketFinished ? 'done' : 'pending' }
-  ]
+const categoryCards = computed(() =>
+  competitionCategories.value.map((category) => {
+    const registrations = approvedRegistrations.value.filter(
+      (item) => Number(item.categoryId) === Number(category.id)
+    )
+
+    const name = String(category.nome || '').toLocaleLowerCase('pt-BR')
+    const isFollow = category.modalidade === 'FOLLOW_LINE' || name.includes('follow') || name.includes('linha')
+    const isHockey = name.includes('hockey')
+    const isMini = name.includes('mini')
+    const podium = podiumForCategory(category.id)
+
+    let activity = registrations.length
+      ? `${registrations.length} robô${registrations.length === 1 ? '' : 's'} inscrito${registrations.length === 1 ? '' : 's'}`
+      : 'Aguardando participantes'
+
+    let state = 'Aguardando'
+
+    if (props.competition?.status === 'INSCRICOES_ABERTAS') {
+      state = registrations.length ? 'Inscrições' : 'Aberta'
+    } else if (props.competition?.status === 'INSCRICOES_ENCERRADAS') {
+      state = 'Preparação'
+    } else if (registrations.length) {
+      state = 'Em disputa'
+    }
+
+    if (isFollow && props.ranking[0]) {
+      activity = `${props.ranking[0].robotNome || 'Líder'} · ${formatSeconds(props.ranking[0].tempoFinalSegundos)}`
+      state = 'Ranking ativo'
+    }
+
+    if (
+      Number(currentBracket.value?.categoryId) === Number(category.id) &&
+      liveMatch.value
+    ) {
+      activity = `${liveMatch.value.robotANome || 'A definir'} × ${liveMatch.value.robotBNome || 'A definir'}`
+      state = 'Ao vivo'
+    }
+
+    if (isPodiumComplete(podium)) {
+      activity = `🥇 ${podium.winnerRobotNome} · 🥈 ${podium.secondRobotNome} · 🥉 ${podium.thirdRobotNome}`
+      state = 'Pódio definido'
+    }
+
+    return {
+      ...category,
+      registrations: registrations.length,
+      activity,
+      state,
+      icon: isFollow ? 'follow' : isHockey ? 'hockey' : isMini ? 'mini' : 'sumo'
+    }
+  })
+)
+
+const canRegister = computed(() => {
+  const competition = props.competition
+  if (!competition || competition.status !== 'INSCRICOES_ABERTAS') return false
+
+  const today = new Date()
+  const start = competition.inicioInscricoes
+    ? new Date(`${competition.inicioInscricoes}T00:00:00`)
+    : undefined
+  const end = competition.fimInscricoes
+    ? new Date(`${competition.fimInscricoes}T23:59:59`)
+    : undefined
+
+  return (!start || today >= start) && (!end || today <= end)
 })
+
+const registrationLabel = computed(() => {
+  if (canRegister.value) return 'Inscrições abertas'
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') return 'Inscrições encerradas'
+  if (props.competition?.status === 'EM_ANDAMENTO') return 'Inscrições encerradas'
+  return 'Inscrições indisponíveis'
+})
+
+const registrationDescription = computed(() => {
+  if (canRegister.value) return 'Você ainda pode participar desta edição.'
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') {
+    return 'O período de inscrições terminou e a organização está preparando a competição.'
+  }
+  if (props.competition?.status === 'EM_ANDAMENTO') {
+    return 'A competição já está em andamento e a janela de inscrições foi encerrada.'
+  }
+  return 'Não estamos no período de inscrições no momento.'
+})
+
+const liveHeadline = computed(() => {
+  if (liveMatch.value) return 'Partida acontecendo agora'
+  if (nextMatch.value) return 'Próxima disputa'
+  if (props.ranking[0]) return 'Ranking sendo atualizado'
+  if (props.competition?.status === 'INSCRICOES_ABERTAS') return 'Inscrições abertas'
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') return 'Preparação da competição'
+  return 'Aguardando atualização oficial'
+})
+
+const liveDescription = computed(() => {
+  const match = liveMatch.value || nextMatch.value
+
+  if (match) {
+    return `${match.robotANome || 'A definir'} × ${match.robotBNome || 'A definir'}`
+  }
+
+  if (props.ranking[0]) {
+    return `${props.ranking[0].robotNome || 'Robô líder'} está na liderança do Follow Line.`
+  }
+
+  if (props.competition?.status === 'INSCRICOES_ABERTAS') {
+    return 'Equipes e robôs estão entrando na competição. As disputas aparecerão aqui quando a organização iniciar o evento.'
+  }
+
+  if (props.competition?.status === 'INSCRICOES_ENCERRADAS') {
+    return 'As inscrições foram encerradas. A organização está consolidando participantes, categorias e chaveamentos.'
+  }
+
+  return 'Assim que uma partida, tomada ou resultado for publicado, ele aparecerá aqui.'
+})
+
+function teamLogoRaw(team: any) {
+  return (
+    team?.raw?.logoUrl ||
+    team?.raw?.teamLogoUrl ||
+    team?.raw?.equipeLogoUrl ||
+    team?.raw?.logo ||
+    team?.raw?.imagemUrl ||
+    team?.raw?.fotoUrl ||
+    ''
+  )
+}
+
+function teamHasLogo(team: any) {
+  return Boolean(teamLogoRaw(team))
+}
+
+function teamLogoSource(team: any) {
+  const raw = teamLogoRaw(team)
+  return raw ? assetUrl(raw) : ''
+}
+
+function categoryName(categoryId?: number) {
+  return (
+    competitionCategories.value.find((item) => Number(item.id) === Number(categoryId))?.nome ||
+    currentBracket.value?.categoryNome ||
+    'Categoria'
+  )
+}
 
 function formatSeconds(value?: number) {
   if (value == null) return '—'
   return `${Number(value).toFixed(2)} s`
 }
 
+function formatDate(value?: string) {
+  if (!value) return 'Data a definir'
+  const date = new Date(`${value}T12:00:00`)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }).format(date)
+}
+
 function formatDateTime(value?: string) {
   if (!value) return 'Horário a definir'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
+
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
     minute: '2-digit'
   }).format(date)
-}
-
-function statusLabel(value?: string) {
-  return String(value || '').replaceAll('_', ' ')
-}
-
-function selectCompetition(event: Event) {
-  emit('update:competitionId', Number((event.target as HTMLSelectElement).value))
 }
 
 function selectFollowCategory(event: Event) {
@@ -115,140 +451,626 @@ function selectFollowCategory(event: Event) {
 function selectBracket(event: Event) {
   emit('update:bracketId', Number((event.target as HTMLSelectElement).value))
 }
+
+function chooseBracket(id: number) {
+  emit('update:bracketId', id)
+}
+
+function handleRegistration() {
+  if (canRegister.value && props.managementUrl) {
+    window.location.href = props.managementUrl
+    return
+  }
+
+  emit('registrationUnavailable')
+}
 </script>
 
+
 <template>
-  <section v-if="competition?.status === 'EM_ANDAMENTO'" id="competicao-atual" class="active-competition-section">
+  <section
+    v-if="competitionPublicVisible"
+    id="competicao-atual"
+    class="active-competition-section"
+  >
     <div class="active-competition-container">
-      <header class="competition-simple-heading">
-        <div>
-          <span>Competição atual</span>
-          <div class="competition-title-line">
-            <h2>{{ competition.nome }}</h2>
-            <strong class="competition-status-pill"><i aria-hidden="true" /> Em andamento</strong>
+      <section class="competition-event-intro">
+        <div class="competition-event-intro-copy">
+          <span class="competition-event-kicker">Competição vigente</span>
+          <h2>Sobre o evento</h2>
+          <p>
+            {{
+              competition.descricao ||
+              'Conheça a competição vigente da IEEE RAS UFRB, suas equipes participantes, categorias e atualizações oficiais.'
+            }}
+          </p>
+
+          <div class="competition-event-meta">
+            <article>
+              <span>Período do evento</span>
+              <strong>{{ formatDate(competition.dataInicio) }} — {{ formatDate(competition.dataFim) }}</strong>
+            </article>
+
+            <article>
+              <span>Período de inscrições</span>
+              <strong>{{ formatDate(competition.inicioInscricoes) }} — {{ formatDate(competition.fimInscricoes) }}</strong>
+            </article>
+
+            <article>
+              <span>Equipes cadastradas</span>
+              <strong>{{ participatingTeams.length }} equipe{{ participatingTeams.length === 1 ? '' : 's' }}</strong>
+            </article>
           </div>
-          <p>{{ competition.descricao || 'Acompanhe os dados oficiais da competição gerenciada pelo RasComp.' }}</p>
         </div>
 
-        <label v-if="activeCompetitions.length > 1" class="active-competition-switcher">
-          <span>Outra competição ativa</span>
-          <select :value="competition.id" @change="selectCompetition">
-            <option v-for="item in activeCompetitions" :key="item.id" :value="item.id">{{ item.nome }}</option>
-          </select>
-        </label>
-      </header>
+        <aside class="competition-event-identity">
+          <span>{{ competitionStageLabel }}</span>
+          <strong>{{ competition.nome }}</strong>
+          <small>
+            {{ competitionCategories.length }} categoria{{ competitionCategories.length === 1 ? '' : 's' }} nesta edição
+          </small>
+        </aside>
+      </section>
 
-      <div class="competition-simple-grid" :class="{ loading }">
-        <article class="competition-overview-card">
-          <header class="competition-card-heading">
-            <span class="competition-card-icon purple" aria-hidden="true">▥</span>
-            <h3>Panorama geral</h3>
-          </header>
-
-          <div class="competition-overview-metrics">
-            <div><strong>{{ uniqueTeams }}</strong><span>Equipes</span></div>
-            <div><strong>{{ uniqueRobots }}</strong><span>Robôs</span></div>
-            <div><strong>{{ modalityCount }}</strong><span>Modalidades</span></div>
-            <div><strong>{{ approvedRegistrations.length }}</strong><span>Inscrições aprovadas</span></div>
-          </div>
-
-          <div id="cronograma-competicao" class="competition-progress-track">
-            <article v-for="step in progressSteps" :key="step.label" :class="`state-${step.state}`">
-              <span>{{ step.state === 'done' ? '✓' : '' }}</span>
-              <small>{{ step.label }}</small>
-            </article>
-          </div>
-
-          <a class="competition-primary-cta" href="#competicao-atual">Acompanhar competição <span aria-hidden="true">→</span></a>
-        </article>
-
-        <article class="competition-modality-card follow-card">
-          <header class="competition-card-heading with-action">
-            <div>
-              <span class="competition-card-icon purple" aria-hidden="true">⌁</span>
-              <h3>Follow Line</h3>
-            </div>
-
-            <select v-if="followCategories.length > 1" :value="followCategoryId" aria-label="Categoria Follow Line" @change="selectFollowCategory">
-              <option v-for="item in followCategories" :key="item.id" :value="item.id">{{ item.nome }}</option>
-            </select>
-          </header>
-
-          <div class="follow-ranking-head"><span>Pos.</span><span>Robô</span><span>Tempo</span></div>
-          <div class="follow-ranking-preview">
-            <article v-for="(item, index) in rankingRows" :key="item.registrationId">
-              <b>{{ item.posicao || index + 1 }}</b>
-              <div><strong>{{ item.robotNome || `Inscrição #${item.registrationId}` }}</strong><small>{{ item.teamNome }}</small></div>
-              <em>{{ formatSeconds(item.tempoFinalSegundos) }}</em>
-            </article>
-            <p v-if="!rankingRows.length" class="competition-simple-empty">Aguardando tentativas válidas.</p>
-          </div>
-
-          <button type="button" class="competition-text-action purple" @click="showFullRanking = !showFullRanking">
-            {{ showFullRanking ? 'Ver resumo' : 'Ver ranking completo' }} <span aria-hidden="true">→</span>
-          </button>
-        </article>
-
-        <article id="chaveamento" class="competition-modality-card sumo-card">
-          <header class="competition-card-heading with-action">
-            <div>
-              <span class="competition-card-icon red" aria-hidden="true">⚙</span>
-              <h3>Sumô</h3>
-            </div>
-
-            <select v-if="brackets.length > 1" :value="bracketId" aria-label="Chave de Sumô" @change="selectBracket">
-              <option v-for="item in brackets" :key="item.id" :value="item.id">{{ item.nome }}</option>
-            </select>
-          </header>
-
-          <span class="sumo-preview-label">Próximos confrontos</span>
-          <div class="sumo-match-preview">
-            <article v-for="match in upcomingMatches" :key="match.id">
-              <strong>{{ match.robotANome || 'A definir' }}</strong>
-              <b>×</b>
-              <strong>{{ match.robotBNome || 'A definir' }}</strong>
-              <em>{{ match.status === 'EM_ANDAMENTO' ? 'Agora' : 'Em breve' }}</em>
-            </article>
-            <p v-if="!upcomingMatches.length" class="competition-simple-empty">Nenhum confronto programado no momento.</p>
-          </div>
-
-          <button type="button" class="competition-text-action red" @click="showFullBracket = !showFullBracket">
-            {{ showFullBracket ? 'Ocultar chave' : 'Ver chave completa' }} <span aria-hidden="true">→</span>
-          </button>
-
-          <div v-if="showFullBracket" class="competition-mini-bracket">
-            <section v-for="([round, roundMatches]) in bracketRounds" :key="round">
-              <strong>Rodada {{ round }}</strong>
-              <span v-for="match in roundMatches" :key="match.id">{{ match.robotANome || 'A definir' }} × {{ match.robotBNome || 'A definir' }}</span>
-            </section>
-            <p v-if="!bracketRounds.length" class="competition-simple-empty">A chave oficial ainda não foi publicada.</p>
-          </div>
-        </article>
+      <div class="competition-content-heading">
+        <span>Participantes e categorias</span>
+        <h3>Acompanhe a competição vigente</h3>
+        <p>Conheça as equipes, veja as categorias e acompanhe as atualizações oficiais desta edição.</p>
       </div>
 
-      <section class="competition-highlights-strip">
-        <header class="competition-card-heading">
-          <span class="competition-card-icon purple light" aria-hidden="true">☆</span>
-          <h3>Próximos destaques</h3>
-        </header>
+      <div class="competition-public-grid" :class="{ loading }">
+        <section class="competition-public-card competition-teams-card">
+          <header class="competition-public-card-heading">
+            <div>
+              <span class="competition-card-icon purple" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="8" cy="8" r="3"/>
+                  <circle cx="16" cy="8" r="3"/>
+                  <path d="M2 21c0-4 2.6-7 6-7s6 3 6 7M12 15c1-.7 2.3-1 4-1 3.4 0 6 3 6 7"/>
+                </svg>
+              </span>
+              <div>
+                <span class="competition-card-eyebrow">Participantes</span>
+                <h3>Quem está competindo?</h3>
+                <p>Equipes com inscrições aprovadas nesta competição.</p>
+              </div>
+            </div>
 
-        <div class="competition-highlight-items">
-          <article>
-            <span class="highlight-symbol purple" aria-hidden="true">▣</span>
-            <div><strong>Próxima partida</strong><p v-if="nextMatch">{{ formatDateTime(nextMatch.dataHora) }} · Sumô</p><p v-else>Aguardando programação</p></div>
-          </article>
+            <span class="competition-count-badge">{{ participatingTeams.length }} equipe{{ participatingTeams.length === 1 ? '' : 's' }}</span>
+          </header>
 
-          <article>
-            <span class="highlight-symbol red" aria-hidden="true">♛</span>
-            <div><strong>Último resultado</strong><p v-if="latestResult">{{ latestResult.winnerRobotNome || 'Resultado publicado' }} venceu</p><p v-else>Aguardando resultado oficial</p></div>
-          </article>
+          <div v-if="visibleTeams.length" class="competition-team-grid">
+            <article v-for="team in visibleTeams" :key="team.id || team.nome" class="competition-team-card">
+              <div class="competition-team-logo">
+                <img
+                  v-if="teamHasLogo(team)"
+                  :src="teamLogoSource(team)"
+                  :alt="`Logo da equipe ${team.nome}`"
+                />
+                <span v-else class="competition-team-fallback" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <rect x="5" y="7" width="14" height="10" rx="3"/>
+                    <path d="M9 3v4M15 3v4M8 12h.01M16 12h.01M9 17v3M15 17v3"/>
+                  </svg>
+                  <small>RASCOMP</small>
+                </span>
+              </div>
 
-          <article id="resultados">
-            <span class="highlight-symbol purple" aria-hidden="true">▥</span>
-            <div><strong>Ranking Follow Line</strong><p v-if="ranking[0]">{{ ranking[0].robotNome }} · {{ formatSeconds(ranking[0].tempoFinalSegundos) }}</p><p v-else>Aguardando classificação</p></div>
-          </article>
-        </div>
-      </section>
+              <div class="competition-team-copy">
+                <strong>{{ team.nome }}</strong>
+                <small>{{ team.institutionSigla || team.institutionNome || 'Instituição não informada' }}</small>
+                <div class="competition-team-tags">
+                  <span>{{ team.robotCount }} robô{{ team.robotCount === 1 ? '' : 's' }}</span>
+                  <span>{{ team.categoryCount }} categoria{{ team.categoryCount === 1 ? '' : 's' }}</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div v-else class="competition-public-empty">
+            <strong>As equipes aparecerão aqui após a aprovação.</strong>
+            <span>A organização ainda não publicou participantes aprovados nesta edição.</span>
+          </div>
+
+          <button
+            v-if="participatingTeams.length > 6"
+            type="button"
+            class="competition-inline-action"
+            @click="showAllTeams = !showAllTeams"
+          >
+            {{ showAllTeams ? 'Mostrar menos equipes' : 'Ver todas as equipes' }}
+            <span aria-hidden="true">→</span>
+          </button>
+        </section>
+
+        <section class="competition-public-card competition-categories-card">
+          <header class="competition-public-card-heading">
+            <div>
+              <span class="competition-card-icon red" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M8 4h8v4c0 3-2 5-4 5s-4-2-4-5V4Z"/>
+                  <path d="M6 5H3v2c0 3 2 5 5 5M18 5h3v2c0 3-2 5-5 5M12 13v4M8 21h8M10 17h4"/>
+                </svg>
+              </span>
+              <div>
+                <span class="competition-card-eyebrow">Modalidades</span>
+                <h3>Categorias da competição</h3>
+                <p>Veja onde os robôs estão inscritos e o estágio de cada categoria.</p>
+              </div>
+            </div>
+          </header>
+
+          <div class="competition-category-list">
+            <article
+              v-for="category in categoryCards"
+              :key="category.id"
+              :class="{
+                'is-live': category.state === 'Ao vivo',
+                'is-podium': category.state === 'Pódio definido'
+              }"
+            >
+              <span class="competition-category-icon" aria-hidden="true">
+                <svg v-if="category.icon === 'follow'" viewBox="0 0 24 24">
+                  <path d="M3 13c3-7 6 7 9 0s6 7 9 0"/>
+                </svg>
+                <svg v-else-if="category.icon === 'hockey'" viewBox="0 0 24 24">
+                  <path d="M7 3v12l5 5M17 3v12l-5 5"/>
+                  <path d="M8 12h8"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24">
+                  <rect x="5" y="7" width="14" height="10" rx="2"/>
+                  <path d="M9 3v4M15 3v4M8 12h.01M16 12h.01M9 17v3M15 17v3"/>
+                </svg>
+              </span>
+
+              <div>
+                <strong>{{ category.nome }}</strong>
+                <small>{{ category.activity }}</small>
+              </div>
+
+              <em :class="{ live: category.state === 'Ao vivo' }">
+                {{ category.state }}
+              </em>
+            </article>
+
+            <div v-if="!categoryCards.length" class="competition-public-empty">
+              <strong>Categorias ainda não publicadas.</strong>
+              <span>Assim que a organização configurar as modalidades, elas aparecerão aqui.</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="resultados" class="competition-public-card competition-live-card">
+          <header class="competition-public-card-heading competition-live-heading">
+            <div>
+              <span class="competition-card-icon live" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M5 8a6 6 0 0 0 0 8M19 8a6 6 0 0 1 0 8M2 5a10 10 0 0 0 0 14M22 5a10 10 0 0 1 0 14"/>
+                  <circle cx="12" cy="12" r="2"/>
+                </svg>
+              </span>
+              <div>
+                <span class="competition-card-eyebrow">Acompanhamento</span>
+                <h3>O que está acontecendo agora?</h3>
+                <p>Partidas, tomadas, ranking e resultados publicados pela organização.</p>
+              </div>
+            </div>
+
+            <span v-if="liveMatch || followCurrentEntry?.status === 'EM_EXECUCAO'" class="competition-live-badge">
+              <i aria-hidden="true" /> AO VIVO
+            </span>
+            <span v-else class="competition-stage-badge">{{ competitionStageLabel }}</span>
+          </header>
+
+          <div class="competition-live-summary">
+            <article class="competition-live-main competition-live-main--battle">
+              <span class="competition-live-main-kicker">
+                {{ liveMatch ? categoryName(currentBracket?.categoryId) : nextMatch ? 'Próxima disputa' : 'Competição' }}
+              </span>
+              <h4>{{ liveHeadline }}</h4>
+              <strong>{{ liveDescription }}</strong>
+              <div v-if="liveMatch || nextMatch" class="competition-live-meta-row">
+                <span>{{ formatDateTime((liveMatch || nextMatch)?.dataHora) }}</span>
+                <span v-if="(liveMatch || nextMatch)?.pista">{{ (liveMatch || nextMatch)?.pista }}</span>
+                <span v-if="(liveMatch || nextMatch)?.statusConvocacao">
+                  {{ (liveMatch || nextMatch)?.statusConvocacao }}
+                </span>
+              </div>
+            </article>
+
+            <article class="competition-live-stat competition-live-stat--follow">
+              <span>Follow Line</span>
+              <strong v-if="followCurrentSchedule">Tomada {{ followCurrentSchedule.tomada }} em andamento</strong>
+              <strong v-else-if="followNextSchedule">Próxima tomada · T{{ followNextSchedule.tomada }}</strong>
+              <strong v-else>Aguardando agenda</strong>
+              <small v-if="followCurrentSchedule && followNextSchedule">
+                Próxima: T{{ followNextSchedule.tomada }} · {{ formatDateTime(followNextSchedule.dataHora) }}
+              </small>
+              <small v-else-if="followNextSchedule">{{ formatDateTime(followNextSchedule.dataHora) }}</small>
+              <small v-else>As tomadas aparecem quando a organização publicar a agenda.</small>
+            </article>
+
+            <article class="competition-live-stat competition-live-stat--result">
+              <span>Último resultado</span>
+              <strong v-if="latestResult">{{ latestResult.winnerRobotNome || 'Resultado publicado' }}</strong>
+              <strong v-else>Aguardando resultado</strong>
+              <small>{{ latestResult ? 'Resultado oficial publicado pela organização.' : 'Nenhum confronto finalizado ainda.' }}</small>
+            </article>
+          </div>
+
+          <div
+            v-if="competition?.status === 'EM_ANDAMENTO' || ranking.length || brackets.length"
+            class="competition-live-actions"
+          >
+            <button type="button" @click="showFullRanking = !showFullRanking">
+              {{
+                showFullRanking
+                  ? (isPodiumComplete(followPodium) ? 'Ocultar pódio Follow Line' : 'Ocultar Follow Line')
+                  : (isPodiumComplete(followPodium) ? 'Ver pódio Follow Line' : 'Acompanhar Follow Line')
+              }}
+            </button>
+            <button type="button" @click="showFullBracket = !showFullBracket">
+              {{
+                showFullBracket
+                  ? (isPodiumComplete(bracketPodium) ? 'Ocultar pódio da categoria' : 'Ocultar chaveamento')
+                  : (isPodiumComplete(bracketPodium) ? 'Ver pódio da categoria' : 'Acompanhar chaveamento')
+              }}
+            </button>
+          </div>
+
+          <div v-if="showFullRanking" class="competition-detail-panel competition-follow-panel">
+            <div class="competition-detail-panel-heading">
+              <div>
+                <span class="competition-panel-kicker">Follow Line</span>
+                <strong>
+                  {{ isPodiumComplete(followPodium) ? 'Pódio oficial da categoria' : 'Ranking e andamento das tomadas' }}
+                </strong>
+              </div>
+
+              <select
+                v-if="followCategories.length > 1"
+                :value="followCategoryId"
+                aria-label="Categoria Follow Line"
+                @change="selectFollowCategory"
+              >
+                <option v-for="item in followCategories" :key="item.id" :value="item.id">
+                  {{ item.nome }}
+                </option>
+              </select>
+            </div>
+
+            <section v-if="isPodiumComplete(followPodium)" class="competition-podium">
+              <header class="competition-podium-heading">
+                <div>
+                  <span>Resultado oficial</span>
+                  <strong>{{ followPodium.categoryNome }}</strong>
+                </div>
+                <em>Pódio definido</em>
+              </header>
+
+              <div class="competition-podium-grid">
+                <article class="competition-podium-position second">
+                  <span class="competition-podium-medal">2º</span>
+                  <div>
+                    <small>Vice-campeão</small>
+                    <strong>{{ followPodium.secondRobotNome }}</strong>
+                    <span>{{ followPodium.secondTeamNome }}</span>
+                  </div>
+                  <em v-if="followPodium.secondTempoFinalSegundos != null">
+                    {{ formatSeconds(followPodium.secondTempoFinalSegundos) }}
+                  </em>
+                </article>
+
+                <article class="competition-podium-position first">
+                  <span class="competition-podium-medal">1º</span>
+                  <div>
+                    <small>Campeão</small>
+                    <strong>{{ followPodium.winnerRobotNome }}</strong>
+                    <span>{{ followPodium.winnerTeamNome }}</span>
+                  </div>
+                  <em v-if="followPodium.winnerTempoFinalSegundos != null">
+                    {{ formatSeconds(followPodium.winnerTempoFinalSegundos) }}
+                  </em>
+                </article>
+
+                <article class="competition-podium-position third">
+                  <span class="competition-podium-medal">3º</span>
+                  <div>
+                    <small>3º lugar</small>
+                    <strong>{{ followPodium.thirdRobotNome }}</strong>
+                    <span>{{ followPodium.thirdTeamNome }}</span>
+                  </div>
+                  <em v-if="followPodium.thirdTempoFinalSegundos != null">
+                    {{ formatSeconds(followPodium.thirdTempoFinalSegundos) }}
+                  </em>
+                </article>
+              </div>
+
+              <p class="competition-podium-note">
+                Classificação final publicada pela organização. O histórico deixa de ser o destaque desta categoria após a definição do pódio.
+              </p>
+            </section>
+
+            <template v-else>
+              <div class="follow-operation-grid follow-operation-grid--takes">
+                <article class="follow-operation-card active">
+                  <span>Tomada atual</span>
+                  <strong v-if="followCurrentSchedule">Tomada {{ followCurrentSchedule.tomada }}</strong>
+                  <strong v-else>Sem tomada em andamento</strong>
+                  <small v-if="followCurrentSchedule">
+                    {{ followCurrentSchedule.status === 'EM_ANDAMENTO' ? 'Em execução' : 'Em chamada' }}
+                    <template v-if="followCurrentSchedule.pista"> · {{ followCurrentSchedule.pista }}</template>
+                  </small>
+                  <small v-else>Aguardando início da próxima tomada.</small>
+                </article>
+
+                <article class="follow-operation-card next">
+                  <span>Próxima tomada</span>
+                  <strong v-if="followNextSchedule">Tomada {{ followNextSchedule.tomada }}</strong>
+                  <strong v-else>Sem próxima tomada</strong>
+                  <small v-if="followNextSchedule">{{ formatDateTime(followNextSchedule.dataHora) }}</small>
+                  <small v-else>A organização ainda não publicou a próxima tomada.</small>
+                </article>
+
+                <article class="follow-operation-card">
+                  <span>Tomadas previstas</span>
+                  <strong>{{ followTotalTakes || '—' }}</strong>
+                  <small>{{ followSchedules.length ? followSchedules.length + ' agenda(s) publicadas' : 'Agenda ainda não publicada' }}</small>
+                </article>
+              </div>
+
+              <div class="competition-ranking-preview">
+                <article
+                  v-for="(item, index) in rankingRows"
+                  :key="item.registrationId"
+                  class="competition-ranking-row"
+                  :class="`rank-${rankingLayer(index)}`"
+                >
+                  <b>{{ item.posicao || index + 1 }}</b>
+
+                  <div class="competition-ranking-identity">
+                    <strong>{{ item.robotNome || `Inscrição #${item.registrationId}` }}</strong>
+                    <small>{{ item.teamNome }}</small>
+                    <div class="competition-ranking-tags">
+                      <span>{{ attemptsFor(item.registrationId) }} tentativa(s) registrada(s)</span>
+                      <span v-if="item.tomada">melhor na T{{ item.tomada }}</span>
+                    </div>
+                  </div>
+
+                  <div class="competition-ranking-time">
+                    <span>Melhor tempo</span>
+                    <em>{{ formatSeconds(item.tempoFinalSegundos) }}</em>
+                  </div>
+                </article>
+
+                <div v-if="!rankingRows.length" class="competition-public-empty">
+                  <strong>Ranking ainda não iniciado.</strong>
+                  <span>As classificações aparecerão quando as tomadas oficiais forem registradas.</span>
+                </div>
+              </div>
+
+              <button
+                v-if="ranking.length > 5"
+                type="button"
+                class="competition-inline-action"
+                @click="showAllRankingRows = !showAllRankingRows"
+              >
+                {{ showAllRankingRows ? 'Mostrar top 5' : `Ver ranking completo · ${ranking.length} robôs` }}
+              </button>
+            </template>
+          </div>
+
+          <div v-if="showFullBracket" id="chaveamento" class="competition-detail-panel competition-bracket-panel">
+            <div class="competition-detail-panel-heading competition-bracket-heading">
+              <div>
+                <span class="competition-panel-kicker">Chaveamento</span>
+                <strong>{{ currentBracket?.categoryNome || 'Categoria eliminatória' }}</strong>
+                <small>
+                  {{ isPodiumComplete(bracketPodium)
+                    ? 'Classificação final oficial desta categoria.'
+                    : 'Mesmo chaveamento oficial utilizado pela Gestão.' }}
+                </small>
+              </div>
+            </div>
+
+            <div v-if="brackets.length > 1" class="competition-bracket-tabs" role="tablist" aria-label="Categorias com chaveamento">
+              <button
+                v-for="bracket in brackets"
+                :key="bracket.id"
+                type="button"
+                :class="{ active: Number(bracket.id) === Number(bracketId) }"
+                @click="chooseBracket(bracket.id)"
+              >
+                {{ bracketTabLabel(bracket) }}
+              </button>
+            </div>
+
+            <section v-if="isPodiumComplete(bracketPodium)" class="competition-podium">
+              <header class="competition-podium-heading">
+                <div>
+                  <span>Resultado oficial</span>
+                  <strong>{{ bracketPodium.categoryNome }}</strong>
+                </div>
+                <em>Pódio definido</em>
+              </header>
+
+              <div class="competition-podium-grid">
+                <article class="competition-podium-position second">
+                  <span class="competition-podium-medal">2º</span>
+                  <div>
+                    <small>Vice-campeão</small>
+                    <strong>{{ bracketPodium.secondRobotNome }}</strong>
+                    <span>{{ bracketPodium.secondTeamNome }}</span>
+                  </div>
+                </article>
+
+                <article class="competition-podium-position first">
+                  <span class="competition-podium-medal">1º</span>
+                  <div>
+                    <small>Campeão</small>
+                    <strong>{{ bracketPodium.winnerRobotNome }}</strong>
+                    <span>{{ bracketPodium.winnerTeamNome }}</span>
+                  </div>
+                </article>
+
+                <article class="competition-podium-position third">
+                  <span class="competition-podium-medal">3º</span>
+                  <div>
+                    <small>3º lugar</small>
+                    <strong>{{ bracketPodium.thirdRobotNome }}</strong>
+                    <span>{{ bracketPodium.thirdTeamNome }}</span>
+                  </div>
+                </article>
+              </div>
+
+              <p class="competition-podium-note">
+                Com os três colocados definidos, a Landing prioriza o pódio oficial desta categoria em vez do histórico da chave.
+              </p>
+            </section>
+
+            <template v-else>
+              <div v-if="nextMatch" class="competition-next-battle">
+                <span>Próxima batalha</span>
+                <strong>{{ nextMatch.robotANome || 'A definir' }} × {{ nextMatch.robotBNome || 'A definir' }}</strong>
+                <div>
+                  <small>{{ formatDateTime(nextMatch.dataHora) }}</small>
+                  <small v-if="nextMatch.pista">{{ nextMatch.pista }}</small>
+                  <small>{{ bracketRoundLabel(Number(nextMatch.rodada || 1)) }}</small>
+                </div>
+              </div>
+
+              <div v-if="bracketRounds.length" class="competition-bracket-scroll">
+                <div class="competition-bracket-board">
+                  <section
+                    v-for="([round, roundMatches]) in bracketRounds"
+                    :key="round"
+                    class="competition-bracket-round"
+                  >
+                    <header>
+                      <strong>{{ bracketRoundLabel(Number(round)) }}</strong>
+                      <small>Rodada {{ round }}</small>
+                    </header>
+
+                    <div class="competition-bracket-round-matches">
+                      <article
+                        v-for="match in roundMatches"
+                        :key="match.id"
+                        class="competition-bracket-match"
+                        :class="{
+                          'has-result': Boolean(resultFor(match.id)),
+                          'is-live': match.status === 'EM_ANDAMENTO',
+                          'is-bye': isByeAdvance(match),
+                          'is-final': Number(round) === bracketMaxRound
+                        }"
+                      >
+                        <div class="competition-bracket-match-head">
+                          <span>Partida {{ match.ordem }}</span>
+                          <em>{{ matchStatusLabel(match) }}</em>
+                        </div>
+
+                        <div
+                          class="competition-bracket-robot"
+                          :class="{ winner: isWinner(match, match.registrationAId) }"
+                        >
+                          <span>A</span>
+                          <div>
+                            <strong>{{ match.robotANome || 'A definir' }}</strong>
+                            <small>{{ match.teamANome || 'Equipe a definir' }}</small>
+                          </div>
+                          <b v-if="resultFor(match.id)?.pontosA !== undefined">{{ resultFor(match.id)?.pontosA }}</b>
+                        </div>
+
+                        <div
+                          class="competition-bracket-robot"
+                          :class="{ winner: isWinner(match, match.registrationBId) }"
+                        >
+                          <span>B</span>
+                          <div>
+                            <strong>{{ match.robotBNome || 'A definir' }}</strong>
+                            <small>{{ match.teamBNome || 'Equipe a definir' }}</small>
+                          </div>
+                          <b v-if="resultFor(match.id)?.pontosB !== undefined">{{ resultFor(match.id)?.pontosB }}</b>
+                        </div>
+
+                        <footer>
+                          <span v-if="resultFor(match.id)" class="competition-bracket-advance">
+                            {{ resultFor(match.id)?.winnerRobotNome }} avançou
+                          </span>
+                          <span v-else-if="isByeAdvance(match)" class="competition-bracket-bye">
+                            BYE · avanço automático
+                          </span>
+                          <span v-else-if="match.dataHora">
+                            {{ formatDateTime(match.dataHora) }}<template v-if="match.pista"> · {{ match.pista }}</template>
+                          </span>
+                          <span v-else>Horário a definir</span>
+                        </footer>
+                      </article>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <section v-if="thirdPlaceMatch" class="competition-third-place">
+                <header>
+                  <div>
+                    <span class="competition-third-place-kicker">Disputa de colocação</span>
+                    <strong>3º lugar</strong>
+                  </div>
+                  <em>{{ matchStatusLabel(thirdPlaceMatch) }}</em>
+                </header>
+
+                <div class="competition-third-place-body">
+                  <div
+                    class="competition-third-place-robot"
+                    :class="{ winner: isWinner(thirdPlaceMatch, thirdPlaceMatch.registrationAId) }"
+                  >
+                    <span>A</span>
+                    <div>
+                      <strong>{{ thirdPlaceMatch.robotANome || 'A definir' }}</strong>
+                      <small>{{ thirdPlaceMatch.teamANome || 'Equipe a definir' }}</small>
+                    </div>
+                    <b v-if="resultFor(thirdPlaceMatch.id)?.pontosA !== undefined">
+                      {{ resultFor(thirdPlaceMatch.id)?.pontosA }}
+                    </b>
+                  </div>
+
+                  <span class="competition-third-place-versus">×</span>
+
+                  <div
+                    class="competition-third-place-robot"
+                    :class="{ winner: isWinner(thirdPlaceMatch, thirdPlaceMatch.registrationBId) }"
+                  >
+                    <span>B</span>
+                    <div>
+                      <strong>{{ thirdPlaceMatch.robotBNome || 'A definir' }}</strong>
+                      <small>{{ thirdPlaceMatch.teamBNome || 'Equipe a definir' }}</small>
+                    </div>
+                    <b v-if="resultFor(thirdPlaceMatch.id)?.pontosB !== undefined">
+                      {{ resultFor(thirdPlaceMatch.id)?.pontosB }}
+                    </b>
+                  </div>
+                </div>
+
+                <footer>
+                  <span v-if="resultFor(thirdPlaceMatch.id)" class="competition-third-place-winner">
+                    {{ resultFor(thirdPlaceMatch.id)?.winnerRobotNome }} conquistou o 3º lugar
+                  </span>
+                  <span v-else-if="thirdPlaceMatch.dataHora">
+                    {{ formatDateTime(thirdPlaceMatch.dataHora) }}
+                    <template v-if="thirdPlaceMatch.pista"> · {{ thirdPlaceMatch.pista }}</template>
+                  </span>
+                  <span v-else>Horário a definir</span>
+                </footer>
+              </section>
+
+              <div v-if="!bracketRounds.length" class="competition-public-empty">
+                <strong>Chave ainda não publicada.</strong>
+                <span>A organização publicará os confrontos quando estiverem definidos.</span>
+              </div>
+            </template>
+          </div>
+        </section>
+      </div>
     </div>
   </section>
 </template>

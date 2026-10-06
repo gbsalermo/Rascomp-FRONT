@@ -1,6 +1,6 @@
 # Dossiê Mestre — Projeto RasComp
 
-Última revisão estrutural: **01/10/2026**
+Última revisão estrutural: **05/10/2026**
 
 Este é o documento canônico **cross-repo** de arquitetura, domínio, decisões e manutenção do RasComp.
 
@@ -23,20 +23,22 @@ Bloco 4 — Chaves                               ✅ concluído / validado
 Bloco 5 — Fluxos integrados                    ✅ concluído / validado
 ETAPA 2                                        ✅ concluída / validada
 ETAPA 3                                        ✅ concluída / validada
-ETAPA 4                                        🚧 em andamento — BLOCO 4 / Portal do Participante
+ETAPA 4                                        ✅ concluída / validada
 BLOCO 3 — Operação competitiva                 ✅ concluído / validado
-BLOCO 4.1 — Equipe e associação                ✅ implementado
-BLOCO 4.2 — Responsáveis por robô              ✅ base funcional implementada
-BLOCO 4.3 — Inscrições participante/robô       🧪 implementação principal pronta / aguardando build + validação
-BLOCO 4.4 — Polimento + bateria final           ⏳ não iniciado
-Backend/Frontend                               revalidar suíte/build após alterações do BLOCO 4.3
+BLOCO 4.1 — Equipe e associação                ✅ concluído / validado
+BLOCO 4.2 — Responsáveis por robô              ✅ concluído / validado
+BLOCO 4.3 — Inscrições participante/robô       ✅ concluído / validado
+BLOCO 4.4 — Landing/polimento                   ↪ replanejado e concluído na V1-BETA A
+Backend/Frontend                               ✅ baseline funcional validada para fechamento da V1-BETA A
 Banco ativo                                    MySQL
-Migrations                                     V1–V27
-Próxima migration estrutural                   V28+
+Migrations                                     V1–V30
+Próxima migration estrutural                   V31+
 Profile testdata                               ✅ contra MySQL real
 Roles atuais                                   DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                                        backend ✅ / frontend ✅ / validada ✅
-Deploy cloud                                   ⏳ ETAPA 16
+V1-BETA A                                      ✅ concluída / validada
+V1-BETA B                                      ⏭️ próxima — discussão antes do início
+Deploy cloud                                   ⏳ inicia no trilho Beta B; ETAPA 16 = hardening final
 ```
 
 Em 04/09/2026 foi executado um checkpoint de **limpeza/revisão documental**, sem mudança de etapa. A limpeza técnica de código/artefatos foi iniciada em 13/09/2026 na ETAPA 2.
@@ -1873,7 +1875,7 @@ BLOCO 4.4
 → NÃO INICIADO
 ```
 
-Migrations atuais: **V1–V27**. Próxima migration estrutural: **V28+**.
+Migrations atuais: **V1–V30**. Próxima migration estrutural: **V31+**.
 
 
 ---
@@ -1997,3 +1999,113 @@ A URL do sistema autenticado é configuração de ambiente.
 A primeira infraestrutura pode ser criada temporariamente em conta pessoal para acelerar o lançamento, mas deve permanecer migrável para conta própria + domínio próprio. Banco, storage, DNS, URLs e secrets não podem depender estruturalmente da conta temporária.
 
 Branches Beta serão sequenciais e isoladas: A → merge → B → merge → C → merge → D.
+
+
+---
+
+## Segurança e capacidade — gate pré-competição oficial
+
+Além do gate de abertura da Beta, existe um segundo gate específico para a **primeira competição oficial**.
+
+### Hardening
+
+Cobrir SQL injection, autorização, autenticação abusiva, rate limiting, floods/rajadas, limites de upload/payload, CORS/HTTPS, secrets, menor privilégio do banco, timeouts/pools, logs e proteção de edge/WAF quando aplicável.
+
+### Capacidade
+
+Dois testes distintos são obrigatórios:
+
+1. **Carga genérica:** baseline de APIs públicas/autenticadas, leituras, escritas e picos.
+2. **Carga RRC 300–500:** massa e concorrência representativas de 300–500 participantes, percorrendo inscrições, Gestão, chaves, Follow, Sumô, ranking e consultas públicas simultâneas.
+
+O cenário de competição deve validar consistência e concorrência, não apenas quantidade de requests.
+
+Critério principal: uma sobrecarga deve degradar/controlar o serviço de forma observável, nunca corromper inscrições, chaveamentos, resultados ou rankings.
+
+
+---
+
+## Resiliência operacional — Cloud + modo local
+
+Decisão permanente:
+
+> A cloud é o ambiente preferencial de produção, mas **não é dependência funcional obrigatória** do RasComp.
+
+O sistema deve preservar execução local completa e configurável.
+
+Isso atende:
+
+- desenvolvimento;
+- homologação;
+- demonstrações;
+- contingência de competição.
+
+Antes da primeira competição oficial, além dos testes de carga/segurança, deve existir teste real de contingência local com restore de banco, arquivos disponíveis, acesso LAN e smoke competitivo.
+
+Cloud e local não devem receber escritas independentes simultaneamente sem estratégia de sincronização. Em contingência, um ambiente deve ser declarado fonte de verdade.
+
+A arquitetura Cloudflare também deve evitar dependência desnecessária de quotas diárias de Worker para todas as requisições dinâmicas; limites e preços serão revalidados na V1-BETA B e antes do evento.
+
+
+### Adição preservada no fechamento do roadmap — Hero de campeões
+
+Na ETAPA 10, após consolidação dos resultados oficiais da edição, a revisão pública deve validar a evolução do Hero introdutório da competição para também destacar os **campeões por categoria**.
+
+Princípios:
+
+- somente resultado oficial consolidado;
+- sem histórico detalhado no Hero;
+- várias categorias devem continuar legíveis/responsivas;
+- comportamento com categorias ainda em disputa deve ser definido sem antecipar vencedor;
+- a section competitiva continua sendo a visão detalhada.
+
+
+## Fechamento formal da V1-BETA A — 05/10/2026
+
+Status: **✅ CONCLUÍDA / VALIDADA / PRONTA PARA MERGE**
+
+Escopo fechado:
+
+- Landing institucional pública revisada e polida;
+- responsividade desktop/tablet/mobile validada;
+- Header, Hero, Sobre, Equipe, Robôs, Premiações, Galeria, Eventos e Footer;
+- competição pública integrada ao ciclo real;
+- ranking Follow, agenda/tomadas, chaveamento, BYE, 3º lugar e pódios;
+- regra pública: histórico durante disputa e somente Top 3 após pódio completo;
+- logos públicas de equipes com fallback;
+- chave read-only no Portal do Participante;
+- lotes de inscrição integrados e validados;
+- Hero mostrando lote vigente real;
+- documentação e regras sincronizadas;
+- modo local preservado.
+
+Pendência deliberadamente movida para o roadmap original:
+
+- Hero pós-competição destacando campeões por categoria na etapa final de fechamento do MVP.
+
+A branch `v1-beta-a-landing` não deve receber novos requisitos após o merge, salvo correção de regressão.
+
+## Gate de planejamento antes da V1-BETA B
+
+A B ainda **não está iniciada**. Antes do primeiro commit, discutir e aprovar:
+
+```text
+identidade real de conta
+→ verificação de e-mail
+→ ativação
+→ login
+→ recuperação segura de senha
+```
+
+Princípios já aceitos para discussão:
+
+- coletar somente o mínimo necessário;
+- posse do e-mail deve ser verificada;
+- reduzir contas falsas/descartáveis sem introduzir coleta excessiva de dados pessoais;
+- recuperação de senha deve funcionar por token/código de uso único, com expiração;
+- resposta de recuperação não pode revelar se a conta existe;
+- senha definitiva nunca deve ser visível ao DEV;
+- fluxo assistido pelo DEV pode existir apenas como fallback auditado;
+- escolher provedor de e-mail antes da implementação;
+- acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
+- modo local e Cloudflare Tunnel permanecem como contingência oficial.

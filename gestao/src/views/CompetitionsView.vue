@@ -8,6 +8,7 @@ import type {
   Competition,
   CompetitionRegistrationWindowChange,
   CompetitionStatus,
+  RegistrationLot,
   Registration
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
@@ -19,12 +20,17 @@ const focusLoading = ref(false)
 const dialog = ref(false)
 const windowDialog = ref(false)
 const windowSaving = ref(false)
+const lotsDialog = ref(false)
+const lotSaving = ref(false)
+const editingLotId = ref<number | null>(null)
 const editionsOpen = ref(false)
 const registrations = ref<Registration[]>([])
 const windowHistory = ref<CompetitionRegistrationWindowChange[]>([])
+const registrationLots = ref<RegistrationLot[]>([])
 const categoryCatalog = ref<Category[]>([])
 const editingId = ref<number | null>(null)
 const windowForm = reactive({ novaDataFim: '', motivo: '' })
+const lotForm = reactive<RegistrationLot>({ nome: '', dataInicio: '', dataFim: '' })
 
 const emptyForm = (): Competition => ({
   nome: '',
@@ -54,6 +60,13 @@ const canChangeRegistrationWindow = computed(() =>
 )
 const registrationWindowActionLabel = computed(() =>
   activeCompetition.value?.status === 'INSCRICOES_ENCERRADAS' ? 'Reabrir inscrições' : 'Prorrogar inscrições'
+)
+const currentRegistrationLot = computed(() =>
+  registrationLots.value.find((item) => item.atual)
+)
+const canManageLots = computed(() =>
+  activeCompetition.value?.status === 'PLANEJADA'
+    || activeCompetition.value?.status === 'INSCRICOES_ABERTAS'
 )
 const nextOperationalStatus = computed<CompetitionStatus | undefined>(() => {
   const current = activeCompetition.value?.status
@@ -154,25 +167,37 @@ function modalityLabel(value: string) {
   return 'Categoria'
 }
 
+function lotStatusLabel(lot: RegistrationLot) {
+  if (lot.atual) return 'Vigente'
+  const today = new Date().toISOString().slice(0, 10)
+  if (lot.dataFim < today) return 'Encerrado'
+  if (lot.dataInicio > today) return 'Programado'
+  return 'Inativo'
+}
+
 async function loadFocus() {
   const competitionId = competition.selectedId
   if (!competitionId) {
     registrations.value = []
     windowHistory.value = []
+    registrationLots.value = []
     return
   }
 
   focusLoading.value = true
   try {
-    const [registrationRows, historyRows] = await Promise.all([
+    const [registrationRows, historyRows, lotRows] = await Promise.all([
       adminApi.registrations({ competitionId }),
-      adminApi.competitionRegistrationWindowHistory(competitionId).catch(() => [])
+      adminApi.competitionRegistrationWindowHistory(competitionId).catch(() => []),
+      adminApi.competitionLots(competitionId).catch(() => [])
     ])
     registrations.value = registrationRows
     windowHistory.value = historyRows
+    registrationLots.value = lotRows
   } catch (error: any) {
     registrations.value = []
     windowHistory.value = []
+    registrationLots.value = []
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da edição.')
   } finally {
     focusLoading.value = false
@@ -213,6 +238,86 @@ function openRegistrationWindowDialog() {
   windowForm.novaDataFim = ''
   windowForm.motivo = ''
   windowDialog.value = true
+}
+
+function resetLotForm() {
+  editingLotId.value = null
+  lotForm.nome = ''
+  lotForm.dataInicio = activeCompetition.value?.inicioInscricoes || ''
+  lotForm.dataFim = activeCompetition.value?.fimInscricoes || ''
+}
+
+function openLotsDialog() {
+  if (!activeCompetition.value) return
+  resetLotForm()
+  lotsDialog.value = true
+}
+
+function editLot(lot: RegistrationLot) {
+  editingLotId.value = lot.id || null
+  lotForm.nome = lot.nome
+  lotForm.dataInicio = lot.dataInicio
+  lotForm.dataFim = lot.dataFim
+}
+
+async function saveLot() {
+  const active = activeCompetition.value
+  if (!active?.id || !canManageLots.value) return
+
+  if (!lotForm.nome.trim() || !lotForm.dataInicio || !lotForm.dataFim) {
+    ElMessage.warning('Informe nome, início e fim do lote.')
+    return
+  }
+
+  if (lotForm.dataInicio > lotForm.dataFim) {
+    ElMessage.warning('O fim do lote deve ocorrer após o início.')
+    return
+  }
+
+  lotSaving.value = true
+  try {
+    if (editingLotId.value) {
+      await adminApi.updateCompetitionLot(active.id, editingLotId.value, { ...lotForm })
+      ElMessage.success('Lote atualizado.')
+    } else {
+      await adminApi.createCompetitionLot(active.id, { ...lotForm })
+      ElMessage.success('Lote criado.')
+    }
+    registrationLots.value = await adminApi.competitionLots(active.id)
+    resetLotForm()
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar o lote.')
+  } finally {
+    lotSaving.value = false
+  }
+}
+
+async function removeLot(lot: RegistrationLot) {
+  const active = activeCompetition.value
+  if (!active?.id || !lot.id || !canManageLots.value) return
+
+  try {
+    await ElMessageBox.confirm(
+      `O lote "${lot.nome}" deixará de ser usado para novas inscrições. O histórico já vinculado permanece preservado.`,
+      'Remover lote',
+      {
+        confirmButtonText: 'Remover',
+        cancelButtonText: 'Cancelar',
+        type: 'warning'
+      }
+    )
+  } catch {
+    return
+  }
+
+  try {
+    await adminApi.deleteCompetitionLot(active.id, lot.id)
+    registrationLots.value = await adminApi.competitionLots(active.id)
+    if (editingLotId.value === lot.id) resetLotForm()
+    ElMessage.success('Lote removido.')
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível remover o lote.')
+  }
 }
 
 function focusEdition(row: Competition) {
@@ -342,6 +447,9 @@ onMounted(load)
       </div>
       <div class="heading-actions">
         <el-button v-if="auth.isDev" @click="editionsOpen = true">Gerenciar edições</el-button>
+        <el-button v-if="activeCompetition" @click="openLotsDialog">
+          Lotes de inscrição
+        </el-button>
         <el-button v-if="activeCompetition && canChangeRegistrationWindow" @click="openRegistrationWindowDialog">
           {{ registrationWindowActionLabel }}
         </el-button>
@@ -378,6 +486,10 @@ onMounted(load)
           <div>
             <small>Período de inscrições</small>
             <strong>{{ formatDate(activeCompetition.inicioInscricoes) }} — {{ formatDate(activeCompetition.fimInscricoes) }}</strong>
+          </div>
+          <div>
+            <small>Lote atual</small>
+            <strong>{{ currentRegistrationLot?.nome || (registrationLots.length ? 'Sem lote vigente' : 'Lotes não configurados') }}</strong>
           </div>
           <div>
             <small>Situação cadastral</small>
@@ -520,7 +632,7 @@ onMounted(load)
         <label>Data inicial<el-date-picker v-model="form.dataInicio" value-format="YYYY-MM-DD" type="date" /></label>
         <label>Data final<el-date-picker v-model="form.dataFim" value-format="YYYY-MM-DD" type="date" /></label>
         <label class="span-2">Status operacional
-          <el-input :model-value="statusLabels[form.status]" disabled />
+          <el-input :model-value="statusLabels[form.status || 'PLANEJADA']" disabled />
           <small class="muted">
             O status não é alterado pela edição comum. Use as ações operacionais da página:
             Abrir inscrições → Encerrar inscrições → Iniciar competição.
@@ -531,6 +643,85 @@ onMounted(load)
         <el-button @click="dialog = false">Cancelar</el-button>
         <el-button class="brand-button" @click="save">Salvar</el-button>
       </template>
+    </el-dialog>
+
+    <el-dialog
+      v-model="lotsDialog"
+      title="Lotes de inscrição"
+      width="min(820px, 94vw)"
+      align-center
+    >
+      <div v-if="canManageLots" class="form-grid">
+        <label class="span-2">Nome do lote
+          <el-input v-model="lotForm.nome" placeholder="Ex.: 1º lote" maxlength="100" />
+        </label>
+        <label>Início
+          <el-date-picker
+            v-model="lotForm.dataInicio"
+            value-format="YYYY-MM-DD"
+            type="date"
+            style="width:100%"
+          />
+        </label>
+        <label>Fim
+          <el-date-picker
+            v-model="lotForm.dataFim"
+            value-format="YYYY-MM-DD"
+            type="date"
+            style="width:100%"
+          />
+        </label>
+        <div class="span-2" style="display:flex;gap:8px;justify-content:flex-end">
+          <el-button v-if="editingLotId" @click="resetLotForm">Cancelar edição</el-button>
+          <el-button class="brand-button" :loading="lotSaving" @click="saveLot">
+            {{ editingLotId ? 'Atualizar lote' : 'Adicionar lote' }}
+          </el-button>
+        </div>
+      </div>
+
+      <el-alert
+        v-else
+        type="info"
+        :closable="false"
+        title="Os lotes ficam somente para consulta depois que as inscrições são encerradas ou a competição é iniciada."
+        show-icon
+      />
+
+      <div style="margin-top:18px">
+        <div class="card-heading">
+          <div>
+            <span class="eyebrow">Períodos configurados</span>
+            <h2>{{ registrationLots.length }} lote(s)</h2>
+          </div>
+        </div>
+
+        <el-table :data="registrationLots" empty-text="Nenhum lote configurado">
+          <el-table-column prop="nome" label="Lote" min-width="180" />
+          <el-table-column label="Período" min-width="230">
+            <template #default="{ row }">
+              {{ formatDate(row.dataInicio) }} — {{ formatDate(row.dataFim) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Situação" width="130">
+            <template #default="{ row }">
+              <el-tag :type="row.atual ? 'success' : 'info'" effect="light">
+                {{ lotStatusLabel(row) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="canManageLots" label="Ações" width="180" align="right">
+            <template #default="{ row }">
+              <el-button size="small" @click="editLot(row)">Editar</el-button>
+              <el-button size="small" type="danger" plain @click="removeLot(row)">Remover</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <p class="muted" style="margin-top:14px">
+        Lotes são períodos temporais da janela de inscrição. Eles não criam preço ou taxa automaticamente.
+        Se houver lotes configurados, novas inscrições normais ficam vinculadas ao lote vigente do dia.
+      </p>
     </el-dialog>
 
     <el-dialog v-model="windowDialog" :title="registrationWindowActionLabel" width="min(620px, 92vw)">

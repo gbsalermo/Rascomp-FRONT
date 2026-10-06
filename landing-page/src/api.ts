@@ -5,16 +5,32 @@ const publicApi = axios.create({ baseURL: `${API_URL}/api/v1/public`, timeout: 1
 
 export const api = {
   competitions: () => publicApi.get('/competicoes').then((r) => r.data),
+  currentRegistrationLot: (competitionId: number) =>
+    publicApi
+      .get(`/competicoes/${competitionId}/lote-atual`)
+      .then((r) => r.status === 204 ? undefined : r.data),
   categories: (modalidade?: string) =>
     publicApi.get('/categorias', { params: modalidade ? { modalidade } : undefined }).then((r) => r.data),
   teams: () => publicApi.get('/equipes').then((r) => r.data),
   robots: () => publicApi.get('/robos').then((r) => r.data),
   registrations: (competitionId: number) =>
     publicApi.get('/inscricoes', { params: { competitionId } }).then((r) => r.data),
+  podiums: (competitionId: number) =>
+    publicApi.get('/podios', { params: { competitionId } }).then((r) => r.data),
   ranking: (competitionId: number, categoryId: number) =>
     publicApi
       .get('/ranking/seguidor-linha', { params: { competitionId, categoryId } })
       .then((r) => r.data),
+  followAttempts: (competitionId: number, categoryId: number) =>
+    publicApi
+      .get('/follow/tentativas', { params: { competitionId, categoryId } })
+      .then((r) => r.data),
+  followSchedules: (competitionId: number, categoryId: number) =>
+    publicApi
+      .get('/follow/agenda', { params: { competitionId, categoryId } })
+      .then((r) => r.data),
+  followQueue: (scheduleId: number) =>
+    publicApi.get(`/follow/agenda/${scheduleId}/fila`).then((r) => r.data),
   brackets: (competitionId: number) =>
     publicApi.get('/chaveamentos', { params: { competitionId } }).then((r) => r.data),
   matches: (bracketId: number) =>

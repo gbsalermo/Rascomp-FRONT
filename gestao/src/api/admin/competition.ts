@@ -1,7 +1,8 @@
 import type {
   Category,
   Competition,
-  CompetitionRegistrationWindowChange
+  CompetitionRegistrationWindowChange,
+  RegistrationLot
 } from '../../types/competition'
 import { http } from '../http'
 
@@ -24,6 +25,14 @@ export const adminCompetitionApi = {
     http.post<CompetitionRegistrationWindowChange>(`/api/v1/competicoes/${id}/prorrogar-inscricoes`, payload).then((r) => r.data),
   competitionRegistrationWindowHistory: (id: number) =>
     http.get<CompetitionRegistrationWindowChange[]>(`/api/v1/competicoes/${id}/historico-inscricoes`).then((r) => r.data),
+  competitionLots: (id: number) =>
+    http.get<RegistrationLot[]>(`/api/v1/competicoes/${id}/lotes`).then((r) => r.data),
+  createCompetitionLot: (id: number, payload: RegistrationLot) =>
+    http.post<RegistrationLot>(`/api/v1/competicoes/${id}/lotes`, payload).then((r) => r.data),
+  updateCompetitionLot: (id: number, lotId: number, payload: RegistrationLot) =>
+    http.put<RegistrationLot>(`/api/v1/competicoes/${id}/lotes/${lotId}`, payload).then((r) => r.data),
+  deleteCompetitionLot: (id: number, lotId: number) =>
+    http.delete(`/api/v1/competicoes/${id}/lotes/${lotId}`),
   categories: (modalidade?: string) =>
     http.get<Category[]>(modalidade ? '/api/v1/categorias/por-modalidade' : '/api/v1/categorias', {
       params: modalidade ? { modalidade } : undefined

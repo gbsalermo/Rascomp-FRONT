@@ -1,6 +1,6 @@
 # Continuidade — Landing Page / Site Público RAS UFRB
 
-Última revisão: **03/10/2026**
+Última revisão: **05/10/2026**
 
 Este documento é um **checkpoint específico da aplicação `landing-page/`**. Ele preserva decisões visuais/funcionais da Landing, mas não define a etapa global do RasComp.
 
@@ -14,7 +14,7 @@ Estado global:
 
 ```text
 ETAPAS 0–4  ✅ concluídas / validadas
-V1-BETA A   🚧 PRÓXIMA / branch própria — finalização e polimento da Landing
+V1-BETA A   ✅ CONCLUÍDA / VALIDADA — Landing pública
 ```
 
 Branch de implementação da fase:
@@ -23,7 +23,7 @@ Branch de implementação da fase:
 v1-beta-a-landing
 ```
 
-A V1-BETA A transforma a Landing já existente em um **site real, publicável, responsivo e intuitivo**, substituindo progressivamente conteúdo demonstrativo por conteúdo definitivo.
+A V1-BETA A transformou a Landing existente em um **site real, publicável, responsivo e intuitivo**, com conteúdo institucional, competição pública e integrações necessárias desta fase.
 
 A maior parte da Landing abaixo foi consolidada para a demonstração de **26/08/2026**. Depois disso, a página 404 pública foi adicionada em **30/08/2026**.
 
@@ -56,7 +56,8 @@ Ordem-base:
 Header / navegação
 → Hero / destaques
 → Sobre
-→ Equipe / Diretoria / Robôs / Premiações
+→ Equipe / Diretoria / Premiações
+→ Robôs
 → Galeria
 → Eventos / postagens
 → Competição pública
@@ -66,6 +67,473 @@ Header / navegação
 ```
 
 A ordem pode ser ajustada durante a revisão, mas sem perder rastreabilidade.
+
+
+## Progresso da V1-BETA A — revisão seção por seção
+
+```text
+Header / navegação       ✅ CONCLUÍDO E VALIDADO — 04/10/2026
+Hero / destaques         ✅ CONCLUÍDO E VALIDADO — 04/10/2026
+Sobre IEEE + RAS UFRB    ✅ CONCLUÍDO E VALIDADO — 04/10/2026
+Equipe e Conquistas      ✅ CONCLUÍDO E VALIDADO — 05/10/2026
+Robôs                    ✅ CONCLUÍDO E VALIDADO — 05/10/2026
+Galeria                  ✅ CONCLUÍDO E VALIDADO — 05/10/2026
+Footer                    ✅ CONCLUÍDO E VALIDADO — 05/10/2026
+Eventos / postagens      ▶ EM REVISÃO
+Competição pública       ⏳ aguardando revisão Beta A
+Demais seções            ⏳ aguardando revisão Beta A
+```
+
+### Header — fechamento Beta A
+
+O Header foi redesenhado e validado em desktop e mobile com:
+
+- identidade IEEE RAS UFRB ampliada e legível;
+- logo oficial em `/ieee-ras-official.png`;
+- navegação institucional simplificada;
+- itens principais: Sobre, Equipe, Robôs, Galeria, Eventos, Contato;
+- área competitiva exibida quando houver competição em andamento;
+- CTA permanente `Inscrever-se`;
+- `VITE_GESTAO_URL` como destino configurável do CTA;
+- menu mobile com CTA visível e botão hambúrguer;
+- correção de conflito com CSS legado do Header;
+- comportamento responsivo e escala específica da logo no mobile;
+- faixa rubra condicional para competição em andamento.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/InstitutionalHeader.vue
+landing-page/src/header.css
+landing-page/src/header-identity.css
+landing-page/src/App.vue
+```
+
+
+### Hero / Destaques — fechamento Beta A
+
+O Hero foi redesenhado e validado em desktop com foco em hierarquia institucional e leitura simples.
+
+Decisões finais:
+
+- imagem real em fundo full-width, sem aparência de card flutuante;
+- carrossel institucional com 4 slides:
+  - IEEE RAS UFRB;
+  - RAS nas Escolas;
+  - Oficinas;
+  - Conquistas;
+- imagens centralizadas em `homeMedia.ts`;
+- arquivos físicos organizados em `public/media/assets/`;
+- CTA primário e secundário por slide;
+- navegação por setas simples, sem círculos;
+- cards inferiores de atuação mantidos como informação estática, sem redirecionamento;
+- cards inferiores resumem Projetos, Oficinas, RAS nas Escolas e Competições;
+- painel de `Últimas novidades` removido do Hero para evitar competição visual com a mensagem principal;
+- `updates.ts` preservado para futura integração na revisão de Eventos/Postagens;
+- visual final prioriza foto + mensagem + CTA + carrossel;
+- responsividade do Hero preservada para revisão global final.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/HighlightsHero.vue
+landing-page/src/highlights-hero.css
+landing-page/src/content/homeMedia.ts
+landing-page/src/content/updates.ts
+landing-page/public/media/assets/
+```
+
+Imagens atualmente configuradas:
+
+```text
+/media/assets/institutional/ras-ufrb-geral.jpg
+/media/assets/events/ras-nas-escolas.jpg
+/media/assets/events/oficina-ras.jpg
+/media/assets/awards/conquista-ras.jpg
+```
+
+
+### Sobre IEEE + RAS UFRB — fechamento Beta A
+
+A seção Sobre foi simplificada e validada com foco em leitura institucional e melhor encaixe na viewport.
+
+Decisões finais:
+
+- remoção das miniaturas secundárias e da faixa de métricas;
+- composição principal em duas colunas:
+  - carrossel visual institucional à esquerda;
+  - conteúdo IEEE / RAS UFRB em tabs à direita;
+- carrossel da seção Sobre autoalimentado por:
+  `landing-page/src/assets/about/`;
+- qualquer JPG/JPEG/PNG/WebP/AVIF adicionado à pasta entra automaticamente no carrossel via `import.meta.glob`;
+- ordem controlável por prefixos numéricos no nome do arquivo;
+- título derivado do arquivo não é exibido visualmente;
+- rodapé visual fixo nas fotos: "Registro de projetos, eventos, competições e ações da IEEE RAS UFRB.";
+- tipografia do painel de conteúdo ampliada para maior legibilidade;
+- símbolos genéricos substituídos por ícones SVG contextuais;
+- aba IEEE possui CTA único `Veja mais` apontando para `https://www.ieee.org/`;
+- aba RAS UFRB mantém `Conheça nossas ações` e `Ver equipe`;
+- `scroll-margin-top` aplicado para navegação correta com Header sticky;
+- layout compactado para encaixar melhor em 100% de zoom;
+- responsividade preservada para revisão global final.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/InstitutionalAbout.vue
+landing-page/src/about.css
+landing-page/src/assets/about/
+docs/MIDIA_LANDING_BETA_A.md
+```
+
+
+### Equipe e Conquistas — fechamento Beta A
+
+A antiga composição única de equipe, diretoria, robôs e premiações foi simplificada e validada como uma seção vertical de conteúdo.
+
+Decisões finais:
+
+- título principal: `Equipe e Conquistas`;
+- seção não é forçada a caber em uma única viewport;
+- Diretoria em destaque com 6 cargos:
+  - Presidente;
+  - Vice-presidente;
+  - Tesoureiro;
+  - Secretário;
+  - Marketing;
+  - Orientador;
+- fotos da Diretoria carregadas automaticamente de:
+  `landing-page/src/assets/team/board/`;
+- voluntários exibidos em uma faixa horizontal automática com fotos coletivas;
+- faixa de voluntários aceita múltiplas imagens de:
+  `landing-page/src/assets/team/volunteers/`;
+- autoplay contínuo da faixa de voluntários com pausa em hover e respeito a `prefers-reduced-motion`;
+- Robôs removidos desta seção e promovidos para section própria;
+- premiações reorganizadas em timeline/lista vertical;
+- CTA `Ver todas as conquistas` removido;
+- premiações reais atualmente registradas:
+  - Vice-campeão — RCX 2024 · Hockey;
+  - Campeão — ERBASE 2025 · Follow Line;
+  - Campeão — IEEE 2024 · Foto Destaque;
+  - Campeão — Mega Sumô 2024;
+- métricas/cards antigos do rodapé removidos.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/TeamRobotsAwards.vue
+landing-page/src/team-robots-awards.css
+landing-page/src/assets/team/board/
+landing-page/src/assets/team/volunteers/
+```
+
+
+### Robôs — fechamento Beta A
+
+A área de Robôs foi separada da seção de Equipe e passou a existir como section própria na Home.
+
+Decisões finais:
+
+- nova section com `id="robos"`;
+- item `Robôs` adicionado à navegação principal do Header;
+- cabeçalho institucional próprio com título `Robôs`;
+- Hero superior usa uma única foto genérica fixa, independente da categoria;
+- banner genérico carregado automaticamente de:
+  `landing-page/src/assets/robots/banners/`;
+- categorias disponíveis:
+  - Sumô;
+  - Mini Sumô;
+  - Hockey;
+  - Follow Line;
+- categorias possuem ícones SVG próprios no quadrado principal do seletor;
+- selecionar uma categoria altera apenas os robôs exibidos abaixo, não o banner;
+- fotos individuais ficam separadas por categoria em:
+  `landing-page/src/assets/robots/<categoria>/`;
+- nome do arquivo define automaticamente o título do robô;
+- prefixos numéricos podem ordenar arquivos sem aparecer no título;
+- Hero e cabeçalho foram compactados para melhor encaixe em 100% de zoom;
+- responsividade preservada para revisão global final.
+
+Estrutura de mídia:
+
+```text
+landing-page/src/assets/robots/
+├── banners/
+├── sumo/
+├── mini-sumo/
+├── hockey/
+└── follow-line/
+```
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/RobotsShowcase.vue
+landing-page/src/robots-showcase.css
+landing-page/src/assets/robots/
+landing-page/src/components/InstitutionalHeader.vue
+```
+
+
+### Galeria — fechamento Beta A
+
+A seção Galeria foi redesenhada e validada como uma **vitrine de prévia** da interface completa de fotos.
+
+Decisões finais:
+
+- layout editorial em duas colunas;
+- lado esquerdo:
+  - kicker `Registros da RAS`;
+  - título `Galeria`;
+  - texto institucional curto;
+  - CTA `Ver galeria completa`;
+- lado direito:
+  - carrossel de imagem grande;
+  - setas discretas;
+  - contador no formato `03 / 08`;
+  - indicadores por pontos;
+  - autoplay suave a cada ~6,5s;
+  - pausa em hover;
+- thumbnails adicionais não são exibidas na Landing;
+- a Landing funciona apenas como vitrine, sem tentar representar todo o acervo;
+- CTA aponta para a aplicação/rota completa via `VITE_GALERIA_URL`;
+- em desenvolvimento, o fallback pode usar `http://localhost:5175`;
+- prévias locais carregadas automaticamente de:
+  `landing-page/src/assets/gallery-preview/`;
+- qualquer JPG/JPEG/PNG/WebP/AVIF adicionado à pasta entra no carrossel via `import.meta.glob`;
+- ordem controlável por prefixos numéricos nos arquivos;
+- layout ampliado no desktop para ocupar melhor a viewport em 100% de zoom;
+- mobile preservado para revisão global final.
+
+Arquitetura definida:
+
+```text
+Landing
+→ prévia visual de algumas fotos
+→ Ver galeria completa
+→ interface separada / acervo persistente
+```
+
+A futura Gestão de Mídia/CMS substituirá a origem local das imagens sem exigir redesenho da Home.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/InstitutionalGallery.vue
+landing-page/src/gallery.css
+landing-page/src/assets/gallery-preview/
+landing-page/src/gallery-external.css
+```
+
+
+### Footer — fechamento Beta A
+
+O Footer institucional foi simplificado e validado para publicação.
+
+Decisões finais:
+
+- bloco principal em fundo rubro;
+- coluna institucional com logo IEEE RAS, frase institucional e referência à UFRB — Campus Cruz das Almas;
+- links institucionais centrais:
+  - UFRB;
+  - IEEE;
+  - IEEE RAS;
+  - IEEE Brasil;
+- bloco Apoio e parceiros com UFRB, IEEE, IEEE RAS e CETEC;
+- logos de parceiros locais em:
+  `landing-page/src/assets/footer/partners/`;
+- contatos oficiais:
+  - `ieeerasufrb@gmail.com`;
+  - Instagram `@ieeerasufrb`;
+  - WhatsApp `+55 73 98126-4674`;
+- faixa inferior roxa reduzida a direitos autorais, crédito aos membros e crédito do desenvolvedor principal;
+- `gbsalermo` aponta para o perfil GitHub;
+- botão voltar ao topo removido do Footer e transformado em ação flutuante global;
+- contatos podem ser sobrescritos por variáveis de ambiente em produção.
+
+### Regra global de período de inscrições
+
+O CTA `Inscrever-se` da Landing não deve redirecionar o visitante quando não existir competição com:
+
+```text
+status === 'INSCRICOES_ABERTAS'
+```
+
+Com inscrições abertas:
+
+```text
+Inscrever-se
+→ VITE_GESTAO_URL
+→ fluxo Gestão/Participante
+```
+
+Sem inscrições abertas:
+
+```text
+Inscrever-se
+→ permanece na Landing
+→ exibe aviso: "Não estamos no período de inscrições no momento."
+```
+
+A regra é aplicada ao Header e a CTAs de inscrição da seção Eventos.
+
+### Competição pública — revisão Beta A em validação
+
+A section competitiva foi redesenhada para responder quatro perguntas do visitante sem assumir aparência de dashboard administrativo:
+
+```text
+1. Que competição é essa?
+2. Quem está competindo?
+3. Quais categorias existem e o que está acontecendo agora?
+4. Ainda posso me inscrever?
+```
+
+Comportamento atual:
+
+- section aparece durante todo o ciclo público da competição: `INSCRICOES_ABERTAS`, `INSCRICOES_ENCERRADAS` e `EM_ANDAMENTO`;
+- cabeçalho mostra nome, descrição, período, número de equipes, robôs e categorias;
+- bloco de inscrição informa explicitamente se a janela está aberta/encerrada;
+- lista de equipes usa apenas inscrições `APROVADA`;
+- Landing passa a carregar também `/api/v1/public/equipes`;
+- equipe com logo pública usa a mídia informada pelo backend;
+- equipe sem logo usa `/rascomp-logo.webp` como fallback;
+- fluxo integrado de logo implementado na Beta A:
+  - V28 adiciona metadados de logo em `teams`;
+  - líder envia/troca/remove a logo pelo Portal do Participante;
+  - `PublicTeamDTO.logoUrl` abastece a Landing;
+  - storage local configurável via `TEAM_LOGOS_DIR` enquanto a estratégia de produção é consolidada;
+- categorias são derivadas dos dados públicos oficiais;
+- card "O que está acontecendo agora?" prioriza:
+  - partida `EM_ANDAMENTO`;
+  - próxima partida;
+  - liderança do Follow Line;
+  - último resultado;
+- ranking e chaveamento continuam consultáveis sob demanda;
+- Follow público passa a expor também tentativas, agenda e fila de convocação:
+  - tomadas registradas por robô;
+  - robô em execução/chamada;
+  - próxima convocação;
+  - próxima tomada agendada;
+- ranking Follow diferencia top 3, mostra tomadas/tentativas e possui microinterações de hover;
+- chave pública espelha a linguagem visual da Gestão:
+  - rodada/fase;
+  - vencedor;
+  - BYE;
+  - placar quando disponível;
+  - data/hora;
+  - pista;
+  - próxima batalha;
+- resultado público passa a ser consolidado por categoria:
+  - enquanto o pódio estiver incompleto, mantém ranking/chave/histórico operacional;
+  - quando 1º, 2º e 3º estiverem definidos, a categoria troca automaticamente para o pódio oficial;
+  - a troca ocorre independentemente por categoria;
+  - o histórico continua existente no backend/Gestão, apenas deixa de ser o destaque público;
+  - endpoint público `/api/v1/public/podios?competitionId=...` expõe somente dados necessários ao pódio;
+- seleção de chave deixa de usar dropdown e passa a usar botões por categoria;
+- equipe sem logo usa fallback visual próprio do RasComp;
+- layout possui breakpoints específicos para tablet/mobile.
+
+Arquivos centrais:
+
+```text
+landing-page/src/components/ActiveCompetition.vue
+landing-page/src/active-competition.css
+landing-page/src/App.vue
+landing-page/src/api.ts
+```
+
+A section permanece **EM VALIDAÇÃO VISUAL** e só deve ser marcada como concluída após aprovação do usuário.
+
+### Competição integrada ao Hero principal — 05/10/2026
+
+A competição vigente passa a ocupar o **primeiro destaque do Hero principal da Landing** durante o ciclo público:
+
+```text
+INSCRICOES_ABERTAS
+→ INSCRICOES_ENCERRADAS
+→ EM_ANDAMENTO
+```
+
+No Hero principal, o visitante vê imediatamente:
+
+- fase/status da competição;
+- nome e descrição;
+- categorias da edição;
+- CTA `Inscrever-se` apenas enquanto as inscrições estiverem abertas;
+- CTA `Acompanhar evento` levando para `#competicao-atual`;
+- espaço preparado para exibir o lote vigente quando o contrato público passar a fornecê-lo.
+
+Os antigos contadores de equipes/robôs foram removidos do Hero competitivo.
+
+A section `#competicao-atual` deixa de repetir um segundo Hero e passa a iniciar com:
+
+- apresentação curta do evento;
+- datas do evento;
+- período de inscrições;
+- quantidade de equipes participantes;
+- identidade/status da competição vigente;
+- participantes;
+- categorias;
+- acompanhamento, ranking e chaveamento.
+
+Importante sobre lotes:
+
+- integração real concluída em 05/10/2026;
+- a Gestão configura lotes por nome + período dentro da janela geral de inscrições;
+- o backend resolve o lote vigente pela data;
+- inscrição pessoal e inscrição de robô preservam o lote vigente como histórico;
+- a Landing consulta `/api/v1/public/competicoes/{competitionId}/lote-atual`;
+- o Hero mostra `Lote atual` somente quando existir um lote vigente;
+- não usar valores hardcoded como `1º lote`;
+- lote não implica preço/taxa automática neste domínio.
+
+### Ajuste de ciclo público da competição — 05/10/2026
+
+A competição pública não deve nascer apenas quando a Gestão muda para `EM_ANDAMENTO`.
+
+Regra correta:
+
+```text
+PLANEJADA
+→ não aparece na Landing
+
+INSCRICOES_ABERTAS
+→ section aparece
+→ CTA de inscrição ativo
+→ equipes/robôs aprovados começam a aparecer
+→ estado principal comunica inscrições abertas
+
+INSCRICOES_ENCERRADAS
+→ section permanece
+→ CTA informa inscrições encerradas
+→ organização prepara participantes/chaves/agenda
+
+EM_ANDAMENTO
+→ section permanece
+→ acompanhamento ao vivo, ranking, chaveamento e resultados
+
+FINALIZADA / CANCELADA
+→ sai da section ativa da Home
+→ histórico ficará em fluxo próprio
+```
+
+O refresh público também permanece ativo durante os três estados visíveis, para refletir novas aprovações e participantes ainda no período de inscrição.
+
+### Revisão especial pós-seções — modo competição
+
+Depois da revisão individual de todas as seções da Landing, executar uma rodada específica da experiência **em época de competição**.
+
+Objetivo:
+
+```text
+Landing institucional normal
+→ modo de competição ativo
+→ priorizar acompanhamento do RRC
+→ avaliar mover a seção competitiva para o início da Home
+→ facilitar acesso a status, cronograma, resultados e chaveamento
+```
+
+Essa decisão deve ser tomada somente depois de todas as seções estarem polidas, para comparar a hierarquia normal da Landing com a hierarquia necessária durante o evento.
 
 ## Integração com o sistema autenticado
 
@@ -95,6 +563,71 @@ Na V1-BETA A, quando houver material disponível, substituir placeholders por:
 - contatos e links reais.
 
 Não é necessário antecipar o CMS completo para publicar a Beta. Conteúdo pode permanecer versionado no frontend nesta primeira entrega, desde que seja real e organizado. O CMS continua no roadmap para retirar essa dependência posteriormente.
+
+### Ponte temporária de mídia da Beta A
+
+A V1-BETA A passa a usar uma estrutura manual centralizada para imagens reais:
+
+```text
+landing-page/public/media/assets/
+landing-page/src/content/homeMedia.ts
+```
+
+Categorias iniciais:
+
+```text
+institutional/
+events/
+competitions/
+awards/
+robots/
+```
+
+Regras:
+
+- a `photo-gallery/` não é a fonte canônica das imagens da Landing;
+- a Galeria será consumidora/apresentação do mesmo acervo;
+- componentes não devem espalhar caminhos de imagem;
+- slots da Home ficam centralizados em `homeMedia.ts`;
+- a futura Gestão de Mídia substituirá essa origem estática por `MediaAsset / ContentSlot / ContentItem` + storage persistente/R2;
+- preservar a semântica dos slots para facilitar a migração sem redesenhar componentes.
+
+Documento específico:
+
+```text
+docs/MIDIA_LANDING_BETA_A.md
+```
+
+
+### Feed de Últimas novidades
+
+A fonte editorial continua preservada em:
+
+```text
+landing-page/src/content/updates.ts
+```
+
+Decisão visual da Beta A em 04/10/2026:
+
+```text
+Hero
+→ NÃO renderiza Últimas novidades
+→ prioriza foto + mensagem institucional + CTAs + carrossel
+```
+
+Motivo: o painel de novidades competia visualmente com a mensagem principal e
+aproximava o Hero de uma linguagem de portal/dashboard.
+
+O feed será retomado na revisão de **Eventos/Postagens**, onde será definida sua
+posição definitiva na Landing.
+
+Regras preservadas:
+
+- não é simples espelho do Hero nem da seção Eventos;
+- pode reaproveitar dados de `events.ts` quando a novidade corresponder a um evento;
+- também aceita conteúdos sem evento associado, como nova chapa, premiação, visita, conquista ou comunicado;
+- a ordem é editorial;
+- no futuro, a Gestão de Mídia/CMS deverá administrar publicação, ordenação, relacionamentos e mídia opcional desse feed.
 
 ---
 
@@ -146,22 +679,33 @@ Referência visual histórica: ERBASE como inspiração de ritmo/arquitetura, se
 1. Header
 2. Hero / Painel de Destaques
 3. Sobre IEEE + RAS UFRB
-4. Equipe / Diretoria / Robôs / Premiações
-5. Galeria
-6. Eventos da RAS
-7. Competição atual + acompanhamento [CONDICIONAL]
-8. Footer institucional
+4. Equipe e Conquistas
+5. Robôs
+6. Galeria
+7. Eventos da RAS
+8. Competição atual + acompanhamento [CONDICIONAL]
+9. Footer institucional
 ```
 
 `Edições anteriores` não faz parte da Home.
 
-A janela competitiva só aparece quando:
+A janela competitiva aparece a partir da abertura das inscrições:
 
 ```text
-competition.status === 'EM_ANDAMENTO'
+INSCRICOES_ABERTAS
+→ INSCRICOES_ENCERRADAS
+→ EM_ANDAMENTO
 ```
 
-Sem competição ativa:
+A seção fica oculta em:
+
+```text
+PLANEJADA
+FINALIZADA
+CANCELADA
+```
+
+Sem competição em ciclo público:
 
 ```text
 Eventos → Footer
@@ -190,6 +734,7 @@ InstitutionalHeader.vue
 HighlightsHero.vue
 InstitutionalAbout.vue
 TeamRobotsAwards.vue
+RobotsShowcase.vue
 InstitutionalGallery.vue
 InstitutionalEvents.vue
 ActiveCompetition.vue
@@ -427,3 +972,112 @@ Para índice completo:
 ```text
 docs/README.md
 ```
+
+
+### Fechamento dos lotes de inscrição — 05/10/2026
+
+Status: **✅ CONCLUÍDO E VALIDADO MANUALMENTE**
+
+Validação realizada:
+
+- criação de múltiplos lotes;
+- identificação automática do lote vigente pela data;
+- sincronização automática do lote vigente na Landing;
+- Hero exibindo o lote atual corretamente;
+- lotes futuros preservados e assumindo vigência automaticamente quando a data chegar;
+- prorrogação da janela geral de inscrições não altera automaticamente as datas dos lotes;
+- ausência de lote vigente em competição que usa lotes bloqueia novas inscrições normais;
+- histórico do lote permanece associado à inscrição já realizada.
+
+Regra consolidada:
+
+```text
+janela geral de inscrições
+→ pode ser prorrogada/reaberta separadamente
+
+lotes
+→ permanecem independentes
+→ não são estendidos automaticamente
+→ mudam de vigente pela data
+→ inscrição preserva o lote histórico
+```
+
+Nenhum ajuste adicional é necessário neste checkpoint.
+
+
+## Fechamento formal da V1-BETA A — 05/10/2026
+
+Status: **✅ CONCLUÍDA / VALIDADA / PRONTA PARA MERGE**
+
+Escopo fechado:
+
+- Landing institucional pública revisada e polida;
+- responsividade desktop/tablet/mobile validada;
+- Header, Hero, Sobre, Equipe, Robôs, Premiações, Galeria, Eventos e Footer;
+- competição pública integrada ao ciclo real;
+- ranking Follow, agenda/tomadas, chaveamento, BYE, 3º lugar e pódios;
+- regra pública: histórico durante disputa e somente Top 3 após pódio completo;
+- logos públicas de equipes com fallback;
+- chave read-only no Portal do Participante;
+- lotes de inscrição integrados e validados;
+- Hero mostrando lote vigente real;
+- documentação e regras sincronizadas;
+- modo local preservado.
+
+Pendência deliberadamente movida para o roadmap original:
+
+- Hero pós-competição destacando campeões por categoria na etapa final de fechamento do MVP.
+
+A branch `v1-beta-a-landing` não deve receber novos requisitos após o merge, salvo correção de regressão.
+
+## Gate de planejamento antes da V1-BETA B
+
+A B ainda **não está iniciada**. Antes do primeiro commit, discutir e aprovar:
+
+```text
+identidade real de conta
+→ verificação de e-mail
+→ ativação
+→ login
+→ recuperação segura de senha
+```
+
+Princípios já aceitos para discussão:
+
+- coletar somente o mínimo necessário;
+- posse do e-mail deve ser verificada;
+- reduzir contas falsas/descartáveis sem introduzir coleta excessiva de dados pessoais;
+- recuperação de senha deve funcionar por token/código de uso único, com expiração;
+- resposta de recuperação não pode revelar se a conta existe;
+- senha definitiva nunca deve ser visível ao DEV;
+- fluxo assistido pelo DEV pode existir apenas como fallback auditado;
+- escolher provedor de e-mail antes da implementação;
+- acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
+- modo local e Cloudflare Tunnel permanecem como contingência oficial.
+
+
+### Checkpoint automatizado final da V1-BETA A — 05/10/2026
+
+Validação executada no PR de fechamento:
+
+```text
+Backend Tests #527
+→ 211 testes
+→ 0 falhas
+→ 0 erros
+→ 0 skipped
+→ BUILD SUCCESS
+→ portal-testdata ✅
+
+Frontend Checks #233
+→ Gestão typecheck ✅
+→ Gestão build ✅
+
+Landing Checks #21
+→ Landing typecheck ✅
+→ Landing build ✅
+```
+
+Durante o fechamento, o primeiro run do backend revelou testes antigos desalinhados com regras já consolidadas. Os testes foram corrigidos para refletir os contratos atuais — sem relaxar as regras de negócio — e a suíte completa voltou a ficar verde.
+
+Com validação manual + CI final verde, a V1-BETA A está autorizada para merge em `main`.

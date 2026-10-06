@@ -1,21 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
-type Person = {
+type BoardMember = {
   id: number
   name: string
+  role: string
   area: string
-  role?: string
   initials: string
-}
-
-type Robot = {
-  id: number
-  name: string
-  modality: string
-  status: string
-  description: string
-  detail: string
 }
 
 type Award = {
@@ -23,222 +14,229 @@ type Award = {
   place: string
   title: string
   event: string
+  description: string
   year: string
   tone: 'gold' | 'silver' | 'bronze' | 'highlight'
 }
 
-const query = ref('')
-const area = ref('Todos')
-const openRobotId = ref<number | null>(null)
+const boardImageModules = import.meta.glob(
+  '../assets/team/board/*.{jpg,jpeg,png,webp,avif}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default'
+  }
+) as Record<string, string>
 
-const team: Person[] = [
-  { id: 1, name: 'Integrante 01', area: 'Programação', initials: '01' },
-  { id: 2, name: 'Integrante 02', area: 'Eletrônica', initials: '02' },
-  { id: 3, name: 'Integrante 03', area: 'Mecânica', initials: '03' },
-  { id: 4, name: 'Integrante 04', area: 'Controle', initials: '04' },
-  { id: 5, name: 'Integrante 05', area: 'Comunicação', initials: '05' },
-  { id: 6, name: 'Integrante 06', area: 'Gestão', initials: '06' },
-  { id: 7, name: 'Integrante 07', area: 'Follow Line', initials: '07' },
-  { id: 8, name: 'Integrante 08', area: 'Sumô', initials: '08' }
+const volunteerImageModules = import.meta.glob(
+  '../assets/team/volunteers/*.{jpg,jpeg,png,webp,avif}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default'
+  }
+) as Record<string, string>
+
+const board: BoardMember[] = [
+  { id: 1, name: 'Presidente', role: 'Presidente', area: 'Gestão do capítulo', initials: 'P' },
+  { id: 2, name: 'Vice-presidente', role: 'Vice-presidente', area: 'Gestão do capítulo', initials: 'VP' },
+  { id: 3, name: 'Tesoureiro', role: 'Tesoureiro', area: 'Financeiro', initials: 'T' },
+  { id: 4, name: 'Secretário', role: 'Secretário', area: 'Organização', initials: 'S' },
+  { id: 5, name: 'Marketing', role: 'Marketing', area: 'Comunicação', initials: 'M' },
+  { id: 6, name: 'Orientador', role: 'Orientador', area: 'Orientação acadêmica', initials: 'O' }
 ]
 
-const board: Person[] = [
-  { id: 11, name: 'Diretor(a) 01', area: 'Gestão do capítulo', role: 'Presidência', initials: 'P' },
-  { id: 12, name: 'Diretor(a) 02', area: 'Gestão do capítulo', role: 'Vice-presidência', initials: 'VP' },
-  { id: 13, name: 'Diretor(a) 03', area: 'Organização', role: 'Tesouraria', initials: 'T' },
-  { id: 14, name: 'Diretor(a) 04', area: 'Organização', role: 'Secretaria', initials: 'S' },
-  { id: 15, name: 'Diretor(a) 05', area: 'Projetos', role: 'Diretoria técnica', initials: 'DT' },
-  { id: 16, name: 'Diretor(a) 06', area: 'Comunicação', role: 'Diretoria de comunicação', initials: 'DC' }
-]
+const boardImages = computed(() =>
+  Object.entries(boardImageModules)
+    .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
+    .map(([, src]) => src)
+)
 
-const robots: Robot[] = [
+const volunteerImages = computed(() =>
+  Object.entries(volunteerImageModules)
+    .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
+    .map(([, src]) => src)
+)
+
+const volunteerLoopImages = computed(() =>
+  volunteerImages.value.length > 1
+    ? [...volunteerImages.value, ...volunteerImages.value]
+    : volunteerImages.value
+)
+
+const awards: Award[] = [
   {
     id: 1,
-    name: 'Vespa',
-    modality: 'Follow Line',
-    status: 'Ativo',
-    description: 'Robô seguidor de linha preparado para competições e evolução contínua de controle e sensoriamento.',
-    detail: 'Histórico de versões, sensores, competições e resultados será preenchido com o acervo oficial.'
+    place: 'Vice-campeão',
+    title: 'RCX — Hockey',
+    event: 'RCX 2024 · Categoria Hockey',
+    description: 'Vice-campeonato conquistado pela equipe na categoria Hockey da RCX.',
+    year: '2024',
+    tone: 'silver'
   },
   {
     id: 2,
-    name: 'PIPETA',
-    modality: 'Automação',
-    status: 'Ativo',
-    description: 'Projeto de irrigação autônoma voltado a experimentação, automação e aplicação prática de sistemas embarcados.',
-    detail: 'Detalhes técnicos, equipe responsável e reconhecimentos serão ligados ao histórico institucional.'
+    place: 'Campeão',
+    title: 'ERBASE — Follow Line',
+    event: 'ERBASE 2025 · Categoria Follow Line',
+    description: 'Título conquistado pela equipe na categoria Follow Line durante a ERBASE 2025.',
+    year: '2025',
+    tone: 'gold'
   },
   {
     id: 3,
-    name: 'Projeto 03',
-    modality: 'Robótica',
-    status: 'Em desenvolvimento',
-    description: 'Espaço reservado para outro projeto ou robô representativo do capítulo.',
-    detail: 'Nome, modalidade e trajetória serão substituídos pelos dados oficiais.'
+    place: 'Campeão',
+    title: 'IEEE — Foto Destaque',
+    event: 'IEEE · Categoria Foto Destaque',
+    description: 'Reconhecimento de campeão na categoria Foto Destaque promovida pelo IEEE.',
+    year: '2024',
+    tone: 'highlight'
+  },
+  {
+    id: 4,
+    place: 'Campeão',
+    title: 'Mega Sumô',
+    event: 'Competição 2024 · Categoria Mega Sumô',
+    description: 'Título de campeão conquistado pela equipe na categoria Mega Sumô.',
+    year: '2024',
+    tone: 'gold'
   }
 ]
-
-const awards: Award[] = [
-  { id: 1, place: '1º lugar', title: 'Premiação em robótica', event: 'Evento a confirmar', year: '2026', tone: 'gold' },
-  { id: 2, place: '2º lugar', title: 'Resultado técnico', event: 'Evento a confirmar', year: '2025', tone: 'silver' },
-  { id: 3, place: '3º lugar', title: 'Destaque em competição', event: 'Evento a confirmar', year: '2025', tone: 'bronze' },
-  { id: 4, place: 'Destaque', title: 'Reconhecimento institucional', event: 'Evento a confirmar', year: '2025', tone: 'highlight' }
-]
-
-const areas = computed(() => ['Todos', ...Array.from(new Set(team.map((member) => member.area)))])
-
-const filteredTeam = computed(() => {
-  const normalized = query.value.trim().toLowerCase()
-  return team.filter((member) => {
-    const matchesArea = area.value === 'Todos' || member.area === area.value
-    const matchesQuery = !normalized || `${member.name} ${member.area}`.toLowerCase().includes(normalized)
-    return matchesArea && matchesQuery
-  })
-})
-
-function toggleRobot(id: number) {
-  openRobotId.value = openRobotId.value === id ? null : id
-}
 </script>
 
 <template>
   <section id="equipe" class="team-robots-awards-section">
     <div class="team-robots-awards-container">
       <header class="team-robots-awards-heading">
-        <span>Pessoas, robôs e conquistas</span>
-        <h2>Equipe / Diretoria / Robôs / Premiações</h2>
-        <p>Conheça as pessoas que movem a RAS UFRB, os projetos que construímos e algumas conquistas que ajudam a contar nossa trajetória.</p>
+        <span>Pessoas e conquistas</span>
+        <h2>Equipe e Conquistas</h2>
+        <p>Conheça as pessoas que movem a RAS UFRB e algumas conquistas que ajudam a contar a trajetória do capítulo.</p>
       </header>
 
-      <div class="team-legacy-layout">
-        <article class="team-list-panel institutional-legacy-card">
-          <header class="legacy-card-heading">
-            <div class="legacy-heading-icon" aria-hidden="true">◎</div>
-            <div>
-              <h3>Nossa Equipe</h3>
-              <p>Integrantes do capítulo e suas áreas de atuação.</p>
-            </div>
-            <span class="legacy-count-pill">25+ membros</span>
-          </header>
-
-          <div class="team-search-row">
-            <label class="team-search-field">
-              <span class="sr-only">Buscar integrante</span>
-              <input v-model="query" type="search" placeholder="Buscar membro..." />
-              <span aria-hidden="true">⌕</span>
-            </label>
-            <label class="team-area-field">
-              <span class="sr-only">Filtrar por área</span>
-              <select v-model="area">
-                <option v-for="item in areas" :key="item" :value="item">{{ item === 'Todos' ? 'Todas as áreas' : item }}</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="team-member-list">
-            <button v-for="person in filteredTeam" :key="person.id" type="button" class="team-member-row">
-              <span class="team-member-photo" aria-hidden="true">{{ person.initials }}</span>
-              <span class="team-member-copy">
-                <strong>{{ person.name }}</strong>
-                <small>{{ person.area }}</small>
-              </span>
-              <span class="team-member-arrow" aria-hidden="true">›</span>
-            </button>
-            <p v-if="!filteredTeam.length" class="team-empty">Nenhum integrante encontrado.</p>
-          </div>
-
-          <a href="#contato" class="legacy-outline-cta">Ver toda a equipe <span aria-hidden="true">→</span></a>
-        </article>
-
-        <article class="board-panel institutional-legacy-card">
-          <header class="legacy-card-heading">
-            <div class="legacy-heading-icon" aria-hidden="true">◉</div>
+      <article class="team-board-block">
+        <header class="team-section-heading">
+          <div>
+            <span class="team-section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-1a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM1 21v-2c0-3.3 2.7-6 6-6h2c3.3 0 6 2.7 6 6v2H1Zm14-8c4.4 0 8 2.7 8 6v2h-6v-2c0-2.2-.8-4.2-2.2-5.7l.2-.3Z"/>
+              </svg>
+            </span>
             <div>
               <h3>Diretoria</h3>
               <p>Liderança e organização do capítulo.</p>
             </div>
-          </header>
-
-          <div class="board-mosaic">
-            <article v-for="person in board" :key="person.id" class="board-person-card">
-              <div class="board-person-photo" aria-hidden="true">
-                <b>{{ person.initials }}</b>
-                <small>foto oficial</small>
-              </div>
-              <span class="board-person-shade" aria-hidden="true" />
-              <div class="board-person-copy">
-                <small>{{ person.role }}</small>
-                <strong>{{ person.name }}</strong>
-                <span>{{ person.area }}</span>
-              </div>
-            </article>
           </div>
 
-          <a href="#contato" class="legacy-outline-cta red">Ver toda a diretoria <span aria-hidden="true">→</span></a>
-        </article>
+        </header>
 
-        <article class="robots-panel institutional-legacy-card">
-          <header class="legacy-card-heading">
-            <div class="legacy-heading-icon" aria-hidden="true">▣</div>
-            <div>
-              <h3>Nossos Robôs</h3>
-              <p>Projetos que unem inovação, técnica e propósito.</p>
+        <div class="team-board-grid">
+          <article v-for="(person, index) in board" :key="person.id" class="team-board-card">
+            <img
+              v-if="boardImages[index]"
+              class="team-board-photo"
+              :src="boardImages[index]"
+              :alt="`${person.name} — ${person.role}`"
+            />
+            <div v-else class="team-board-photo-placeholder" aria-hidden="true">
+              <strong>{{ person.initials }}</strong>
+              <small>foto oficial</small>
             </div>
-          </header>
 
-          <div class="robot-showcase-list">
-            <article v-for="robot in robots" :key="robot.id" class="robot-showcase-card" :class="{ open: openRobotId === robot.id }">
-              <button type="button" class="robot-showcase-main" :aria-expanded="openRobotId === robot.id" @click="toggleRobot(robot.id)">
-                <span class="robot-showcase-media" aria-hidden="true">foto do robô</span>
-                <span class="robot-showcase-copy">
-                  <span class="robot-showcase-title-row">
-                    <strong>{{ robot.name }}</strong>
-                    <small>{{ robot.status }}</small>
-                  </span>
-                  <em>{{ robot.modality }}</em>
-                  <p>{{ robot.description }}</p>
-                  <span class="robot-more">Saiba mais <b aria-hidden="true">→</b></span>
-                </span>
-              </button>
-              <div v-if="openRobotId === robot.id" class="robot-showcase-detail">{{ robot.detail }}</div>
-            </article>
+            <div class="team-board-shade" aria-hidden="true" />
+            <div class="team-board-copy">
+              <strong>{{ person.name }}</strong>
+              <small>{{ person.area }}</small>
+            </div>
+          </article>
+        </div>
+      </article>
+
+      <article class="team-volunteers-block">
+        <header class="team-section-heading team-section-heading--simple">
+          <div>
+            <span class="team-section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm-9 9v-1c0-4.4 3.6-8 8-8h2c4.4 0 8 3.6 8 8v1H3Z"/>
+              </svg>
+            </span>
+            <div>
+              <h3>E outros voluntários que fazem tudo acontecer</h3>
+              <p>Estudantes de diferentes áreas que contribuem com projetos, oficinas, competições e ações de extensão.</p>
+            </div>
           </div>
+        </header>
 
-          <a href="#eventos" class="legacy-outline-cta">Ver todos os robôs <span aria-hidden="true">→</span></a>
-        </article>
+        <div
+          v-if="volunteerImages.length"
+          class="team-volunteer-carousel"
+          aria-label="Registros coletivos dos voluntários da RAS UFRB"
+        >
+          <div
+            class="team-volunteer-track"
+            :class="{ 'is-static': volunteerImages.length === 1 }"
+          >
+            <figure
+              v-for="(photo, index) in volunteerLoopImages"
+              :key="`${photo}-${index}`"
+              class="team-volunteer-slide"
+              :aria-hidden="index >= volunteerImages.length ? 'true' : undefined"
+            >
+              <img
+                :src="photo"
+                :alt="index < volunteerImages.length ? `Registro coletivo de voluntários da RAS UFRB ${index + 1}` : ''"
+              />
+            </figure>
+          </div>
+        </div>
 
-        <article class="awards-panel institutional-legacy-card">
-          <header class="legacy-card-heading awards-heading">
-            <div class="legacy-heading-icon" aria-hidden="true">♜</div>
+        <div v-else class="team-volunteer-placeholder">
+          <span>Adicione fotos coletivas em <b>src/assets/team/volunteers/</b></span>
+        </div>
+      </article>
+
+      <article id="premiacoes" class="team-awards-block">
+        <header class="team-section-heading">
+          <div>
+            <span class="team-section-icon team-section-icon--award" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 3h10v3h4v3c0 3.1-1.7 5.7-4.2 7.1A6 6 0 0 1 13 19.9V22h4v2H7v-2h4v-2.1a6 6 0 0 1-3.8-3.8A8 8 0 0 1 3 9V6h4V3Zm0 5H5v1c0 1.8.8 3.4 2.1 4.5A11 11 0 0 1 7 12V8Zm10 0v4c0 .5 0 1-.1 1.5A5.7 5.7 0 0 0 19 9V8h-2Z"/>
+              </svg>
+            </span>
             <div>
               <h3>Premiações</h3>
-              <p>Conquistas que refletem esforço, dedicação e evolução técnica.</p>
+              <p>Conquistas que refletem dedicação, trabalho em equipe e evolução técnica.</p>
             </div>
-          </header>
-
-          <div class="awards-showcase-grid">
-            <article v-for="award in awards" :key="award.id" class="award-showcase-card" :class="`tone-${award.tone}`">
-              <span class="award-showcase-icon" aria-hidden="true">{{ award.tone === 'highlight' ? '☆' : '♜' }}</span>
-              <div>
-                <strong>{{ award.place }}</strong>
-                <b>{{ award.title }}</b>
-                <span>{{ award.event }}</span>
-                <small>{{ award.year }}</small>
-              </div>
-            </article>
           </div>
 
-          <a href="#galeria" class="legacy-outline-cta">Ver todas as conquistas <span aria-hidden="true">→</span></a>
-        </article>
-      </div>
+        </header>
 
-      <div class="legacy-impact-strip" aria-label="Indicadores institucionais temporários">
-        <article><span aria-hidden="true">◎</span><div><strong>25+</strong><small>Membros ativos</small></div></article>
-        <article><span aria-hidden="true">▣</span><div><strong>7+</strong><small>Robôs desenvolvidos</small></div></article>
-        <article><span aria-hidden="true">♜</span><div><strong>18+</strong><small>Competições participadas</small></div></article>
-        <article><span aria-hidden="true">♜</span><div><strong>10+</strong><small>Prêmios conquistados</small></div></article>
-        <article><span aria-hidden="true">▤</span><div><strong>8+</strong><small>Escolas visitadas</small></div></article>
-      </div>
+        <div class="team-awards-timeline">
+          <article
+            v-for="award in awards"
+            :key="award.id"
+            class="team-award-row"
+            :class="`tone-${award.tone}`"
+          >
+            <span class="team-award-marker" aria-hidden="true" />
+            <span class="team-award-icon" aria-hidden="true">
+              <svg v-if="award.tone !== 'highlight'" viewBox="0 0 24 24">
+                <path d="M7 3h10v3h4v3c0 3.1-1.7 5.7-4.2 7.1A6 6 0 0 1 13 19.9V22h4v2H7v-2h4v-2.1a6 6 0 0 1-3.8-3.8A8 8 0 0 1 3 9V6h4V3Zm0 5H5v1c0 1.8.8 3.4 2.1 4.5A11 11 0 0 1 7 12V8Zm10 0v4c0 .5 0 1-.1 1.5A5.7 5.7 0 0 0 19 9V8h-2Z"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24">
+                <path d="m12 2 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9L12 2Z"/>
+              </svg>
+            </span>
+
+            <div class="team-award-main">
+              <strong>{{ award.place }} — {{ award.title }}</strong>
+              <span>{{ award.event }}</span>
+            </div>
+
+            <p>{{ award.description }}</p>
+            <time>{{ award.year }}</time>
+          </article>
+        </div>
+      </article>
     </div>
   </section>
 </template>

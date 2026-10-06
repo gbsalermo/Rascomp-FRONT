@@ -17,7 +17,7 @@ CLOUD
 → Cloudflare para DNS, frontend, backend containerizado e mídia
 ```
 
-O primeiro deploy foi antecipado para o **TRILHO V1 BETA**. Este guia passa a apoiar a V1-BETA B; a ETAPA 16 fica reservada à consolidação/hardening final.
+A **V1-BETA A foi concluída/validada em 05/10/2026**. Este guia passa a apoiar a discussão da V1-BETA B; a B ainda não foi iniciada. A ETAPA 16 continua reservada à consolidação/hardening final.
 
 ---
 
@@ -1120,3 +1120,107 @@ Só publicar oficialmente quando todos estiverem marcados:
 ```
 
 Esse processo cria uma implantação em nuvem sem sacrificar a execução local que já existe.
+
+
+---
+
+## Contingência local obrigatória
+
+O primeiro deploy Beta deve preservar a possibilidade de retirar a cloud do caminho sem reescrever o sistema.
+
+Antes da primeira competição oficial, validar:
+
+```text
+1. export/backup do MySQL de produção
+2. restore em MySQL local
+3. arquivos/uploads necessários copiados ou restaurados
+4. backend Spring Boot apontando para banco local
+5. Landing/Gestão apontando para API local/LAN
+6. máquinas e celulares acessando pela rede local
+7. smoke competitivo
+```
+
+O procedimento deve ser documentado com comandos/variáveis reais na V1-BETA B.
+
+### Sobre limites da Cloudflare
+
+Os limites comerciais/técnicos podem mudar.
+
+Por isso:
+
+- não congelar no código pressupostos sobre quotas diárias;
+- revalidar a documentação oficial da Cloudflare na V1-BETA B e antes de competição relevante;
+- evitar Worker obrigatório para cada request dinâmica quando uma arquitetura desacoplada for suficiente;
+- static assets/CDN e API dinâmica devem ser tratados como cargas diferentes.
+
+Se a arquitetura/conta escolhida passar a impor uma quota inadequada ao evento, deve ser possível trocar plano/provedor ou operar localmente sem alterar o domínio do RasComp.
+
+
+---
+
+## Estratégias de execução aprovadas
+
+### Estratégia A — cloud
+
+Usar a infraestrutura cloud provisionada normalmente.
+
+Escolher quando:
+
+- teste de carga aprovado;
+- limites/custos do provedor considerados adequados;
+- latência e estabilidade satisfatórias;
+- banco/storage/backup operacionais.
+
+### Estratégia B — servidor local publicado por Cloudflare Tunnel
+
+O servidor físico da organização pode rodar:
+
+```text
+frontend
+Spring Boot
+MySQL
+storage
+```
+
+e ser publicado externamente por Cloudflare Tunnel.
+
+Objetivo:
+
+- manter acesso pelo domínio;
+- não expor MySQL diretamente;
+- não abrir portas públicas desnecessárias;
+- preservar acesso pela LAN;
+- reduzir dependência da capacidade do backend hospedado em cloud/Workers quando desejado.
+
+A decisão A/B deve ser baseada nos testes de carga da versão candidata.
+
+Se houver baixa confiança na capacidade da VIA A para o evento, a VIA B é uma alternativa oficial, não um workaround improvisado.
+
+Na VIA B, preparar:
+
+- máquina dedicada ou estável;
+- Ethernet preferencial;
+- suspensão desativada;
+- energia estável;
+- cloudflared supervisionado;
+- Spring supervisionado;
+- MySQL local;
+- backup externo;
+- restore testado;
+- URLs por ambiente;
+- smoke via internet e LAN.
+
+
+## Gate zero antes do deploy da V1-BETA B
+
+Antes de executar as fases de infraestrutura deste documento, discutir e aprovar:
+
+- verificação real de e-mail e ativação de conta;
+- recuperação segura de senha;
+- provedor de e-mail;
+- separação entre homologação remota e produção real;
+- acesso remoto inicial para testes externos;
+- modo local preservado;
+- Cloudflare Tunnel como contingência/publicação de servidor local quando necessário.
+
+A meta de acesso remoto imediato não autoriza abrir dados/inscrições reais sem os demais gates.

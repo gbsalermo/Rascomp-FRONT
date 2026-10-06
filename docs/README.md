@@ -1,6 +1,6 @@
 # RasComp — Índice da Documentação
 
-Última revisão: **03/10/2026**
+Última revisão: **05/10/2026**
 
 Este é o ponto de entrada para qualquer pessoa ou IA que precise entender ou continuar o RasComp.
 
@@ -30,12 +30,12 @@ A documentação foi revisada para evitar roadmaps paralelos, snapshots de demon
    → checkpoint vivo do backend
 ```
 
-Estado oficial em 03/10/2026:
+Estado oficial em 05/10/2026:
 
 ```text
 ETAPAS 0–4    ✅ concluídas / validadas
-V1-BETA A     🚧 próxima — Landing pública
-V1-BETA B     ⏳ cloud + banco de produção
+V1-BETA A     ✅ concluída / validada — Landing pública
+V1-BETA B     ⏭️ próxima — planejar identidade/e-mail + infraestrutura de produção
 V1-BETA C     ⏳ cadastro/acesso/inscrições reais
 V1-BETA D     ⏳ smoke + estabilização
 ```
@@ -105,7 +105,7 @@ O backend é fonte de verdade de autorização, ownership e regras/resultados co
 
 ## `ETAPAS_POS_PROJETO.md`
 
-Planejamento único do ciclo. Define o estado das ETAPAS 0–16 e o trilho prioritário V1 Beta. As ETAPAS 0–4 estão concluídas; o próximo trabalho é V1-BETA A — Landing pública.
+Planejamento único do ciclo. Define o estado das ETAPAS 0–16 e o trilho prioritário V1 Beta. As ETAPAS 0–4 e a V1-BETA A estão concluídas; o próximo trabalho é discutir e aprovar a V1-BETA B antes da implementação.
 
 ## `DOSSIE_PROJETO_RASCOMP.md`
 
@@ -178,8 +178,8 @@ EXPERIENCIA_PARTICIPANTE_COMPETICAO.md
 
 ```text
 Banco ativo                           MySQL
-Migrations                            V1–V27 por evolução incremental
-Próxima migration                     V28+
+Migrations                            V1–V30 por evolução incremental
+Próxima migration                     V31+
 Roles atuais                          DEV | GESTAO | MIDIA | PARTICIPANTE
 ETAPA 3                               ✅ concluída / validada
 ETAPA 1                               ✅ contrato + correções + fluxos integrados concluídos
@@ -291,3 +291,81 @@ Fonte funcional do Portal: `REGRAS_PARTICIPANTE.md`.
 Histórico de validação: `VALIDACAO_ETAPA4_BLOCO4.md`.
 
 O antigo BLOCO 4.4 foi retirado desta etapa. O polimento da Landing será consolidado futuramente com a entrega já prevista de Landing/Galeria; planejamento definitivo será feito após o merge da ETAPA 4.
+
+
+## Fechamento formal da V1-BETA A — 05/10/2026
+
+Status: **✅ CONCLUÍDA / VALIDADA / PRONTA PARA MERGE**
+
+Escopo fechado:
+
+- Landing institucional pública revisada e polida;
+- responsividade desktop/tablet/mobile validada;
+- Header, Hero, Sobre, Equipe, Robôs, Premiações, Galeria, Eventos e Footer;
+- competição pública integrada ao ciclo real;
+- ranking Follow, agenda/tomadas, chaveamento, BYE, 3º lugar e pódios;
+- regra pública: histórico durante disputa e somente Top 3 após pódio completo;
+- logos públicas de equipes com fallback;
+- chave read-only no Portal do Participante;
+- lotes de inscrição integrados e validados;
+- Hero mostrando lote vigente real;
+- documentação e regras sincronizadas;
+- modo local preservado.
+
+Pendência deliberadamente movida para o roadmap original:
+
+- Hero pós-competição destacando campeões por categoria na etapa final de fechamento do MVP.
+
+A branch `v1-beta-a-landing` não deve receber novos requisitos após o merge, salvo correção de regressão.
+
+## Gate de planejamento antes da V1-BETA B
+
+A B ainda **não está iniciada**. Antes do primeiro commit, discutir e aprovar:
+
+```text
+identidade real de conta
+→ verificação de e-mail
+→ ativação
+→ login
+→ recuperação segura de senha
+```
+
+Princípios já aceitos para discussão:
+
+- coletar somente o mínimo necessário;
+- posse do e-mail deve ser verificada;
+- reduzir contas falsas/descartáveis sem introduzir coleta excessiva de dados pessoais;
+- recuperação de senha deve funcionar por token/código de uso único, com expiração;
+- resposta de recuperação não pode revelar se a conta existe;
+- senha definitiva nunca deve ser visível ao DEV;
+- fluxo assistido pelo DEV pode existir apenas como fallback auditado;
+- escolher provedor de e-mail antes da implementação;
+- acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
+- modo local e Cloudflare Tunnel permanecem como contingência oficial.
+
+
+### Checkpoint automatizado final da V1-BETA A — 05/10/2026
+
+Validação executada no PR de fechamento:
+
+```text
+Backend Tests #527
+→ 211 testes
+→ 0 falhas
+→ 0 erros
+→ 0 skipped
+→ BUILD SUCCESS
+→ portal-testdata ✅
+
+Frontend Checks #233
+→ Gestão typecheck ✅
+→ Gestão build ✅
+
+Landing Checks #21
+→ Landing typecheck ✅
+→ Landing build ✅
+```
+
+Durante o fechamento, o primeiro run do backend revelou testes antigos desalinhados com regras já consolidadas. Os testes foram corrigidos para refletir os contratos atuais — sem relaxar as regras de negócio — e a suíte completa voltou a ficar verde.
+
+Com validação manual + CI final verde, a V1-BETA A está autorizada para merge em `main`.
