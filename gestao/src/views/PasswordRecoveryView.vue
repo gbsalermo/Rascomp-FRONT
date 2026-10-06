@@ -1,5 +1,35 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { authApi } from '../api'
+
 const currentYear = new Date().getFullYear()
+const email = ref('')
+const loading = ref(false)
+const sent = ref(false)
+const message = ref('')
+
+async function submit() {
+  const normalized = email.value.trim().toLowerCase()
+  if (!normalized) {
+    ElMessage.warning('Informe o e-mail da conta.')
+    return
+  }
+
+  loading.value = true
+  try {
+    const response = await authApi.forgotPassword(normalized)
+    message.value = response.message
+    sent.value = true
+  } catch (error: any) {
+    ElMessage.error(
+      error?.response?.data?.message ||
+        'Não foi possível processar a solicitação de recuperação.'
+    )
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
@@ -23,23 +53,50 @@ const currentYear = new Date().getFullYear()
       </section>
 
       <section class="login-form-panel">
-        <div class="login-card">
+        <form class="login-card" @submit.prevent="submit">
           <header class="login-form-heading">
             <h1>Recuperar senha</h1>
-            <p>Infelizmente, a recuperação automática de senha ainda não está disponível nesta versão do RasComp.</p>
+            <p>Receba um link seguro para definir uma nova senha.</p>
           </header>
 
-          <div class="auth-pending-note">
-            <strong>Precisa recuperar seu acesso?</strong>
-            <span>Por enquanto, entre em contato com a organização da competição para receber suporte. A recuperação direta pelo próprio RasComp será disponibilizada em uma etapa futura.</span>
+          <div v-if="sent" class="auth-status-card auth-status-success">
+            <strong>Solicitação processada</strong>
+            <span>{{ message }}</span>
           </div>
+
+          <template v-else>
+            <div class="login-field">
+              <label for="recovery-email">E-mail</label>
+              <el-input
+                id="recovery-email"
+                v-model="email"
+                size="large"
+                type="email"
+                autocomplete="email"
+                placeholder="voce@exemplo.com"
+              />
+            </div>
+
+            <el-button
+              class="login-submit"
+              size="large"
+              native-type="submit"
+              :loading="loading"
+            >
+              Enviar link de recuperação
+            </el-button>
+          </template>
+
+          <p class="auth-security-copy">
+            Por segurança, a resposta é a mesma mesmo quando o endereço não pertence a uma conta válida.
+          </p>
 
           <div class="auth-secondary-action">
             <router-link to="/login">← Voltar para o login</router-link>
           </div>
 
           <p class="login-copyright">© {{ currentYear }} RAS UFRB - Todos os direitos reservados</p>
-        </div>
+        </form>
       </section>
     </div>
   </div>
