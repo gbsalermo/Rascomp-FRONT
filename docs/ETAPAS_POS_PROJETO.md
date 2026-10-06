@@ -1,6 +1,6 @@
 # RasComp — Roadmap Pós-Projeto
 
-Última revisão: **03/10/2026**
+Última revisão: **05/10/2026**
 
 Este é o **único documento canônico para ordem de execução, prioridade, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
