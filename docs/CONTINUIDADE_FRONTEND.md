@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **01/10/2026**
+Última atualização: **05/10/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -25,11 +25,11 @@ docs/README.md
 # 1. Situação atual
 
 ```text
-ETAPA 0  ✅ concluída / validada
-ETAPA 1  ✅ concluída / validada
-ETAPA 2   ✅ concluída / validada
-ETAPA 3   ✅ concluída / validada
-ETAPA 4   🚧 EM ANDAMENTO — BLOCO 3 ✅ / BLOCO 4.3 🧪 aguardando validação manual
+ETAPAS 0–4  ✅ concluídas / validadas
+V1-BETA A   ✅ concluída / validada — Landing pública
+V1-BETA B   ⏭️ próxima — discussão de identidade/e-mail + infraestrutura
+V1-BETA C   ⏳ acesso/inscrições reais
+V1-BETA D   ⏳ smoke + estabilização
 ```
 
 Checkpoint interno da ETAPA 1:
@@ -86,7 +86,7 @@ Em 09/09/2026 o bloco **Chaves** foi concluído e integrado ao `gestao/`, inclui
 
 Em 12/09/2026 o **Bloco 5 — Fluxos integrados completos** foi concluído no backend. Ele não exigiu nova funcionalidade visual: validou, com services e repositories reais, que os contratos já refletidos no `gestao/` funcionam juntos e que falhas não deixam persistência parcial.
 
-**As ETAPAS 1, 2 e 3 estão concluídas/validadas. A ETAPA 4 está em andamento: BLOCO 3 foi concluído/validado; no BLOCO 4, 4.1 e 4.2 estão implementados e 4.3 está implementado aguardando validação manual. 4.4 ainda não foi iniciado.**
+**As ETAPAS 0–4 e a V1-BETA A estão concluídas/validadas. A próxima atividade é discutir a arquitetura da V1-BETA B antes de iniciar sua branch.**
 
 ---
 
