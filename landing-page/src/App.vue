@@ -45,7 +45,16 @@ const backToTopVisible = ref(false)
 let registrationNoticeTimer: number | undefined
 
 function updateBackToTopVisibility() {
-  backToTopVisible.value = window.scrollY > Math.max(360, window.innerHeight * 0.55)
+  const hero = document.querySelector<HTMLElement>('.highlights-stage')
+  if (!hero) {
+    backToTopVisible.value = false
+    return
+  }
+
+  // O botão global nunca deve disputar espaço com as setas do Hero.
+  // Só aparece depois que o Hero saiu completamente da viewport.
+  const heroBottom = hero.getBoundingClientRect().bottom
+  backToTopVisible.value = heroBottom <= 0 && window.scrollY > 0
 }
 
 function showRegistrationUnavailable() {

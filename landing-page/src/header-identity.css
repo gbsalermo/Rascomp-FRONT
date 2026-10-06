@@ -40,3 +40,29 @@
     transform-origin: left center;
   }
 }
+
+
+/* ===== Correção definitiva mobile — 06/10/2026 =====
+   O logo oficial é horizontal; aumentar só a altura do box não aumenta
+   suficientemente sua presença visual. Evitar também clipping do transform
+   aplicado nas revisões anteriores. */
+@media (max-width: 620px) {
+  .institutional-brand {
+    overflow: visible;
+  }
+
+  .institutional-brand-logo {
+    width: 138px;
+    height: 60px;
+    max-width: none;
+    transform: none;
+  }
+}
+
+@media (max-width: 390px) {
+  .institutional-brand-logo {
+    width: 128px;
+    height: 58px;
+    transform: none;
+  }
+}

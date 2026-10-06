@@ -1092,3 +1092,26 @@ Após validar a Landing por Quick Tunnel em smartphone real:
 - botão global "Voltar ao topo" passa a aparecer somente após o usuário sair da região inicial, evitando sobreposição com a seta direita do carrossel de Hero.
 
 Objetivo: preservar o layout desktop e corrigir somente as regressões observadas em aparelho real.
+
+
+## Correção mobile definitiva — 06/10/2026
+
+Foi identificada uma regressão real de cascata no Hero:
+
+```text
+<= 390px
+generic hero       → 490px
+competition hero   → regra posterior sobrescrevia para 540px
+```
+
+Correção aplicada:
+
+- regras finais unificam `.highlights-stage` e `.tone-competition.highlights-stage` em todos os breakpoints mobile;
+- <=760: 530px;
+- <=520: 500px;
+- <=390: 490px;
+- logo móvel passa a usar largura física maior, sem depender de `transform`;
+- removido clipping visual do logo pelo container móvel;
+- botão global de voltar ao topo só aparece quando o Hero saiu completamente da viewport, impedindo sobreposição com a seta direita do carrossel.
+
+Essas regras foram colocadas **no fim dos arquivos CSS** para prevalecer sobre revisões responsivas históricas duplicadas.

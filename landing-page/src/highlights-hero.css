@@ -889,3 +889,29 @@
     font-size: clamp(1.7rem, 8.9vw, 2.1rem);
   }
 }
+
+
+/* ===== Correção definitiva mobile — 06/10/2026 =====
+   Manter TODOS os slides com a mesma altura no mesmo breakpoint.
+   Estas regras ficam por último para não serem anuladas pelos blocos
+   responsivos históricos acima. */
+@media (max-width: 760px) {
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: 530px;
+  }
+}
+
+@media (max-width: 520px) {
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 390px) {
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: 490px;
+  }
+}
