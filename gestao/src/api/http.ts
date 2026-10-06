@@ -22,6 +22,10 @@ function clearStoredSession() {
 export const http = axios.create({
   baseURL: API_URL,
   timeout: 15000,
+  // Homologação same-origin via Cloudflare Access precisa enviar o cookie
+  // CF_Authorization junto das chamadas AJAX. Em API cross-origin futura,
+  // o JWT continua sendo o mecanismo da aplicação.
+  withCredentials: API_URL === '',
   headers: { 'Content-Type': 'application/json' }
 })
 
