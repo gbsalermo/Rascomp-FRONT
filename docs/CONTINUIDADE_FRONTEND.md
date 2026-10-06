@@ -1911,3 +1911,54 @@ lotes
 ```
 
 Nenhum ajuste adicional é necessário neste checkpoint.
+
+
+## Fechamento formal da V1-BETA A — 05/10/2026
+
+Status: **✅ CONCLUÍDA / VALIDADA / PRONTA PARA MERGE**
+
+Escopo fechado:
+
+- Landing institucional pública revisada e polida;
+- responsividade desktop/tablet/mobile validada;
+- Header, Hero, Sobre, Equipe, Robôs, Premiações, Galeria, Eventos e Footer;
+- competição pública integrada ao ciclo real;
+- ranking Follow, agenda/tomadas, chaveamento, BYE, 3º lugar e pódios;
+- regra pública: histórico durante disputa e somente Top 3 após pódio completo;
+- logos públicas de equipes com fallback;
+- chave read-only no Portal do Participante;
+- lotes de inscrição integrados e validados;
+- Hero mostrando lote vigente real;
+- documentação e regras sincronizadas;
+- modo local preservado.
+
+Pendência deliberadamente movida para o roadmap original:
+
+- Hero pós-competição destacando campeões por categoria na etapa final de fechamento do MVP.
+
+A branch `v1-beta-a-landing` não deve receber novos requisitos após o merge, salvo correção de regressão.
+
+## Gate de planejamento antes da V1-BETA B
+
+A B ainda **não está iniciada**. Antes do primeiro commit, discutir e aprovar:
+
+```text
+identidade real de conta
+→ verificação de e-mail
+→ ativação
+→ login
+→ recuperação segura de senha
+```
+
+Princípios já aceitos para discussão:
+
+- coletar somente o mínimo necessário;
+- posse do e-mail deve ser verificada;
+- reduzir contas falsas/descartáveis sem introduzir coleta excessiva de dados pessoais;
+- recuperação de senha deve funcionar por token/código de uso único, com expiração;
+- resposta de recuperação não pode revelar se a conta existe;
+- senha definitiva nunca deve ser visível ao DEV;
+- fluxo assistido pelo DEV pode existir apenas como fallback auditado;
+- escolher provedor de e-mail antes da implementação;
+- acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
+- modo local e Cloudflare Tunnel permanecem como contingência oficial.
