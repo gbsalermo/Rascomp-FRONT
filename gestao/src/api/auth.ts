@@ -28,6 +28,11 @@ export const authApi = {
       .post<AccountActionResponse>('/api/v1/auth/password/forgot', { email })
       .then((r) => r.data),
 
+  activateInternalAccount: (token: string, novaSenha: string) =>
+    http
+      .post<AccountActionResponse>('/api/v1/auth/internal-account/activate', { token, novaSenha })
+      .then((r) => r.data),
+
   resetPassword: (token: string, novaSenha: string) =>
     http
       .post<AccountActionResponse>('/api/v1/auth/password/reset', { token, novaSenha })

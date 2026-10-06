@@ -14,6 +14,7 @@ const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const changingIds = ref<number[]>([])
+const resendingInviteIds = ref<number[]>([])
 const section = ref<UserSection>('ORGANIZACAO')
 const internalFilter = ref<InternalFilter>('TODOS')
 const search = ref('')
@@ -37,7 +38,6 @@ const editData = reactive({
 const newInternalUser = reactive({
   nome: '',
   email: '',
-  senha: '',
   telefone: '',
   role: 'GESTAO' as InternalUserRole
 })
@@ -220,14 +220,13 @@ async function saveData() {
 function resetInternalUserForm() {
   newInternalUser.nome = ''
   newInternalUser.email = ''
-  newInternalUser.senha = ''
   newInternalUser.telefone = ''
   newInternalUser.role = 'GESTAO'
 }
 
 async function createInternalUser() {
-  if (!newInternalUser.nome.trim() || !newInternalUser.email.trim() || newInternalUser.senha.length < 8) {
-    ElMessage.warning('Informe nome, e-mail e uma senha com pelo menos 8 caracteres.')
+  if (!newInternalUser.nome.trim() || !newInternalUser.email.trim()) {
+    ElMessage.warning('Informe nome e e-mail.')
     return
   }
 
@@ -237,7 +236,6 @@ async function createInternalUser() {
       {
         nome: newInternalUser.nome.trim(),
         email: newInternalUser.email.trim(),
-        senha: newInternalUser.senha,
         telefone: newInternalUser.telefone.trim() || undefined
       },
       newInternalUser.role
@@ -245,13 +243,34 @@ async function createInternalUser() {
     section.value = 'ORGANIZACAO'
     internalFilter.value = newInternalUser.role
     createDialogOpen.value = false
-    ElMessage.success(`Conta ${roleLabel(newInternalUser.role)} criada.`)
+    ElMessage.success(`Conta ${roleLabel(newInternalUser.role)} criada. O convite de primeiro acesso foi enviado ao titular.`)
     resetInternalUserForm()
     await load()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a conta interna.')
   } finally {
     creating.value = false
+  }
+}
+
+async function resendInternalInvite(user: UserAccount) {
+  if (user.role === 'PARTICIPANTE' || user.emailVerificado) return
+  if (!user.ativo) {
+    ElMessage.warning('Reative a conta antes de reenviar o convite.')
+    return
+  }
+
+  if (!resendingInviteIds.value.includes(user.id)) {
+    resendingInviteIds.value.push(user.id)
+  }
+
+  try {
+    const response = await adminApi.resendInternalInvite(user.id)
+    ElMessage.success(response.message)
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível reenviar o convite.')
+  } finally {
+    resendingInviteIds.value = resendingInviteIds.value.filter((id) => id !== user.id)
   }
 }
 
@@ -412,10 +431,19 @@ onMounted(async () => {
         <el-table-column label="Último acesso" min-width="160">
           <template #default="{ row }">{{ formatDateTime(row.ultimoLogin) }}</template>
         </el-table-column>
-        <el-table-column label="Situação" width="110">
+        <el-table-column label="Situação" width="155">
           <template #default="{ row }">
-            <el-tag :type="row.ativo ? 'success' : 'info'" effect="light">
-              {{ row.ativo ? 'Ativo' : 'Inativo' }}
+            <el-tag
+              :type="!row.ativo ? 'info' : (row.role !== 'PARTICIPANTE' && row.emailVerificado === false ? 'warning' : 'success')"
+              effect="light"
+            >
+              {{
+                !row.ativo
+                  ? 'Inativo'
+                  : (row.role !== 'PARTICIPANTE' && row.emailVerificado === false
+                    ? 'Aguardando ativação'
+                    : 'Ativo')
+              }}
             </el-tag>
           </template>
         </el-table-column>
@@ -423,6 +451,15 @@ onMounted(async () => {
           <template #default="{ row }">
             <div class="action-row">
               <el-button size="small" plain @click="openDataDialog(row)">Editar dados</el-button>
+              <el-button
+                v-if="row.role !== 'PARTICIPANTE' && row.emailVerificado === false"
+                size="small"
+                plain
+                :loading="resendingInviteIds.includes(row.id)"
+                @click="resendInternalInvite(row)"
+              >
+                Reenviar convite
+              </el-button>
               <el-button
                 v-if="row.role !== 'PARTICIPANTE'"
                 size="small"
@@ -532,17 +569,17 @@ onMounted(async () => {
         <el-form-item label="Telefone (opcional)">
           <el-input v-model="newInternalUser.telefone" maxlength="20" />
         </el-form-item>
-        <el-form-item label="Senha inicial">
-          <el-input v-model="newInternalUser.senha" type="password" show-password maxlength="72" />
-        </el-form-item>
         <div class="callout">
-          <strong>Conta institucional.</strong>
-          <p>O cadastro público continua exclusivo para PARTICIPANTE. Uma mesma pessoa pode possuir as duas identidades, com e-mails diferentes.</p>
+          <strong>Primeiro acesso protegido.</strong>
+          <p>
+            O DEV não define a senha desta conta. O titular receberá um convite no e-mail informado
+            e criará a própria senha antes do primeiro login.
+          </p>
         </div>
       </el-form>
       <template #footer>
         <el-button @click="createDialogOpen = false">Cancelar</el-button>
-        <el-button type="primary" :loading="creating" @click="createInternalUser">Criar conta</el-button>
+        <el-button type="primary" :loading="creating" @click="createInternalUser">Criar e enviar convite</el-button>
       </template>
     </el-dialog>
   </div>

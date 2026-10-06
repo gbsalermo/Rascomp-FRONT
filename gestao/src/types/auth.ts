@@ -30,7 +30,6 @@ export interface UserAccount {
 export interface InternalUserCreatePayload {
   nome: string
   email: string
-  senha: string
   telefone?: string
 }
 

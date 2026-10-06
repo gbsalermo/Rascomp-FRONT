@@ -1984,3 +1984,26 @@ Pódio:
 ```
 
 A implementação fica explicitamente pós-V1-BETA D e não entra no escopo cloud atual.
+
+
+## Primeiro acesso de contas internas — 06/10/2026
+
+Fluxo da Administração de Usuários:
+
+```text
+DEV
+→ Nova conta interna
+→ nome/e-mail/telefone/role
+→ sem campo de senha
+→ convite enviado
+→ status "Aguardando ativação"
+→ titular abre /ativar-conta?token=...
+→ define a própria senha
+→ conta passa a Ativo
+```
+
+Enquanto a conta estiver pendente, a UI oferece **Reenviar convite**.
+
+O DEV nunca recebe, define ou visualiza a senha definitiva da conta alheia.
+
+A única exceção é o primeiro DEV do banco novo, criado por bootstrap de infraestrutura.

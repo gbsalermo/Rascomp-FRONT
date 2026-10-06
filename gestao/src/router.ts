@@ -5,6 +5,7 @@ import RegisterView from './views/RegisterView.vue'
 import PasswordRecoveryView from './views/PasswordRecoveryView.vue'
 import VerifyEmailView from './views/VerifyEmailView.vue'
 import ResetPasswordView from './views/ResetPasswordView.vue'
+import ActivateInternalAccountView from './views/ActivateInternalAccountView.vue'
 import ShellLayout from './views/ShellLayout.vue'
 import DashboardView from './views/DashboardView.vue'
 import AgendaView from './views/AgendaView.vue'
@@ -38,6 +39,7 @@ const router = createRouter({
     { path: '/recuperar-senha', name: 'password-recovery', component: PasswordRecoveryView, meta: { public: true } },
     { path: '/verificar-email', name: 'verify-email', component: VerifyEmailView, meta: { public: true } },
     { path: '/redefinir-senha', name: 'password-reset', component: ResetPasswordView, meta: { public: true } },
+    { path: '/ativar-conta', name: 'internal-account-activation', component: ActivateInternalAccountView, meta: { public: true } },
     {
       path: '/',
       component: ShellLayout,
@@ -113,6 +115,10 @@ router.afterEach((to) => {
   }
   if (to.name === 'verify-email') {
     document.title = 'RasComp · Verificar e-mail'
+    return
+  }
+  if (to.name === 'internal-account-activation') {
+    document.title = 'RasComp · Primeiro acesso'
     return
   }
   if (to.name === 'password-recovery' || to.name === 'password-reset') {

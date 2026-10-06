@@ -165,3 +165,10 @@ MySQL novo/vazio
 O backend possui `CloudProfileSafetyGuard` para impedir startup cloud com `testdata` ou seeds habilitados.
 
 Não subir equipes, robôs, competidores, competições, inscrições, rounds, chaves ou contas demo do ambiente local.
+
+
+## Convite das contas internas
+
+Após o primeiro DEV de bootstrap, contas DEV/GESTAO/MIDIA são criadas sem senha administrativa.
+
+O titular recebe o convite e define a própria senha em `/ativar-conta`. O smoke cloud deve validar esse fluxo com um e-mail real antes do go-live.
