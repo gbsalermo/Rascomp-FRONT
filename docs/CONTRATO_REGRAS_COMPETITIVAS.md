@@ -1,6 +1,6 @@
 # RasComp — Contrato de Regras Competitivas
 
-Última revisão: **13/09/2026**
+Última revisão: **06/10/2026**
 
 Este documento consolida as **regras competitivas e invariantes de domínio aprovadas durante a ETAPA 1** do RasComp.
 
@@ -1294,13 +1294,60 @@ Quando o Sumô já possuir chave atual, uma nova geração excepcional pode ocor
 - checkpoints são apoio, nunca decisão automática;
 - não criar tempos fictícios.
 
-## Sumô
+## Sumô — comportamento implementado na Beta
+
+Enquanto o motor atual permanecer em eliminação simples:
 
 - campeão = vencedor da final;
 - vice = perdedor da final;
 - 3º = vencedor da disputa de terceiro lugar;
 - os perdedores das semifinais alimentam automaticamente a disputa de 3º;
 - a disputa de 3º usa as mesmas regras operacionais de batalha/rounds do Sumô.
+
+## Sumô — regra pós-Beta aprovada: dupla eliminação
+
+Após a camada de dupla eliminação ser implementada para Sumô/Mini Sumô, a regra acima de terceiro lugar por partida específica é substituída neste formato.
+
+Estrutura:
+
+```text
+WINNERS
+→ 1ª derrota envia para LOSERS
+
+LOSERS
+→ nova derrota = 2ª derrota = eliminação
+
+vencedor WINNERS
+×
+vencedor LOSERS
+→ GRAND_FINAL
+```
+
+Se o vencedor da Winners ganhar a `GRAND_FINAL`, o campeonato termina.
+
+Se o vencedor da Losers ganhar a `GRAND_FINAL`, o representante até então invicto sofre apenas sua primeira derrota e deve ocorrer automaticamente uma `GRAND_FINAL_RESET`.
+
+Pódio da dupla eliminação:
+
+```text
+campeão = vencedor da Final Geral decisiva
+vice    = perdedor da Final Geral decisiva
+3º      = perdedor da Final da Losers
+```
+
+A Final Geral decisiva é a `GRAND_FINAL` quando não há reset, ou a `GRAND_FINAL_RESET` quando o reset é necessário.
+
+Invariante:
+
+```text
+0 derrotas → vivo na Winners
+1 derrota  → vivo na Losers
+2 derrotas → ELIMINADO
+```
+
+Ninguém pode ser eliminado da dupla eliminação com apenas uma derrota.
+
+A modelagem detalhada e a ordem de implementação pertencem ao roadmap canônico em `ETAPAS_POS_PROJETO.md`.
 
 # 19. Estado competitivo x status cadastral
 

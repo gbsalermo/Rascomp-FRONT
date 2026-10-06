@@ -2109,3 +2109,44 @@ Princípios já aceitos para discussão:
 - escolher provedor de e-mail antes da implementação;
 - acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
 - modo local e Cloudflare Tunnel permanecem como contingência oficial.
+
+
+## Evolução competitiva aprovada pós-Beta — dupla eliminação Sumô/Mini Sumô — 06/10/2026
+
+O modelo atual de chave simples permanece como baseline da V1 Beta. Após deploy/estabilização, o motor de Sumô/Mini Sumô evoluirá para dupla eliminação.
+
+Modelo de domínio aprovado:
+
+```text
+Bracket
+└─ format = DOUBLE_ELIMINATION
+   ├─ WINNERS
+   ├─ LOSERS
+   ├─ GRAND_FINAL
+   └─ GRAND_FINAL_RESET (condicional)
+```
+
+Uma partida da Winners precisa propagar dois resultados:
+
+```text
+vencedor → winnerNextMatch
+perdedor → loserNextMatch
+```
+
+A Losers mantém o participante vivo após a primeira derrota; a derrota nessa seção produz sua segunda derrota e eliminação.
+
+A Final da Winners não produz campeão. O campeão nasce apenas da Final Geral decisiva.
+
+Quando o representante invicto da Winners perde a primeira Final Geral, deve ser criada/ativada automaticamente a Final de Reset, pois ambos os finalistas passam a ter uma derrota.
+
+Pódio aprovado:
+
+```text
+1º = vencedor da Final Geral decisiva
+2º = perdedor da Final Geral decisiva
+3º = perdedor da Final da Losers
+```
+
+Não existe disputa adicional de terceiro lugar neste formato.
+
+O contrato detalhado está em `docs/CONTRATO_REGRAS_COMPETITIVAS.md` e o gate de execução em `docs/ETAPAS_POS_PROJETO.md`.

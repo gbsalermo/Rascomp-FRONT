@@ -84,6 +84,7 @@ V1-BETA C  ⏳ — Abertura controlada: cadastro/login + inscrições reais + ac
 V1-BETA D  ⏳ — Smoke de produção + estabilização inicial
 
 ROADMAP OFICIAL — RETOMADA APÓS V1 BETA
+CAMADA COMPETITIVA PÓS-BETA  ⏳ — Dupla eliminação para Sumô/Mini Sumô
 ETAPA 5  ⏳ PÓS-BETA — Ajustes Gerais DEV + auditoria; não bloqueia a publicação inicial
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -411,6 +412,199 @@ desenvolvimento em ambiente não-prod
 +
 merge/deploy somente após testes
 ```
+
+
+## CAMADA COMPETITIVA PÓS-BETA — Dupla eliminação de Sumô/Mini Sumô
+
+**Status:** modelagem aprovada em 06/10/2026; implementação somente após deploy e estabilização da V1 Beta.
+
+Esta camada entra **antes da retomada funcional normal do roadmap**, sem alterar o objetivo atual da V1-BETA B/C/D.
+
+### Regra estrutural
+
+Categorias de Sumô/Mini Sumô que usam chave passam do modelo atual de eliminação simples para **dupla eliminação**.
+
+O sistema gera um único chaveamento competitivo com duas seções coordenadas:
+
+```text
+CHAVE PRINCIPAL / WINNERS
+→ participante permanece enquanto estiver invicto
+→ primeira derrota envia para a Chave dos Perdedores
+
+CHAVE DOS PERDEDORES / LOSERS
+→ recebe participantes após a primeira derrota
+→ derrota nesta seção = segunda derrota = eliminação
+```
+
+Não modelar Winners e Losers como campeonatos independentes. Elas pertencem ao mesmo `Bracket` e compartilham progressão, histórico, agenda e resultado final.
+
+### Final da chave principal
+
+A final da Winners **não define campeão nem vice**.
+
+Ela define apenas o representante invicto da chave principal para a Final Geral.
+
+A final da Losers define o representante da chave dos perdedores para a Final Geral.
+
+### Final Geral + Reset
+
+```text
+Vencedor da Winners (0 derrotas)
+×
+Vencedor da Losers (1 derrota)
+→ GRAND_FINAL
+```
+
+Se o representante da Winners vencer:
+
+```text
+adversário recebe a 2ª derrota
+→ campeonato encerrado
+→ vencedor da Winners = campeão
+```
+
+Se o representante da Losers vencer:
+
+```text
+representante da Winners recebe a 1ª derrota
+→ ambos passam a possuir 1 derrota
+→ GRAND_FINAL_RESET é criada/ativada automaticamente
+```
+
+A Final de Reset é **obrigatória quando necessária**; não depende de escolha manual da organização.
+
+O vencedor da Final de Reset é o campeão e o perdedor é o vice.
+
+Cada Final Geral/Reset continua sendo uma partida normal de Sumô, obedecendo ao mesmo contrato de rounds, penalidades, WO, rounds extras e decisão de juiz.
+
+### Pódio aprovado
+
+Na dupla eliminação:
+
+```text
+1º lugar
+→ vencedor da Final Geral decisiva
+   (GRAND_FINAL quando não houver reset,
+    ou GRAND_FINAL_RESET quando houver)
+
+2º lugar
+→ perdedor da Final Geral decisiva
+
+3º lugar
+→ perdedor da Final da Chave dos Perdedores
+```
+
+Não criar disputa extra de terceiro lugar para este formato.
+
+A regra atual de disputa específica de 3º lugar permanece somente enquanto o chaveamento de eliminação simples ainda estiver em uso.
+
+### Invariantes de domínio
+
+```text
+0 derrotas → permanece na Winners
+1 derrota  → permanece vivo na Losers
+2 derrotas → ELIMINADO
+```
+
+Exceção estrutural da Final Geral:
+
+- o campeão da Winners pode sofrer sua primeira derrota na `GRAND_FINAL`;
+- nesse caso ele não é eliminado;
+- o `GRAND_FINAL_RESET` resolve a segunda eliminação de um dos dois finalistas.
+
+Invariante central:
+
+> Nenhuma Registration pode ser eliminada de uma chave de dupla eliminação com apenas uma derrota.
+
+### Evolução de modelo prevista
+
+Conceitos esperados:
+
+```text
+BracketFormat
+├─ SINGLE_ELIMINATION
+└─ DOUBLE_ELIMINATION
+
+BracketSection
+├─ WINNERS
+├─ LOSERS
+├─ GRAND_FINAL
+└─ GRAND_FINAL_RESET
+```
+
+A progressão de uma partida deve suportar destinos distintos:
+
+```text
+winnerNextMatchId
+loserNextMatchId
+```
+
+Na Winners:
+
+```text
+vencedor → próxima partida da Winners
+perdedor → slot correspondente da Losers
+```
+
+Na Losers:
+
+```text
+vencedor → próxima partida da Losers
+perdedor → segunda derrota → eliminado
+```
+
+Slots devem guardar/derivar sua origem competitiva, por exemplo:
+
+```text
+WINNER(matchId)
+LOSER(matchId)
+```
+
+Isso evita reconstrução ambígua da progressão.
+
+### BYE, correção e auditoria
+
+- BYE continua sendo avanço automático e não conta como vitória disputada/derrota;
+- geração deve funcionar com quantidades não-potência de dois;
+- correção de resultado precisa recalcular tanto o caminho do vencedor quanto o destino do perdedor;
+- correção fica bloqueada quando dependências posteriores já tiverem atividade, seguindo a proteção já existente;
+- ferramentas DEV excepcionais devem preservar histórico das duas seções;
+- contagem de derrotas deve ser derivável/auditável, não um número solto sem origem.
+
+### Frontend e exposição pública
+
+Gestão, Portal e Landing devem poder representar:
+
+```text
+Chave Principal
+Chave dos Perdedores
+Final Geral
+Final de Reset — somente quando necessária
+```
+
+A UI deve deixar explícito que:
+
+- vencer a final da Winners não significa ser campeão;
+- participante com uma derrota ainda está vivo;
+- a Final de Reset aparece apenas quando a primeira Final Geral igualar ambos em uma derrota.
+
+### Testes mínimos obrigatórios
+
+Cobrir pelo menos:
+
+- 4, 8, 16 e quantidade não-potência de dois participantes;
+- BYEs nas duas rotas de progressão;
+- primeira derrota Winners → Losers;
+- segunda derrota → eliminação;
+- Winners vence Grand Final sem reset;
+- Losers vence Grand Final → reset obrigatório;
+- cada lado podendo vencer o reset;
+- pódio 1º/2º/3º derivado corretamente;
+- correção antes/depois de dependências;
+- histórico e agenda preservados;
+- nenhuma eliminação com apenas uma derrota.
+
+Esta camada **não bloqueia o deploy atual**. Ela é a primeira grande evolução competitiva já aprovada para a retomada pós-Beta.
 
 ---
 # 4. Etapas concluídas

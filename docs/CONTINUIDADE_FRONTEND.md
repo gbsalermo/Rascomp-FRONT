@@ -1962,3 +1962,25 @@ Princípios já aceitos para discussão:
 - escolher provedor de e-mail antes da implementação;
 - acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
 - modo local e Cloudflare Tunnel permanecem como contingência oficial.
+
+
+## Camada competitiva já aprovada para pós-Beta — 06/10/2026
+
+Sem alterar a branch/deploy atual, foi aprovada para a retomada do roadmap a evolução do Sumô/Mini Sumô para **dupla eliminação**:
+
+```text
+Winners → primeira derrota → Losers
+Losers  → segunda derrota → eliminado
+Winners Final + Losers Final → Grand Final
+derrota do invicto na Grand Final → Grand Final Reset obrigatória
+```
+
+Pódio:
+
+```text
+1º vencedor da final decisiva
+2º perdedor da final decisiva
+3º perdedor da final da Losers
+```
+
+A implementação fica explicitamente pós-V1-BETA D e não entra no escopo cloud atual.
