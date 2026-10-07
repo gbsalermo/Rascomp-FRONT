@@ -49,7 +49,7 @@
 @media (max-width: 620px) {
   .institutional-brand {
     overflow: visible;
-    margin-left: -38px;
+    margin-left: -58px;
   }
 
   .institutional-brand-logo {
@@ -63,7 +63,7 @@
 
 @media (max-width: 390px) {
   .institutional-brand {
-    margin-left: -34px;
+    margin-left: -54px;
   }
 
   .institutional-brand-logo {
