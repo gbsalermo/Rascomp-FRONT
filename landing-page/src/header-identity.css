@@ -56,8 +56,7 @@
     width: 138px;
     height: 60px;
     max-width: none;
-    margin-top: 10px;
-    transform: scale(2);
+    transform: translateY(12px) scale(2);
     transform-origin: left center;
   }
 }
@@ -70,8 +69,7 @@
   .institutional-brand-logo {
     width: 128px;
     height: 58px;
-    margin-top: 10px;
-    transform: scale(2);
+    transform: translateY(12px) scale(2);
     transform-origin: left center;
   }
 }
