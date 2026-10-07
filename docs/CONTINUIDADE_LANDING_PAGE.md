@@ -1115,3 +1115,26 @@ Correção aplicada:
 - botão global de voltar ao topo só aparece quando o Hero saiu completamente da viewport, impedindo sobreposição com a seta direita do carrossel.
 
 Essas regras foram colocadas **no fim dos arquivos CSS** para prevalecer sobre revisões responsivas históricas duplicadas.
+
+
+## Eventos reais para publicação — 07/10/2026
+
+A seção pública de Eventos deixa de usar os cards demonstrativos da Beta A e passa a publicar somente eventos informados com dados reais neste checkpoint:
+
+```text
+RCX 2026
+→ 09 a 12 OUT 2026
+→ imagem: landing-page/src/assets/rcx.jpg
+
+Apresentação de banners no Congresso UFRB
+→ 13 a 16 OUT 2026
+→ imagem: landing-page/src/assets/congresso.png
+
+RRC 2026
+→ 14 NOV 2026
+→ imagem: landing-page/src/assets/rrc.jpeg
+```
+
+Foram removidos da fonte pública os eventos demonstrativos anteriores (Oficina Arduino, Palestra IA, RAS nas Escolas, Robodori e participação externa genérica).
+
+O bloco "Eventos recentes" fica oculto enquanto não houver registros históricos reais aprovados para publicação.
