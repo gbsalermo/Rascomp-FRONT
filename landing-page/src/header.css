@@ -608,3 +608,33 @@
     font-size: .9rem;
   }
 }
+
+
+/* ===== Header institucional desktop — distribuição ampla =====
+   Sem CTA de inscrição, a marca ocupa a borda esquerda e a navegação
+   aproveita toda a largura disponível à direita. O modo competitivo
+   mantém o grid original. */
+@media (min-width: 981px) {
+  .header-main-row--institutional {
+    width: calc(100% - 28px);
+    max-width: none;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 64px;
+  }
+
+  .header-main-row--institutional .institutional-brand {
+    margin-left: -12px;
+  }
+
+  .header-main-row--institutional .institutional-brand-logo {
+    width: 96px;
+    height: 96px;
+    transform: scale(1.34);
+    transform-origin: left center;
+  }
+
+  .header-main-row--institutional .institutional-nav {
+    justify-self: end;
+    margin-right: 4px;
+  }
+}
