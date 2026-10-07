@@ -305,9 +305,9 @@
 
 .hero-quick-links {
   display: grid;
-  width: min(1460px, calc(100% - 32px));
+  width: min(1840px, calc(100% - clamp(32px, 3vw, 64px)));
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: clamp(12px, .85vw, 16px);
   margin: 12px auto 0;
 }
 
@@ -392,33 +392,33 @@
   }
 
   .hero-quick-card {
-    min-height: 84px;
-    gap: 12px;
-    padding: 11px 14px;
+    min-height: clamp(88px, 5vw, 104px);
+    gap: clamp(12px, .85vw, 16px);
+    padding: clamp(12px, .9vw, 16px) clamp(14px, 1.15vw, 22px);
   }
 
   .hero-quick-icon {
-    width: 40px;
-    height: 40px;
-    flex-basis: 40px;
+    width: clamp(40px, 2.5vw, 48px);
+    height: clamp(40px, 2.5vw, 48px);
+    flex-basis: clamp(40px, 2.5vw, 48px);
   }
 
   .hero-quick-icon svg {
-    width: 21px;
-    height: 21px;
+    width: clamp(21px, 1.35vw, 25px);
+    height: clamp(21px, 1.35vw, 25px);
   }
 
   .hero-quick-copy {
-    gap: 4px;
+    gap: clamp(4px, .3vw, 6px);
   }
 
   .hero-quick-copy strong {
-    font-size: .94rem;
+    font-size: clamp(.94rem, .84vw, 1.02rem);
   }
 
   .hero-quick-copy small {
-    font-size: .73rem;
-    line-height: 1.35;
+    font-size: clamp(.73rem, .68vw, .8rem);
+    line-height: 1.4;
   }
 }
 

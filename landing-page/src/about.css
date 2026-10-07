@@ -1,9 +1,9 @@
 .institutional-about-section {
-  min-height: calc(100vh - 72px);
+  min-height: auto;
   scroll-margin-top: 86px;
   display: flex;
-  align-items: center;
-  padding: clamp(16px, 2.4vh, 26px) clamp(20px, 4.2vw, 62px);
+  align-items: stretch;
+  padding: clamp(28px, 3vw, 44px) clamp(20px, 4.2vw, 62px);
   background: #fff;
 }
 
