@@ -9,6 +9,7 @@ import {
 const props = defineProps<{
   managementUrl: string
   registrationOpen: boolean
+  competitionModeEnabled: boolean
 }>()
 
 const emit = defineEmits<{
@@ -68,10 +69,13 @@ function isRegistrationAction(event: LandingEvent) {
 }
 
 function eventActionHref(event: LandingEvent) {
-  if (event.href) return event.href
-  if (isRegistrationAction(event) && props.registrationOpen && props.managementUrl) {
-    return props.managementUrl
+  if (isRegistrationAction(event)) {
+    if (!props.competitionModeEnabled) return ''
+    if (props.registrationOpen && props.managementUrl) return props.managementUrl
+    return ''
   }
+
+  if (event.href) return event.href
   return ''
 }
 
@@ -286,7 +290,7 @@ function eventActionHref(event: LandingEvent) {
                   </div>
 
                   <div
-                    v-if="event.cta && (eventActionHref(event) || isRegistrationAction(event))"
+                    v-if="event.cta && (eventActionHref(event) || (competitionModeEnabled && isRegistrationAction(event)))"
                     class="event-detail-actions"
                   >
                     <a
@@ -298,7 +302,7 @@ function eventActionHref(event: LandingEvent) {
                     </a>
 
                     <button
-                      v-else-if="isRegistrationAction(event)"
+                      v-else-if="competitionModeEnabled && isRegistrationAction(event)"
                       type="button"
                       class="event-primary-action"
                       @click="emit('registrationUnavailable')"
