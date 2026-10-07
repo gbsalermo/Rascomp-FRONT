@@ -624,17 +624,21 @@
 
   .header-main-row--institutional .institutional-brand {
     margin-left: 0;
-    gap: 20px;
+    gap: 18px;
+    overflow: visible;
   }
 
+  /* A caixa permanece pequena; somente a arte cresce visualmente. */
   .header-main-row--institutional .institutional-brand-logo {
-    width: 156px;
-    height: 84px;
-    transform: none;
+    width: 62px;
+    height: 26px;
+    margin-right: 122px;
+    transform: scale(3.2);
+    transform-origin: left center;
   }
 
   .header-main-row--institutional .institutional-brand-copy {
-    padding-left: 18px;
+    padding-left: 0;
   }
 
   .header-main-row--institutional .institutional-nav {
