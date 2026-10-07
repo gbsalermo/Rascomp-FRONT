@@ -133,3 +133,33 @@ R2_SECRET_ACCESS_KEY
 ## Regra de segurança
 
 Nenhum token da Cloudflare, credencial de banco, segredo JWT, chave de e-mail ou credencial R2 deve entrar no Git. Variáveis `VITE_*` são públicas por natureza e não podem conter segredos.
+
+## Modo público da Landing
+
+Enquanto a infraestrutura cloud é publicada e antes da abertura oficial de uma competição, a Landing fica em modo institucional por padrão:
+
+```text
+VITE_LANDING_MODE=institutional
+```
+
+Efeito:
+
+- não consulta a API competitiva no carregamento da Home;
+- não mostra aviso/menu/seção de competição vigente;
+- não mostra CTA global de inscrição ligado à competição;
+- não mostra erro de API competitiva ao visitante;
+- mantém todo o conteúdo institucional, eventos, galeria, robôs, equipe e conquistas.
+
+Para validação futura do modo competitivo sem apagar código:
+
+```text
+VITE_LANDING_MODE=auto
+```
+
+ou:
+
+```text
+VITE_LANDING_MODE=competitive
+```
+
+A troca administrativa via Gestão de Mídia continua prevista como evolução; esta variável é o override técnico da Beta B.
