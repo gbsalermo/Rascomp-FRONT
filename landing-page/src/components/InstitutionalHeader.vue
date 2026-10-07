@@ -5,6 +5,7 @@ const props = defineProps<{
   competition?: any
   managementUrl: string
   registrationOpen: boolean
+  competitionModeEnabled: boolean
 }>()
 
 const emit = defineEmits<{
@@ -17,6 +18,7 @@ const competitionMenu = ref<HTMLDetailsElement>()
 const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
 
 const competitionVisible = computed(() =>
+  props.competitionModeEnabled &&
   publicCompetitionStatuses.includes(props.competition?.status)
 )
 
@@ -98,22 +100,24 @@ function closeMobile() {
           <a href="#contato" @click="closeMobile">Contato</a>
         </nav>
 
-        <a
-          v-if="registrationOpen && managementUrl"
-          class="header-registration-cta desktop-registration-cta"
-          :href="managementUrl"
-          @click="closeMobile"
-        >
-          Inscrever-se
-        </a>
-        <button
-          v-else
-          type="button"
-          class="header-registration-cta desktop-registration-cta"
-          @click="closeMobile(); emit('registrationUnavailable')"
-        >
-          Inscrever-se
-        </button>
+        <template v-if="competitionModeEnabled">
+          <a
+            v-if="registrationOpen && managementUrl"
+            class="header-registration-cta desktop-registration-cta"
+            :href="managementUrl"
+            @click="closeMobile"
+          >
+            Inscrever-se
+          </a>
+          <button
+            v-else
+            type="button"
+            class="header-registration-cta desktop-registration-cta"
+            @click="closeMobile(); emit('registrationUnavailable')"
+          >
+            Inscrever-se
+          </button>
+        </template>
 
         <button
           class="public-menu-toggle"
