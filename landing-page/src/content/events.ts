@@ -39,7 +39,7 @@ export const LANDING_EVENTS: LandingEvent[] = [
     id: 'rcx-2026',
     title: 'RCX 2026',
     eyebrow: 'Competição de Robótica',
-    type: 'Participações',
+    type: 'Competições',
     organizedByRas: false,
     dateDay: '09',
     dateMonth: 'OUT',
