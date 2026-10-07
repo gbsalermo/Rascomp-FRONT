@@ -62,7 +62,10 @@ function closeMobile() {
     </div>
 
     <header class="site-header institutional-header">
-      <div class="header-container header-main-row">
+      <div
+        class="header-container header-main-row"
+        :class="{ 'header-main-row--institutional': !competitionModeEnabled }"
+      >
         <a href="#top" class="institutional-brand" aria-label="RAS UFRB — início" @click="closeMobile">
           <img
             class="institutional-brand-logo"
