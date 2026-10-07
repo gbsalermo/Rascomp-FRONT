@@ -616,25 +616,29 @@
    mantém o grid original. */
 @media (min-width: 981px) {
   .header-main-row--institutional {
-    width: calc(100% - 28px);
+    width: calc(100% - 64px);
     max-width: none;
     grid-template-columns: auto minmax(0, 1fr);
-    gap: 64px;
+    gap: 72px;
   }
 
   .header-main-row--institutional .institutional-brand {
-    margin-left: -12px;
+    margin-left: 0;
+    gap: 20px;
   }
 
   .header-main-row--institutional .institutional-brand-logo {
-    width: 96px;
-    height: 96px;
-    transform: scale(1.34);
-    transform-origin: left center;
+    width: 104px;
+    height: 72px;
+    transform: none;
+  }
+
+  .header-main-row--institutional .institutional-brand-copy {
+    padding-left: 18px;
   }
 
   .header-main-row--institutional .institutional-nav {
     justify-self: end;
-    margin-right: 4px;
+    margin-right: 0;
   }
 }
