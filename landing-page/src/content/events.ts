@@ -136,11 +136,11 @@ export const LANDING_EVENTS: LandingEvent[] = [
 
 export const RECENT_LANDING_EVENTS: RecentLandingEvent[] = [
   {
-    id: 'erbase-2025',
-    title: 'ERBASE 2025',
+    id: 'erbase-2026',
+    title: 'ERBASE 2026',
     category: 'Competição',
-    dateLabel: '2025',
-    summary: 'Campeão na categoria Follow Line.',
+    dateLabel: '2026',
+    summary: 'Campeão e vice-campeão na categoria Follow Line.',
     image: '/media/assets/awards/conquista-ras.jpg',
     tone: 'purple'
   },
