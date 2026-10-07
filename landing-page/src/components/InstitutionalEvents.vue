@@ -322,7 +322,7 @@ function eventActionHref(event: LandingEvent) {
         </section>
       </div>
 
-      <section class="events-surface events-recent-panel">
+      <section v-if="RECENT_LANDING_EVENTS.length" class="events-surface events-recent-panel">
         <header class="events-recent-heading">
           <div>
             <span class="events-panel-icon" aria-hidden="true">
