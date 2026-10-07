@@ -32,6 +32,15 @@ const followCategoryId = ref<number>()
 const bracketId = ref<number>()
 let timer: number | undefined
 const managementUrl = String(import.meta.env.VITE_GESTAO_URL || (import.meta.env.DEV ? 'http://localhost:5173' : '')).trim()
+
+type LandingMode = 'institutional' | 'auto' | 'competitive'
+const requestedLandingMode = String(import.meta.env.VITE_LANDING_MODE || 'institutional').trim().toLowerCase()
+const landingMode: LandingMode =
+  requestedLandingMode === 'auto' || requestedLandingMode === 'competitive'
+    ? requestedLandingMode
+    : 'institutional'
+const competitionModeEnabled = landingMode !== 'institutional'
+
 const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
 const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html'
 
@@ -39,6 +48,12 @@ const currentCompetition = computed(() => competitions.value.find((item) => item
 const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
 const registrationOpen = computed(() =>
   currentCompetition.value?.status === 'INSCRICOES_ABERTAS'
+)
+const displayedCompetition = computed(() =>
+  competitionModeEnabled ? currentCompetition.value : undefined
+)
+const displayedRegistrationOpen = computed(() =>
+  competitionModeEnabled && registrationOpen.value
 )
 const registrationNoticeVisible = ref(false)
 const backToTopVisible = ref(false)
@@ -209,6 +224,11 @@ onMounted(async () => {
 
   if (isNotFound) return
 
+  if (!competitionModeEnabled) {
+    loading.value = false
+    return
+  }
+
   await bootstrap()
   const refreshMs = Number(import.meta.env.VITE_REFRESH_MS || 20000)
 
@@ -229,15 +249,16 @@ onBeforeUnmount(() => {
 
   <div v-else class="public-app">
     <InstitutionalHeader
-      :competition="currentCompetition"
+      :competition="displayedCompetition"
       :management-url="managementUrl"
-      :registration-open="registrationOpen"
+      :registration-open="displayedRegistrationOpen"
+      :competition-mode-enabled="competitionModeEnabled"
       @registration-unavailable="showRegistrationUnavailable"
     />
 
     <main id="top">
       <HighlightsHero
-        :competition="currentCompetition"
+        :competition="displayedCompetition"
         :categories="categories"
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
@@ -249,12 +270,14 @@ onBeforeUnmount(() => {
       <InstitutionalGallery />
       <InstitutionalEvents
         :management-url="managementUrl"
-        :registration-open="registrationOpen"
+        :registration-open="displayedRegistrationOpen"
+        :competition-mode-enabled="competitionModeEnabled"
         @registration-unavailable="showRegistrationUnavailable"
       />
 
       <ActiveCompetition
-        :competition="currentCompetition"
+        v-if="competitionModeEnabled"
+        :competition="displayedCompetition"
         :teams="teams"
         :categories="categories"
         :registrations="registrations"
@@ -275,7 +298,7 @@ onBeforeUnmount(() => {
         @update:bracket-id="updateBracket"
       />
 
-      <section v-if="error" class="public-section">
+      <section v-if="competitionModeEnabled && error" class="public-section">
         <div class="public-alert">
           <strong>Interface institucional disponível.</strong>
           <p>{{ error }}</p>
