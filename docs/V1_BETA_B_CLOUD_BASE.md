@@ -2,6 +2,31 @@
 
 Status em 06/10/2026: **🚧 estrutura preparada; nenhum recurso remoto provisionado ainda**.
 
+## Domínio oficial adquirido
+
+Domínio canônico do Beta B:
+
+```text
+rasufrb.site
+```
+
+Topologia de produção definida:
+
+```text
+https://rasufrb.site      → Landing pública (rascomp-landing)
+https://app.rasufrb.site  → Gestão + Portal do Participante (rascomp-app)
+https://api.rasufrb.site  → API Spring Boot
+```
+
+Homologação estável, quando ativada:
+
+```text
+https://homolog.rasufrb.site      → Landing de homologação
+https://app-homolog.rasufrb.site  → Gestão/Participante protegidos por Access
+```
+
+O registro permanece na Hostinger; a autoridade DNS será transferida para os nameservers da Cloudflare. Não é necessário contratar hospedagem da Hostinger.
+
 ## Arquitetura de destino
 
 ```text
