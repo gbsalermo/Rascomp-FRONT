@@ -216,7 +216,10 @@ Decisões finais:
   - Campeão — ERBASE 2025 · Follow Line;
   - Campeão — IEEE 2024 · Foto Destaque;
   - Campeão — Mega Sumô 2024;
-- métricas/cards antigos do rodapé removidos.
+- métricas/cards antigos do rodapé removidos;
+- **pendência de roadmap para o polimento final da Landing:** ao final de `Equipe e Conquistas`, adicionar uma faixa/hero automático de **Patrocinadores e Apoiadores**, seguindo o mesmo padrão visual e de autoplay da faixa de voluntários;
+- a faixa deve aceitar múltiplos patrocinadores/apoiadores, priorizando logos, boa leitura em desktop/mobile, pausa em hover e respeito a `prefers-reduced-motion`;
+- a origem inicial pode permanecer versionada no frontend e deverá migrar para a Gestão de Mídia/CMS quando essa etapa for executada.
 
 Arquivos centrais:
 
