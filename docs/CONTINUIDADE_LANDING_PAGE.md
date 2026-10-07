@@ -213,7 +213,7 @@ Decisões finais:
 - CTA `Ver todas as conquistas` removido;
 - premiações reais atualmente registradas:
   - Vice-campeão — RCX 2024 · Hockey;
-  - Campeão — ERBASE 2025 · Follow Line;
+  - Campeão e vice-campeão — ERBASE 2026 · Follow Line;
   - Campeão — IEEE 2024 · Foto Destaque;
   - Campeão — Mega Sumô 2024;
 - métricas/cards antigos do rodapé removidos.
