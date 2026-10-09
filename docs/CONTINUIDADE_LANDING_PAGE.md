@@ -1138,3 +1138,26 @@ RRC 2026
 Foram removidos da fonte pública os eventos demonstrativos anteriores (Oficina Arduino, Palestra IA, RAS nas Escolas, Robodori e participação externa genérica).
 
 O bloco "Eventos recentes" fica oculto enquanto não houver registros históricos reais aprovados para publicação.
+
+
+### Eventos dinâmicos e portal da competição — 09/10/2026
+
+**Implementado na Landing Beta B:**
+- Eventos têm `startDate` e `endDate` em calendário ISO; comparações inclusivas no fuso `America/Bahia`.
+- Antes da data inicial: `Próximo`; entre início e fim: `Acontecendo agora`; depois do fim: `Encerrado`.
+- A agenda principal prioriza eventos futuros/atuais; ao finalizar, o evento migra automaticamente para `Eventos recentes`, preservando fotos e texto existentes.
+- Estado é reavaliado periodicamente sem exigir redeploy da Landing.
+- Em competição oficial publicada, CTA do Header e Hero: `Inscrever-se` em `INSCRICOES_ABERTAS`; `Área do participante` em `INSCRICOES_ENCERRADAS` ou `EM_ANDAMENTO`, apontando para o sistema autenticado configurado por `VITE_GESTAO_URL`.
+- Não atribuir vínculo com RasComp a eventos externos apenas por estarem na categoria Competições.
+- `FINALIZADA`, `CANCELADA` e ausência de competição publicada não oferecem CTA contextual competitivo.
+
+**Pendente para Gestão de Mídia / CMS (implementação futura):**
+- Cadastro, edição, agendamento, publicação/despublicação e arquivamento de eventos.
+- Dados de início/fim e fuso, título, textos, local, categorias, autoria/organização e fotos (capa/galeria) em storage persistente.
+- Diferenciar `organizadoPelaRAS` de `vinculadoACompeticaoId`; este último deve referenciar competição real gerida pelo RasComp, e não apenas texto.
+- Administrar CTAs, links e regras de disponibilidade sem liberar inscrição fora do período real.
+- Gestão de evento em andamento e histórico automáticos, com eventual override editorial auditável; não usar etiquetas temporais fixas como fonte de verdade.
+- Resolver rota dedicada de login/Portal no sistema autenticado, mantendo URL configurável por ambiente e evitando caminhos hardcoded.
+- Cobrir virada de dia, intervalos de vários dias, eventos externos, mudanças de datas e sincronização da competição com testes automatizados.
+
+**Observação:** não se deve interpretar a presença de datas como validação oficial de realização; calendário exibe o período planejado até que a Gestão confirme ou cancele o evento. A seção de recentes usa o material existente, sem inventar fotos nem resultados.
