@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import {
   LANDING_EVENTS,
   RECENT_LANDING_EVENTS,
-  type LandingEvent
+  type LandingEvent,
+  eventPeriod
 } from '../content/events'
 
 const props = defineProps<{
@@ -36,6 +37,32 @@ const filters: EventFilter[] = [
 const activeFilter = ref<EventFilter>('Todos os eventos')
 const expandedEventId = ref<string>(LANDING_EVENTS[0]?.id || '')
 const fullAgenda = ref(false)
+const today = ref(todayInBahia())
+let dateRefresh: number | undefined
+
+function todayInBahia(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Bahia', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date())
+}
+
+function period(event: LandingEvent) {
+  return eventPeriod(event, today.value)
+}
+
+function periodLabel(event: LandingEvent) {
+  if (period(event) === 'ongoing') return 'Acontecendo agora'
+  if (period(event) === 'past') return 'Encerrado'
+  return event.temporalLabel === 'Inscrições abertas' ? event.temporalLabel : 'Próximo'
+}
+
+onMounted(() => {
+  dateRefresh = window.setInterval(() => { today.value = todayInBahia() }, 60_000)
+})
+
+onBeforeUnmount(() => {
+  if (dateRefresh) window.clearInterval(dateRefresh)
+})
 
 const visibleEvents = computed(() => {
   if (activeFilter.value === 'Todos os eventos') return LANDING_EVENTS
@@ -48,10 +75,10 @@ const visibleEvents = computed(() => {
 })
 
 const agendaEvents = computed(() =>
-  fullAgenda.value ? visibleEvents.value : visibleEvents.value.slice(0, 4)
+  fullAgenda.value ? visibleEvents.value : visibleEvents.value.filter((event) => period(event) !== 'past').slice(0, 4)
 )
 
-const highlightedEvents = computed(() => visibleEvents.value.slice(0, 4))
+const highlightedEvents = computed(() => visibleEvents.value.filter((event) => period(event) !== 'past').slice(0, 4))
 
 watch(visibleEvents, (events) => {
   if (!events.some((event) => event.id === expandedEventId.value)) {
@@ -65,7 +92,7 @@ function toggleEvent(event: LandingEvent) {
 }
 
 function isRegistrationAction(event: LandingEvent) {
-  return event.cta === 'Inscrever-se' || event.temporalLabel === 'Inscrições abertas'
+  return event.organizedByRas && (event.cta === 'Inscrever-se' || event.temporalLabel === 'Inscrições abertas')
 }
 
 function eventActionHref(event: LandingEvent) {
@@ -166,7 +193,7 @@ function eventActionHref(event: LandingEvent) {
               </span>
 
               <span class="events-temporal-badge" :class="`tone-${event.tone}`">
-                {{ event.temporalLabel }}
+                {{ periodLabel(event) }}
               </span>
             </button>
           </div>
@@ -224,7 +251,7 @@ function eventActionHref(event: LandingEvent) {
 
                 <span class="event-accordion-badges">
                   <span class="event-type-badge" :class="`tone-${event.tone}`">{{ event.type }}</span>
-                  <span class="event-time-badge">{{ event.temporalLabel }}</span>
+                  <span class="event-time-badge">{{ periodLabel(event) }}</span>
                 </span>
 
                 <span class="event-accordion-chevron" aria-hidden="true">
