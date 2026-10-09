@@ -13,6 +13,8 @@ export type LandingEvent = {
   dateDay: string
   dateMonth: string
   dateLabel: string
+  startDate: string
+  endDate: string
   location: string
   summary: string
   description: string
@@ -44,6 +46,8 @@ export const LANDING_EVENTS: LandingEvent[] = [
     dateDay: '09',
     dateMonth: 'OUT',
     dateLabel: '09 a 12 OUT 2026',
+    startDate: '2026-10-09',
+    endDate: '2026-10-12',
     location: 'Informações em breve',
     summary: 'Participação da equipe na RCX 2026.',
     description: 'Entre 9 e 12 de outubro, a equipe participa da RCX 2026, levando seus robôs e representando a IEEE RAS UFRB na competição.',
@@ -60,6 +64,8 @@ export const LANDING_EVENTS: LandingEvent[] = [
     dateDay: '13',
     dateMonth: 'OUT',
     dateLabel: '13 a 16 OUT 2026',
+    startDate: '2026-10-13',
+    endDate: '2026-10-16',
     location: 'UFRB',
     summary: 'Apresentação de banners durante o Congresso UFRB.',
     description: 'De 13 a 16 de outubro, integrantes da equipe participam do Congresso UFRB com apresentação de banners ligados às atividades e projetos desenvolvidos pelo grupo.',
@@ -76,6 +82,8 @@ export const LANDING_EVENTS: LandingEvent[] = [
     dateDay: '14',
     dateMonth: 'NOV',
     dateLabel: '14 NOV 2026',
+    startDate: '2026-11-14',
+    endDate: '2026-11-14',
     location: 'UFRB — Campus Cruz das Almas',
     summary: 'Competição de robótica marcada para 14 de novembro.',
     description: 'A RRC 2026 acontece em 14 de novembro, reunindo equipes e robôs em uma programação voltada à competição e à integração da comunidade de robótica.',
@@ -88,3 +96,15 @@ export const LANDING_EVENTS: LandingEvent[] = [
 // Sem registros históricos fictícios: a seção de recentes só volta quando houver
 // eventos concluídos e dados/fotos reais para publicar.
 export const RECENT_LANDING_EVENTS: RecentLandingEvent[] = []
+
+/**
+ * Datas são comparadas no calendário brasileiro (America/Bahia),
+ * inclusive início e fim. O status não depende de rótulos editoriais.
+ */
+export type EventPeriod = 'upcoming' | 'ongoing' | 'past'
+
+export function eventPeriod(event: Pick<LandingEvent, 'startDate' | 'endDate'>, today: string): EventPeriod {
+  if (today < event.startDate) return 'upcoming'
+  if (today > event.endDate) return 'past'
+  return 'ongoing'
+}
