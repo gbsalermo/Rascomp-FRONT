@@ -226,6 +226,7 @@
   will-change: transform;
 }
 
+.team-volunteer-carousel.is-offscreen .team-volunteer-track,
 .team-volunteer-carousel:hover .team-volunteer-track,
 .team-volunteer-carousel:focus-within .team-volunteer-track {
   animation-play-state: paused;
