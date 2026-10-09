@@ -36,6 +36,10 @@ const competitionNoticeLabel = computed(() => {
   return `${name} em andamento`
 })
 
+const participantAccess = computed(() =>
+  ['INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(props.competition?.status)
+)
+
 const competitionNoticeAction = computed(() =>
   props.competition?.status === 'EM_ANDAMENTO' ? 'Acompanhar competição' : 'Ver competição'
 )
@@ -105,12 +109,12 @@ function closeMobile() {
 
         <template v-if="competitionModeEnabled">
           <a
-            v-if="registrationOpen && managementUrl"
+            v-if="(registrationOpen || participantAccess) && managementUrl"
             class="header-registration-cta desktop-registration-cta"
             :href="managementUrl"
             @click="closeMobile"
           >
-            Inscrever-se
+            {{ participantAccess ? 'Área do participante' : 'Inscrever-se' }}
           </a>
           <button
             v-else
@@ -118,7 +122,7 @@ function closeMobile() {
             class="header-registration-cta desktop-registration-cta"
             @click="closeMobile(); emit('registrationUnavailable')"
           >
-            Inscrever-se
+            {{ participantAccess ? 'Área do participante' : 'Inscrever-se' }}
           </button>
         </template>
 
