@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { api } from './api'
 import InstitutionalHeader from './components/InstitutionalHeader.vue'
 import HighlightsHero from './components/HighlightsHero.vue'
@@ -58,6 +58,7 @@ const displayedRegistrationOpen = computed(() =>
 const registrationNoticeVisible = ref(false)
 const backToTopVisible = ref(false)
 let registrationNoticeTimer: number | undefined
+let sectionRevealObserver: IntersectionObserver | undefined
 
 function updateBackToTopVisibility() {
   const hero = document.querySelector<HTMLElement>('.highlights-stage')
@@ -70,6 +71,46 @@ function updateBackToTopVisibility() {
   // Só aparece depois que o Hero saiu completamente da viewport.
   const heroBottom = hero.getBoundingClientRect().bottom
   backToTopVisible.value = heroBottom <= 0 && window.scrollY > 0
+}
+
+function setupSectionReveal() {
+  sectionRevealObserver?.disconnect()
+
+  const sections = Array.from(
+    document.querySelectorAll<HTMLElement>('#top > *')
+  ).slice(1)
+
+  if (!sections.length) return
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  sections.forEach((section, index) => {
+    section.classList.add('scroll-reveal-section')
+    section.style.setProperty('--scroll-reveal-delay', `${Math.min(index * 30, 120)}ms`)
+  })
+
+  if (reducedMotion) {
+    sections.forEach((section) => section.classList.add('is-visible'))
+    return
+  }
+
+  sectionRevealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+
+        const section = entry.target as HTMLElement
+        section.classList.add('is-visible')
+        sectionRevealObserver?.unobserve(section)
+      })
+    },
+    {
+      threshold: 0.12,
+      rootMargin: '0px 0px -10% 0px'
+    }
+  )
+
+  sections.forEach((section) => sectionRevealObserver?.observe(section))
 }
 
 function showRegistrationUnavailable() {
@@ -224,6 +265,9 @@ onMounted(async () => {
 
   if (isNotFound) return
 
+  await nextTick()
+  setupSectionReveal()
+
   if (!competitionModeEnabled) {
     loading.value = false
     return
@@ -239,6 +283,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', updateBackToTopVisibility)
+  sectionRevealObserver?.disconnect()
   if (timer) clearInterval(timer)
   if (registrationNoticeTimer) window.clearTimeout(registrationNoticeTimer)
 })
