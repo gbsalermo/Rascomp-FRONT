@@ -726,3 +726,29 @@
     height: 250px;
   }
 }
+
+/* Galeria compacta em monitores grandes, sem perder proporção visual. */
+@media (min-width: 2200px) {
+  .institutional-gallery-section {
+    padding-top: 30px;
+    padding-bottom: 48px;
+  }
+  .gallery-showcase-grid {
+    padding: clamp(34px, 2vw, 56px);
+  }
+  .gallery-showcase-frame {
+    height: clamp(440px, 23vw, 570px);
+  }
+}
+@media (min-width: 3200px) and (min-height: 1800px) {
+  .institutional-gallery-section {
+    padding-top: 54px;
+    padding-bottom: 72px;
+  }
+  .gallery-showcase-grid {
+    padding: 68px;
+  }
+  .gallery-showcase-frame {
+    height: clamp(570px, 18vw, 670px);
+  }
+}
