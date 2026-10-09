@@ -84,9 +84,8 @@ function setupSectionReveal() {
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  sections.forEach((section, index) => {
+  sections.forEach((section) => {
     section.classList.add('scroll-reveal-section')
-    section.style.setProperty('--scroll-reveal-delay', `${Math.min(index * 30, 120)}ms`)
   })
 
   if (reducedMotion) {
@@ -105,8 +104,8 @@ function setupSectionReveal() {
       })
     },
     {
-      threshold: 0.12,
-      rootMargin: '0px 0px -10% 0px'
+      threshold: 0.04,
+      rootMargin: '0px 0px 6% 0px'
     }
   )
 
