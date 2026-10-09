@@ -515,6 +515,7 @@
   width: max-content;
   animation: sponsor-scroll 95s linear infinite;
 }
+ .team-sponsor-carousel.is-offscreen .team-sponsor-track,
 .team-sponsor-carousel:hover .team-sponsor-track,
 .team-sponsor-carousel:focus-within .team-sponsor-track {
   animation-play-state: paused;
