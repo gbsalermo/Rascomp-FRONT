@@ -1,5 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+
+const sponsorsCarousel = ref<HTMLElement | null>(null)
+const sponsorsVisible = ref(false)
+let sponsorsObserver: IntersectionObserver | undefined
+
+onMounted(() => {
+  if (!sponsorsCarousel.value) return
+  sponsorsObserver = new IntersectionObserver(
+    ([entry]) => { sponsorsVisible.value = Boolean(entry?.isIntersecting) },
+    { rootMargin: '120px 0px 120px 0px', threshold: 0 }
+  )
+  sponsorsObserver.observe(sponsorsCarousel.value)
+})
+onBeforeUnmount(() => sponsorsObserver?.disconnect())
 
 type BoardMember = {
   id: number
@@ -282,14 +296,15 @@ const awards: Award[] = [
           </div>
         </header>
 
-        <div v-if="sponsorLogos.length" class="team-sponsor-carousel"
+        <div v-if="sponsorLogos.length" ref="sponsorsCarousel" class="team-sponsor-carousel"
+          :class="{ 'is-offscreen': !sponsorsVisible }"
           aria-label="Logotipos exibidos temporariamente na vitrine de patrocinadores">
           <div class="team-sponsor-track" :class="{ 'is-static': sponsorLogos.length === 1 }">
             <div v-for="(logo, index) in sponsorLoopLogos"
               :key="logo.name + '-' + index"
               class="team-sponsor-slide"
               :aria-hidden="index >= sponsorCycleLogos.length ? 'true' : undefined">
-              <img :src="logo.src" :alt="index < sponsorCycleLogos.length ? logo.name : ''" loading="lazy" />
+              <img :src="logo.src" :alt="index < sponsorCycleLogos.length ? logo.name : ''" loading="eager" decoding="async" />
             </div>
           </div>
         </div>
