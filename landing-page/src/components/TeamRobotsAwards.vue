@@ -37,6 +37,30 @@ const volunteerImageModules = import.meta.glob(
   }
 ) as Record<string, string>
 
+// Temporariamente utiliza as marcas institucionais do footer.
+// A Gestão de Mídia substituirá essa fonte por patrocinadores cadastrados.
+const sponsorLogoModules = import.meta.glob(
+  '../assets/footer/partners/*.{jpg,jpeg,png,webp,avif,svg}',
+  { eager: true, query: '?url', import: 'default' }
+) as Record<string, string>
+
+const sponsorLogos = computed(() => {
+  const logos = Object.entries(sponsorLogoModules)
+    .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
+    .map(([path, src]) => ({
+      src,
+      name: path.split('/').pop()?.replace(/\\.[^.]+$/, '').toUpperCase() || 'Parceiro'
+    }))
+  // Mesmo logotipo da RAS exibido no bloco institucional do rodapé.
+  return [...logos, { src: '/ieee-ras-official.png', name: 'IEEE RAS' }]
+})
+
+const sponsorLoopLogos = computed(() =>
+  sponsorLogos.value.length > 1
+    ? [...sponsorLogos.value, ...sponsorLogos.value]
+    : sponsorLogos.value
+)
+
 const board: BoardMember[] = [
   { id: 1, name: 'Presidente', role: 'Presidente', area: 'Gestão do capítulo', initials: 'P' },
   { id: 2, name: 'Vice-presidente', role: 'Vice-presidente', area: 'Gestão do capítulo', initials: 'VP' },
@@ -235,6 +259,34 @@ const awards: Award[] = [
             <p>{{ award.description }}</p>
             <time>{{ award.year }}</time>
           </article>
+        </div>
+      </article>
+
+      <article class="team-sponsors-block">
+        <header class="team-section-heading team-section-heading--simple">
+          <div>
+            <span class="team-section-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M3 8h18v12H3zM2 8l3-5h14l3 5M8 8v12M16 8v12M3 13h18"/>
+              </svg>
+            </span>
+            <div>
+              <h3>Patrocinadores</h3>
+              <p>Marcas em destaque — logotipos institucionais provisórios até o cadastro de patrocinadores.</p>
+            </div>
+          </div>
+        </header>
+
+        <div v-if="sponsorLogos.length" class="team-sponsor-carousel"
+          aria-label="Logotipos exibidos temporariamente na vitrine de patrocinadores">
+          <div class="team-sponsor-track" :class="{ 'is-static': sponsorLogos.length === 1 }">
+            <div v-for="(logo, index) in sponsorLoopLogos"
+              :key="logo.name + '-' + index"
+              class="team-sponsor-slide"
+              :aria-hidden="index >= sponsorLogos.length ? 'true' : undefined">
+              <img :src="logo.src" :alt="index < sponsorLogos.length ? logo.name : ''" loading="lazy" />
+            </div>
+          </div>
         </div>
       </article>
     </div>
