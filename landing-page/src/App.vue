@@ -59,6 +59,7 @@ const registrationNoticeVisible = ref(false)
 const backToTopVisible = ref(false)
 let registrationNoticeTimer: number | undefined
 let sectionRevealObserver: IntersectionObserver | undefined
+let backToTopFrame = 0
 
 function updateBackToTopVisibility() {
   const hero = document.querySelector<HTMLElement>('.highlights-stage')
@@ -71,6 +72,14 @@ function updateBackToTopVisibility() {
   // Só aparece depois que o Hero saiu completamente da viewport.
   const heroBottom = hero.getBoundingClientRect().bottom
   backToTopVisible.value = heroBottom <= 0 && window.scrollY > 0
+}
+
+function scheduleBackToTopUpdate() {
+  if (backToTopFrame) return
+  backToTopFrame = window.requestAnimationFrame(() => {
+    backToTopFrame = 0
+    updateBackToTopVisibility()
+  })
 }
 
 function setupSectionReveal() {
@@ -260,7 +269,7 @@ async function updateBracket(value: number) {
 
 onMounted(async () => {
   updateBackToTopVisibility()
-  window.addEventListener('scroll', updateBackToTopVisibility, { passive: true })
+  window.addEventListener('scroll', scheduleBackToTopUpdate, { passive: true })
 
   if (isNotFound) return
 
@@ -281,7 +290,8 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('scroll', updateBackToTopVisibility)
+  window.removeEventListener('scroll', scheduleBackToTopUpdate)
+  if (backToTopFrame) window.cancelAnimationFrame(backToTopFrame)
   sectionRevealObserver?.disconnect()
   if (timer) clearInterval(timer)
   if (registrationNoticeTimer) window.clearTimeout(registrationNoticeTimer)
