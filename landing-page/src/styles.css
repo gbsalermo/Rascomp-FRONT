@@ -92,29 +92,32 @@
 }
 
 
-/* Reveal progressivo das sections abaixo do Hero.
-   Mantém o scroll natural e apenas anima cada bloco ao entrar na viewport. */
+/* Entrada lateral alternada das sections após o Hero.
+   Deslocamento comedidamente pequeno para não causar rolagem horizontal. */
 .scroll-reveal-section{
   opacity:0;
-  transform:translate3d(0,clamp(34px,5vw,72px),0) scale(.992);
-  filter:blur(4px);
+  transform:translate3d(var(--scroll-reveal-x, 0px),0,0);
+  filter:blur(3px);
   transition:
     opacity .72s cubic-bezier(.22,1,.36,1),
-    transform .88s cubic-bezier(.22,1,.36,1),
+    transform .85s cubic-bezier(.22,1,.36,1),
     filter .72s ease;
   transition-delay:var(--scroll-reveal-delay,0ms);
   will-change:opacity,transform,filter;
 }
+.scroll-reveal-section:nth-child(even){--scroll-reveal-x:clamp(24px,4vw,55px)}
+.scroll-reveal-section:nth-child(odd){--scroll-reveal-x:clamp(-55px,-4vw,-24px)}
 .scroll-reveal-section.is-visible{
   opacity:1;
-  transform:translate3d(0,0,0) scale(1);
+  transform:translate3d(0,0,0);
   filter:blur(0);
 }
 @media(max-width:640px){
+  .scroll-reveal-section:nth-child(even){--scroll-reveal-x:20px}
+  .scroll-reveal-section:nth-child(odd){--scroll-reveal-x:-20px}
   .scroll-reveal-section{
-    transform:translate3d(0,38px,0) scale(.995);
-    filter:blur(2px);
-    transition-duration:.62s,.72s,.62s;
+    filter:blur(1px);
+    transition-duration:.55s,.7s,.55s;
   }
 }
 @media(prefers-reduced-motion:reduce){
