@@ -55,10 +55,15 @@ const sponsorLogos = computed(() => {
   return [...logos, { src: '/ieee-ras-official.png', name: 'IEEE RAS' }]
 })
 
+// Preenche até telas ultrawide/4K antes de duplicar o ciclo: sem espaços vazios.
+const sponsorCycleLogos = computed(() =>
+  Array.from({ length: 6 }, () => sponsorLogos.value).flat()
+)
+
 const sponsorLoopLogos = computed(() =>
-  sponsorLogos.value.length > 1
-    ? [...sponsorLogos.value, ...sponsorLogos.value]
-    : sponsorLogos.value
+  sponsorCycleLogos.value.length > 1
+    ? [...sponsorCycleLogos.value, ...sponsorCycleLogos.value]
+    : sponsorCycleLogos.value
 )
 
 const board: BoardMember[] = [
@@ -272,7 +277,7 @@ const awards: Award[] = [
             </span>
             <div>
               <h3>Patrocinadores</h3>
-              <p>Marcas em destaque — logotipos institucionais provisórios até o cadastro de patrocinadores.</p>
+              <p>Marcas que apoiam nossas iniciativas e ajudam a tornar nossos projetos possíveis.</p>
             </div>
           </div>
         </header>
@@ -283,8 +288,8 @@ const awards: Award[] = [
             <div v-for="(logo, index) in sponsorLoopLogos"
               :key="logo.name + '-' + index"
               class="team-sponsor-slide"
-              :aria-hidden="index >= sponsorLogos.length ? 'true' : undefined">
-              <img :src="logo.src" :alt="index < sponsorLogos.length ? logo.name : ''" loading="lazy" />
+              :aria-hidden="index >= sponsorCycleLogos.length ? 'true' : undefined">
+              <img :src="logo.src" :alt="index < sponsorCycleLogos.length ? logo.name : ''" loading="lazy" />
             </div>
           </div>
         </div>
