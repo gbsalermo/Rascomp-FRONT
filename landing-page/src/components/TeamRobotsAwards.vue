@@ -2,16 +2,23 @@
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 
 const sponsorsCarousel = ref<HTMLElement | null>(null)
+const volunteersCarousel = ref<HTMLElement | null>(null)
+const volunteersVisible = ref(false)
 const sponsorsVisible = ref(false)
 let sponsorsObserver: IntersectionObserver | undefined
 
 onMounted(() => {
-  if (!sponsorsCarousel.value) return
   sponsorsObserver = new IntersectionObserver(
-    ([entry]) => { sponsorsVisible.value = Boolean(entry?.isIntersecting) },
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.target === sponsorsCarousel.value) sponsorsVisible.value = entry.isIntersecting
+        if (entry.target === volunteersCarousel.value) volunteersVisible.value = entry.isIntersecting
+      }
+    },
     { rootMargin: '120px 0px 120px 0px', threshold: 0 }
   )
-  sponsorsObserver.observe(sponsorsCarousel.value)
+  if (sponsorsCarousel.value) sponsorsObserver.observe(sponsorsCarousel.value)
+  if (volunteersCarousel.value) sponsorsObserver.observe(volunteersCarousel.value)
 })
 onBeforeUnmount(() => sponsorsObserver?.disconnect())
 
@@ -211,7 +218,9 @@ const awards: Award[] = [
 
         <div
           v-if="volunteerImages.length"
+          ref="volunteersCarousel"
           class="team-volunteer-carousel"
+          :class="{ 'is-offscreen': !volunteersVisible }"
           aria-label="Registros coletivos dos voluntários da RAS UFRB"
         >
           <div
