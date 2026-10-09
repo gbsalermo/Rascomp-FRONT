@@ -513,7 +513,7 @@
   display: flex;
   gap: 14px;
   width: max-content;
-  animation: sponsor-scroll 29s linear infinite;
+  animation: sponsor-scroll 95s linear infinite;
 }
 .team-sponsor-carousel:hover .team-sponsor-track,
 .team-sponsor-carousel:focus-within .team-sponsor-track {
