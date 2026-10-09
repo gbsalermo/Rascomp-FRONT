@@ -767,3 +767,39 @@
   .gallery-showcase-visual { max-width: 1280px; }
   .gallery-showcase-frame { height: auto; aspect-ratio: 3 / 2; }
 }
+
+
+/* Escala desktop mais confortável em zoom 100%.
+   Não utiliza zoom/scale global: preserva responsividade, sticky e scroll.
+   O conteúdo textual da Galeria fica deliberadamente fora desta redução. */
+@media (min-width: 1100px) {
+  .team-robots-awards-heading h2 {
+    font-size: clamp(1.95rem, 2.6vw, 2.65rem);
+  }
+  .team-section-heading h3 { font-size: clamp(1.06rem, 1.18vw, 1.3rem); }
+  .team-board-card { min-height: clamp(220px, 16vw, 300px); }
+  .team-volunteer-slide { width: clamp(260px, 23vw, 350px); }
+  .robots-showcase-heading h2 { font-size: clamp(1.85rem, 2.35vw, 2.45rem); }
+  .robots-showcase-hero { min-height: clamp(300px, 28vw, 380px); }
+  .robots-showcase-hero-copy h2 { font-size: clamp(2.55rem, 3.4vw, 3.8rem); }
+  .institutional-events-heading h2 { font-size: clamp(2.4rem, 3.35vw, 3.55rem); }
+  .events-filter-row button { min-height: 38px; padding-inline: 13px; }
+  .gallery-showcase-copy { width: min(100%, 540px); }
+}
+@media (min-width: 1100px) and (max-width: 2199px) {
+  .institutional-about-section { padding-block: clamp(25px, 2.5vw, 38px); }
+  .team-robots-awards-section { padding-top: 38px; padding-bottom: 52px; }
+  .robots-showcase-section { padding-top: 20px; padding-bottom: 38px; }
+  .institutional-events-section { padding-top: 28px; padding-bottom: 48px; }
+  .team-board-block,.team-volunteers-block,.team-awards-block,.team-sponsors-block { padding: 16px; }
+  .team-award-row { min-height: 76px; }
+  .hero-quick-card { min-height: 90px; }
+}
+/* Evita que regras antigas de QHD/4K voltem a superdimensionar os cards.
+   Galeria e fotos ficam com as dimensões validadas na revisão específica. */
+@media (min-width: 2200px) {
+  .team-board-card { min-height: clamp(290px, 12vw, 365px); }
+  .team-volunteer-slide { width: clamp(320px, 17vw, 455px); }
+  .robots-showcase-hero { min-height: clamp(390px, 19vw, 520px); }
+  .institutional-events-heading h2 { font-size: clamp(3rem, 2vw, 4rem); }
+}
