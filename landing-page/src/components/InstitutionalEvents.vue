@@ -41,9 +41,11 @@ const today = ref(todayInBahia())
 let dateRefresh: number | undefined
 
 function todayInBahia(): string {
-  return new Intl.DateTimeFormat('en-CA', {
+  const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/Bahia', year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(new Date())
+  }).formatToParts(new Date())
+  const get = (type: string) => parts.find((part) => part.type === type)?.value || ''
+  return `${get('year')}-${get('month')}-${get('day')}`
 }
 
 function period(event: LandingEvent) {
@@ -79,6 +81,17 @@ const agendaEvents = computed(() =>
 )
 
 const highlightedEvents = computed(() => visibleEvents.value.filter((event) => period(event) !== 'past').slice(0, 4))
+
+const recentEvents = computed(() => [
+  ...LANDING_EVENTS.filter((event) => period(event) === 'past')
+    .map((event) => ({
+      id: event.id, title: event.title, dateLabel: event.dateLabel,
+      summary: event.summary, image: event.image, tone: event.tone,
+      category: event.type === 'Competições' ? 'Competição' as const :
+        event.type === 'Oficinas' ? 'Oficina' as const : 'Evento' as const
+    })),
+  ...RECENT_LANDING_EVENTS
+])
 
 watch(visibleEvents, (events) => {
   if (!events.some((event) => event.id === expandedEventId.value)) {
@@ -349,7 +362,7 @@ function eventActionHref(event: LandingEvent) {
         </section>
       </div>
 
-      <section v-if="RECENT_LANDING_EVENTS.length" class="events-surface events-recent-panel">
+      <section v-if="recentEvents.length" class="events-surface events-recent-panel">
         <header class="events-recent-heading">
           <div>
             <span class="events-panel-icon" aria-hidden="true">
@@ -375,7 +388,7 @@ function eventActionHref(event: LandingEvent) {
 
         <div class="events-recent-grid">
           <article
-            v-for="event in RECENT_LANDING_EVENTS"
+            v-for="event in recentEvents"
             :key="event.id"
             class="event-recent-card"
           >
