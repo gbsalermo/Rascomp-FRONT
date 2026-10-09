@@ -1161,3 +1161,12 @@ O bloco "Eventos recentes" fica oculto enquanto não houver registros histórico
 - Cobrir virada de dia, intervalos de vários dias, eventos externos, mudanças de datas e sincronização da competição com testes automatizados.
 
 **Observação:** não se deve interpretar a presença de datas como validação oficial de realização; calendário exibe o período planejado até que a Gestão confirme ou cancele o evento. A seção de recentes usa o material existente, sem inventar fotos nem resultados.
+
+
+### Faixa de patrocinadores — implementação provisória (09/10/2026)
+
+- A seção `Equipe e Conquistas` ganhou bloco `Patrocinadores` depois de Premiações, antes de Robôs.
+- Carrossel automático, contínuo, compacto (menor que a faixa de voluntários), com pausa no hover e alternativa sem movimento quando `prefers-reduced-motion` está ativo.
+- Imagens **temporárias** reaproveitadas de `landing-page/src/assets/footer/partners/` e `/ieee-ras-official.png`; são marcas institucionais e **não representam confirmação de patrocínio comercial**.
+- O rodapé mantém seu papel próprio de **Apoio e parceiros institucionais**; não foi modificado.
+- Na etapa de Gestão de Mídia, substituir a fonte temporária por cadastro exclusivo de patrocinadores reais (nome, logotipo, URL opcional, período de exibição, ordem, status de publicação), mantendo os apoiadores institucionais separados no Footer.
