@@ -1,3 +1,47 @@
+## PLANEJAMENTO CANÔNICO ATUALIZADO — 09/10/2026
+
+> **Correção de calendário:** a meta do MVP funcional era **04/10/2026**, não 04/11/2026. O escopo que o responsável esperava desse marco já foi atendido, mas isso **não significa que cloud, operação completa, documentação e validação final estejam concluídas**. Menções anteriores a "MVP de produção — 04/11" são histórico superado, não prazo vigente. A competição de novembro continua como marco operacional; não assumir que todas as entregas abaixo precisam aguardar a semana do evento.
+
+### Ordem prioritária aprovada
+
+1. **Até 14/10/2026 — fechar a V1-BETA B / Cloud:** MySQL persistente com backup/restore, Flyway, API/HTTPS, Gestão e Portal remotos, verificação de e-mail/recuperação de senha, storage R2 persistente, secrets, acesso local/contingência preservados e smoke cloud. Prazo-alvo, sujeito aos gates de segurança e verificação; não liberar inscrições reais sem cumprir os bloqueantes.
+2. **Após cloud — Gestão de Mídia da Landing (P1):** CRUD editorial de textos/fotos/heros, eventos e calendário, galeria, robôs, patrocinadores, publicações, controle institucional/competitivo e auditoria. MIDIA/DEV administra conteúdo sem deploy manual.
+3. **Em seguida — Futebol de Robôs (P2):** inscrição sem robô próprio (robôs eventualmente fornecidos pela organização), atribuição e regras, cronômetro/placar de gols, estados da partida, chaveamento, resultados, operação na Gestão e acompanhamento público. Validar regulamento e casos de empate/penalidades antes de fechar regras.
+4. **Depois — Central de Ajuda e manuais por perfil (P3):**
+   - **Ajuda administrativa dentro da Gestão:** como criar/gerir competição, inscrições e aprovações, equipes/robôs, Follow, Sumô/Mini Sumô, Futebol, tempo/placar/chaves/resultados, contingência, além de operar o Gestor de Mídia. Manual contextual por tela, navegação acessível e conteúdo versionado/revisável.
+   - **Ajuda do participante integrada ao Portal:** regras da competição, regras do ambiente de competição, inscrição pessoal/de equipe/de robô conforme modalidade, comprovantes, aprovação, como acompanhar situação, cronograma, chamadas, resultados, chaves, Follow e Sumô. Orientações práticas claras e acessíveis, incluindo estados de erro e dúvidas frequentes.
+   - **Fonte oficial:** regulamento e regras de ambiente validados pela organização; a documentação não inventará normas. Distinguir orientações gerais de regras específicas por edição/categoria; versionar/publicar atualizações com controle editorial.
+   - **Manter permissões:** informações administrativas apenas para perfis autorizados; materiais públicos/participante disponíveis sem conceder acesso a funções operacionais.
+5. **Fechamento do MVP ampliado:** concluir fluxos e manuais, testar ponta a ponta todos os perfis, categorias e cenários cloud/local. Só marcar concluído após validação.
+6. **Depois do MVP — revisão do roadmap original:** auditar pendências reais, classificar somente o indispensável, priorizar manutenção, estabilidade, correções, usabilidade, testes, segurança, desempenho e polimento. Novas funcionalidades deixam de ser o foco; requisitos restantes do roteiro original permanecem registrados e serão reavaliados, não apagados.
+
+**Princípio:** continuar desenvolvimento em homologação, liberar para produção apenas versões aprovadas; preservar modo local. A Etapa 13 (Regras, Ajuda e Segurança) passa a ter seu núcleo de **manuais e ajuda por perfil** antecipado para P3, sem necessariamente antecipar todos os seus outros itens.
+
+---
+
+## PRIORIDADE IMEDIATA APÓS V1-BETA B CLOUD — 09/10/2026
+
+**Decisão de priorização (MVP de produção de 04/11/2026):** assim que estiver concluído o fluxo de MySQL persistente → backend/API cloud → Gestão e Portal autenticados → e-mail transacional/validação de contas → R2/uploads persistentes → smoke cloud, iniciar, nesta ordem, **(P1) Gestão de Mídia da Landing** e **(P2) Categoria Futebol de Robôs**. Ambas são prioridade máxima do ciclo seguinte, antes de polimentos não bloqueantes e funcionalidades pós-produção, sem apagar o roadmap original. Se necessário, poderão avançar em paralelo após os contratos e a infraestrutura cloud estarem estáveis.
+
+### P1 — Gestão de Mídia da Landing (prioridade máxima)
+- Interface administrativa para editar conteúdo público sem modificar/republicar o frontend manualmente: heros, banners, seção Sobre, equipe/diretoria, conquistas, robôs, galeria, notícias, eventos, patrocinadores e apoiadores.
+- Upload e gerenciamento de imagens persistentes via R2/storage, metadados, ordenação, ativação/desativação, prévia e publicação controlada; permissões e auditoria.
+- Eventos com título, texto, imagens, localização, datas de início/fim e fuso; estados automáticos próximo / acontecendo / encerrado; histórico de eventos e possível vínculo explícito com competição RasComp.
+- Gestão do modo institucional/competitivo da Landing **independente de haver competição vigente**, impedindo exposição acidental de dados; publicação intencional e reversível.
+- Patrocinadores do carrossel em cadastro próprio; apoiadores institucionais permanecem separados no footer. Substituir imagens provisórias por marcas reais somente quando cadastradas/autorizadas.
+- Compatibilizar alterações com cache/invalidação e endpoints públicos sem prejudicar performance e disponibilidade.
+
+### P2 — Categoria Futebol de Robôs (prioridade máxima)
+- Consolidar regras próprias da modalidade: partidas entre robôs/equipes, gols por lado e placar, duração configurável com valor usual de referência **2 minutos** (não hardcode), cronômetro e comandos da organização.
+- Persistir placar e eventos de partida no backend, com validação de estado, retomada/finalização, histórico/auditoria e tratamento de correções administrativas.
+- Exibir andamento em tempo real ou atualização periódica confiável na Gestão e na Landing pública, além de resultados e progressão de chaveamento aplicáveis.
+- Tratar empate, prorrogação/desempate e critérios oficiais como regras a validar antes de implementá-los, sem pressupor regulamento inexistente.
+- Testes automatizados e manuais: início/pausa/fim, gols, sincronização, atualização pública, recuperação após falha e controle de acesso.
+
+**Critério de saída:** Gestão de Mídia opera conteúdo real publicado na Landing sem deploy; Futebol permite operar e acompanhar partidas completas com placar/tempo persistentes e refletidos nas interfaces.
+
+---
+
 # Continuidade — Landing Page / Site Público RAS UFRB
 
 Última revisão: **05/10/2026**
@@ -213,7 +257,7 @@ Decisões finais:
 - CTA `Ver todas as conquistas` removido;
 - premiações reais atualmente registradas:
   - Vice-campeão — RCX 2024 · Hockey;
-  - Campeão — ERBASE 2025 · Follow Line;
+  - Campeão e vice-campeão — ERBASE 2026 · Follow Line;
   - Campeão — IEEE 2024 · Foto Destaque;
   - Campeão — Mega Sumô 2024;
 - métricas/cards antigos do rodapé removidos;
@@ -1084,3 +1128,92 @@ Landing Checks #21
 Durante o fechamento, o primeiro run do backend revelou testes antigos desalinhados com regras já consolidadas. Os testes foram corrigidos para refletir os contratos atuais — sem relaxar as regras de negócio — e a suíte completa voltou a ficar verde.
 
 Com validação manual + CI final verde, a V1-BETA A está autorizada para merge em `main`.
+
+
+## Ajustes mobile pós-validação externa — 06/10/2026
+
+Após validar a Landing por Quick Tunnel em smartphone real:
+
+- logo IEEE RAS do header aumentada no breakpoint mobile, removendo a regressão específica de <=390 px;
+- Hero competitivo normalizado para a mesma altura-base dos demais destaques no mobile;
+- botão global "Voltar ao topo" passa a aparecer somente após o usuário sair da região inicial, evitando sobreposição com a seta direita do carrossel de Hero.
+
+Objetivo: preservar o layout desktop e corrigir somente as regressões observadas em aparelho real.
+
+
+## Correção mobile definitiva — 06/10/2026
+
+Foi identificada uma regressão real de cascata no Hero:
+
+```text
+<= 390px
+generic hero       → 490px
+competition hero   → regra posterior sobrescrevia para 540px
+```
+
+Correção aplicada:
+
+- regras finais unificam `.highlights-stage` e `.tone-competition.highlights-stage` em todos os breakpoints mobile;
+- <=760: 530px;
+- <=520: 500px;
+- <=390: 490px;
+- logo móvel passa a usar largura física maior, sem depender de `transform`;
+- removido clipping visual do logo pelo container móvel;
+- botão global de voltar ao topo só aparece quando o Hero saiu completamente da viewport, impedindo sobreposição com a seta direita do carrossel.
+
+Essas regras foram colocadas **no fim dos arquivos CSS** para prevalecer sobre revisões responsivas históricas duplicadas.
+
+
+## Eventos reais para publicação — 07/10/2026
+
+A seção pública de Eventos deixa de usar os cards demonstrativos da Beta A e passa a publicar somente eventos informados com dados reais neste checkpoint:
+
+```text
+RCX 2026
+→ 09 a 12 OUT 2026
+→ imagem: landing-page/src/assets/rcx.jpg
+
+Apresentação de banners no Congresso UFRB
+→ 13 a 16 OUT 2026
+→ imagem: landing-page/src/assets/congresso.png
+
+RRC 2026
+→ 14 NOV 2026
+→ imagem: landing-page/src/assets/rrc.jpeg
+```
+
+Foram removidos da fonte pública os eventos demonstrativos anteriores (Oficina Arduino, Palestra IA, RAS nas Escolas, Robodori e participação externa genérica).
+
+O bloco "Eventos recentes" fica oculto enquanto não houver registros históricos reais aprovados para publicação.
+
+
+### Eventos dinâmicos e portal da competição — 09/10/2026
+
+**Implementado na Landing Beta B:**
+- Eventos têm `startDate` e `endDate` em calendário ISO; comparações inclusivas no fuso `America/Bahia`.
+- Antes da data inicial: `Próximo`; entre início e fim: `Acontecendo agora`; depois do fim: `Encerrado`.
+- A agenda principal prioriza eventos futuros/atuais; ao finalizar, o evento migra automaticamente para `Eventos recentes`, preservando fotos e texto existentes.
+- Estado é reavaliado periodicamente sem exigir redeploy da Landing.
+- Em competição oficial publicada, CTA do Header e Hero: `Inscrever-se` em `INSCRICOES_ABERTAS`; `Área do participante` em `INSCRICOES_ENCERRADAS` ou `EM_ANDAMENTO`, apontando para o sistema autenticado configurado por `VITE_GESTAO_URL`.
+- Não atribuir vínculo com RasComp a eventos externos apenas por estarem na categoria Competições.
+- `FINALIZADA`, `CANCELADA` e ausência de competição publicada não oferecem CTA contextual competitivo.
+
+**Pendente para Gestão de Mídia / CMS (implementação futura):**
+- Cadastro, edição, agendamento, publicação/despublicação e arquivamento de eventos.
+- Dados de início/fim e fuso, título, textos, local, categorias, autoria/organização e fotos (capa/galeria) em storage persistente.
+- Diferenciar `organizadoPelaRAS` de `vinculadoACompeticaoId`; este último deve referenciar competição real gerida pelo RasComp, e não apenas texto.
+- Administrar CTAs, links e regras de disponibilidade sem liberar inscrição fora do período real.
+- Gestão de evento em andamento e histórico automáticos, com eventual override editorial auditável; não usar etiquetas temporais fixas como fonte de verdade.
+- Resolver rota dedicada de login/Portal no sistema autenticado, mantendo URL configurável por ambiente e evitando caminhos hardcoded.
+- Cobrir virada de dia, intervalos de vários dias, eventos externos, mudanças de datas e sincronização da competição com testes automatizados.
+
+**Observação:** não se deve interpretar a presença de datas como validação oficial de realização; calendário exibe o período planejado até que a Gestão confirme ou cancele o evento. A seção de recentes usa o material existente, sem inventar fotos nem resultados.
+
+
+### Faixa de patrocinadores — implementação provisória (09/10/2026)
+
+- A seção `Equipe e Conquistas` ganhou bloco `Patrocinadores` depois de Premiações, antes de Robôs.
+- Carrossel automático, contínuo, compacto (menor que a faixa de voluntários), com pausa no hover e alternativa sem movimento quando `prefers-reduced-motion` está ativo.
+- Imagens **temporárias** reaproveitadas de `landing-page/src/assets/footer/partners/` e `/ieee-ras-official.png`; são marcas institucionais e **não representam confirmação de patrocínio comercial**.
+- O rodapé mantém seu papel próprio de **Apoio e parceiros institucionais**; não foi modificado.
+- Na etapa de Gestão de Mídia, substituir a fonte temporária por cadastro exclusivo de patrocinadores reais (nome, logotipo, URL opcional, período de exibição, ordem, status de publicação), mantendo os apoiadores institucionais separados no Footer.

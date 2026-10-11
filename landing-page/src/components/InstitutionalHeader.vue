@@ -5,6 +5,7 @@ const props = defineProps<{
   competition?: any
   managementUrl: string
   registrationOpen: boolean
+  competitionModeEnabled: boolean
 }>()
 
 const emit = defineEmits<{
@@ -17,6 +18,7 @@ const competitionMenu = ref<HTMLDetailsElement>()
 const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
 
 const competitionVisible = computed(() =>
+  props.competitionModeEnabled &&
   publicCompetitionStatuses.includes(props.competition?.status)
 )
 
@@ -33,6 +35,10 @@ const competitionNoticeLabel = computed(() => {
 
   return `${name} em andamento`
 })
+
+const participantAccess = computed(() =>
+  ['INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(props.competition?.status)
+)
 
 const competitionNoticeAction = computed(() =>
   props.competition?.status === 'EM_ANDAMENTO' ? 'Acompanhar competição' : 'Ver competição'
@@ -60,7 +66,10 @@ function closeMobile() {
     </div>
 
     <header class="site-header institutional-header">
-      <div class="header-container header-main-row">
+      <div
+        class="header-container header-main-row"
+        :class="{ 'header-main-row--institutional': !competitionModeEnabled }"
+      >
         <a href="#top" class="institutional-brand" aria-label="RAS UFRB — início" @click="closeMobile">
           <img
             class="institutional-brand-logo"
@@ -98,22 +107,24 @@ function closeMobile() {
           <a href="#contato" @click="closeMobile">Contato</a>
         </nav>
 
-        <a
-          v-if="registrationOpen && managementUrl"
-          class="header-registration-cta desktop-registration-cta"
-          :href="managementUrl"
-          @click="closeMobile"
-        >
-          Inscrever-se
-        </a>
-        <button
-          v-else
-          type="button"
-          class="header-registration-cta desktop-registration-cta"
-          @click="closeMobile(); emit('registrationUnavailable')"
-        >
-          Inscrever-se
-        </button>
+        <template v-if="competitionModeEnabled">
+          <a
+            v-if="(registrationOpen || participantAccess) && managementUrl"
+            class="header-registration-cta desktop-registration-cta"
+            :href="managementUrl"
+            @click="closeMobile"
+          >
+            {{ participantAccess ? 'Área do participante' : 'Inscrever-se' }}
+          </a>
+          <button
+            v-else
+            type="button"
+            class="header-registration-cta desktop-registration-cta"
+            @click="closeMobile(); emit('registrationUnavailable')"
+          >
+            {{ participantAccess ? 'Área do participante' : 'Inscrever-se' }}
+          </button>
+        </template>
 
         <button
           class="public-menu-toggle"

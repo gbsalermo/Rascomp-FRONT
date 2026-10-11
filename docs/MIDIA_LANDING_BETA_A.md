@@ -1,6 +1,6 @@
 # Mídia da Landing — ponte V1-BETA A → Gestão de Mídia
 
-Última revisão: **04/10/2026**
+Última revisão: **06/10/2026**
 
 Este documento define como a Landing usa imagens **antes** da implementação da
 ETAPA 8 — Gestor de Mídia / CMS.
@@ -167,8 +167,30 @@ Quando o CMS entrar:
 3. mover binários para storage persistente/R2;
 4. manter MySQL com metadados e relações editoriais;
 5. permitir publicação/despublicação e ordenação pela conta MIDIA/DEV;
-6. fazer Landing e Galeria consumirem o mesmo acervo quando aplicável;
-7. remover o mapa estático somente depois da migração dos slots reais.
+6. adicionar controle global `INSTITUCIONAL | COMPETITIVO` da Landing;
+7. manter esse controle separado de `Competition.vigente` e do status competitivo;
+8. fazer Landing e Galeria consumirem o mesmo acervo quando aplicável;
+9. remover o mapa estático somente depois da migração dos slots reais.
+
+### Modo editorial da Landing
+
+A ETAPA 8 deve permitir:
+
+```text
+MIDIA/DEV
+→ Gestor de Mídia
+→ selecionar MODO INSTITUCIONAL
+→ Landing deixa de expor o bloco competitivo
+→ Competition vigente continua intacta
+
+MIDIA/DEV
+→ selecionar MODO COMPETITIVO
+→ Landing volta a usar a Competition vigente publicável
+```
+
+Esse comando serve para revisão editorial, manutenção ou correção temporária de informação pública sem obrigar o DEV a retirar a competição vigente.
+
+Importante: mudar para `INSTITUCIONAL` **não pausa inscrições nem a operação interna**. A interface do Gestor de Mídia deve informar isso explicitamente antes da alteração.
 
 ## Relação com a Galeria
 

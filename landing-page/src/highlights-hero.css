@@ -305,9 +305,9 @@
 
 .hero-quick-links {
   display: grid;
-  width: min(1460px, calc(100% - 32px));
+  width: min(2200px, calc(100% - clamp(32px, 3vw, 72px)));
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: clamp(12px, .85vw, 16px);
   margin: 12px auto 0;
 }
 
@@ -392,33 +392,33 @@
   }
 
   .hero-quick-card {
-    min-height: 84px;
-    gap: 12px;
-    padding: 11px 14px;
+    min-height: clamp(88px, 5vw, 104px);
+    gap: clamp(12px, .85vw, 16px);
+    padding: clamp(12px, .9vw, 16px) clamp(14px, 1.15vw, 22px);
   }
 
   .hero-quick-icon {
-    width: 40px;
-    height: 40px;
-    flex-basis: 40px;
+    width: clamp(40px, 2.5vw, 48px);
+    height: clamp(40px, 2.5vw, 48px);
+    flex-basis: clamp(40px, 2.5vw, 48px);
   }
 
   .hero-quick-icon svg {
-    width: 21px;
-    height: 21px;
+    width: clamp(21px, 1.35vw, 25px);
+    height: clamp(21px, 1.35vw, 25px);
   }
 
   .hero-quick-copy {
-    gap: 4px;
+    gap: clamp(4px, .3vw, 6px);
   }
 
   .hero-quick-copy strong {
-    font-size: .94rem;
+    font-size: clamp(.94rem, .84vw, 1.02rem);
   }
 
   .hero-quick-copy small {
-    font-size: .73rem;
-    line-height: 1.35;
+    font-size: clamp(.73rem, .68vw, .8rem);
+    line-height: 1.4;
   }
 }
 
@@ -551,7 +551,7 @@
 
 @media(max-width: 760px) {
   .tone-competition.highlights-stage {
-    min-height: 540px;
+    min-height: 490px;
   }
 
   .highlights-copy.is-competition {
@@ -767,7 +767,7 @@
   }
 
   .tone-competition.highlights-stage {
-    min-height: 550px;
+    min-height: 530px;
   }
 }
 
@@ -818,7 +818,7 @@
   }
 
   .tone-competition.highlights-stage {
-    min-height: 550px;
+    min-height: 500px;
   }
 
   .highlights-copy.is-competition h1 {
@@ -887,5 +887,31 @@
 
   .highlights-copy.is-competition h1 {
     font-size: clamp(1.7rem, 8.9vw, 2.1rem);
+  }
+}
+
+
+/* ===== Correção definitiva mobile — 06/10/2026 =====
+   Manter TODOS os slides com a mesma altura no mesmo breakpoint.
+   Estas regras ficam por último para não serem anuladas pelos blocos
+   responsivos históricos acima. */
+@media (max-width: 760px) {
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: 530px;
+  }
+}
+
+@media (max-width: 520px) {
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 390px) {
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: 490px;
   }
 }

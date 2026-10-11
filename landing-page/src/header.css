@@ -27,6 +27,14 @@
   gap: 38px;
 }
 
+.header-main-row--institutional {
+  grid-template-columns: minmax(300px, auto) minmax(0, 1fr);
+}
+
+.header-main-row--institutional .institutional-nav {
+  justify-self: end;
+}
+
 .institutional-brand {
   display: inline-flex;
   align-items: center;
@@ -231,6 +239,14 @@
   .header-main-row {
     grid-template-columns: minmax(220px, 1fr) auto minmax(145px, 1fr);
     gap: 18px;
+  }
+
+  .header-main-row--institutional {
+    grid-template-columns: minmax(220px, auto) minmax(0, 1fr);
+  }
+
+  .header-main-row--institutional .institutional-nav {
+    justify-self: end;
   }
 
   .institutional-header .institutional-nav {
@@ -590,5 +606,46 @@
 
   .competition-notice-inner a span {
     font-size: .9rem;
+  }
+}
+
+
+/* ===== Header institucional desktop — distribuição ampla =====
+   Sem CTA de inscrição, a marca ocupa a borda esquerda e a navegação
+   aproveita toda a largura disponível à direita. O modo competitivo
+   mantém o grid original. */
+@media (min-width: 981px) {
+  .header-main-row--institutional {
+    width: calc(100% - 64px);
+    max-width: none;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 72px;
+  }
+
+  .header-main-row--institutional .institutional-brand {
+    margin-left: -80px;
+    gap: 18px;
+    overflow: visible;
+  }
+
+  /* A caixa permanece pequena; somente a arte cresce visualmente. */
+  .header-main-row--institutional .institutional-brand-logo {
+    width: 62px;
+    height: 26px;
+    margin-top: 20px;
+    margin-right: 140px;
+    transform: scale(4.7);
+    transform-origin: left center;
+  }
+
+  .header-main-row--institutional .institutional-brand-copy {
+    padding-left: 0;
+    margin-top: 10px;
+  }
+
+  .header-main-row--institutional .institutional-nav {
+    justify-self: end;
+    margin-right: 0;
+    margin-top: 15px;
   }
 }

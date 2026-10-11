@@ -15,6 +15,8 @@ export interface UserAccount {
   telefone?: string
   role: UserRole
   ativo: boolean
+  emailVerificado?: boolean
+  emailVerificadoEm?: string
   ultimoLogin?: string
   dataCadastro?: string
   competitorId?: number
@@ -28,7 +30,6 @@ export interface UserAccount {
 export interface InternalUserCreatePayload {
   nome: string
   email: string
-  senha: string
   telefone?: string
 }
 
@@ -36,4 +37,13 @@ export interface AuthResponse {
   token: string
   tipo: 'Bearer' | string
   usuario: UserAccount
+}
+
+export interface RegisterResponse {
+  message: string
+  email: string
+}
+
+export interface AccountActionResponse {
+  message: string
 }

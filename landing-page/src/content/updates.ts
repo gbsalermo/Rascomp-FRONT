@@ -64,21 +64,20 @@ function fromEvent(
  * entram diretamente como LandingUpdate.
  */
 export const LANDING_UPDATES: LandingUpdate[] = [
+  fromEvent('rcx-2026', {
+    tag: 'Competição',
+    title: 'RCX 2026',
+    kind: 'competition'
+  }),
+  fromEvent('congresso-ufrb-2026', {
+    tag: 'Congresso',
+    title: 'Apresentação de banners no Congresso UFRB',
+    kind: 'event'
+  }),
   fromEvent('rrc-2026', {
     tag: 'Competição',
     title: 'RRC 2026',
     kind: 'competition'
-  }),
-  fromEvent('oficina-arduino', {
-    tag: 'Oficina'
-  }),
-  fromEvent('palestra-ia', {
-    tag: 'Palestra'
-  }),
-  fromEvent('ras-escolas', {
-    tag: 'Extensão',
-    title: 'RAS nas Escolas',
-    kind: 'extension'
   })
 ]
 

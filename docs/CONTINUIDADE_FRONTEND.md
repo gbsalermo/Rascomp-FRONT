@@ -1,6 +1,6 @@
 # Continuidade — RasComp Frontend
 
-Última atualização: **05/10/2026**
+Última atualização: **06/10/2026**
 
 Este arquivo registra o checkpoint funcional de `gestao/`, `landing-page/` e `photo-gallery/`. Não define roadmap próprio.
 
@@ -27,7 +27,7 @@ docs/README.md
 ```text
 ETAPAS 0–4  ✅ concluídas / validadas
 V1-BETA A   ✅ concluída / validada — Landing pública
-V1-BETA B   ⏭️ próxima — discussão de identidade/e-mail + infraestrutura
+V1-BETA B   🚧 Bloco 1 ✅ · Landing remota ✅ · base cloud Workers/Container em preparação
 V1-BETA C   ⏳ acesso/inscrições reais
 V1-BETA D   ⏳ smoke + estabilização
 ```
@@ -552,6 +552,27 @@ Regras:
 ## ETAPA 8 — CMS/Mídia
 
 Painel para conteúdo e mídia, reutilizando `ObjectStorageService`/R2.
+
+Decisão adicionada em 06/10/2026:
+
+```text
+LandingPublicationMode
+├─ INSTITUTIONAL
+└─ COMPETITIVE
+```
+
+`MIDIA | DEV` poderão alternar a Landing entre apresentação institucional e competitiva **sem alterar a Competition vigente**.
+
+Regras:
+
+- estado persistido pelo backend;
+- mudança auditável e sem deploy;
+- modo institucional esconde a apresentação competitiva pública;
+- inscrições/operação/status/chaves permanecem intactos;
+- modo competitivo só publica a competição vigente quando ela também for publicável;
+- ausência de competição vigente/publicável continua resultando em Landing institucional.
+
+Essa função pertence à ETAPA 8 e **não deve ser antecipada na V1-BETA B** apenas para resolver publicação cloud.
 
 ## ETAPA 13 — Regras, Ajuda e Segurança
 
@@ -1962,3 +1983,74 @@ Princípios já aceitos para discussão:
 - escolher provedor de e-mail antes da implementação;
 - acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
 - modo local e Cloudflare Tunnel permanecem como contingência oficial.
+
+
+## Camada competitiva já aprovada para pós-Beta — 06/10/2026
+
+Sem alterar a branch/deploy atual, foi aprovada para a retomada do roadmap a evolução do Sumô/Mini Sumô para **dupla eliminação**:
+
+```text
+Winners → primeira derrota → Losers
+Losers  → segunda derrota → eliminado
+Winners Final + Losers Final → Grand Final
+derrota do invicto na Grand Final → Grand Final Reset obrigatória
+```
+
+Pódio:
+
+```text
+1º vencedor da final decisiva
+2º perdedor da final decisiva
+3º perdedor da final da Losers
+```
+
+A implementação fica explicitamente pós-V1-BETA D e não entra no escopo cloud atual.
+
+
+## Primeiro acesso de contas internas — 06/10/2026
+
+Fluxo da Administração de Usuários:
+
+```text
+DEV
+→ Nova conta interna
+→ nome/e-mail/telefone/role
+→ sem campo de senha
+→ convite enviado
+→ status "Aguardando ativação"
+→ titular abre /ativar-conta?token=...
+→ define a própria senha
+→ conta passa a Ativo
+```
+
+Enquanto a conta estiver pendente, a UI oferece **Reenviar convite**.
+
+O DEV nunca recebe, define ou visualiza a senha definitiva da conta alheia.
+
+A única exceção é o primeiro DEV do banco novo, criado por bootstrap de infraestrutura.
+
+
+---
+
+## Operação sem competição vigente — 06/10/2026
+
+Estado suportado explicitamente:
+
+```text
+DEV
+→ mantém foco local mesmo quando não existe vigente
+→ pode Definir vigente
+→ pode Retirar vigente
+
+GESTAO
+→ autentica e navega por todas as telas permitidas
+→ sem vigente, telas competitivas entram em estado vazio
+→ ações que exigem contexto ficam indisponíveis
+→ nenhuma edição é escolhida como fallback
+
+LANDING
+→ somente competição vigente + ativa + status público
+→ sem vigente pública, permanece institucional
+→ não usa primeira competição, histórica ou futura como fallback
+→ polling reconsulta o contexto publicado para também retirar uma competição da tela quando o DEV remover a vigente
+```
