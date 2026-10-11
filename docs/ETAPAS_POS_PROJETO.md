@@ -2846,3 +2846,12 @@ A truststore PKCS12 foi validada no Docker local por bind mount; a branch possui
 **Estado registrado**: usuário confirmou cadastro das variáveis e truststore no Render; deploy público, healthcheck remoto, DNS `api.rasufrb.site`, segurança/consumo e smoke test **ainda não validados**. Não confundir cadastro de variáveis com implantação funcional.
 
 Operação planejada: avaliar healthchecks externos a cada ~10 min entre 06h e 00h (America/Sao_Paulo) e permitir suspensão do Render Free entre 00h e 06h; acessos externos noturnos ainda podem acordar a instância. Verificar política/limites do provedor, disponibilidade e custos. Contingência com notebook Docker + Cloudflare Tunnel e o mesmo MySQL Aiven, ativação controlada de apenas uma versão principal, Flyway e dados compatíveis. Testes de inicialização em 512 MB e carga de 100/200/300/500 usuários são obrigatórios antes de considerar Render Free apto para competição real. Backups externos com teste de restauração, R2, e-mail real e validações de segurança são bloqueadores antes de inscrições reais.
+
+
+### V1-BETA B — Integração frontend ↔ API Render (11/10/2026)
+
+- API oficial confirmada acessível por HTTPS em `https://api.rasufrb.site/actuator/health` (`UP`); Render Free, Aiven TLS e Worker `rascomp-automation` em homologação.
+- Branch `v1-beta-b-identidade-cloud`: criados `landing-page/.env.cloud` (`VITE_API_URL=https://api.rasufrb.site`, `VITE_GESTAO_URL=https://app.rasufrb.site`, modo institucional) e `gestao/.env.cloud` (`VITE_API_URL=https://api.rasufrb.site`, `VITE_PUBLIC_APP_URL=https://rasufrb.site`). URL da galeria separada permanece pendente; não presumir endereço já ativo.
+- Builds de cloud usam `npm run build:cloud` (Vite `--mode cloud`), seguidos de `npx wrangler deploy` em cada frontend; os arquivos são configuração pública, nunca armazenar segredos em `VITE_*`.
+- Configuração do backend Render: `CORS_ALLOWED_ORIGINS=https://app.rasufrb.site,https://rasufrb.site` e `IDENTITY_FRONTEND_BASE_URL=https://app.rasufrb.site`; confirmar domínio real e CORS por teste de navegador.
+- **Ainda pendente:** publicar builds novos dos Workers `rascomp-landing` e `rascomp-app`, conferir DNS/rotas e testar Landing → API pública, login/identidade, e inscrições. Adicionar R2 e provedor real de e-mail antes de abrir inscrições reais. Render não foi validado em carga de competição.
