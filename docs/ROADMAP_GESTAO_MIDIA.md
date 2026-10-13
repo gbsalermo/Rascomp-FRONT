@@ -118,3 +118,14 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 - Cada foto pode ter a publicação alterada individualmente depois na Biblioteca, sem mudar o padrão definido para futuros uploads.
 - Upload direto de arquivos pelo editor da Landing usa o padrão dessa conta. Não há publicação real nem ligação com a Galeria demonstrativa independente nesta fase.
 - Testar: upload público/privado, lotes múltiplos, alterar padrão e reabrir modal, trocar usuário, mudar publicação posterior e reiniciar frontend, sem publicar em produção.
+
+## Regra confirmada — conteúdo atual editável (13/10/2026)
+**O CMS é gerenciamento do que já existe, não uma tela somente para novas inclusões.**
+- Intro: a prévia é inicializada com os **4 Heroes institucionais reais** extraídos de `landing-page/src/components/HighlightsHero.vue` e `landing-page/src/content/homeMedia.ts`; lista de slides com seleção, edição do existente, substituição de imagem, restaurar original, reordenar, incluir, retirar, ativar/desativar e CTA/destino. Slide competitivo dinâmico continua governado pela API; sua apresentação permanece no editor Competição.
+- Eventos: os registros existentes da constante `LANDING_EVENTS` são sementes editáveis com títulos, categorias, local, início/fim, descrição e fotos importadas da pasta `landing-page/src/assets/`; também permitem adicionar, retirar, ordenar e ativar/desativar.
+- Conquistas: quatro registros originais de `TeamRobotsAwards.vue` aparecem com ano, título, colocação, evento, detalhes, imagem opcional, ordenação, remoção e visibilidade.
+- Robôs: imagens preexistentes em `landing-page/src/assets/robots/<categoria>/` aparecem na categoria correspondente, com troca de imagem, edição de nome, remoção, inclusão e ordem. Banner de `assets/robots/banners/` entra na prévia.
+- Diretoria, voluntários e logos de parceiros são carregados a partir das pastas existentes para permitir troca/organização no editor.
+- A cópia original está registrada em `gestao/src/content/landingEditorialSeeds.ts` com identificador `sourceId` para a migração posterior; a visualização de arquivos versionados é temporariamente feita com `import.meta.glob`.
+- **ATENÇÃO:** o componente da Gestão ainda é **prévia local em memória**, não lê conteúdo de produção ao vivo, nem escreve nos arquivos estáticos, na API ou no R2. Alterações não aparecem na Landing real até implementarmos camada persistente, migração idempotente dos dados existentes, leitura pública e fluxo de publicação. Não promover listas estáticas duplicadas a duas fontes definitivas da verdade.
+- Gate seguinte: aprovar visualmente edição de Heros, eventos, conquistas e robôs preexistentes. Só depois API, Flyway e publicação gradual por seção; não substituir nem apagar conteúdo atual antes de migrar e validar.
