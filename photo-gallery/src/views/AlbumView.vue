@@ -36,7 +36,7 @@ watch(() => route.params.slug, closeLightbox)
 <template>
   <section v-if="album" class="album-page">
     <div class="gallery-page-container">
-      <RouterLink to="/" class="album-back-link">← Todos os álbuns</RouterLink>
+      <RouterLink :to="{ path: '/', query: { ver: 'albuns' } }" class="album-back-link">← Voltar aos álbuns</RouterLink>
 
       <header class="album-heading">
         <div>
@@ -72,7 +72,7 @@ watch(() => route.params.slug, closeLightbox)
       <div class="album-more-note">
         <strong>Estrutura pronta para as fotos reais</strong>
         <p>
-          Nesta primeira versão exibimos amostras estruturais. Quando os arquivos reais forem adicionados ao catálogo, a mesma grade e o lightbox passam a usar as imagens automaticamente.
+          Estas imagens são ilustrações usadas para testar a interface local. A integração posterior substituirá este catálogo pelo acervo publicado na Gestão de Mídia.
         </p>
       </div>
     </div>
