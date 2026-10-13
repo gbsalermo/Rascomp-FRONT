@@ -9,7 +9,7 @@ type Event = { id: number; title: string; date: string; description: string; pho
 type Sponsor = { id: number; photoId?: number; url: string; zoom: number }
 type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-banner' | 'robot' | 'event' | 'sponsor' | 'competition-section' | 'competition-hero'
 
-const props = defineProps<{ photos: MediaPhoto[]; albums: Album[] }>()
+const props = defineProps<{ photos: MediaPhoto[]; albums: Album[]; uploadPhoto: (file: File) => number }>()
 const sections = [
   { name: 'Intro / Heroes', description: 'Imagens e publicações com links para álbuns ou eventos', icon: '✦' },
   { name: 'Sobre', description: 'Sequência de fotos; texto institucional preservado', icon: '▧' },
@@ -83,6 +83,8 @@ function openPicker(target: PickTarget, index = 0) {
   pickerOpen.value = true
 }
 function selectPhoto(id: number) {
+  if (pickTarget.value === 'volunteer' && volunteerPhotos.value.length >= VOLUNTEER_LIMIT) return
+  if (pickTarget.value === 'sponsor' && sponsors.value.length >= SPONSOR_LIMIT) return
   switch (pickTarget.value) {
     case 'hero': heroPhotoId.value = id; break
     case 'about': aboutPhotos.value.push(id); break
@@ -97,6 +99,19 @@ function selectPhoto(id: number) {
     case 'competition-hero': competitionHeroPhotoId.value = id; break
   }
   pickerOpen.value = false
+}
+function directUpload(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = Array.from(input.files || [])
+  const multi = ['about','volunteer','robot','sponsor'].includes(pickTarget.value)
+  for (const file of multi ? files : files.slice(0,1)) {
+    const id = props.uploadPhoto(file)
+    if (id) selectPhoto(id)
+    if (pickTarget.value === 'volunteer' && volunteerPhotos.value.length >= VOLUNTEER_LIMIT) break
+    if (pickTarget.value === 'sponsor' && sponsors.value.length >= SPONSOR_LIMIT) break
+  }
+  input.value = ''
+  if (files.length) ElMessage.info('As imagens foram adicionadas à prévia local da Biblioteca, sem envio à API.')
 }
 function move<T>(items: T[], index: number, delta: number) {
   const target = index + delta
@@ -230,6 +245,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 
     <el-dialog v-model="pickerOpen" title="Escolher imagem da Biblioteca" width="min(850px, 95vw)" append-to-body>
       <p class="editor-picker-help">Selecione uma das imagens já enviadas à Biblioteca. A imagem original será preservada.</p>
+      <div class="editor-picker-uploader"><label>+ Enviar foto(s) do computador<input type="file" accept="image/*" multiple @change="directUpload" /></label><small>Também adiciona as fotos à Biblioteca nesta demonstração.</small></div>
       <div class="editor-picker-filters"><el-input v-model="pickSearch" clearable placeholder="Buscar imagem pelo nome"/>
         <el-select v-model="pickFilter" style="width:200px"><el-option label="Todas" value="all"/><el-option label="Sem álbum" value="none"/><el-option v-for="album in albums" :key="album.id" :label="album.name" :value="String(album.id)"/></el-select></div>
       <div v-if="visiblePhotos.length" class="editor-picker-grid">
@@ -300,6 +316,10 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 .editor-footer{margin-top:23px;padding-top:17px;border-top:1px solid #eee5eb;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .editor-footer span{font-size:11px;color:#948691}
 .editor-picker-help{font-size:12px;color:#827483}
+.editor-picker-uploader{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:13px 0}
+.editor-picker-uploader label{background:#ad1647;color:white;padding:11px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:750}
+.editor-picker-uploader input{display:none}
+.editor-picker-uploader small{color:#8a7a87;font-size:11px}
 .editor-picker-filters{display:flex;gap:10px;margin:10px 0 15px}
 .editor-picker-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-height:400px;overflow:auto}
 .editor-picker-grid button{border:1px solid #e8e0e7;border-radius:9px;background:#fff;overflow:hidden;padding:6px;text-align:left;min-width:0;cursor:pointer}
