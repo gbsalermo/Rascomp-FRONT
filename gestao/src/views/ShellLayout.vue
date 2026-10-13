@@ -13,6 +13,8 @@ import {
   Flag,
   Grid,
   Medal,
+  Picture,
+  Collection,
   Tickets,
   Timer,
   Trophy,
@@ -63,6 +65,14 @@ const devSections = [
     ]
   },
   {
+    label: 'Mídia',
+    items: [
+      { label: 'Biblioteca', to: '/midia', icon: Picture },
+      { label: 'Álbuns', to: '/midia/albuns', icon: Collection },
+      { label: 'Landing', to: '/midia/landing', icon: Grid }
+    ]
+  },
+  {
     label: 'Administração',
     items: [
       { label: 'Usuários', to: '/usuarios', icon: User }
@@ -80,7 +90,12 @@ const participantSections = [
 const mediaSections = [
   {
     label: 'Mídia',
-    items: [{ label: 'Painel', to: '/', icon: DataBoard }]
+    items: [
+      { label: 'Painel', to: '/', icon: DataBoard },
+      { label: 'Biblioteca', to: '/midia', icon: Picture },
+      { label: 'Álbuns', to: '/midia/albuns', icon: Collection },
+      { label: 'Landing', to: '/midia/landing', icon: Grid }
+    ]
   }
 ]
 
@@ -107,7 +122,10 @@ const pageTitle = computed(() => {
     '/resultados': 'Resultados',
     '/usuarios': 'Usuários',
     '/configuracoes': 'Configurações',
-    '/minha-equipe': 'Meu painel'
+    '/minha-equipe': 'Meu painel',
+    '/midia': 'Biblioteca de mídia',
+    '/midia/albuns': 'Álbuns de fotos',
+    '/midia/landing': 'Conteúdo da Landing'
   }
   if (titles[route.path]) return titles[route.path]
   if (route.name === 'follow-run') return 'Operação Follow Line'
@@ -133,7 +151,7 @@ const panelLabel = computed(() => {
 const alertCount = computed(() => alerts.value.length)
 
 function isActive(to: string) {
-  return to === '/' ? route.path === '/' : route.path.startsWith(to)
+  return to === '/' ? route.path === '/' : (to === '/midia' ? route.path === '/midia' : route.path.startsWith(to))
 }
 
 function go(to: string) {
