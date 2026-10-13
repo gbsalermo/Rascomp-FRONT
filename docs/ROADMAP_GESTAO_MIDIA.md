@@ -12,7 +12,7 @@
 
 ## Etapa 0 — Auditoria rápida e contratos mínimos
 1. Inventariar UI atual da Landing e da Galeria (`photo-gallery/`), imagens em `landing-page/public/media/assets/`, `HOME_MEDIA` e APIs existentes.
-2. Definir navegação da Gestão de Mídia: **Biblioteca, Álbuns, Landing (Hero/Sobre/Equipe/Robôs/Eventos e Novidades/Patrocinadores/Competição)**; sem controles globais de modo.
+2. Definir navegação da Gestão de Mídia: **Biblioteca, Álbuns, Landing (Intro/Hero, Sobre, Equipe, Robôs, Eventos, Patrocinadores, Competição)**; sem menu separado de Publicações nem controles globais de modo. Os destaques editoriais ficam no editor de **Intro / Hero**.
 3. Registrar contratos mínimos de `MediaAsset`, `Album`, `AlbumMedia`, `ContentSlot` e permissões (DEV/MIDIA, GESTAO conforme autorização explícita).
 **Aceite:** mapa das duas interfaces, limites editáveis e contratos sem migração prematura.
 
@@ -44,11 +44,11 @@
 
 ## Etapa 4 — Aplicação progressiva nas seções da Landing
 Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
-1. Hero/Intro — fotos, ordenação e enquadramento; suporte a hero competitivo habilitável.
+1. **Intro / Hero e destaques editoriais (Publicações)** — além dos slides institucionais, permitir divulgar atividades (oficinas, participações, eventos e competições) em novos slides com imagem, enquadramento, título, descrição, CTA e **destino escolhido**: Galeria geral, álbum específico, evento cadastrado ou âncora/seção da Landing. Destinos internos devem usar referências/IDs quando aplicável, sem duplicar conteúdo. Prévia, reordenação, ativar/desativar e hero competitivo opcional, sem depender de modo global.
 2. Sobre — **somente foto e enquadramento**.
 3. Equipe/Conquistas — imagens editoriais, conquistas e fotos, respeitando fontes oficiais.
 4. Robôs — apresentação de fotos, sem duplicar cadastros do domínio.
-5. Eventos e Novidades — dados dinâmicos, imagens, datas e publicação, reaproveitando eventos existentes.
+5. Eventos — administrar os dados dinâmicos dos eventos (datas, informações e imagens), que poderão ser **referenciados** pelo Hero editorial. Não duplicar o mesmo evento como Publicação.
 6. Patrocinadores — logos, ordenação, dimensões/zoom e links opcionais; apoiadores institucionais separados.
 7. **Competição** — editor da apresentação da seção, escolha/configuração do hero competitivo na Intro, sem alterar o status, regra, inscrições e resultados oficiais.
 - Publicação intencional, prévia e rollback por versão; Landing pública busca somente conteúdo publicado via API com fallback controlado.
@@ -72,4 +72,4 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 5. Galeria conectada ao acervo.
 6. Regressão e aceite final.
 
-**Decisão de aprovação dos esboços — 13/10/2026:** as duas interfaces foram aprovadas com alteração de Galeria: a opção **Todas** apresenta diretamente todas as fotos publicadas e **Álbuns** é filtro/agrupamento. **Publicações** não será um menu separado na primeira versão; notícias/comunicados ficam sob **Eventos e Novidades** dentro da Landing. Próximo passo: Etapa 1, interfaces visuais antes do backend. Não começar por migrações ou regras de modo institucional/competitivo.
+**Decisão de aprovação dos esboços — 13/10/2026:** as duas interfaces foram aprovadas com alteração de Galeria: a opção **Todas** apresenta diretamente todas as fotos publicadas e **Álbuns** é filtro/agrupamento. **Publicações não é menu separado:** é o conteúdo de destaque do **Intro / Hero**, com chamadas contextuais (ex.: Oficina de Arduino → "Ver fotos" → álbum dessa oficina). Eventos permanecem como entidades editáveis à parte, podendo ser associados ao Hero sem duplicação. Próximo passo: Etapa 1, interfaces visuais antes do backend. Não começar por migrações ou regras de modo institucional/competitivo.
