@@ -15,7 +15,8 @@ const siteUrl = (import.meta.env.VITE_SITE_URL || 'http://localhost:5174').repla
         </a>
 
         <nav aria-label="Navegação da galeria">
-          <RouterLink to="/">Álbuns</RouterLink>
+          <RouterLink to="/">Todas as fotos</RouterLink>
+          <RouterLink :to="{ path: '/', query: { ver: 'albuns' } }">Álbuns</RouterLink>
           <a :href="siteUrl">Voltar ao site</a>
         </nav>
       </div>
