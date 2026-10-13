@@ -4,6 +4,8 @@ export type GalleryPhoto = {
   id: string
   src?: string
   alt: string
+  /** Somente fotos explicitamente publicadas podem integrar a Galeria. */
+  published: boolean
 }
 
 export type GalleryAlbum = {
@@ -49,7 +51,8 @@ function demonstrationImage(category: GalleryCategory, index: number): string {
 function demonstrationPhotos(slug: string, title: string, category: GalleryCategory, amount = 8): GalleryPhoto[] {
   return Array.from({length:amount}, (_,index)=>({
     id: slug + '-' + (index + 1),
-    alt: title + ' — imagem demonstrativa ' + (index + 1),
+    alt: 'Registro ilustrativo de ' + title,
+    published: true // Exemplos autorizados do protótipo; imagens internas da Gestão NÃO entram aqui.
     src: demonstrationImage(category, index)
   }))
 }
@@ -61,7 +64,7 @@ const seed: Array<Omit<GalleryAlbum,'photos'|'cover'|'count'>> = [
   { slug:'eventos-institucionais', title:'Eventos Institucionais', category:'Eventos', description:'Palestras, atividades e integração da RAS UFRB.', date:'Eventos' }
 ]
 export const albums: GalleryAlbum[] = seed.map(item => {
-  const photos = demonstrationPhotos(item.slug, item.title, item.category)
+  const photos = demonstrationPhotos(item.slug, item.title, item.category).filter(photo=>photo.published === true)
   return { ...item, photos, cover: photos[0]?.src, count: photos.length }
 })
 
