@@ -7,7 +7,7 @@ type Album = { id: number; name: string; description: string; coverId?: number }
 type Award = { id: number; title: string; year: string; detail: string; photoId?: number }
 type Event = { id: number; title: string; date: string; description: string; photoId?: number }
 type Sponsor = { id: number; photoId?: number; url: string; zoom: number }
-type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-banner' | 'robot' | 'event' | 'sponsor' | 'competition-section' | 'competition-hero'
+type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-banner' | 'robot' | 'event' | 'sponsor' | 'sponsor-change' | 'competition-section' | 'competition-hero'
 
 const props = defineProps<{ photos: MediaPhoto[]; albums: Album[]; uploadPhoto: (file: File) => number }>()
 const sections = [
@@ -95,6 +95,7 @@ function selectPhoto(id: number) {
     case 'robot': robotPhotos.value[robotCategory.value]!.push(id); break
     case 'event': { const e = events.value[pickIndex.value]; if (e) e.photoId = id; break }
     case 'sponsor': sponsors.value.push({ id: Date.now(), photoId: id, url: '', zoom: 100 }); break
+    case 'sponsor-change': { const sponsor = sponsors.value[pickIndex.value]; if (sponsor) sponsor.photoId = id; break }
     case 'competition-section': competitionBannerId.value = id; break
     case 'competition-hero': competitionHeroPhotoId.value = id; break
   }
@@ -226,7 +227,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
           <div class="editor-record-title"><strong>Patrocinador {{ i+1 }}</strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(sponsors,i,-1)">↑</el-button><el-button size="small" :disabled="i===sponsors.length-1" @click="move(sponsors,i,1)">↓</el-button><el-button type="danger" text size="small" @click="sponsors.splice(i,1)">Remover</el-button></div></div>
           <div class="editor-sponsor-row"><div class="editor-sponsor-image"><img v-if="photo(item.photoId)?.src" :src="photo(item.photoId)?.src" :alt="photo(item.photoId)?.name" :style="{transform:'scale('+item.zoom/100+')'}"/><span v-else>▧</span></div>
             <div class="editor-sponsor-fields"><el-form-item label="Link (opcional)"><el-input v-model="item.url" placeholder="https://..."/></el-form-item><label>Zoom da logo: {{ item.zoom }}%</label><el-slider v-model="item.zoom" :min="60" :max="160"/></div></div>
-          <el-button size="small" @click="openPicker('sponsor')">Adicionar outra logo</el-button>
+          <el-button size="small" @click="openPicker('sponsor-change',i)">Trocar logo</el-button>
         </div><div v-if="!sponsors.length" class="editor-empty">Adicione logos da Biblioteca. Não serão usados automaticamente os logos institucionais do rodapé.</div>
       </template>
 
