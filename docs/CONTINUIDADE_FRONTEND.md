@@ -2073,3 +2073,11 @@ LANDING
 - `Gestão DEV` abre `/`; `Gestão de Mídia` abre `/midia`. O ambiente visual acompanha a rota, sem modificar papel, sessão ou token.
 - Para DEV em `/midia/**`, o menu mostra exclusivamente Biblioteca, Álbuns e Landing e oculta o contexto/alertas da competição. O perfil MIDIA continua restrito ao editorial.
 - Confirmar GitHub Actions Frontend Checks e testes manuais com usuário DEV antes da aprovação.
+
+## Rodada de revisão visual da Gestão de Mídia (13/10/2026, segundo checkpoint)
+- `gestao/src/components/MediaLandingEditor.vue` introduz **editor específico por seção**, substituindo placeholders genéricos: Hero com foto/CTA/destino, Sobre com sequência de fotos, Equipe com seis cargos fixos, voluntários (máx. visual de 12), conquistas editáveis/ordenáveis, Robôs com banner e categorias, Eventos com cadastro/foto/ordem, patrocinadores com logos/zoom/ordem (máx. visual de 12) e seção Competição sem alterar dados oficiais da API.
+- O seletor de fotos dos editores permite envio direto de arquivos locais, adicionando-os somente à memória da Biblioteca. **Não confundir com upload no backend**.
+- Biblioteca: álbum com capa manual ou automática entre fotos associadas; miniaturas completas sem crop; controle de visibilidade renomeado para **Exibir na Galeria pública (após integração)**, explicando que o protótipo não sincroniza as aplicações.
+- `photo-gallery/src/styles.css`: mosaico refinado e fotos exibidas por `object-fit: contain`, evitando cortes.
+- `docs/ROADMAP_GESTAO_MIDIA.md` contém a matriz de testes da segunda rodada. Sem merge em `main` ou deploy cloud; PR #7 permanece draft.
+- GitHub Actions Frontend Checks e Photo Gallery Checks verdes no commit `f1f512c4f4c56b8bb24a4493db6955210e6c8117`.
