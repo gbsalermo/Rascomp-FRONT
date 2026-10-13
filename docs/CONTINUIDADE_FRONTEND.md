@@ -2066,3 +2066,10 @@ LANDING
 - Upload de imagens no browser, criação/associação de álbuns e prévia de recorte funcionam somente em memória. Nada é persistido em MySQL/R2; publicação real está fora desse checkpoint.
 - Próximo: validar visualmente em desktop/mobile, só depois implementar backend/biblioteca persistente e absorver Galeria na Landing.
 - PR draft #7 serve exclusivamente a CI e revisão; **não fazer merge/deploy sem aprovação explícita**.
+
+
+## Checkpoint — Alternância DEV entre Gestão e Mídia (13/10/2026)
+- Branch `v1-pos-cloud-gestao-midia` inclui seletor de ambiente na sidebar de `gestao/src/views/ShellLayout.vue`, visível **apenas para DEV**.
+- `Gestão DEV` abre `/`; `Gestão de Mídia` abre `/midia`. O ambiente visual acompanha a rota, sem modificar papel, sessão ou token.
+- Para DEV em `/midia/**`, o menu mostra exclusivamente Biblioteca, Álbuns e Landing e oculta o contexto/alertas da competição. O perfil MIDIA continua restrito ao editorial.
+- Confirmar GitHub Actions Frontend Checks e testes manuais com usuário DEV antes da aprovação.
