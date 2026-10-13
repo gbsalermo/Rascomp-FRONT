@@ -1,6 +1,106 @@
+> **Estado oficial — 13/10/2026 | V1-BETA B Cloud implantada:** landing pública [rasufrb.site](https://rasufrb.site), Gestão/Portal [app.rasufrb.site](https://app.rasufrb.site) (Workers Static Assets `rascomp-landing`/`rascomp-app`), API Spring Boot Java 21 no **Render** via [api.rasufrb.site](https://api.rasufrb.site), MySQL **Aiven**, arquivos privados **Cloudflare R2** (`rascomp-storage`), e-mail transacional **Resend** (`mail.rasufrb.site`). Cadastro/verificação e recuperação de senha foram testados ponta a ponta. Galeria/Gestor de Mídia e Futebol de Robôs são próximos desenvolvimentos, **não funcionalidades já finalizadas**. Antes de inscrições reais: backup externo/restauração ensaiada, testes de carga/contingência, autorização de comprovantes e integridade/reconciliação de storage. Ambiente local continua suportado. **Deploy desejado:** branch `main` para produção; validar a troca de branch nos painéis Render/Cloudflare após o merge, pois merge sozinho não altera suas configurações. Trechos históricos abaixo preservam decisões anteriores, não a arquitetura vigente.
+
+## POLÍTICA DE BACKUPS MYSQL AIVEN — 11/10/2026
+
+**Checkpoint inicial:** Aiven Free MySQL 8.4.11 `rascomp-mysql` e banco `rascomp` conectados ao Spring Boot (profile `cloud`, TLS), Flyway até V31, 36 tabelas e persistência confirmada após desligar a API. O painel Aiven exibiu um backup automático completo; **não confundir a existência desse backup com um restore validado ou com proteção do estado mais recente**.
+
+**Fase 1 — Agora, sem inscrições reais:** utilizar o backup automático do Aiven para proteção básica. Não bloquear o avanço técnico para Docker/API cloud por uma exportação manual adicional neste momento. O dump manual realizado exibiu avisos de GTID e consistência; **não deve ser tratado como cópia restaurável validada**. Não marcar restauração como testada.
+
+**Gate obrigatório antes de inscrições reais:** confirmar um backup posterior às migrations e ao bootstrap inicial, documentar retenção e limitações reais do plano Aiven Free, produzir dump consistente do banco `rascomp` (ex.: `mysqldump --single-transaction --set-gtid-purged=OFF` com TLS verificado), guardar cópia externa protegida e executar **restore de ensaio em banco/instância isolados**, validando schema, Flyway e dados. Nunca testar restore sobre produção. Registrar procedimento de recuperação, responsáveis, periodicidade e tolerância à perda de dados. Se esse gate falhar, não abrir inscrições.
+
+**Fase 2 — Durante inscrições:** manter backups do provedor, verificar existência e recência; realizar cópias externas periódicas com frequência ajustada ao volume de alterações e à retenção oferecida; proteger arquivos com criptografia/controle de acesso, não versionar no GitHub. Testar restauração regularmente e antes de alterações críticas/migrations.
+
+**Fase 3 — Pré-competição:** fazer snapshot/dump recente, testar recuperação no MySQL local ou staging isolado, sincronizar arquivos R2 necessários e executar ensaio da contingência LAN/Tunnel. Definir fonte única de escrita e procedimentos de retorno à cloud.
+
+**Fase 4 — Durante competição:** acompanhar backups, capacidade e integridade; manter plano operacional de recuperação e contingência, sem bancos cloud/local com escritas independentes.
+
+**Observação:** Flyway recria estrutura, mas não restaura inscrições, usuários, resultados ou comprovantes. Backup do MySQL também não inclui objetos R2; esses arquivos exigem estratégia própria.
+
+---
+
+## REPLANEJAMENTO DE CAPACIDADE — 10/10/2026
+
+**Decisão atual (prevalece sobre sequências históricas abaixo):** após concluir a V1-BETA B/Cloud, **antecipar a primeira rodada de testes de carga antes do Gestor de Mídia e do Futebol**. Motivo: validar a capacidade real do MySQL gratuito (Aiven Free, se confirmado no provisionamento) e do caminho de API Docker/Cloudflare antes de expandir escopo.
+
+Ordem revisada:
+
+1. Cloud + MySQL persistente / backups / Flyway / API / identidade / R2 / smoke;
+2. **Gate de capacidade antecipado:** cargas em estágios de 100, 200, 300 e 500 usuários simulados, com padrões de concorrência realistas para cadastro, autenticação, inscrições, comprovantes, consultas públicas, aprovação e fluxos competitivos já implementados. Medir p50/p95/p99, erros, throughput, CPU/RAM, conexões MySQL, disco, filas e recuperação; testar também backup/restore, limites e rate limiting. Não confundir quantidade de usuários com requisições simultâneas. Definir critérios de aprovação antes da execução. Usar staging/dados sintéticos, nunca sobrecarregar produção real.
+3. Gestão de Mídia da Landing;
+4. Futebol de Robôs;
+5. Central de Ajuda + Telegram (bot de auxílio e notificações com consentimento);
+6. **Gate final de carga/resiliência pré-competição** cobrindo também CMS, Futebol, Telegram e cenário competitivo de 300–500 pessoas; bloquear evento real se a infraestrutura falhar nos critérios.
+7. Validação e fechamento do MVP ampliado; em seguida manutenção/polimento.
+
+O teste antecipado **não substitui** o gate final; usar resultados para escolher entre manter Aiven Free, elevar capacidade ou adotar contingência local/tunnel. Preservar documentação de custo, riscos e portabilidade.
+
+---
+
+## ATUALIZAÇÃO DE PRIORIDADES — 10/10/2026
+
+Ordem de execução aprovada após a estabilização da Cloud/V1-BETA B:
+
+1. **Cloud + MySQL persistente** — concluir implantação segura, backups, restore, Flyway, API HTTPS, identidade/e-mail, R2, smoke e contingência local.
+2. **Gestor de Mídia** — Landing institucional/competitiva, conteúdo editorial, heros, imagens, eventos, galeria, robôs, patrocinadores e auditoria.
+3. **Futebol de Robôs** — inscrição e operação da modalidade, placar, cronômetro, chaves, resultados e projeção pública.
+4. **Central de Ajuda + Telegram** — manuais contextuais na Gestão e no Portal, regras aprovadas, tutoriais e canal Telegram integrado de suporte e notificações úteis. Diferenciar notificações automáticas opt-in, avisos operacionais e interação de ajuda via bot; validar privacidade, autorização, consentimento, frequência e política de atendimento. O Telegram complementa, **não substitui**, a ajuda dentro do sistema. Reaproveitar o escopo pertinente da antiga Etapa 11, evitando implementá-lo em duplicidade.
+5. **Testes de carga e resiliência** — imediatamente após a Central de Ajuda/Telegram, executar carga genérica e cenário operacional com **300–500 pessoas**, incluindo inscrições, uploads, aprovação, Gestão, Follow, Sumô, Futebol, chaves, ranking e consultas públicas. Revisar rate limit, injeção SQL, autorização, concorrência, falhas e recuperação. É gate obrigatório antes da competição oficial.
+6. **Fechamento do MVP ampliado** — regressões ponta a ponta cloud/local, documentação, estabilidade e validação.
+7. **Revisão das demais pendências históricas** — manutenção, segurança, responsividade, performance e polimento passam à frente de novas funcionalidades.
+
+**Esta ordem atual substitui trechos históricos conflitantes deste documento, sem excluir as etapas originais.** Meta para Cloud: 14/10/2026, sujeita a gates de persistência, backup e segurança.
+
+Arquitetura versionada: frontend `docs/ARQUITETURA_DEPLOY_DOCKER.md`. Docker empacota Spring Boot; hospedagem do container e MySQL persistente são decisões separadas. R2 é storage de arquivos, não banco.
+
+---
+
+## PLANEJAMENTO CANÔNICO ATUALIZADO — 09/10/2026
+
+> **Correção de calendário:** a meta do MVP funcional era **04/10/2026**, não 04/11/2026. O escopo que o responsável esperava desse marco já foi atendido, mas isso **não significa que cloud, operação completa, documentação e validação final estejam concluídas**. Menções anteriores a "MVP de produção — 04/11" são histórico superado, não prazo vigente. A competição de novembro continua como marco operacional; não assumir que todas as entregas abaixo precisam aguardar a semana do evento.
+
+### Ordem prioritária aprovada
+
+1. **Até 14/10/2026 — fechar a V1-BETA B / Cloud:** MySQL persistente com backup/restore, Flyway, API/HTTPS, Gestão e Portal remotos, verificação de e-mail/recuperação de senha, storage R2 persistente, secrets, acesso local/contingência preservados e smoke cloud. Prazo-alvo, sujeito aos gates de segurança e verificação; não liberar inscrições reais sem cumprir os bloqueantes.
+2. **Após cloud — Gestão de Mídia da Landing (P1):** CRUD editorial de textos/fotos/heros, eventos e calendário, galeria, robôs, patrocinadores, publicações, controle institucional/competitivo e auditoria. MIDIA/DEV administra conteúdo sem deploy manual.
+3. **Em seguida — Futebol de Robôs (P2):** inscrição sem robô próprio (robôs eventualmente fornecidos pela organização), atribuição e regras, cronômetro/placar de gols, estados da partida, chaveamento, resultados, operação na Gestão e acompanhamento público. Validar regulamento e casos de empate/penalidades antes de fechar regras.
+4. **Depois — Central de Ajuda e manuais por perfil (P3):**
+   - **Ajuda administrativa dentro da Gestão:** como criar/gerir competição, inscrições e aprovações, equipes/robôs, Follow, Sumô/Mini Sumô, Futebol, tempo/placar/chaves/resultados, contingência, além de operar o Gestor de Mídia. Manual contextual por tela, navegação acessível e conteúdo versionado/revisável.
+   - **Ajuda do participante integrada ao Portal:** regras da competição, regras do ambiente de competição, inscrição pessoal/de equipe/de robô conforme modalidade, comprovantes, aprovação, como acompanhar situação, cronograma, chamadas, resultados, chaves, Follow e Sumô. Orientações práticas claras e acessíveis, incluindo estados de erro e dúvidas frequentes.
+   - **Fonte oficial:** regulamento e regras de ambiente validados pela organização; a documentação não inventará normas. Distinguir orientações gerais de regras específicas por edição/categoria; versionar/publicar atualizações com controle editorial.
+   - **Manter permissões:** informações administrativas apenas para perfis autorizados; materiais públicos/participante disponíveis sem conceder acesso a funções operacionais.
+5. **Fechamento do MVP ampliado:** concluir fluxos e manuais, testar ponta a ponta todos os perfis, categorias e cenários cloud/local. Só marcar concluído após validação.
+6. **Depois do MVP — revisão do roadmap original:** auditar pendências reais, classificar somente o indispensável, priorizar manutenção, estabilidade, correções, usabilidade, testes, segurança, desempenho e polimento. Novas funcionalidades deixam de ser o foco; requisitos restantes do roteiro original permanecem registrados e serão reavaliados, não apagados.
+
+**Princípio:** continuar desenvolvimento em homologação, liberar para produção apenas versões aprovadas; preservar modo local. A Etapa 13 (Regras, Ajuda e Segurança) passa a ter seu núcleo de **manuais e ajuda por perfil** antecipado para P3, sem necessariamente antecipar todos os seus outros itens.
+
+---
+
+## PRIORIDADE IMEDIATA APÓS V1-BETA B CLOUD — 09/10/2026
+
+**Decisão de priorização (MVP de produção de 04/11/2026):** assim que estiver concluído o fluxo de MySQL persistente → backend/API cloud → Gestão e Portal autenticados → e-mail transacional/validação de contas → R2/uploads persistentes → smoke cloud, iniciar, nesta ordem, **(P1) Gestão de Mídia da Landing** e **(P2) Categoria Futebol de Robôs**. Ambas são prioridade máxima do ciclo seguinte, antes de polimentos não bloqueantes e funcionalidades pós-produção, sem apagar o roadmap original. Se necessário, poderão avançar em paralelo após os contratos e a infraestrutura cloud estarem estáveis.
+
+### P1 — Gestão de Mídia da Landing (prioridade máxima)
+- Interface administrativa para editar conteúdo público sem modificar/republicar o frontend manualmente: heros, banners, seção Sobre, equipe/diretoria, conquistas, robôs, galeria, notícias, eventos, patrocinadores e apoiadores.
+- Upload e gerenciamento de imagens persistentes via R2/storage, metadados, ordenação, ativação/desativação, prévia e publicação controlada; permissões e auditoria.
+- Eventos com título, texto, imagens, localização, datas de início/fim e fuso; estados automáticos próximo / acontecendo / encerrado; histórico de eventos e possível vínculo explícito com competição RasComp.
+- Gestão do modo institucional/competitivo da Landing **independente de haver competição vigente**, impedindo exposição acidental de dados; publicação intencional e reversível.
+- Patrocinadores do carrossel em cadastro próprio; apoiadores institucionais permanecem separados no footer. Substituir imagens provisórias por marcas reais somente quando cadastradas/autorizadas.
+- Compatibilizar alterações com cache/invalidação e endpoints públicos sem prejudicar performance e disponibilidade.
+
+### P2 — Categoria Futebol de Robôs (prioridade máxima)
+- Consolidar regras próprias da modalidade: partidas entre robôs/equipes, gols por lado e placar, duração configurável com valor usual de referência **2 minutos** (não hardcode), cronômetro e comandos da organização.
+- Persistir placar e eventos de partida no backend, com validação de estado, retomada/finalização, histórico/auditoria e tratamento de correções administrativas.
+- Exibir andamento em tempo real ou atualização periódica confiável na Gestão e na Landing pública, além de resultados e progressão de chaveamento aplicáveis.
+- Tratar empate, prorrogação/desempate e critérios oficiais como regras a validar antes de implementá-los, sem pressupor regulamento inexistente.
+- Testes automatizados e manuais: início/pausa/fim, gols, sincronização, atualização pública, recuperação após falha e controle de acesso.
+
+**Critério de saída:** Gestão de Mídia opera conteúdo real publicado na Landing sem deploy; Futebol permite operar e acompanhar partidas completas com placar/tempo persistentes e refletidos nas interfaces.
+
+---
+
 # RasComp — Roadmap Pós-Projeto
 
-Última revisão: **05/10/2026**
+Última revisão: **06/10/2026**
 
 Este é o **único documento canônico para ordem de execução, prioridade, etapa atual e critério de conclusão** do ciclo pós-projeto do RasComp.
 
@@ -79,11 +179,12 @@ ETAPA 4  ✅ CONCLUÍDA / VALIDADA — Consolidação funcional do MVP atual
 
 TRILHO PRIORITÁRIO — V1 BETA EM PRODUÇÃO
 V1-BETA A  ✅ CONCLUÍDA / VALIDADA — Landing pública finalizada
-V1-BETA B  ⏭️ PRÓXIMA — planejar identidade/e-mail + infraestrutura: cloud + banco + storage/secrets + observabilidade mínima
+V1-BETA B  🚧 EM ANDAMENTO — Bloco 1 ✅; Bloco 2 Landing remota ✅ / Gestão Tunnel diagnosticado; base cloud em preparação
 V1-BETA C  ⏳ — Abertura controlada: cadastro/login + inscrições reais + acesso ao sistema
 V1-BETA D  ⏳ — Smoke de produção + estabilização inicial
 
 ROADMAP OFICIAL — RETOMADA APÓS V1 BETA
+CAMADA COMPETITIVA PÓS-BETA  ⏳ — Dupla eliminação para Sumô/Mini Sumô
 ETAPA 5  ⏳ PÓS-BETA — Ajustes Gerais DEV + auditoria; não bloqueia a publicação inicial
 ETAPA 6  ⏳ NÃO INICIADA — Futebol de Robôs
 ETAPA 7  ⏳ NÃO INICIADA — Portal do Participante completo + identificação competitiva
@@ -100,7 +201,7 @@ ETAPA 14 ⏳ NÃO INICIADA — Hardening de segurança + preparação de carga
 ETAPA 15 ⏳ NÃO INICIADA — Validação final + testes de carga pré-competição
 ETAPA 16 ⚠️ REINTERPRETADA — consolidação/hardening da produção definitiva; não é mais o primeiro deploy
 
-**Próximo trabalho: discutir e aprovar o desenho da V1-BETA B antes de criar a branch da fase.**
+**Trabalho atual: estruturar a base cloud da V1-BETA B após validar a Landing externamente por Quick Tunnel. Próximo gate: conectar a conta Cloudflare temporária, publicar os dois frontends e depois integrar API/Container + MySQL + e-mail + storage. O modo local/LAN permanece preservado.**
 
 A V1 Beta não encerra o roadmap. Ela cria uma linha estável de produção para divulgação, cadastro e inscrições enquanto o restante do produto continua evoluindo em ambiente não-prod.
 ---
@@ -215,6 +316,8 @@ Todos os itens abaixo são **bloqueantes**:
 - logs e healthcheck mínimos;
 - rollback operacional documentado;
 - nenhum profile `testdata`, usuário demo ou senha demo em produção;
+- **banco cloud novo deve nascer sem massa de teste**: nenhum Team, Competitor, Robot, Competition, Registration, Match, Bracket ou Round demo;
+- primeiro boot permite somente schema/Flyway + primeiro DEV real via bootstrap; demais contas internas são criadas pelo DEV;
 - **storage persistente dos comprovantes de inscrição**, sem depender do filesystem efêmero/local;
 - storage persistente de outros uploads que já forem usados pela Beta.
 
@@ -411,6 +514,199 @@ desenvolvimento em ambiente não-prod
 +
 merge/deploy somente após testes
 ```
+
+
+## CAMADA COMPETITIVA PÓS-BETA — Dupla eliminação de Sumô/Mini Sumô
+
+**Status:** modelagem aprovada em 06/10/2026; implementação somente após deploy e estabilização da V1 Beta.
+
+Esta camada entra **antes da retomada funcional normal do roadmap**, sem alterar o objetivo atual da V1-BETA B/C/D.
+
+### Regra estrutural
+
+Categorias de Sumô/Mini Sumô que usam chave passam do modelo atual de eliminação simples para **dupla eliminação**.
+
+O sistema gera um único chaveamento competitivo com duas seções coordenadas:
+
+```text
+CHAVE PRINCIPAL / WINNERS
+→ participante permanece enquanto estiver invicto
+→ primeira derrota envia para a Chave dos Perdedores
+
+CHAVE DOS PERDEDORES / LOSERS
+→ recebe participantes após a primeira derrota
+→ derrota nesta seção = segunda derrota = eliminação
+```
+
+Não modelar Winners e Losers como campeonatos independentes. Elas pertencem ao mesmo `Bracket` e compartilham progressão, histórico, agenda e resultado final.
+
+### Final da chave principal
+
+A final da Winners **não define campeão nem vice**.
+
+Ela define apenas o representante invicto da chave principal para a Final Geral.
+
+A final da Losers define o representante da chave dos perdedores para a Final Geral.
+
+### Final Geral + Reset
+
+```text
+Vencedor da Winners (0 derrotas)
+×
+Vencedor da Losers (1 derrota)
+→ GRAND_FINAL
+```
+
+Se o representante da Winners vencer:
+
+```text
+adversário recebe a 2ª derrota
+→ campeonato encerrado
+→ vencedor da Winners = campeão
+```
+
+Se o representante da Losers vencer:
+
+```text
+representante da Winners recebe a 1ª derrota
+→ ambos passam a possuir 1 derrota
+→ GRAND_FINAL_RESET é criada/ativada automaticamente
+```
+
+A Final de Reset é **obrigatória quando necessária**; não depende de escolha manual da organização.
+
+O vencedor da Final de Reset é o campeão e o perdedor é o vice.
+
+Cada Final Geral/Reset continua sendo uma partida normal de Sumô, obedecendo ao mesmo contrato de rounds, penalidades, WO, rounds extras e decisão de juiz.
+
+### Pódio aprovado
+
+Na dupla eliminação:
+
+```text
+1º lugar
+→ vencedor da Final Geral decisiva
+   (GRAND_FINAL quando não houver reset,
+    ou GRAND_FINAL_RESET quando houver)
+
+2º lugar
+→ perdedor da Final Geral decisiva
+
+3º lugar
+→ perdedor da Final da Chave dos Perdedores
+```
+
+Não criar disputa extra de terceiro lugar para este formato.
+
+A regra atual de disputa específica de 3º lugar permanece somente enquanto o chaveamento de eliminação simples ainda estiver em uso.
+
+### Invariantes de domínio
+
+```text
+0 derrotas → permanece na Winners
+1 derrota  → permanece vivo na Losers
+2 derrotas → ELIMINADO
+```
+
+Exceção estrutural da Final Geral:
+
+- o campeão da Winners pode sofrer sua primeira derrota na `GRAND_FINAL`;
+- nesse caso ele não é eliminado;
+- o `GRAND_FINAL_RESET` resolve a segunda eliminação de um dos dois finalistas.
+
+Invariante central:
+
+> Nenhuma Registration pode ser eliminada de uma chave de dupla eliminação com apenas uma derrota.
+
+### Evolução de modelo prevista
+
+Conceitos esperados:
+
+```text
+BracketFormat
+├─ SINGLE_ELIMINATION
+└─ DOUBLE_ELIMINATION
+
+BracketSection
+├─ WINNERS
+├─ LOSERS
+├─ GRAND_FINAL
+└─ GRAND_FINAL_RESET
+```
+
+A progressão de uma partida deve suportar destinos distintos:
+
+```text
+winnerNextMatchId
+loserNextMatchId
+```
+
+Na Winners:
+
+```text
+vencedor → próxima partida da Winners
+perdedor → slot correspondente da Losers
+```
+
+Na Losers:
+
+```text
+vencedor → próxima partida da Losers
+perdedor → segunda derrota → eliminado
+```
+
+Slots devem guardar/derivar sua origem competitiva, por exemplo:
+
+```text
+WINNER(matchId)
+LOSER(matchId)
+```
+
+Isso evita reconstrução ambígua da progressão.
+
+### BYE, correção e auditoria
+
+- BYE continua sendo avanço automático e não conta como vitória disputada/derrota;
+- geração deve funcionar com quantidades não-potência de dois;
+- correção de resultado precisa recalcular tanto o caminho do vencedor quanto o destino do perdedor;
+- correção fica bloqueada quando dependências posteriores já tiverem atividade, seguindo a proteção já existente;
+- ferramentas DEV excepcionais devem preservar histórico das duas seções;
+- contagem de derrotas deve ser derivável/auditável, não um número solto sem origem.
+
+### Frontend e exposição pública
+
+Gestão, Portal e Landing devem poder representar:
+
+```text
+Chave Principal
+Chave dos Perdedores
+Final Geral
+Final de Reset — somente quando necessária
+```
+
+A UI deve deixar explícito que:
+
+- vencer a final da Winners não significa ser campeão;
+- participante com uma derrota ainda está vivo;
+- a Final de Reset aparece apenas quando a primeira Final Geral igualar ambos em uma derrota.
+
+### Testes mínimos obrigatórios
+
+Cobrir pelo menos:
+
+- 4, 8, 16 e quantidade não-potência de dois participantes;
+- BYEs nas duas rotas de progressão;
+- primeira derrota Winners → Losers;
+- segunda derrota → eliminação;
+- Winners vence Grand Final sem reset;
+- Losers vence Grand Final → reset obrigatório;
+- cada lado podendo vencer o reset;
+- pódio 1º/2º/3º derivado corretamente;
+- correção antes/depois de dependências;
+- histórico e agenda preservados;
+- nenhuma eliminação com apenas uma derrota.
+
+Esta camada **não bloqueia o deploy atual**. Ela é a primeira grande evolução competitiva já aprovada para a retomada pós-Beta.
 
 ---
 # 4. Etapas concluídas
@@ -626,7 +922,7 @@ A comunicação/avisos não bloqueia o fechamento desta etapa; ela entra formalm
 
 ## ETAPA 8 — Gestor de Mídia / CMS
 
-**Objetivo:** permitir alimentar o conteúdo público sem editar Vue nem realizar commit para cada mudança editorial.
+**Objetivo:** permitir alimentar e controlar a apresentação do conteúdo público sem editar Vue nem realizar commit para cada mudança editorial.
 
 Área editorial para MIDIA/DEV, com conceitos como:
 
@@ -636,11 +932,59 @@ A comunicação/avisos não bloqueia o fechamento desta etapa; ela entra formalm
 - publicação/despublicação;
 - ordem/destaque;
 - créditos e metadados;
-- imagens e mídia reutilizáveis.
+- imagens e mídia reutilizáveis;
+- **modo editorial global da Landing: INSTITUCIONAL | COMPETITIVO**.
+
+### Controle editorial do modo da Landing
+
+O Gestor de Mídia deve permitir que `MIDIA | DEV` alterem a apresentação pública entre:
+
+```text
+MODO INSTITUCIONAL
+→ Landing exibe somente conteúdo institucional/editorial
+→ conteúdo competitivo atual fica oculto da Home
+→ não altera Competition.vigente
+→ não altera status da competição
+→ não fecha/reabre inscrições
+→ não altera chaves, resultados, ranking ou operação
+
+MODO COMPETITIVO
+→ Landing pode exibir a Competition vigente quando ela também estiver ativa e em status público
+→ sem Competition vigente/publicável, a Landing permanece institucional
+```
+
+A configuração é **editorial e independente da semântica competitiva**. Seu objetivo é permitir retirar temporariamente informações competitivas da Landing — por revisão, correção, manutenção ou decisão de comunicação — sem desmontar o contexto operacional usado pela GESTAO.
+
+Requisitos previstos:
+
+- fonte de verdade no backend/MySQL, não em `localStorage` ou variável de build;
+- leitura pública do modo atual pela Landing;
+- alteração permitida somente a `MIDIA | DEV`;
+- mudança sem novo build/deploy;
+- registrar quem alterou e quando; justificativa pode ser incluída no histórico editorial;
+- a UI deve deixar claro que **MODO INSTITUCIONAL não pausa inscrições nem a competição**;
+- o modo `COMPETITIVO` nunca força publicação de competição inexistente, não vigente, inativa ou fora dos status públicos;
+- preservar o comportamento atual de segurança: ausência de vigente publicável sempre resulta em apresentação institucional.
+
+Modelo conceitual esperado:
+
+```text
+LandingPublicationMode
+├─ INSTITUTIONAL
+└─ COMPETITIVE
+
+Competition.vigente
+→ contexto esportivo/operacional
+
+LandingPublicationMode
+→ decisão editorial de exposição pública
+```
+
+Os dois conceitos não devem ser acoplados.
 
 Reutilizar `ObjectStorageService` + Cloudflare R2 quando aplicável. Não criar um terceiro mecanismo de upload.
 
-Esta etapa é parte do MVP porque hoje a permissão MIDIA existe, mas o site ainda não possui fluxo real de alimentação editorial.
+Esta etapa é parte do MVP porque hoje a permissão MIDIA existe, mas o site ainda não possui fluxo real de alimentação e controle editorial.
 
 ## ETAPA 9 — Landing + Galeria + conteúdo público real — ⚠️ SERÁ CONSOLIDADA/REPLANEJADA
 
@@ -2474,3 +2818,42 @@ Landing Checks #21
 Durante o fechamento, o primeiro run do backend revelou testes antigos desalinhados com regras já consolidadas. Os testes foram corrigidos para refletir os contratos atuais — sem relaxar as regras de negócio — e a suíte completa voltou a ficar verde.
 
 Com validação manual + CI final verde, a V1-BETA A está autorizada para merge em `main`.
+
+
+### Regra de publicação competitiva — 06/10/2026
+
+- ausência de competição vigente é estado válido;
+- GESTAO deve continuar navegável sem edição vigente;
+- foco DEV é local e não publica uma edição;
+- Landing e novas inscrições só enxergam a competição explicitamente vigente quando ela estiver em status público;
+- remover a vigente devolve o site ao modo institucional sem apagar a edição/histórico.
+
+
+---
+
+## V1-BETA B — Infraestrutura Render Free e domínio (checkpoint 11/10/2026)
+
+Arquitetura definida para homologação e avaliação de produção, preservando backend Java 21/Spring Boot e MySQL remoto:
+- `https://rasufrb.site`: landing pública / institucional, frontend Cloudflare.
+- `https://app.rasufrb.site`: aplicação de gestão e portal do participante, frontend Cloudflare.
+- `https://api.rasufrb.site`: endereço planejado da API Spring Boot hospedada inicialmente no Render Free; DNS/custom domain ainda deve ser configurado e testado.
+- `https://homolog.rasufrb.site` e `https://app-homolog.rasufrb.site`: endereços reservados para homologação, não presumir que já estejam ativos.
+
+Render Web Service `rascomp-api`: GitHub `gbsalermo/Rascomp`, branch `v1-beta-b-identidade-cloud`, Docker, region Virginia US East (a validar frente à região do Aiven), root `rascomp/`, Docker build context `.`, Dockerfile `./Dockerfile`, instância Free (512 MB RAM, 0.1 CPU), healthcheck `/actuator/health`, auto-deploy **Off** recomendado. Na conclusão da Beta B, integrar branch à `main` após testes e atualizar branch do serviço com deploy controlado.
+
+Variáveis cadastradas pelo operador no painel Render (valores secretos **não** versionados): `SPRING_PROFILES_ACTIVE=cloud`, `DB_URL` no formato JDBC MySQL TLS `sslMode=VERIFY_IDENTITY`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `CORS_ALLOWED_ORIGINS=https://app.rasufrb.site,https://rasufrb.site`, `IDENTITY_FRONTEND_BASE_URL=https://app.rasufrb.site`, `EMAIL_PROVIDER=log` (apenas homologação), `JAVA_OPTS`, `TRUSTSTORE_BASE64`, `TRUSTSTORE_PASSWORD`. Valores de CORS/identidade pressupõem que os domínios correspondentes realmente sirvam os frontends; confirmar DNS/rotas antes de uso público. Testar também origem adicional explicitamente utilizada, se houver.
+
+A truststore PKCS12 foi validada no Docker local por bind mount; a branch possui `rascomp/docker-entrypoint.sh` e Dockerfile adaptado para restaurá-la no runtime a partir de `TRUSTSTORE_BASE64` e usar sua senha. Base64 é apenas codificação, não proteção criptográfica; valores só em segredos de ambiente, nunca no repositório/logs. O novo mecanismo ainda aguarda validação no Render. Revisar segurança de exposição das variáveis do container antes de produção.
+
+**Estado registrado**: usuário confirmou cadastro das variáveis e truststore no Render; deploy público, healthcheck remoto, DNS `api.rasufrb.site`, segurança/consumo e smoke test **ainda não validados**. Não confundir cadastro de variáveis com implantação funcional.
+
+Operação planejada: avaliar healthchecks externos a cada ~10 min entre 06h e 00h (America/Sao_Paulo) e permitir suspensão do Render Free entre 00h e 06h; acessos externos noturnos ainda podem acordar a instância. Verificar política/limites do provedor, disponibilidade e custos. Contingência com notebook Docker + Cloudflare Tunnel e o mesmo MySQL Aiven, ativação controlada de apenas uma versão principal, Flyway e dados compatíveis. Testes de inicialização em 512 MB e carga de 100/200/300/500 usuários são obrigatórios antes de considerar Render Free apto para competição real. Backups externos com teste de restauração, R2, e-mail real e validações de segurança são bloqueadores antes de inscrições reais.
+
+
+### V1-BETA B — Integração frontend ↔ API Render (11/10/2026)
+
+- API oficial confirmada acessível por HTTPS em `https://api.rasufrb.site/actuator/health` (`UP`); Render Free, Aiven TLS e Worker `rascomp-automation` em homologação.
+- Branch `v1-beta-b-identidade-cloud`: criados `landing-page/.env.cloud` (`VITE_API_URL=https://api.rasufrb.site`, `VITE_GESTAO_URL=https://app.rasufrb.site`, modo institucional) e `gestao/.env.cloud` (`VITE_API_URL=https://api.rasufrb.site`, `VITE_PUBLIC_APP_URL=https://rasufrb.site`). URL da galeria separada permanece pendente; não presumir endereço já ativo.
+- Builds de cloud usam `npm run build:cloud` (Vite `--mode cloud`), seguidos de `npx wrangler deploy` em cada frontend; os arquivos são configuração pública, nunca armazenar segredos em `VITE_*`.
+- Configuração do backend Render: `CORS_ALLOWED_ORIGINS=https://app.rasufrb.site,https://rasufrb.site` e `IDENTITY_FRONTEND_BASE_URL=https://app.rasufrb.site`; confirmar domínio real e CORS por teste de navegador.
+- **Ainda pendente:** publicar builds novos dos Workers `rascomp-landing` e `rascomp-app`, conferir DNS/rotas e testar Landing → API pública, login/identidade, e inscrições. Adicionar R2 e provedor real de e-mail antes de abrir inscrições reais. Render não foi validado em carga de competição.

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../store'
@@ -7,7 +7,6 @@ import { useAuthStore } from '../store'
 const auth = useAuthStore()
 const router = useRouter()
 const currentYear = new Date().getFullYear()
-const remember = ref(true)
 const form = reactive({
   nome: '',
   email: '',
@@ -33,17 +32,18 @@ async function submit() {
   }
 
   try {
-    await auth.register(
-      {
-        nome: form.nome.trim(),
-        email: form.email.trim().toLowerCase(),
-        telefone: form.telefone.trim() || undefined,
-        senha: form.senha
-      },
-      remember.value
-    )
-    ElMessage.success('Conta criada com sucesso.')
-    router.replace('/')
+    const response = await auth.register({
+      nome: form.nome.trim(),
+      email: form.email.trim().toLowerCase(),
+      telefone: form.telefone.trim() || undefined,
+      senha: form.senha
+    })
+
+    ElMessage.success(response.message)
+    router.replace({
+      name: 'verify-email',
+      query: { email: response.email, created: '1' }
+    })
   } catch (error: any) {
     ElMessage.error(
       error?.response?.data?.message ||
@@ -77,8 +77,9 @@ async function submit() {
         <div class="auth-flow-note">
           <strong>Como funciona</strong>
           <span>1. Crie sua conta</span>
-          <span>2. Crie ou entre em uma equipe</span>
-          <span>3. Faça a inscrição da equipe</span>
+          <span>2. Confirme seu e-mail</span>
+          <span>3. Acesse o Portal do Participante</span>
+          <span>4. Configure equipe, robô e inscrição</span>
         </div>
       </section>
 
@@ -86,7 +87,7 @@ async function submit() {
         <form class="login-card auth-register-card" @submit.prevent="submit">
           <header class="login-form-heading">
             <h1>Criar conta</h1>
-            <p>Seu usuário é independente da equipe e da inscrição.</p>
+            <p>O acesso só é liberado depois da confirmação do e-mail.</p>
           </header>
 
           <div class="login-field">
@@ -130,12 +131,12 @@ async function submit() {
             </div>
           </div>
 
-          <el-checkbox v-model="remember" class="auth-remember-register">
-            Manter minha sessão conectada neste dispositivo
-          </el-checkbox>
+          <p class="auth-security-copy">
+            Usaremos o e-mail para confirmar a conta e recuperar seu acesso quando necessário.
+          </p>
 
           <el-button class="login-submit" size="large" native-type="submit" :loading="auth.loading">
-            Criar conta
+            Criar conta e enviar confirmação
           </el-button>
 
           <div class="auth-secondary-action">

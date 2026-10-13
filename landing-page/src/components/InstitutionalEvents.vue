@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import {
   LANDING_EVENTS,
   RECENT_LANDING_EVENTS,
-  type LandingEvent
+  type LandingEvent,
+  eventPeriod
 } from '../content/events'
 
 const props = defineProps<{
   managementUrl: string
   registrationOpen: boolean
+  competitionModeEnabled: boolean
 }>()
 
 const emit = defineEmits<{
@@ -35,6 +37,34 @@ const filters: EventFilter[] = [
 const activeFilter = ref<EventFilter>('Todos os eventos')
 const expandedEventId = ref<string>(LANDING_EVENTS[0]?.id || '')
 const fullAgenda = ref(false)
+const today = ref(todayInBahia())
+let dateRefresh: number | undefined
+
+function todayInBahia(): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Bahia', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date())
+  const get = (type: string) => parts.find((part) => part.type === type)?.value || ''
+  return `${get('year')}-${get('month')}-${get('day')}`
+}
+
+function period(event: LandingEvent) {
+  return eventPeriod(event, today.value)
+}
+
+function periodLabel(event: LandingEvent) {
+  if (period(event) === 'ongoing') return 'Acontecendo agora'
+  if (period(event) === 'past') return 'Encerrado'
+  return event.temporalLabel === 'Inscrições abertas' ? event.temporalLabel : 'Próximo'
+}
+
+onMounted(() => {
+  dateRefresh = window.setInterval(() => { today.value = todayInBahia() }, 60_000)
+})
+
+onBeforeUnmount(() => {
+  if (dateRefresh) window.clearInterval(dateRefresh)
+})
 
 const visibleEvents = computed(() => {
   if (activeFilter.value === 'Todos os eventos') return LANDING_EVENTS
@@ -47,10 +77,21 @@ const visibleEvents = computed(() => {
 })
 
 const agendaEvents = computed(() =>
-  fullAgenda.value ? visibleEvents.value : visibleEvents.value.slice(0, 4)
+  fullAgenda.value ? visibleEvents.value : visibleEvents.value.filter((event) => period(event) !== 'past').slice(0, 4)
 )
 
-const highlightedEvents = computed(() => visibleEvents.value.slice(0, 4))
+const highlightedEvents = computed(() => visibleEvents.value.filter((event) => period(event) !== 'past').slice(0, 4))
+
+const recentEvents = computed(() => [
+  ...LANDING_EVENTS.filter((event) => period(event) === 'past')
+    .map((event) => ({
+      id: event.id, title: event.title, dateLabel: event.dateLabel,
+      summary: event.summary, image: event.image, tone: event.tone,
+      category: event.type === 'Competições' ? 'Competição' as const :
+        event.type === 'Oficinas' ? 'Oficina' as const : 'Evento' as const
+    })),
+  ...RECENT_LANDING_EVENTS
+])
 
 watch(visibleEvents, (events) => {
   if (!events.some((event) => event.id === expandedEventId.value)) {
@@ -64,14 +105,17 @@ function toggleEvent(event: LandingEvent) {
 }
 
 function isRegistrationAction(event: LandingEvent) {
-  return event.cta === 'Inscrever-se' || event.temporalLabel === 'Inscrições abertas'
+  return event.organizedByRas && (event.cta === 'Inscrever-se' || event.temporalLabel === 'Inscrições abertas')
 }
 
 function eventActionHref(event: LandingEvent) {
-  if (event.href) return event.href
-  if (isRegistrationAction(event) && props.registrationOpen && props.managementUrl) {
-    return props.managementUrl
+  if (isRegistrationAction(event)) {
+    if (!props.competitionModeEnabled) return ''
+    if (props.registrationOpen && props.managementUrl) return props.managementUrl
+    return ''
   }
+
+  if (event.href) return event.href
   return ''
 }
 
@@ -162,7 +206,7 @@ function eventActionHref(event: LandingEvent) {
               </span>
 
               <span class="events-temporal-badge" :class="`tone-${event.tone}`">
-                {{ event.temporalLabel }}
+                {{ periodLabel(event) }}
               </span>
             </button>
           </div>
@@ -220,7 +264,7 @@ function eventActionHref(event: LandingEvent) {
 
                 <span class="event-accordion-badges">
                   <span class="event-type-badge" :class="`tone-${event.tone}`">{{ event.type }}</span>
-                  <span class="event-time-badge">{{ event.temporalLabel }}</span>
+                  <span class="event-time-badge">{{ periodLabel(event) }}</span>
                 </span>
 
                 <span class="event-accordion-chevron" aria-hidden="true">
@@ -286,7 +330,7 @@ function eventActionHref(event: LandingEvent) {
                   </div>
 
                   <div
-                    v-if="event.cta && (eventActionHref(event) || isRegistrationAction(event))"
+                    v-if="event.cta && (eventActionHref(event) || (competitionModeEnabled && isRegistrationAction(event)))"
                     class="event-detail-actions"
                   >
                     <a
@@ -298,7 +342,7 @@ function eventActionHref(event: LandingEvent) {
                     </a>
 
                     <button
-                      v-else-if="isRegistrationAction(event)"
+                      v-else-if="competitionModeEnabled && isRegistrationAction(event)"
                       type="button"
                       class="event-primary-action"
                       @click="emit('registrationUnavailable')"
@@ -318,7 +362,7 @@ function eventActionHref(event: LandingEvent) {
         </section>
       </div>
 
-      <section class="events-surface events-recent-panel">
+      <section v-if="recentEvents.length" class="events-surface events-recent-panel">
         <header class="events-recent-heading">
           <div>
             <span class="events-panel-icon" aria-hidden="true">
@@ -344,7 +388,7 @@ function eventActionHref(event: LandingEvent) {
 
         <div class="events-recent-grid">
           <article
-            v-for="event in RECENT_LANDING_EVENTS"
+            v-for="event in recentEvents"
             :key="event.id"
             class="event-recent-card"
           >

@@ -336,6 +336,29 @@ async function defineCurrentEdition(row: Competition) {
   }
 }
 
+async function clearCurrentEdition(row: Competition) {
+  try {
+    await ElMessageBox.confirm(
+      `Retirar "${row.nome}" como competição vigente? A GESTÃO continuará acessando o sistema, mas ficará sem contexto competitivo, e a Landing não exibirá uma competição atual.`,
+      'Remover competição vigente',
+      {
+        confirmButtonText: 'Remover vigente',
+        cancelButtonText: 'Cancelar',
+        type: 'warning'
+      }
+    )
+  } catch {
+    return
+  }
+
+  try {
+    await competition.clearCurrent()
+    ElMessage.success('Nenhuma competição está vigente. O foco local do DEV foi preservado.')
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível remover a competição vigente.')
+  }
+}
+
 async function save() {
   if (!form.nome || !form.inicioInscricoes || !form.fimInscricoes || !form.dataInicio || !form.dataFim) {
     ElMessage.warning('Preencha os campos obrigatórios.')
@@ -578,10 +601,16 @@ onMounted(load)
     </template>
 
     <article v-else class="empty-state-card competition-hub-no-edition">
-      <span class="eyebrow">Primeira edição</span>
-      <h2>Nenhuma competição cadastrada</h2>
-      <p class="muted">Crie a primeira edição do RRC para iniciar inscrições e operação competitiva.</p>
-      <el-button class="brand-button" @click="openCreate">Criar competição</el-button>
+      <span class="eyebrow">{{ auth.isDev ? 'Primeira edição' : 'Sem contexto operacional' }}</span>
+      <h2>{{ auth.isDev ? 'Nenhuma competição cadastrada' : 'Nenhuma competição vigente' }}</h2>
+      <p class="muted">
+        {{
+          auth.isDev
+            ? 'Crie a primeira edição do RRC para iniciar inscrições e operação competitiva.'
+            : 'Você pode navegar pelo painel normalmente. As áreas competitivas permanecerão sem dados até um DEV definir uma edição como vigente.'
+        }}
+      </p>
+      <el-button v-if="auth.isDev" class="brand-button" @click="openCreate">Criar competição</el-button>
     </article>
 
     <el-dialog
@@ -609,13 +638,16 @@ onMounted(load)
         <el-table-column label="Status" width="165">
           <template #default="{ row }"><StatusBadge :value="row.status || 'PLANEJADA'" /></template>
         </el-table-column>
-        <el-table-column label="Ações" width="330" align="right">
+        <el-table-column label="Ações" width="420" align="right">
           <template #default="{ row }">
             <el-button v-if="row.id !== competition.selectedId" class="edition-action-button" size="small" @click="focusEdition(row)">Usar como foco</el-button>
             <span v-else class="competition-current-label">Em foco</span>
 
             <el-button v-if="!row.vigente" class="edition-action-button" size="small" @click="defineCurrentEdition(row)">Definir vigente</el-button>
-            <span v-else class="competition-current-label">Vigente</span>
+            <template v-else>
+              <span class="competition-current-label">Vigente</span>
+              <el-button class="edition-action-button" size="small" type="warning" plain @click="clearCurrentEdition(row)">Retirar vigente</el-button>
+            </template>
 
             <el-button class="edition-action-button" size="small" @click="openEdit(row)">Editar</el-button>
           </template>

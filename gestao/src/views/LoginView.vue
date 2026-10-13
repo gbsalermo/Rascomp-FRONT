@@ -151,8 +151,13 @@ async function submit() {
           </router-link>
 
           <p class="auth-first-access-copy">
-            O cadastro cria somente sua conta. Equipe, membros, robô e inscrição são configurados depois no portal do participante.
+            O cadastro cria somente sua conta. Confirme o e-mail antes do primeiro acesso; equipe, membros, robô e inscrição são configurados depois no portal.
           </p>
+
+          <div class="auth-secondary-action">
+            <span>Não recebeu a confirmação?</span>
+            <router-link to="/verificar-email">Reenviar link</router-link>
+          </div>
 
           <p class="login-copyright">
             © {{ currentYear }} RAS UFRB - Todos os direitos reservados

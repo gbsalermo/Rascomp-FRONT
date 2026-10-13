@@ -142,7 +142,7 @@ const slides = computed<HeroSlide[]>(() => {
       description:
         props.competition.descricao ||
         'Acompanhe a competição vigente da IEEE RAS UFRB, conheça as categorias e veja as atualizações oficiais desta edição.',
-      cta: 'Inscrever-se',
+      cta: props.competition.status === 'INSCRICOES_ABERTAS' ? 'Inscrever-se' : 'Área do participante',
       href: props.managementUrl,
       secondary: 'Acompanhar evento',
       secondaryHref: '#competicao-atual',
@@ -273,7 +273,7 @@ onBeforeUnmount(stopTimer)
               <a
                 v-if="
                   activeSlide.kind !== 'competition' ||
-                  (competition?.status === 'INSCRICOES_ABERTAS' && activeSlide.href)
+                  (activeSlide.href && ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(competition?.status))
                 "
                 class="highlight-primary"
                 :href="activeSlide.href"

@@ -410,13 +410,13 @@ onMounted(initialize)
         <h1>Seguidor de Linha</h1>
         <p class="muted">Registre tomadas, acompanhe suas tentativas e consulte a classificação oficial calculada pelo backend.</p>
       </div>
-      <el-button class="brand-button" @click="openTakeDialog">Registrar tomada</el-button>
+      <el-button class="brand-button" :disabled="!competitionId" @click="openTakeDialog">Registrar tomada</el-button>
     </div>
 
     <article class="follow-context-card">
       <div>
         <span class="eyebrow">{{ competitionContextLabel }}</span>
-        <strong>{{ contextCompetition?.nome || 'Nenhuma competição selecionada' }}</strong>
+        <strong>{{ contextCompetition?.nome || (auth.isDev ? 'Nenhuma competição selecionada' : 'Nenhuma competição vigente') }}</strong>
         <small>{{ auth.isDev ? 'O foco é local ao DEV e não altera a competição vigente da GESTAO.' : 'A operação acompanha a competição vigente definida pelo DEV.' }}</small>
       </div>
       <StatusBadge v-if="contextCompetition?.status" :value="contextCompetition.status" />

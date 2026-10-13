@@ -1,3 +1,5 @@
+> **Estado oficial — 13/10/2026 | V1-BETA B Cloud implantada:** landing pública [rasufrb.site](https://rasufrb.site), Gestão/Portal [app.rasufrb.site](https://app.rasufrb.site) (Workers Static Assets `rascomp-landing`/`rascomp-app`), API Spring Boot Java 21 no **Render** via [api.rasufrb.site](https://api.rasufrb.site), MySQL **Aiven**, arquivos privados **Cloudflare R2** (`rascomp-storage`), e-mail transacional **Resend** (`mail.rasufrb.site`). Cadastro/verificação e recuperação de senha foram testados ponta a ponta. Galeria/Gestor de Mídia e Futebol de Robôs são próximos desenvolvimentos, **não funcionalidades já finalizadas**. Antes de inscrições reais: backup externo/restauração ensaiada, testes de carga/contingência, autorização de comprovantes e integridade/reconciliação de storage. Ambiente local continua suportado. **Deploy desejado:** branch `main` para produção; validar a troca de branch nos painéis Render/Cloudflare após o merge, pois merge sozinho não altera suas configurações. Trechos históricos abaixo preservam decisões anteriores, não a arquitetura vigente.
+
 # RasComp — Deploy em Nuvem com Cloudflare
 > **Atualização de estratégia — 03/10/2026:** a arquitetura técnica deste documento continua como referência do primeiro deploy, mas a premissa de calendário "somente ETAPA 16" foi superada. O primeiro go-live agora ocorre no **TRILHO V1 BETA**, após Landing + preparação cloud/banco + validação. A futura ETAPA 16 passa a representar consolidação/hardening da produção definitiva.
 
@@ -17,7 +19,7 @@ CLOUD
 → Cloudflare para DNS, frontend, backend containerizado e mídia
 ```
 
-A **V1-BETA A foi concluída/validada em 05/10/2026**. Este guia passa a apoiar a discussão da V1-BETA B; a B ainda não foi iniciada. A ETAPA 16 continua reservada à consolidação/hardening final.
+A **V1-BETA A foi concluída/validada em 05/10/2026**. A **V1-BETA B está em andamento**: Bloco 1 de identidade foi validado em 06/10/2026 e o Bloco 2 prepara homologação remota por Tunnel. A ETAPA 16 continua reservada à consolidação/hardening final.
 
 ---
 
@@ -1224,3 +1226,31 @@ Antes de executar as fases de infraestrutura deste documento, discutir e aprovar
 - Cloudflare Tunnel como contingência/publicação de servidor local quando necessário.
 
 A meta de acesso remoto imediato não autoriza abrir dados/inscrições reais sem os demais gates.
+
+
+---
+
+# Checkpoint V1-BETA B — Bloco 2 / homologação remota — 06/10/2026
+
+Antes do staging cloud definitivo, o RasComp terá uma homologação externa dependente da máquina local.
+
+Fluxo:
+
+```text
+Cloudflare Tunnel
+→ aplicação Gestão/Participante em 127.0.0.1:4173
+→ /api por proxy para Spring Boot 127.0.0.1:8080
+→ MySQL local
+```
+
+Primeiro gate: Quick Tunnel protegido por e-mail para validar o caminho ponta a ponta.
+
+Segundo gate: hostname estável + Cloudflare Access.
+
+Fonte operacional detalhada:
+
+```text
+docs/V1_BETA_B_HOMOLOGACAO_REMOTA.md
+```
+
+Nenhuma porta do MySQL deve ser publicada, e a API não precisa de hostname externo separado enquanto a homologação usar o proxy same-origin do frontend.

@@ -13,4 +13,5 @@ import './events.css'
 import './active-competition.css'
 import './footer.css'
 import './not-found.css'
+import './wide-viewport.css'
 createApp(App).mount('#app')

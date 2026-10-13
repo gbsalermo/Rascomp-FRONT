@@ -383,10 +383,18 @@ watch(
     </section>
 
     <article v-else class="empty-state-card">
-      <span class="eyebrow">Competição em foco</span>
-      <h2>Nenhuma competição cadastrada</h2>
-      <p class="muted">Cadastre a primeira edição para começar a operação do RRC.</p>
-      <router-link to="/competicoes" class="link-button">Abrir competição</router-link>
+      <span class="eyebrow">{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
+      <h2>{{ auth.isDev ? 'Nenhuma competição cadastrada' : 'Nenhuma competição vigente' }}</h2>
+      <p class="muted">
+        {{
+          auth.isDev
+            ? 'Cadastre a primeira edição para começar a operação do RRC.'
+            : 'O painel continua disponível sem edição operacional. Um DEV pode definir uma competição vigente quando a próxima edição estiver pronta.'
+        }}
+      </p>
+      <router-link to="/competicoes" class="link-button">
+        {{ auth.isDev ? 'Abrir competição' : 'Ver contexto da competição' }}
+      </router-link>
     </article>
   </div>
 </template>

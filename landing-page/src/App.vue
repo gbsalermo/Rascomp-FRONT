@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { api } from './api'
 import InstitutionalHeader from './components/InstitutionalHeader.vue'
 import HighlightsHero from './components/HighlightsHero.vue'
@@ -32,16 +32,94 @@ const followCategoryId = ref<number>()
 const bracketId = ref<number>()
 let timer: number | undefined
 const managementUrl = String(import.meta.env.VITE_GESTAO_URL || (import.meta.env.DEV ? 'http://localhost:5173' : '')).trim()
+
+type LandingMode = 'institutional' | 'auto' | 'competitive'
+const requestedLandingMode = String(import.meta.env.VITE_LANDING_MODE || 'institutional').trim().toLowerCase()
+const landingMode: LandingMode =
+  requestedLandingMode === 'auto' || requestedLandingMode === 'competitive'
+    ? requestedLandingMode
+    : 'institutional'
+const competitionModeEnabled = landingMode !== 'institutional'
+
 const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
 const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html'
 
 const currentCompetition = computed(() => competitions.value.find((item) => item.id === competitionId.value))
 const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
 const registrationOpen = computed(() =>
-  competitions.value.some((item) => item.status === 'INSCRICOES_ABERTAS')
+  currentCompetition.value?.status === 'INSCRICOES_ABERTAS'
+)
+const displayedCompetition = computed(() =>
+  competitionModeEnabled ? currentCompetition.value : undefined
+)
+const displayedRegistrationOpen = computed(() =>
+  competitionModeEnabled && registrationOpen.value
 )
 const registrationNoticeVisible = ref(false)
+const backToTopVisible = ref(false)
 let registrationNoticeTimer: number | undefined
+let sectionRevealObserver: IntersectionObserver | undefined
+let backToTopFrame = 0
+
+function updateBackToTopVisibility() {
+  const hero = document.querySelector<HTMLElement>('.highlights-stage')
+  if (!hero) {
+    backToTopVisible.value = false
+    return
+  }
+
+  // O botão global nunca deve disputar espaço com as setas do Hero.
+  // Só aparece depois que o Hero saiu completamente da viewport.
+  const heroBottom = hero.getBoundingClientRect().bottom
+  backToTopVisible.value = heroBottom <= 0 && window.scrollY > 0
+}
+
+function scheduleBackToTopUpdate() {
+  if (backToTopFrame) return
+  backToTopFrame = window.requestAnimationFrame(() => {
+    backToTopFrame = 0
+    updateBackToTopVisibility()
+  })
+}
+
+function setupSectionReveal() {
+  sectionRevealObserver?.disconnect()
+
+  const sections = Array.from(
+    document.querySelectorAll<HTMLElement>('#top > *')
+  ).slice(1)
+
+  if (!sections.length) return
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  sections.forEach((section) => {
+    section.classList.add('scroll-reveal-section')
+  })
+
+  if (reducedMotion) {
+    sections.forEach((section) => section.classList.add('is-visible'))
+    return
+  }
+
+  sectionRevealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+
+        const section = entry.target as HTMLElement
+        section.classList.add('is-visible')
+        sectionRevealObserver?.unobserve(section)
+      })
+    },
+    {
+      threshold: 0.04,
+      rootMargin: '0px 0px 6% 0px'
+    }
+  )
+
+  sections.forEach((section) => sectionRevealObserver?.observe(section))
+}
 
 function showRegistrationUnavailable() {
   registrationNoticeVisible.value = true
@@ -79,14 +157,9 @@ async function bootstrap() {
     teams.value = teamList
     categories.value = categoryList
 
-    const focus =
-      competitionList.find(
-        (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
-      ) ||
-      competitionList.find((item: any) => item.status === 'EM_ANDAMENTO') ||
-      competitionList.find((item: any) => item.status === 'INSCRICOES_ABERTAS') ||
-      competitionList.find((item: any) => item.status === 'INSCRICOES_ENCERRADAS') ||
-      competitionList[0]
+    const focus = competitionList.find(
+      (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
+    )
 
     competitionId.value = focus?.id
     await refreshCompetition()
@@ -95,6 +168,18 @@ async function bootstrap() {
   } finally {
     loading.value = false
   }
+}
+
+async function syncPublishedCompetition() {
+  const competitionList = await api.competitions()
+  competitions.value = competitionList
+
+  const published = competitionList.find(
+    (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
+  )
+
+  competitionId.value = published?.id
+  await refreshCompetition()
 }
 
 async function refreshCompetition() {
@@ -183,19 +268,31 @@ async function updateBracket(value: number) {
 }
 
 onMounted(async () => {
+  updateBackToTopVisibility()
+  window.addEventListener('scroll', scheduleBackToTopUpdate, { passive: true })
+
   if (isNotFound) return
+
+  await nextTick()
+  setupSectionReveal()
+
+  if (!competitionModeEnabled) {
+    loading.value = false
+    return
+  }
 
   await bootstrap()
   const refreshMs = Number(import.meta.env.VITE_REFRESH_MS || 20000)
 
   timer = window.setInterval(() => {
-    if (publicCompetitionStatuses.includes(currentCompetition.value?.status)) {
-      refreshCompetition().catch(() => undefined)
-    }
+    syncPublishedCompetition().catch(() => undefined)
   }, refreshMs)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('scroll', scheduleBackToTopUpdate)
+  if (backToTopFrame) window.cancelAnimationFrame(backToTopFrame)
+  sectionRevealObserver?.disconnect()
   if (timer) clearInterval(timer)
   if (registrationNoticeTimer) window.clearTimeout(registrationNoticeTimer)
 })
@@ -206,15 +303,16 @@ onBeforeUnmount(() => {
 
   <div v-else class="public-app">
     <InstitutionalHeader
-      :competition="currentCompetition"
+      :competition="displayedCompetition"
       :management-url="managementUrl"
-      :registration-open="registrationOpen"
+      :registration-open="displayedRegistrationOpen"
+      :competition-mode-enabled="competitionModeEnabled"
       @registration-unavailable="showRegistrationUnavailable"
     />
 
     <main id="top">
       <HighlightsHero
-        :competition="currentCompetition"
+        :competition="displayedCompetition"
         :categories="categories"
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
@@ -226,12 +324,14 @@ onBeforeUnmount(() => {
       <InstitutionalGallery />
       <InstitutionalEvents
         :management-url="managementUrl"
-        :registration-open="registrationOpen"
+        :registration-open="displayedRegistrationOpen"
+        :competition-mode-enabled="competitionModeEnabled"
         @registration-unavailable="showRegistrationUnavailable"
       />
 
       <ActiveCompetition
-        :competition="currentCompetition"
+        v-if="competitionModeEnabled"
+        :competition="displayedCompetition"
         :teams="teams"
         :categories="categories"
         :registrations="registrations"
@@ -252,7 +352,7 @@ onBeforeUnmount(() => {
         @update:bracket-id="updateBracket"
       />
 
-      <section v-if="error" class="public-section">
+      <section v-if="competitionModeEnabled && error" class="public-section">
         <div class="public-alert">
           <strong>Interface institucional disponível.</strong>
           <p>{{ error }}</p>
@@ -285,6 +385,11 @@ onBeforeUnmount(() => {
       </aside>
     </Transition>
 
-    <a class="global-back-to-top" href="#top" aria-label="Voltar ao topo">↑</a>
+    <a
+      v-show="backToTopVisible"
+      class="global-back-to-top"
+      href="#top"
+      aria-label="Voltar ao topo"
+    >↑</a>
   </div>
 </template>

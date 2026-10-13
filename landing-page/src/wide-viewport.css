@@ -1,0 +1,805 @@
+/* ==========================================================================
+   Landing pública — escalas desktop amplas
+   Alvos validados:
+   - QHD:             2560 x 1440
+   - 4K UHD:          3840 x 2160
+   - Ultrawide 21:9:  2560 x 1080
+   - Super Ultrawide: 3440 x 1440
+
+   A regra principal é escalar a largura útil e a densidade dos componentes,
+   sem voltar a forçar cada section a ocupar 100vh.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Base wide: QHD, Ultrawide e superiores
+   -------------------------------------------------------------------------- */
+@media (min-width: 2200px) {
+  .hero-quick-links,
+  .institutional-about-container,
+  .team-robots-awards-container,
+  .robots-showcase-container,
+  .institutional-gallery-container,
+  .institutional-events-container,
+  .active-competition-container {
+    width: min(92vw, 3200px);
+  }
+
+  .institutional-about-section,
+  .team-robots-awards-section,
+  .robots-showcase-section,
+  .institutional-gallery-section,
+  .institutional-events-section,
+  .active-competition-section {
+    padding-left: clamp(64px, 4vw, 120px);
+    padding-right: clamp(64px, 4vw, 120px);
+  }
+
+  /* Intro */
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: clamp(620px, 50vh, 760px);
+  }
+
+  .highlights-copy {
+    left: clamp(66px, 4.5vw, 120px);
+    width: min(820px, 36vw);
+  }
+
+  .highlights-copy.is-competition {
+    width: min(900px, 39vw);
+  }
+
+  .highlights-copy h1 {
+    max-width: 820px;
+    font-size: clamp(3.75rem, 3vw, 4.8rem);
+  }
+
+  .highlights-copy.is-competition h1 {
+    max-width: 900px;
+    font-size: clamp(4rem, 3.15vw, 5rem);
+  }
+
+  .highlights-copy p,
+  .highlights-copy.is-competition p {
+    max-width: 760px;
+    font-size: clamp(1rem, .78vw, 1.16rem);
+  }
+
+  .hero-navigation {
+    left: clamp(66px, 4.5vw, 120px);
+  }
+
+  .hero-quick-card {
+    min-height: clamp(100px, 4.5vw, 118px);
+    padding: clamp(14px, .8vw, 20px) clamp(18px, 1vw, 26px);
+  }
+
+  .hero-quick-icon {
+    width: clamp(46px, 2vw, 54px);
+    height: clamp(46px, 2vw, 54px);
+    flex-basis: clamp(46px, 2vw, 54px);
+  }
+
+  .hero-quick-icon svg {
+    width: clamp(24px, 1.1vw, 29px);
+    height: clamp(24px, 1.1vw, 29px);
+  }
+
+  .hero-quick-copy strong {
+    font-size: clamp(1rem, .72vw, 1.14rem);
+  }
+
+  .hero-quick-copy small {
+    font-size: clamp(.78rem, .56vw, .9rem);
+  }
+
+  /* Cabeçalhos das sections */
+  .institutional-about-heading,
+  .team-robots-awards-heading,
+  .robots-showcase-heading,
+  .institutional-events-heading {
+    max-width: 1180px;
+  }
+
+  .institutional-about-heading h2,
+  .team-robots-awards-heading h2,
+  .robots-showcase-heading h2 {
+    max-width: 1120px;
+    font-size: clamp(2.65rem, 1.7vw, 3.35rem);
+  }
+
+  .institutional-about-heading p,
+  .team-robots-awards-heading p,
+  .robots-showcase-heading p,
+  .institutional-events-heading p {
+    max-width: 1040px;
+    font-size: clamp(.9rem, .62vw, 1.05rem);
+  }
+
+  /* Sobre */
+  .institutional-about-grid-demo {
+    gap: clamp(24px, 1.35vw, 38px);
+  }
+
+  .about-photo-main {
+    min-height: clamp(460px, 24vw, 600px);
+  }
+
+  .about-copy-demo {
+    padding: clamp(22px, 1.2vw, 32px);
+  }
+
+  .about-tabs-demo button {
+    min-height: 54px;
+    font-size: clamp(.86rem, .58vw, .98rem);
+  }
+
+  .about-copy-brandline strong {
+    font-size: clamp(2.35rem, 1.55vw, 3rem);
+  }
+
+  .about-copy-intro {
+    font-size: clamp(.92rem, .62vw, 1.06rem);
+  }
+
+  .about-feature-item {
+    grid-template-columns: 44px 1fr;
+    gap: 13px;
+    padding: clamp(11px, .62vw, 15px) 0;
+  }
+
+  .about-feature-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .about-feature-item strong {
+    font-size: clamp(.92rem, .6vw, 1.04rem);
+  }
+
+  .about-feature-item p {
+    font-size: clamp(.8rem, .54vw, .94rem);
+  }
+
+  /* Equipe e conquistas */
+  .team-board-block,
+  .team-volunteers-block,
+  .team-awards-block {
+    padding: clamp(20px, 1.1vw, 30px);
+  }
+
+  .team-board-grid {
+    gap: clamp(12px, .7vw, 18px);
+  }
+
+  .team-board-card {
+    min-height: clamp(300px, 14vw, 380px);
+  }
+
+  .team-board-copy strong {
+    font-size: clamp(.9rem, .58vw, 1.04rem);
+  }
+
+  .team-board-copy small,
+  .team-section-heading p {
+    font-size: clamp(.68rem, .48vw, .84rem);
+  }
+
+  .team-volunteer-slide {
+    width: clamp(360px, 20vw, 520px);
+  }
+
+  .team-award-row {
+    min-height: clamp(92px, 4.6vw, 112px);
+  }
+
+  /* Robôs */
+  .robots-showcase-hero {
+    min-height: clamp(440px, 22vw, 590px);
+  }
+
+  .robots-showcase-hero-copy {
+    left: clamp(46px, 3vw, 82px);
+    bottom: clamp(42px, 3vw, 72px);
+    width: min(690px, 38%);
+  }
+
+  .robots-showcase-hero-copy h2 {
+    font-size: clamp(3.25rem, 2.45vw, 4.6rem);
+  }
+
+  .robots-showcase-hero-copy p {
+    max-width: 620px;
+    font-size: clamp(.88rem, .58vw, 1rem);
+  }
+
+  .robots-category-tabs,
+  .robots-category-grid {
+    gap: clamp(12px, .7vw, 18px);
+  }
+
+  .robots-category-tab {
+    min-height: clamp(82px, 4vw, 102px);
+    grid-template-columns: 66px 1fr auto;
+    padding: 12px 16px;
+  }
+
+  .robots-category-tab-media {
+    width: 56px;
+    height: 56px;
+  }
+
+  .robots-category-tab-copy strong {
+    font-size: clamp(.94rem, .6vw, 1.08rem);
+  }
+
+  .robots-category-tab-copy small {
+    font-size: clamp(.68rem, .46vw, .82rem);
+  }
+
+  .robots-category-card,
+  .robots-category-card img {
+    min-height: clamp(220px, 11vw, 300px);
+  }
+
+  /* Galeria */
+  .gallery-showcase-grid {
+    grid-template-columns: minmax(420px, .72fr) minmax(0, 1.65fr);
+    gap: clamp(44px, 3vw, 86px);
+    padding: clamp(46px, 3vw, 82px);
+  }
+
+  .gallery-showcase-copy {
+    max-width: 620px;
+  }
+
+  .gallery-showcase-copy h2 {
+    font-size: clamp(3.6rem, 2.8vw, 5.2rem);
+  }
+
+  .gallery-showcase-copy p {
+    max-width: 590px;
+    font-size: clamp(1rem, .65vw, 1.15rem);
+  }
+
+  /* Eventos */
+  .institutional-events-heading {
+    max-width: 1080px;
+  }
+
+  .institutional-events-heading h2 {
+    font-size: clamp(3.2rem, 2.35vw, 4.7rem);
+  }
+
+  .events-filter-row {
+    gap: 12px;
+  }
+
+  .events-filter-row button {
+    min-height: 46px;
+    padding: 0 18px;
+    font-size: clamp(.76rem, .48vw, .88rem);
+  }
+
+  .events-primary-grid {
+    grid-template-columns: minmax(360px, .68fr) minmax(0, 1.82fr);
+    gap: clamp(16px, .8vw, 24px);
+  }
+
+  .events-agenda-panel,
+  .events-featured-panel,
+  .events-recent-panel {
+    padding: clamp(18px, 1vw, 28px);
+  }
+
+  .event-accordion-trigger {
+    grid-template-columns: 150px minmax(0, 1fr) auto 28px;
+    min-height: 102px;
+    gap: 16px;
+    padding: 10px;
+  }
+
+  .event-accordion-trigger > img {
+    width: 150px;
+    height: 84px;
+  }
+
+  .event-accordion-summary strong {
+    font-size: clamp(.96rem, .58vw, 1.08rem);
+  }
+
+  .event-accordion-summary small,
+  .events-agenda-copy strong {
+    font-size: clamp(.7rem, .45vw, .82rem);
+  }
+
+  .event-accordion-content {
+    grid-template-columns: minmax(300px, 34%) minmax(0, 1fr);
+    gap: clamp(20px, 1.2vw, 34px);
+    padding: 16px 18px 20px;
+  }
+
+  .event-accordion-visual {
+    min-height: clamp(240px, 12vw, 330px);
+  }
+
+  .events-recent-grid {
+    gap: clamp(12px, .7vw, 20px);
+  }
+
+  .event-recent-media {
+    height: clamp(160px, 8vw, 220px);
+  }
+
+  /* Competição pública */
+  .active-competition-container {
+    width: min(92vw, 3200px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   QHD / Super Ultrawide com altura >= 1200
+   Dá mais presença às sections sem criar vãos de viewport inteira.
+   -------------------------------------------------------------------------- */
+@media (min-width: 2200px) and (min-height: 1200px) {
+  .institutional-about-section {
+    padding-top: clamp(48px, 4vh, 66px);
+    padding-bottom: clamp(52px, 4.4vh, 74px);
+  }
+
+  .team-robots-awards-section,
+  .robots-showcase-section,
+  .institutional-gallery-section,
+  .institutional-events-section,
+  .active-competition-section {
+    padding-top: clamp(48px, 4vh, 70px);
+    padding-bottom: clamp(58px, 4.8vh, 84px);
+  }
+
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: clamp(680px, 51vh, 790px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   21:9 / Ultrawide.
+   Aproveita mais largura, mas limita crescimento vertical em 2560x1080.
+   -------------------------------------------------------------------------- */
+@media (min-width: 2200px) and (min-aspect-ratio: 21/9) {
+  .hero-quick-links,
+  .institutional-about-container,
+  .team-robots-awards-container,
+  .robots-showcase-container,
+  .institutional-gallery-container,
+  .institutional-events-container,
+  .active-competition-container {
+    width: min(94vw, 3300px);
+  }
+
+  .institutional-about-grid-demo {
+    grid-template-columns: minmax(0, 1.03fr) minmax(0, .97fr);
+  }
+
+  .gallery-showcase-grid {
+    grid-template-columns: minmax(480px, .66fr) minmax(0, 1.72fr);
+  }
+}
+
+@media (min-width: 2200px) and (min-aspect-ratio: 21/9) and (max-height: 1199px) {
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: clamp(540px, 56vh, 620px);
+  }
+
+  .hero-quick-card {
+    min-height: 92px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .institutional-about-section,
+  .team-robots-awards-section,
+  .robots-showcase-section,
+  .institutional-gallery-section,
+  .institutional-events-section,
+  .active-competition-section {
+    padding-top: 34px;
+    padding-bottom: 46px;
+  }
+
+  .about-photo-main {
+    min-height: 430px;
+  }
+
+  .team-board-card {
+    min-height: 285px;
+  }
+
+  .robots-showcase-hero {
+    min-height: 410px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4K UHD real (3840x2160).
+   Escala tipografia e mídia de forma explícita para evitar interface "miúda".
+   -------------------------------------------------------------------------- */
+@media (min-width: 3200px) and (min-height: 1800px) {
+  .hero-quick-links,
+  .institutional-about-container,
+  .team-robots-awards-container,
+  .robots-showcase-container,
+  .institutional-gallery-container,
+  .institutional-events-container,
+  .active-competition-container {
+    width: min(86vw, 3300px);
+  }
+
+  .highlights-stage,
+  .tone-competition.highlights-stage {
+    min-height: clamp(880px, 47vh, 1020px);
+  }
+
+  .highlights-copy {
+    left: clamp(110px, 4vw, 160px);
+    bottom: 118px;
+    width: min(1080px, 34vw);
+  }
+
+  .highlights-copy.is-competition {
+    width: min(1180px, 37vw);
+  }
+
+  .highlights-copy h1 {
+    max-width: 1080px;
+    font-size: clamp(5rem, 2.7vw, 6.3rem);
+  }
+
+  .highlights-copy.is-competition h1 {
+    max-width: 1180px;
+    font-size: clamp(5.2rem, 2.85vw, 6.7rem);
+  }
+
+  .highlights-copy p,
+  .highlights-copy.is-competition p {
+    max-width: 930px;
+    font-size: clamp(1.2rem, .62vw, 1.45rem);
+  }
+
+  .hero-navigation {
+    left: clamp(110px, 4vw, 160px);
+    bottom: 36px;
+  }
+
+  .hero-navigation > button {
+    width: 54px;
+    height: 54px;
+    font-size: 2.45rem;
+  }
+
+  .hero-quick-card {
+    min-height: 132px;
+    padding: 22px 28px;
+    border-radius: 18px;
+  }
+
+  .hero-quick-icon {
+    width: 62px;
+    height: 62px;
+    flex-basis: 62px;
+    border-radius: 14px;
+  }
+
+  .hero-quick-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .hero-quick-copy strong {
+    font-size: 1.28rem;
+  }
+
+  .hero-quick-copy small {
+    font-size: 1rem;
+  }
+
+  .institutional-about-section,
+  .team-robots-awards-section,
+  .robots-showcase-section,
+  .institutional-gallery-section,
+  .institutional-events-section,
+  .active-competition-section {
+    padding-left: clamp(100px, 4.5vw, 180px);
+    padding-right: clamp(100px, 4.5vw, 180px);
+  }
+
+  .institutional-about-section {
+    padding-top: 80px;
+    padding-bottom: 96px;
+  }
+
+  .team-robots-awards-section,
+  .robots-showcase-section,
+  .institutional-gallery-section,
+  .institutional-events-section,
+  .active-competition-section {
+    padding-top: 78px;
+    padding-bottom: 108px;
+  }
+
+  .institutional-about-heading,
+  .team-robots-awards-heading,
+  .robots-showcase-heading,
+  .institutional-events-heading {
+    max-width: 1450px;
+  }
+
+  .institutional-about-heading h2,
+  .team-robots-awards-heading h2,
+  .robots-showcase-heading h2 {
+    max-width: 1400px;
+    font-size: clamp(3.8rem, 1.65vw, 4.8rem);
+  }
+
+  .institutional-about-heading p,
+  .team-robots-awards-heading p,
+  .robots-showcase-heading p,
+  .institutional-events-heading p {
+    max-width: 1280px;
+    font-size: 1.18rem;
+  }
+
+  .about-photo-main {
+    min-height: 720px;
+    border-radius: 24px;
+  }
+
+  .about-copy-demo {
+    padding: 38px 42px;
+  }
+
+  .about-tabs-demo button {
+    min-height: 68px;
+    font-size: 1.08rem;
+  }
+
+  .about-copy-brandline strong {
+    font-size: 3.5rem;
+  }
+
+  .about-copy-intro {
+    font-size: 1.16rem;
+  }
+
+  .about-feature-item {
+    grid-template-columns: 52px 1fr;
+    gap: 16px;
+    padding: 18px 0;
+  }
+
+  .about-feature-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .about-feature-item strong {
+    font-size: 1.12rem;
+  }
+
+  .about-feature-item p {
+    font-size: 1rem;
+  }
+
+  .team-board-block,
+  .team-volunteers-block,
+  .team-awards-block {
+    padding: 32px;
+    border-radius: 26px;
+  }
+
+  .team-board-grid {
+    gap: 18px;
+  }
+
+  .team-board-card {
+    min-height: 430px;
+    border-radius: 18px;
+  }
+
+  .team-volunteer-slide {
+    width: clamp(500px, 18vw, 650px);
+  }
+
+  .team-award-row {
+    min-height: 126px;
+  }
+
+  .robots-showcase-hero {
+    min-height: 700px;
+    border-radius: 28px;
+  }
+
+  .robots-showcase-hero-copy {
+    left: 84px;
+    bottom: 80px;
+    width: min(900px, 38%);
+  }
+
+  .robots-showcase-hero-copy h2 {
+    font-size: 5.2rem;
+  }
+
+  .robots-showcase-hero-copy p {
+    max-width: 780px;
+    font-size: 1.1rem;
+  }
+
+  .robots-category-tab {
+    min-height: 116px;
+    grid-template-columns: 76px 1fr auto;
+    padding: 16px 20px;
+  }
+
+  .robots-category-tab-media {
+    width: 66px;
+    height: 66px;
+  }
+
+  .robots-category-card,
+  .robots-category-card img {
+    min-height: 330px;
+  }
+
+  .gallery-showcase-grid {
+    grid-template-columns: minmax(560px, .7fr) minmax(0, 1.7fr);
+    gap: 92px;
+    padding: 92px;
+    border-radius: 30px;
+  }
+
+  .gallery-showcase-copy {
+    max-width: 760px;
+  }
+
+  .gallery-showcase-copy h2 {
+    font-size: 6rem;
+  }
+
+  .gallery-showcase-copy p {
+    max-width: 720px;
+    font-size: 1.25rem;
+  }
+
+  .institutional-events-heading h2 {
+    font-size: 5.2rem;
+  }
+
+  .events-filter-row button {
+    min-height: 56px;
+    padding: 0 24px;
+    font-size: .96rem;
+  }
+
+  .events-primary-grid {
+    grid-template-columns: minmax(470px, .68fr) minmax(0, 1.82fr);
+    gap: 26px;
+  }
+
+  .events-agenda-panel,
+  .events-featured-panel,
+  .events-recent-panel {
+    padding: 30px;
+  }
+
+  .event-accordion-trigger {
+    grid-template-columns: 190px minmax(0, 1fr) auto 34px;
+    min-height: 128px;
+    gap: 20px;
+    padding: 13px;
+  }
+
+  .event-accordion-trigger > img {
+    width: 190px;
+    height: 104px;
+  }
+
+  .event-accordion-summary strong {
+    font-size: 1.2rem;
+  }
+
+  .event-accordion-summary small {
+    font-size: .9rem;
+  }
+
+  .event-accordion-content {
+    grid-template-columns: minmax(380px, 34%) minmax(0, 1fr);
+    gap: 38px;
+    padding: 22px 24px 28px;
+  }
+
+  .event-accordion-visual {
+    min-height: 390px;
+  }
+
+  .event-recent-media {
+    height: 250px;
+  }
+}
+
+/* Galeria compacta em monitores grandes, sem perder proporção visual. */
+@media (min-width: 2200px) {
+  .institutional-gallery-section {
+    padding-top: 30px;
+    padding-bottom: 48px;
+  }
+  .gallery-showcase-grid {
+    padding: clamp(34px, 2vw, 56px);
+  }
+  .gallery-showcase-frame {
+    height: clamp(440px, 23vw, 570px);
+  }
+}
+@media (min-width: 3200px) and (min-height: 1800px) {
+  .institutional-gallery-section {
+    padding-top: 54px;
+    padding-bottom: 72px;
+  }
+  .gallery-showcase-grid {
+    padding: 68px;
+  }
+  .gallery-showcase-frame {
+    height: clamp(570px, 18vw, 670px);
+  }
+}
+
+/* Galeria editorial: limitar a largura da mídia e preservar proporção 3:2
+   também em telas QHD, ultrawide e 4K. */
+@media (min-width: 2200px) {
+  .gallery-showcase-grid {
+    grid-template-columns: minmax(380px, .88fr) minmax(0, 1.35fr);
+    gap: clamp(36px, 2.6vw, 70px);
+  }
+  .gallery-showcase-visual { max-width: 1120px; }
+  .gallery-showcase-frame { height: auto; aspect-ratio: 3 / 2; }
+}
+@media (min-width: 3200px) and (min-height: 1800px) {
+  .gallery-showcase-visual { max-width: 1280px; }
+  .gallery-showcase-frame { height: auto; aspect-ratio: 3 / 2; }
+}
+
+
+/* Escala desktop mais confortável em zoom 100%.
+   Não utiliza zoom/scale global: preserva responsividade, sticky e scroll.
+   O conteúdo textual da Galeria fica deliberadamente fora desta redução. */
+@media (min-width: 1100px) {
+  .team-robots-awards-heading h2 {
+    font-size: clamp(1.95rem, 2.6vw, 2.65rem);
+  }
+  .team-section-heading h3 { font-size: clamp(1.06rem, 1.18vw, 1.3rem); }
+  .team-board-card { min-height: clamp(220px, 16vw, 300px); }
+  .team-volunteer-slide { width: clamp(260px, 23vw, 350px); }
+  .robots-showcase-heading h2 { font-size: clamp(1.85rem, 2.35vw, 2.45rem); }
+  .robots-showcase-hero { min-height: clamp(300px, 28vw, 380px); }
+  .robots-showcase-hero-copy h2 { font-size: clamp(2.55rem, 3.4vw, 3.8rem); }
+  .institutional-events-heading h2 { font-size: clamp(2.4rem, 3.35vw, 3.55rem); }
+  .events-filter-row button { min-height: 38px; padding-inline: 13px; }
+  .gallery-showcase-copy { width: min(100%, 540px); }
+}
+@media (min-width: 1100px) and (max-width: 2199px) {
+  .institutional-about-section { padding-block: clamp(25px, 2.5vw, 38px); }
+  .team-robots-awards-section { padding-top: 38px; padding-bottom: 52px; }
+  .robots-showcase-section { padding-top: 20px; padding-bottom: 38px; }
+  .institutional-events-section { padding-top: 28px; padding-bottom: 48px; }
+  .team-board-block,.team-volunteers-block,.team-awards-block,.team-sponsors-block { padding: 16px; }
+  .team-award-row { min-height: 76px; }
+  .hero-quick-card { min-height: 90px; }
+}
+/* Evita que regras antigas de QHD/4K voltem a superdimensionar os cards.
+   Galeria e fotos ficam com as dimensões validadas na revisão específica. */
+@media (min-width: 2200px) {
+  .team-board-card { min-height: clamp(290px, 12vw, 365px); }
+  .team-volunteer-slide { width: clamp(320px, 17vw, 455px); }
+  .robots-showcase-hero { min-height: clamp(390px, 19vw, 520px); }
+  .institutional-events-heading h2 { font-size: clamp(3rem, 2vw, 4rem); }
+}

@@ -103,13 +103,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function register(
-    payload: { nome: string; email: string; senha: string; telefone?: string },
-    remember = true
+    payload: { nome: string; email: string; senha: string; telefone?: string }
   ) {
     loading.value = true
     try {
-      const response = await authApi.register(payload, remember)
-      applyAuth(response, remember)
+      return await authApi.register(payload)
     } finally {
       loading.value = false
     }
@@ -224,6 +222,15 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     return updated
   }
 
+  async function clearCurrent() {
+    if (!auth.isDev) return
+    await adminApi.clearCurrentCompetition()
+    competitions.value = competitions.value.map((item) => ({
+      ...item,
+      vigente: false
+    }))
+  }
+
   async function load(force = false) {
     if (competitions.value.length && !force) return competitions.value
     loading.value = true
@@ -250,6 +257,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     selectedCompetition,
     select,
     defineCurrent,
+    clearCurrent,
     load
   }
 })

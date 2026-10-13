@@ -473,14 +473,14 @@ onMounted(initialize)
       </div>
       <div class="heading-actions">
         <el-button @click="loadAgenda">Atualizar</el-button>
-        <el-button class="brand-button" @click="openNewFollow">Agendar tomada Follow</el-button>
+        <el-button class="brand-button" :disabled="!competitionId" @click="openNewFollow">Agendar tomada Follow</el-button>
       </div>
     </div>
 
     <article class="agenda-context-card">
       <div>
         <span class="eyebrow">{{ contextLabel }}</span>
-        <strong>{{ contextCompetition?.nome || 'Nenhuma competição selecionada' }}</strong>
+        <strong>{{ contextCompetition?.nome || (auth.isDev ? 'Nenhuma competição selecionada' : 'Nenhuma competição vigente') }}</strong>
         <small>{{ auth.isDev ? 'A troca de foco é local ao DEV.' : 'A GESTAO acompanha a edição vigente definida pelo DEV.' }}</small>
       </div>
       <StatusBadge v-if="contextCompetition?.status" :value="contextCompetition.status" />
