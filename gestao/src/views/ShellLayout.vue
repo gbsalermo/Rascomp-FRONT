@@ -92,7 +92,7 @@ const mediaSections = [
 ]
 
 // Mudar o ambiente visual nunca altera role, token ou capacidades da conta.
-const isDevMediaWorkspace = computed(() => auth.isDev && /^\\/midia(?:\\/|$)/.test(route.path))
+const isDevMediaWorkspace = computed(() => auth.isDev && (route.path === '/midia' || route.path.startsWith('/midia/')))
 const devMediaSections = [
   {
     label: 'Gestão de Mídia',
