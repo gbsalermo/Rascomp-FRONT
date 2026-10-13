@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 type MediaPhoto = { id: number; name: string; src?: string; tone: number; albums: number[]; published: boolean }
 type Album = { id: number; name: string; description: string; coverId?: number }
 type Award = { id: number; title: string; year: string; detail: string; photoId?: number }
-type Event = { id: number; title: string; date: string; description: string; photoId?: number }
+type EditorialEvent = { id: number; title: string; date: string; description: string; photoId?: number }
 type Sponsor = { id: number; photoId?: number; url: string; zoom: number }
 type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-banner' | 'robot' | 'event' | 'sponsor' | 'sponsor-change' | 'competition-section' | 'competition-hero'
 
@@ -34,7 +34,7 @@ const VOLUNTEER_LIMIT = 12
 const sponsors = ref<Sponsor[]>([])
 const SPONSOR_LIMIT = 12
 const awards = ref<Award[]>([])
-const events = ref<Event[]>([])
+const events = ref<EditorialEvent[]>([])
 const categories = [
   { key: 'sumo', label: 'Sumô' },
   { key: 'mini-sumo', label: 'Mini Sumô' },
