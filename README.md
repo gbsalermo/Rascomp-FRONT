@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="gestao/public/rascomp-logo.webp" alt="Identidade visual do RasComp" width="290">
+  <img src="landing-page/public/ieee-ras-official.png" alt="Identidade visual do RasComp" width="290">
 
   # RasComp — Interfaces Web
 
@@ -65,6 +65,23 @@ A vitrine institucional apresenta a equipe, projetos, eventos, galeria, conquist
                      │
           Inscrições e resultados
 ```
+
+## Arquitetura das interfaces
+
+A experiência se divide em páginas públicas e acesso autenticado, conectados ao mesmo backend.
+
+```mermaid
+flowchart TD
+  A["Visitantes"] --> B["Landing institucional e competição pública"]
+  C["Participantes"] --> D["Portal do Participante"]
+  E["Organização"] --> F["Gestão"]
+  B --> G["API RasComp"]
+  D --> G
+  F --> G
+  G --> H[("Dados e resultados oficiais")]
+```
+
+A **Landing** apresenta informações públicas; a **Gestão** permite operar a competição; o **Portal** reúne os recursos do participante. As regras e os resultados são consolidados pela API do RasComp.
 
 ## Estágio atual
 
