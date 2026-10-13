@@ -2056,3 +2056,13 @@ LANDING
 → não usa primeira competição, histórica ou futura como fallback
 → polling reconsulta o contexto publicado para também retirar uma competição da tela quando o DEV remover a vigente
 ```
+
+
+## Checkpoint UI-first — Gestão de Mídia e Galeria, 13/10/2026
+
+- Branch de desenvolvimento: `v1-pos-cloud-gestao-midia`; **não mergeada na main**; produção intacta.
+- `gestao/src/views/MediaManagementView.vue` com rotas `/midia`, `/midia/albuns`, `/midia/landing`, capability `manageMedia` e entrada de sidebar para DEV/MIDIA.
+- `photo-gallery/src/views/GalleryHomeView.vue` exibe **Todas as fotos** primeiro, categorias e **Álbuns** como filtro; dataset ilustrativo local em `photo-gallery/src/data/albums.ts`.
+- Upload de imagens no browser, criação/associação de álbuns e prévia de recorte funcionam somente em memória. Nada é persistido em MySQL/R2; publicação real está fora desse checkpoint.
+- Próximo: validar visualmente em desktop/mobile, só depois implementar backend/biblioteca persistente e absorver Galeria na Landing.
+- PR draft #7 serve exclusivamente a CI e revisão; **não fazer merge/deploy sem aprovação explícita**.
