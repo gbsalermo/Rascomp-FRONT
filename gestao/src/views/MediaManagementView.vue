@@ -6,7 +6,7 @@ import MediaLandingEditor from '../components/MediaLandingEditor.vue'
 import { useAuthStore } from '../store'
 
 type Album = { id: number; name: string; description: string; coverId?: number }
-type MediaPhoto = { id: number; name: string; albums: number[]; published: boolean; tone: number; src?: string }
+type MediaPhoto = { id: number; name: string; albums: number[]; published: boolean; tone: number; src?: string; sourcePath?: string }
 type UploadItem = { file: File; preview: string }
 type MediaVisibility = 'private' | 'public'
 
@@ -45,6 +45,25 @@ const albums = ref<Album[]>([
   { id: 3, name: 'Equipe e conquistas', description: 'Pessoas e premiações da RAS' },
   { id: 4, name: 'RAS nas Escolas', description: 'Ações de extensão' }
 ])
+// Fotografias atualmente versionadas na Landing, para edição na prévia.
+ // Esta ponte estática é TEMPORÁRIA: o CMS real fará inventário/migração para o R2.
+const originalRobotPhotos = import.meta.glob('../../../landing-page/src/assets/robots/**/*.{jpg,jpeg,png,webp,avif}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
+const originalBoardPhotos = import.meta.glob('../../../landing-page/src/assets/team/board/*.{jpg,jpeg,png,webp,avif}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
+const originalVolunteerPhotos = import.meta.glob('../../../landing-page/src/assets/team/volunteers/*.{jpg,jpeg,png,webp,avif}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
+const originalPartnerPhotos = import.meta.glob('../../../landing-page/src/assets/footer/partners/*.{jpg,jpeg,png,webp,avif,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
+const originalEventPhotos = import.meta.glob('../../../landing-page/src/assets/{rcx.jpg,rrc.jpeg,congresso.png}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
+const originalAssets = [
+  ...Object.entries(originalRobotPhotos),
+  ...Object.entries(originalBoardPhotos),
+  ...Object.entries(originalVolunteerPhotos),
+  ...Object.entries(originalPartnerPhotos),
+  ...Object.entries(originalEventPhotos)
+].sort(([a],[b])=>a.localeCompare(b,'pt-BR',{numeric:true}))
+const legacyPhotos: MediaPhoto[] = originalAssets.map(([sourcePath,src],index)=>({
+  id:10000+index,
+  name:sourcePath.split('/').pop() || 'imagem-existente',
+  sourcePath, src, tone:index%9, albums:[], published:true
+}))
 const photos = ref<MediaPhoto[]>([
   { id: 1, name: 'robo-competicao.jpg', albums: [1], published: true, tone: 0 },
   { id: 2, name: 'oficina-arduino.jpg', albums: [2], published: true, tone: 1 },
@@ -54,7 +73,8 @@ const photos = ref<MediaPhoto[]>([
   { id: 6, name: 'foto-avulsa.jpg', albums: [], published: false, tone: 5 },
   { id: 7, name: 'premiacao-2025.jpg', albums: [3], published: true, tone: 6 },
   { id: 8, name: 'oficina-robotica.jpg', albums: [2, 4], published: false, tone: 7 },
-  { id: 9, name: 'laboratorio.jpg', albums: [], published: false, tone: 8 }
+  { id: 9, name: 'laboratorio.jpg', albums: [], published: false, tone: 8 },
+  ...legacyPhotos
 ])
 const search = ref('')
 const albumFilter = ref('all')
