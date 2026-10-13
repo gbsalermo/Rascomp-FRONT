@@ -227,3 +227,6 @@ Na branch `v1-pos-cloud-gestao-midia`, as rotas protegidas por `manageMedia` est
 - `/midia/landing`: seções editoriais e prévia de publicação no Hero vinculada a eventos/galeria.
 
 Execute `npm ci && npm run dev` na pasta `gestao` (com backend local disponível para autenticação). As fotos de exemplo são **simuladas em memória** e arquivos selecionados ficam apenas no navegador; nenhuma operação grava banco/R2. A alteração de conteúdo do Hero e o editor de enquadramento são somente prévias visuais. A `main` não foi alterada por este checkpoint.
+
+## Validação dos editores específicos da Landing
+Na branch `v1-pos-cloud-gestao-midia`, navegue em `/midia/landing`: Intro / Heroes (imagem e publicação), Sobre (sequência de fotos), Equipe e Conquistas (cargos fixos, voluntários limitados a 12 e conquistas editáveis), Robôs (banner e quatro categorias), Eventos (foto, data, detalhes e ordem), Patrocinadores (até 12 logos) e Competição (imagem e Hero editorial, sem interferir na API). O seletor de foto permite enviar arquivo diretamente para a prévia local da Biblioteca. A opção de exibição pública é um controle ilustrativo — **não envia imagens à Galeria independente**. Em `/midia/albuns`, testar capa manual ou automática e visualização sem recorte. O PR #7 segue em rascunho, pendente de validação manual.
