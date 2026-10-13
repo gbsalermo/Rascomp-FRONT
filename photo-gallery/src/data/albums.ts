@@ -52,7 +52,7 @@ function demonstrationPhotos(slug: string, title: string, category: GalleryCateg
   return Array.from({length:amount}, (_,index)=>({
     id: slug + '-' + (index + 1),
     alt: 'Registro ilustrativo de ' + title,
-    published: true // Exemplos autorizados do protótipo; imagens internas da Gestão NÃO entram aqui.
+    published: true, // Exemplos autorizados do protótipo; imagens internas da Gestão NÃO entram aqui.
     src: demonstrationImage(category, index)
   }))
 }
