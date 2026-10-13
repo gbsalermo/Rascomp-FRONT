@@ -92,3 +92,21 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 - Em rotas `/midia/**`, a sidebar do DEV exibe apenas Biblioteca, Álbuns e Landing. Fora delas, exibe os recursos tradicionais de administração/competição. O contexto de competição e alertas operacionais não devem ocupar a interface editorial.
 - O perfil **MIDIA** continua com acesso exclusivamente editorial, sem opção de entrar em Gestão DEV; GESTAO e PARTICIPANTE não ganham acesso ao CMS. Autorização de backend permanece obrigatória quando a API do CMS for implementada.
 - Teste local: login DEV -> alternar repetidamente ambientes -> navegar Biblioteca/Álbuns/Landing -> voltar à Gestão DEV sem relogin. Conferir sidebar recolhida, mobile, menu e negativa de acesso por usuário GESTAO.
+
+## Rodada de validação visual 2 — feedback 13/10/2026 (em implementação)
+**Observações testadas pelo responsável e correções feitas na branch, sem publicação:**
+- Hero editorial: adicionada escolha de imagem própria do destaque e upload local diretamente no seletor, além dos campos e CTA existentes.
+- Sobre: sequência de fotos com reordenação e exclusão (somente fotos; texto fixo).
+- Equipe: diretoria com seis cargos imutáveis (presidente, vice-presidente, tesoureiro, secretário, marketing e orientador), escolha de fotos individual; voluntários (limite visual inicial 12); conquistas editáveis com ano, título, detalhes, foto e ordem, adição/remoção.
+- Robôs: banner principal e subcoleções por Sumô, Mini Sumô, Hockey e Follow Line, com upload/seleção direta na categoria escolhida.
+- Eventos: título, data, descrição, foto, adicionar/remover/reordenar.
+- Patrocinadores: logos com inclusão, substituição, exclusão, ordenação, URL opcional e zoom (limite visual inicial 12).
+- Competição: imagem/editorial da seção e Hero competitivo opcional; dados oficiais permanecem exclusivos da API operacional.
+- Álbuns: capa escolhida entre fotos associadas, ou foto automática estável durante a prévia; card usa arquivo real enviado quando disponível.
+- Biblioteca: miniaturas e prévias com `object-fit: contain` para não cortar as imagens; recorte intencional reservado para slots/componentes.
+- Publicação: antigo switch **Visibilidade** recebeu nome explicativo **Exibir na Galeria pública (após integração)**; privado significa somente Biblioteca. No protótipo esta opção **não sincroniza** a aplicação Galeria.
+- Galeria: acabamento dos cards e exibição integral da foto com `object-fit: contain`, layouts responsivos.
+
+**Limites do checkpoint atual:** os conteúdos ficam em memória, inclusive os arquivos selecionados via object URLs; não são persistidos, não chegam ao R2 e **não aparecem automaticamente em `photo-gallery/`**. Essa integração entre aplicações exige a API do acervo (etapas seguintes). O projeto em `photo-gallery/` ainda usa dataset ilustrativo, não fotos enviadas à Gestão.
+
+**Próximos testes visuais:** escolher imagem do Hero; Sobre sequência; fotos de cada cargo; limites e ordem de voluntários; CRUD de conquistas/eventos; Robôs por categoria/banner; logos e zoom; banner e hero de Competição; capa manual/automática; imagens completas e clareza da opção de publicação; validar Galeria em mobile e desktop. CI deve permanecer verde; PR #7 DRAFT e sem merge até aceite.
