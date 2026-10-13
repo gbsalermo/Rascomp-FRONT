@@ -13,6 +13,7 @@ const allPhotos = computed<VisiblePhoto[]>(() => {
   const unique = new Map<string, VisiblePhoto>()
   for (const album of albums) {
     for (const photo of album.photos) {
+      if (photo.published !== true) continue
       if (!unique.has(photo.id)) unique.set(photo.id, {
         photo, albumSlug: album.slug, albumTitle: album.title, category: album.category
       })
@@ -25,7 +26,7 @@ const filteredPhotos = computed(() =>
     ? allPhotos.value
     : allPhotos.value.filter(item => item.category === activeFilter.value)
 )
-const visibleAlbums = computed(() => albums)
+const visibleAlbums = computed(() => albums.filter(album => album.photos.some(photo=>photo.published===true)))
 const selectedIndex = ref<number|null>(null)
 const selected = computed(() =>
   selectedIndex.value === null ? null : filteredPhotos.value[selectedIndex.value] || null
@@ -96,7 +97,7 @@ function nextPhoto() {
           :aria-label="'Ampliar ' + item.photo.alt" @click="selectedIndex = index">
           <img v-if="item.photo.src" :src="item.photo.src" :alt="item.photo.alt" loading="lazy" />
           <span v-else class="gallery-placeholder-cover">{{ item.albumTitle }}</span>
-          <span class="gallery-all-photo-caption"><strong>{{ item.albumTitle }}</strong><small>{{ item.category }}</small></span>
+          <!-- Externo vê a imagem, não o nome do arquivo ou identificação sobreposta. -->
         </button>
       </div>
       <p v-else class="gallery-development-note">Ainda não existem fotos publicadas neste filtro.</p>
@@ -109,7 +110,7 @@ function nextPhoto() {
       <button type="button" class="lightbox-arrow previous" aria-label="Foto anterior" @click="previousPhoto">‹</button>
       <div class="lightbox-content">
         <img v-if="selected.photo.src" :src="selected.photo.src" :alt="selected.photo.alt"/>
-        <p>{{ selectedIndex + 1 }} / {{ filteredPhotos.length }} · {{ selected.albumTitle }}</p>
+        <p>{{ selectedIndex + 1 }} / {{ filteredPhotos.length }}</p>
         <RouterLink class="gallery-lightbox-album-link" :to="'/albuns/' + selected.albumSlug">Ver álbum →</RouterLink>
       </div>
       <button type="button" class="lightbox-arrow next" aria-label="Próxima foto" @click="nextPhoto">›</button>
