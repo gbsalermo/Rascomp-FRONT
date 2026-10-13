@@ -21,21 +21,27 @@ const sections = [
   { name: 'Competição', description: 'Conteúdo editorial separado dos dados da API', icon: '★' }
 ]
 const section = ref('Intro / Heroes')
+const existingBoardIds = props.photos.filter(p => p.sourcePath?.includes('/assets/team/board/')).sort((a,b)=>(a.sourcePath||'').localeCompare(b.sourcePath||'', 'pt-BR',{numeric:true})).map(p=>p.id)
+const existingVolunteerIds = props.photos.filter(p => p.sourcePath?.includes('/assets/team/volunteers/')).sort((a,b)=>(a.sourcePath||'').localeCompare(b.sourcePath||'','pt-BR',{numeric:true})).map(p=>p.id)
+const existingSponsorIds = props.photos.filter(p => p.sourcePath?.includes('/assets/footer/partners/')).map(p=>p.id)
 const board = ref([
-  { role: 'Presidente', photoId: undefined as number | undefined },
-  { role: 'Vice-presidente', photoId: undefined as number | undefined },
-  { role: 'Tesoureiro', photoId: undefined as number | undefined },
-  { role: 'Secretário', photoId: undefined as number | undefined },
-  { role: 'Marketing', photoId: undefined as number | undefined },
-  { role: 'Orientador', photoId: undefined as number | undefined }
+  { role: 'Presidente', photoId: existingBoardIds[0] },
+  { role: 'Vice-presidente', photoId: existingBoardIds[1] },
+  { role: 'Tesoureiro', photoId: existingBoardIds[2] },
+  { role: 'Secretário', photoId: existingBoardIds[3] },
+  { role: 'Marketing', photoId: existingBoardIds[4] },
+  { role: 'Orientador', photoId: existingBoardIds[5] }
 ])
 const aboutPhotos = ref<number[]>([])
-const volunteerPhotos = ref<number[]>([])
+const volunteerPhotos = ref<number[]>(existingVolunteerIds.slice(0,12))
 const VOLUNTEER_LIMIT = 12
-const sponsors = ref<Sponsor[]>([])
+const sponsors = ref<Sponsor[]>(existingSponsorIds.slice(0,12).map((photoId,i)=>({id:i+1,photoId,url:'',zoom:100})))
 const SPONSOR_LIMIT = 12
 const awards = ref<Award[]>(originalAwardSeeds.map(item=>({...item})))
-const events = ref<EditorialEvent[]>(originalEventSeeds.map(item=>({...item})))
+const events = ref<EditorialEvent[]>(originalEventSeeds.map(item=>{
+  const matchingFile = item.id==='rcx-2026' ? '/rcx.jpg' : item.id==='rrc-2026' ? '/rrc.jpeg' : '/congresso.png'
+  return {...item, photoId:props.photos.find(p=>p.sourcePath?.endsWith(matchingFile))?.id}
+}))
 const categories = existingRobotCategorySeeds
 const robotCategory = ref<string>('sumo')
 const initialRobotPhotos = (key: string) => props.photos
@@ -251,9 +257,14 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
         </div><div v-else class="editor-empty">Nenhuma foto de voluntários escolhida nesta prévia.</div>
         <div class="editor-heading editor-spaced"><div><h3>Conquistas e premiações</h3><p>Gerencie título, ano, detalhes, imagem e ordem de exibição.</p></div><el-button type="primary" plain @click="addAward">+ Adicionar conquista</el-button></div>
         <div v-for="(award,i) in awards" :key="award.id" class="editor-record">
-          <div class="editor-record-title"><strong>Conquista {{ i+1 }}</strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(awards,i,-1)">↑</el-button><el-button size="small" :disabled="i===awards.length-1" @click="move(awards,i,1)">↓</el-button><el-button size="small" type="danger" text @click="awards.splice(i,1)">Remover</el-button></div></div>
-          <div class="editor-form-grid"><el-form-item label="Título"><el-input v-model="award.title" placeholder="Ex.: Campeão Follow Line"/></el-form-item><el-form-item label="Ano"><el-input v-model="award.year" maxlength="9"/></el-form-item>
-            <el-form-item class="span-two" label="Descrição / detalhes"><el-input v-model="award.detail" type="textarea" :rows="2"/></el-form-item></div>
+          <div class="editor-record-title"><strong>{{ award.title || 'Nova conquista' }} <small class="editor-original-tag">{{ award.existing ? 'Na Landing atual' : 'Novo' }}</small></strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(awards,i,-1)">↑</el-button><el-button size="small" :disabled="i===awards.length-1" @click="move(awards,i,1)">↓</el-button><el-popconfirm title="Remover esta conquista da prévia?" @confirm="awards.splice(i,1)"><template #reference><el-button size="small" type="danger" text>Remover</el-button></template></el-popconfirm></div></div>
+          <div class="editor-form-grid">
+          <el-form-item label="Título"><el-input v-model="award.title" placeholder="Ex.: ERBASE — Follow Line"/></el-form-item>
+          <el-form-item label="Ano"><el-input v-model="award.year" maxlength="9"/></el-form-item>
+          <el-form-item label="Colocação"><el-input v-model="award.place" placeholder="Ex.: Campeão"/></el-form-item>
+          <el-form-item label="Evento / Categoria"><el-input v-model="award.event"/></el-form-item>
+          <el-form-item class="span-two" label="Descrição / detalhes"><el-input v-model="award.detail" type="textarea" :rows="2"/></el-form-item></div>
+          <el-switch v-model="award.active" active-text="Exibir esta conquista" inactive-text="Oculta na prévia" />
           <div class="editor-actions"><el-button size="small" @click="openPicker('award',i)">{{ award.photoId ? 'Trocar imagem' : 'Escolher imagem' }}</el-button><span class="editor-photo-name">{{ photo(award.photoId)?.name || 'Sem foto' }}</span></div>
         </div><div v-if="!awards.length" class="editor-empty">Adicione uma conquista para organizar o conteúdo da Landing.</div>
       </template>
@@ -275,8 +286,15 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
       <template v-else-if="section === 'Eventos'">
         <div class="editor-heading"><div><h3>Eventos da RAS</h3><p>Cadastre e ordene eventos com título, data, descrição e fotografia.</p></div><el-button type="primary" plain @click="addEvent">+ Adicionar evento</el-button></div>
         <div v-for="(event,i) in events" :key="event.id" class="editor-record">
-          <div class="editor-record-title"><strong>Evento {{ i+1 }}</strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(events,i,-1)">↑</el-button><el-button size="small" :disabled="i===events.length-1" @click="move(events,i,1)">↓</el-button><el-button text type="danger" size="small" @click="events.splice(i,1)">Remover</el-button></div></div>
-          <div class="editor-form-grid"><el-form-item label="Título"><el-input v-model="event.title"/></el-form-item><el-form-item label="Data do evento"><el-date-picker v-model="event.date" type="date" value-format="YYYY-MM-DD" style="width:100%" placeholder="Escolher data"/></el-form-item><el-form-item class="span-two" label="Descrição"><el-input v-model="event.description" type="textarea" :rows="2"/></el-form-item></div>
+          <div class="editor-record-title"><strong>{{ event.title || 'Novo evento' }} <small class="editor-original-tag">{{ event.existing ? 'Na Landing atual' : 'Novo' }}</small></strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(events,i,-1)">↑</el-button><el-button size="small" :disabled="i===events.length-1" @click="move(events,i,1)">↓</el-button><el-popconfirm title="Remover este evento da prévia?" @confirm="events.splice(i,1)"><template #reference><el-button text type="danger" size="small">Remover</el-button></template></el-popconfirm></div></div>
+          <div class="editor-form-grid">
+          <el-form-item label="Título"><el-input v-model="event.title"/></el-form-item>
+          <el-form-item label="Data de início"><el-date-picker v-model="event.date" type="date" value-format="YYYY-MM-DD" style="width:100%" placeholder="Data inicial"/></el-form-item>
+          <el-form-item label="Data de término"><el-date-picker v-model="event.endDate" type="date" value-format="YYYY-MM-DD" style="width:100%" placeholder="Data final"/></el-form-item>
+          <el-form-item label="Local"><el-input v-model="event.location"/></el-form-item>
+          <el-form-item label="Categoria"><el-select v-model="event.type"><el-option v-for="type in ['Participações','Oficinas','Palestras','Competições','Projeto Social']" :key="type" :label="type" :value="type"/></el-select></el-form-item>
+          <el-form-item class="span-two" label="Descrição"><el-input v-model="event.description" type="textarea" :rows="2"/></el-form-item></div>
+          <el-switch v-model="event.active" active-text="Exibir evento" inactive-text="Oculto na prévia" />
           <div class="editor-actions"><el-button size="small" @click="openPicker('event',i)">Escolher foto do evento</el-button><span class="editor-photo-name">{{ photo(event.photoId)?.name || 'Nenhuma foto selecionada' }}</span></div>
         </div><div v-if="!events.length" class="editor-empty">Nenhum evento editorial adicionado na prévia local.</div>
       </template>
@@ -358,6 +376,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 .editor-form-grid .span-two{grid-column:1/-1}
 .editor-form-grid :deep(.el-form-item){min-width:0;display:flex;flex-direction:column;align-items:stretch}
 .editor-form-grid :deep(.el-form-item__label){justify-content:flex-start}
+.editor-original-tag{font-size:10px;font-weight:600;color:#ac4067;margin-left:8px}
 .editor-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .editor-heading h3{margin:0 0 3px}.editor-heading p{margin:0}
 .editor-spaced{margin-top:25px}
