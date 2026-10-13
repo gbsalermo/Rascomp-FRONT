@@ -1,6 +1,6 @@
 # Roadmap funcional — Gestão de Mídia e Galeria
 
-**Revisão:** 13/10/2026 | **Branch:** `v1-pos-cloud-gestao-midia` | **Estado:** planejamento, não implementado.
+**Revisão:** 13/10/2026 | **Branch:** `v1-pos-cloud-gestao-midia` | **Estado:** checkpoint UI-first implementado na branch de desenvolvimento, aguardando teste manual e aceite. Sem backend CMS/persistência e sem merge na main.
 
 ## Decisões consolidadas
 - **Construir PRIMEIRO as duas interfaces**: Gestão de Mídia (administração) e Galeria (consulta pública), com navegação, layout, responsividade, estados vazios e dados fictícios locais. Após validar visualmente, integrar cada capacidade por vez.
@@ -73,3 +73,14 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 6. Regressão e aceite final.
 
 **Decisão de aprovação dos esboços — 13/10/2026:** as duas interfaces foram aprovadas com alteração de Galeria: a opção **Todas** apresenta diretamente todas as fotos publicadas e **Álbuns** é filtro/agrupamento. **Publicações não é menu separado:** é o conteúdo de destaque do **Intro / Hero**, com chamadas contextuais (ex.: Oficina de Arduino → "Ver fotos" → álbum dessa oficina). Eventos permanecem como entidades editáveis à parte, podendo ser associados ao Hero sem duplicação. Próximo passo: Etapa 1, interfaces visuais antes do backend. Não começar por migrações ou regras de modo institucional/competitivo.
+
+
+## Checkpoint técnico — interfaces locais construídas, 13/10/2026
+
+**Implementação:** rotas `/midia`, `/midia/albuns` e `/midia/landing` (DEV/MIDIA), seleção e filtros de mídia, upload simulado na memória do navegador, associação N:N simulada a álbuns, gestão de álbuns, enquadramento demonstrativo e editor mock de Hero/Publicação para apontar a álbum, Galeria, evento ou seção. `photo-gallery/` passou a mostrar **Todas as fotos** como padrão e **Álbuns** como filtro, com categorias e lightbox. Dataset visual de demonstração SVG explícito: não são fotos reais nem banco/R2.
+
+**CI:** GitHub Actions do commit `aa351fe410eaff0384592aaca229961b9528b367`: **Frontend Checks = success** e **Photo Gallery Checks = success**. PR **#7 DRAFT**, exclusivamente para CI e revisão, não apto a merge até teste visual e autorização explícita do responsável.
+
+**Teste manual:** iniciar backend local para login da Gestão, `cd gestao && npm ci && npm run dev` (5173), `cd photo-gallery && npm install && npm run dev` (5175). A Galeria ainda executa como app isolada para a prévia; a absorção em `landing-page/galeria` será uma implementação posterior conforme decisão previamente aprovada.
+
+**Próximo gate:** o responsável validar UX desktop/mobile, biblioteca, álbum, editor de imagem e navegação da Galeria. Depois implementar a camada persistente, API e integração seção a seção. Nada desta branch foi publicado em produção.
