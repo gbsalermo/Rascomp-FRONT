@@ -113,6 +113,14 @@ function removeAlbum(id: number) {
   autoCovers.delete(id)
   ElMessage.info('Álbum removido da prévia; as fotos foram preservadas.')
 }
+function addPhotoForEditor(file: File): number {
+  if (!file.type.startsWith('image/')) { ElMessage.warning('Selecione um arquivo de imagem.'); return 0 }
+  const url = URL.createObjectURL(file)
+  uploadedUrls.push(url)
+  const id = Math.max(0, ...photos.value.map(item => item.id)) + 1
+  photos.value.unshift({ id, name: file.name, src: url, albums: [], published: false, tone: id % 9 })
+  return id
+}
 function fileChange(event: Event) {
   const input = event.target as HTMLInputElement
   uploads.value = Array.from(input.files || []).filter(file => file.type.startsWith('image/')).map(file => {
@@ -257,7 +265,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
     </template>
 
     <template v-else>
-      <MediaLandingEditor :photos="photos" :albums="albums" />
+      <MediaLandingEditor :photos="photos" :albums="albums" :upload-photo="addPhotoForEditor" />
     </template>
 
     <el-dialog v-model="uploadDialog" title="Adicionar fotos à Biblioteca" width="min(620px, 94vw)" destroy-on-close>
