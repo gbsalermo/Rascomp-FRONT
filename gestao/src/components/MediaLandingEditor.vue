@@ -8,7 +8,7 @@ type Album = { id: number; name: string; description: string; coverId?: number }
 type Award = { id: number; sourceId?: string; title: string; place: string; event: string; year: string; detail: string; photoId?: number; existing: boolean; active: boolean }
 type EditorialEvent = { id: string; sourceId?: string; title: string; date: string; endDate: string; description: string; location: string; type: string; photoId?: number; existing: boolean; active: boolean }
 type Sponsor = { id: number; photoId?: number; url: string; zoom: number }
-type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-banner' | 'robot' | 'event' | 'sponsor' | 'sponsor-change' | 'competition-section' | 'competition-hero'
+type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-banner' | 'robot' | 'robot-change' | 'event' | 'sponsor' | 'sponsor-change' | 'competition-section' | 'competition-hero'
 
 const props = defineProps<{ photos: MediaPhoto[]; albums: Album[]; uploadPhoto: (file: File) => number }>()
 const sections = [
@@ -44,6 +44,7 @@ const events = ref<EditorialEvent[]>(originalEventSeeds.map(item=>{
 }))
 const categories = existingRobotCategorySeeds
 const robotCategory = ref<string>('sumo')
+const robotTitles = ref<Record<number,string>>({})
 const initialRobotPhotos = (key: string) => props.photos
   .filter(item => item.sourcePath?.includes('/assets/robots/' + key + '/'))
   .filter(item => !item.sourcePath?.includes('/assets/robots/banners/'))
@@ -80,6 +81,12 @@ async function removeHero() {
   selectedHeroId.value = heroes.value[Math.min(index,heroes.value.length-1)]?.id || ''
 }
 function reorderHero(delta: number) { move(heroes.value,selectedHeroIndex.value,delta) }
+function restoreHero() {
+  const current = selectedHero.value
+  if (!current || !current.existing) return
+  const original = originalHeroSeeds.find(item => item.sourceId===current.sourceId)
+  if (original) Object.assign(current, {...original, photoId:undefined})
+}
 function legacyImagePath(path: string | undefined) {
   return path ? 'https://rasufrb.site' + path : ''
 }
@@ -124,6 +131,15 @@ function selectPhoto(id: number) {
     case 'award': { const a = awards.value[pickIndex.value]; if (a) a.photoId = id; break }
     case 'robots-banner': robotBannerId.value = id; break
     case 'robot': robotPhotos.value[robotCategory.value]!.push(id); break
+    case 'robot-change': {
+      const items = robotPhotos.value[robotCategory.value]
+      const current = items?.[pickIndex.value]
+      if (current !== undefined) {
+        robotTitles.value[id] = robotTitles.value[current] || photo(current)?.name.replace(/\\.[^.]+$/,'') || ''
+        items![pickIndex.value] = id
+      }
+      break
+    }
     case 'event': { const e = events.value[pickIndex.value]; if (e) e.photoId = id; break }
     case 'sponsor': sponsors.value.push({ id: Date.now(), photoId: id, url: '', zoom: 100 }); break
     case 'sponsor-change': { const sponsor = sponsors.value[pickIndex.value]; if (sponsor) sponsor.photoId = id; break }
@@ -189,6 +205,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
             <div class="editor-inline-actions">
               <el-button size="small" :disabled="selectedHeroIndex===0" @click="reorderHero(-1)">↑</el-button>
               <el-button size="small" :disabled="selectedHeroIndex===heroes.length-1" @click="reorderHero(1)">↓</el-button>
+              <el-button v-if="selectedHero?.existing" size="small" @click="restoreHero">Restaurar original</el-button>
               <el-button size="small" type="danger" plain @click="removeHero">Remover</el-button>
             </div>
           </div>
@@ -279,7 +296,18 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
         </div>
         <div class="editor-actions"><strong>{{ categories.find(c=>c.key===robotCategory)?.label }}</strong><el-button type="primary" plain @click="openPicker('robot')">+ Adicionar foto nesta categoria</el-button></div>
         <div v-if="robotPhotos[robotCategory]?.length" class="editor-image-grid">
-          <div v-for="(id,i) in robotPhotos[robotCategory]" :key="i" class="editor-image-item"><div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :alt="photo(id)?.name"/><span v-else>▧</span></div><small>{{ photo(id)?.name }}</small><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(robotPhotos[robotCategory]!,i,-1)">↑</el-button><el-button size="small" :disabled="i===(robotPhotos[robotCategory]?.length || 0)-1" @click="move(robotPhotos[robotCategory]!,i,1)">↓</el-button><el-button size="small" text type="danger" @click="robotPhotos[robotCategory]!.splice(i,1)">Remover</el-button></div></div>
+          <div v-for="(id,i) in robotPhotos[robotCategory]" :key="id + '-' + i" class="editor-image-item">
+            <div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :alt="photo(id)?.name"/><span v-else>▧</span></div>
+            <small>{{ photo(id)?.sourcePath ? 'Imagem atual da Landing' : 'Nova imagem' }}</small>
+            <el-input :model-value="robotTitles[id] ?? photo(id)?.name.replace(/\\.[^.]+$/,'')" size="small" placeholder="Nome do robô"
+              @update:model-value="robotTitles[id]=String($event)" />
+            <div class="editor-inline-actions">
+              <el-button size="small" @click="openPicker('robot-change',i)">Trocar foto</el-button>
+              <el-button size="small" :disabled="i===0" @click="move(robotPhotos[robotCategory]!,i,-1)">↑</el-button>
+              <el-button size="small" :disabled="i===(robotPhotos[robotCategory]?.length || 0)-1" @click="move(robotPhotos[robotCategory]!,i,1)">↓</el-button>
+              <el-button size="small" text type="danger" @click="robotPhotos[robotCategory]!.splice(i,1)">Remover</el-button>
+            </div>
+          </div>
         </div><div v-else class="editor-empty">Ainda não há fotos associadas a esta categoria.</div>
       </template>
 
