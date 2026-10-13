@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import MediaFooterEditor from './MediaFooterEditor.vue'
 import { originalHeroSeeds, originalAwardSeeds, originalEventSeeds, existingRobotCategorySeeds, type SeedHero } from '../content/landingEditorialSeeds'
 
 type MediaPhoto = { id: number; name: string; src?: string; tone: number; albums: number[]; published: boolean; sourcePath?: string }
@@ -18,7 +19,8 @@ const sections = [
   { name: 'Robôs', description: 'Banner e fotos por categoria', icon: '⚙' },
   { name: 'Eventos', description: 'Agenda, informações e imagens de eventos', icon: '▦' },
   { name: 'Patrocinadores', description: 'Logos, links e ordem do carrossel', icon: '◇' },
-  { name: 'Competição', description: 'Conteúdo editorial separado dos dados da API', icon: '★' }
+  { name: 'Competição', description: 'Hero competitivo: elementos extras sem sobrescrever a API', icon: '★' },
+  { name: 'Footer', description: 'Contatos, links e informações atualizáveis', icon: '▤' }
 ]
 const section = ref('Intro / Heroes')
 const existingBoardIds = props.photos.filter(p => p.sourcePath?.includes('/assets/team/board/')).sort((a,b)=>(a.sourcePath||'').localeCompare(b.sourcePath||'', 'pt-BR',{numeric:true})).map(p=>p.id)
@@ -109,8 +111,11 @@ const competitionBannerId = ref<number | undefined>()
 const competitionHeroPhotoId = ref<number | undefined>()
 const competitionHeroEnabled = ref(false)
 const competitionText = ref('')
-const competitionHeroTitle = ref('Venha competir com a RAS UFRB')
-const competitionHeroButton = ref('Conheça a competição')
+const competitionHeroSubtitle = ref('Participe de mais uma edição da nossa competição!')
+const competitionHeroDescription = ref('Acompanhe a programação e conheça as atividades desta edição.')
+const competitionHeroShowExtra = ref(false)
+const competitionHeroExtraLabel = ref('Veja também')
+const competitionHeroExtraDestination = ref<'competition'|'gallery'|'events'>('competition')
 const pickerOpen = ref(false)
 const pickTarget = ref<PickTarget>('hero')
 const pickIndex = ref(0)
@@ -360,13 +365,77 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
       </template>
 
       <template v-else-if="section === 'Competição'">
-        <div class="editor-info">Informações oficiais como inscrição, status, categorias, robôs, pontuação e resultados continuarão chegando pela API competitiva. Aqui serão editadas apenas imagens e chamadas editoriais.</div>
-        <h3>Imagem da seção Competição</h3><div class="editor-wide-image"><img v-if="photo(competitionBannerId)?.src" :src="photo(competitionBannerId)?.src" alt="Imagem da seção Competição"/><span v-else>▧</span></div>
-        <el-button @click="openPicker('competition-section')">Escolher imagem da seção</el-button>
-        <el-form-item label="Texto complementar (opcional)" class="editor-spaced"><el-input v-model="competitionText" type="textarea" :rows="3" placeholder="Informação editorial que não vem da API"/></el-form-item>
-        <div class="editor-heading editor-spaced"><div><h3>Hero competitivo na Intro</h3><p>Um destaque opcional, sem trocar o modo de toda a Landing.</p></div><el-switch v-model="competitionHeroEnabled" active-text="Ativo" inactive-text="Desativado"/></div>
-        <div class="editor-form-grid"><el-form-item label="Título"><el-input v-model="competitionHeroTitle"/></el-form-item><el-form-item label="Botão"><el-input v-model="competitionHeroButton"/></el-form-item></div>
-        <div class="editor-actions"><el-button @click="openPicker('competition-hero')">Escolher imagem do Hero competitivo</el-button><span class="editor-photo-name">{{ photo(competitionHeroPhotoId)?.name || 'Imagem não selecionada' }}</span></div>
+        <div class="editor-info">
+          O nome da competição, o estado das inscrições, o lote atual, as categorias e o botão principal vêm da API. A Gestão de Mídia complementa a apresentação, sem modificar os dados oficiais.
+        </div>
+        <h3>Imagem principal da seção Competição</h3>
+        <div class="editor-wide-image">
+          <img v-if="photo(competitionBannerId)?.src" :src="photo(competitionBannerId)?.src" alt="Imagem editorial da seção Competição"/>
+          <span v-else>▧</span>
+        </div>
+        <div class="editor-actions">
+          <el-button @click="openPicker('competition-section')">{{ competitionBannerId ? 'Trocar imagem da seção' : 'Escolher imagem da seção' }}</el-button>
+          <el-button v-if="competitionBannerId" size="small" @click="competitionBannerId=undefined">Remover imagem</el-button>
+        </div>
+        <el-form-item label="Texto complementar da seção (opcional)" class="editor-spaced">
+          <el-input v-model="competitionText" type="textarea" :rows="3" maxlength="350" show-word-limit
+            placeholder="Informações editoriais adicionais que não são fornecidas pela API"/>
+        </el-form-item>
+
+        <div class="editor-heading editor-spaced">
+          <div><h3>Hero competitivo na Intro</h3><p>Mesma composição visual da Intro, com título, lote e status protegidos e provenientes da API.</p></div>
+          <el-switch v-model="competitionHeroEnabled" active-text="Ativo" inactive-text="Oculto" />
+        </div>
+        <div class="editor-hero-preview editor-hero-competition">
+          <img v-if="photo(competitionHeroPhotoId)?.src" :src="photo(competitionHeroPhotoId)?.src" alt="Imagem escolhida para o Hero competitivo"/>
+          <div class="editor-hero-copy">
+            <small>STATUS DAS INSCRIÇÕES · API</small>
+            <h3>Nome da competição (API)</h3>
+            <p v-if="competitionHeroSubtitle">{{ competitionHeroSubtitle }}</p>
+            <p v-if="competitionHeroDescription">{{ competitionHeroDescription }}</p>
+            <div class="editor-competition-info-tags">
+              <span>Lote atual · API</span><span>Categorias · API</span>
+            </div>
+            <div class="editor-competition-actions"><span>Botão principal · API</span><span v-if="competitionHeroShowExtra">{{ competitionHeroExtraLabel || 'Veja também' }} ↗</span></div>
+          </div>
+        </div>
+        <p class="editor-competition-notice">Prévia estrutural: os rótulos “API” serão preenchidos pelos dados reais quando a integração estiver concluída. Não representam uma competição fictícia.</p>
+        <div class="editor-actions">
+          <el-button @click="openPicker('competition-hero')">{{ competitionHeroPhotoId ? 'Trocar foto do Hero' : 'Escolher foto do Hero' }}</el-button>
+          <el-button v-if="competitionHeroPhotoId" size="small" @click="competitionHeroPhotoId=undefined">Remover foto</el-button>
+          <span class="editor-photo-name">{{ photo(competitionHeroPhotoId)?.name || 'Nenhuma foto selecionada' }}</span>
+        </div>
+        <div class="editor-form-grid">
+          <el-form-item label="Subtítulo adicional (opcional)">
+            <el-input v-model="competitionHeroSubtitle" maxlength="130" show-word-limit/>
+          </el-form-item>
+          <el-form-item class="span-two" label="Descrição complementar (opcional)">
+            <el-input v-model="competitionHeroDescription" type="textarea" :rows="2" maxlength="280" show-word-limit/>
+          </el-form-item>
+        </div>
+        <div class="editor-competition-api-fields">
+          <strong>Campos controlados pela API — somente leitura</strong>
+          <span>Nome da competição · Status/inscrições · Lote atual · Categorias · Botão principal e seu destino</span>
+        </div>
+        <div class="editor-spaced">
+          <el-switch v-model="competitionHeroShowExtra" active-text="Adicionar botão secundário" inactive-text="Sem botão secundário"/>
+          <div v-if="competitionHeroShowExtra" class="editor-form-grid editor-spaced">
+            <el-form-item label="Texto do botão adicional">
+              <el-input v-model="competitionHeroExtraLabel" maxlength="40"/>
+            </el-form-item>
+            <el-form-item label="Destino do botão adicional">
+              <el-select v-model="competitionHeroExtraDestination">
+                <el-option label="Seção Competição" value="competition"/>
+                <el-option label="Galeria" value="gallery"/>
+                <el-option label="Eventos" value="events"/>
+              </el-select>
+            </el-form-item>
+          </div>
+        </div>
+      </template>
+
+      <template v-else-if="section === 'Footer'">
+        <MediaFooterEditor />
       </template>
 
       <div class="editor-footer"><el-button type="primary" @click="applyPreview">Aplicar na prévia local</el-button><span>Nenhum dado será salvo no banco ou publicado na Landing nesta fase.</span></div>
@@ -430,6 +499,14 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 .editor-original-tag{font-size:10px;font-weight:600;color:#ac4067;margin-left:8px}
 .media-section-editor :deep(.el-button--primary:not(.is-plain)):not(.is-text){color:#fff!important;--el-button-text-color:#fff;--el-button-hover-text-color:#fff;--el-button-active-text-color:#fff}
 .editor-switch-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:10px 0}
+.editor-hero-competition{min-height:230px}
+.editor-competition-info-tags{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.editor-competition-info-tags span{padding:6px 9px;border:1px solid #ffffff80;border-radius:6px;background:#20132770;font-size:10px;color:#fff}
+.editor-competition-actions{display:flex;gap:8px;flex-wrap:wrap}
+.editor-competition-actions span{padding:8px 12px;background:#fff;border-radius:6px;color:#651737;font-size:11px;font-weight:750}
+.editor-competition-notice{margin:8px 0!important;font-size:11px!important;color:#856e7d!important}
+.editor-competition-api-fields{display:flex;flex-direction:column;gap:6px;padding:12px;background:#f8f4f7;border-radius:9px;border:1px solid #e8dbe5;font-size:11px;color:#655260}
+.editor-competition-api-fields strong{font-size:12px}
 .editor-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .editor-heading h3{margin:0 0 3px}.editor-heading p{margin:0}
 .editor-spaced{margin-top:25px}
