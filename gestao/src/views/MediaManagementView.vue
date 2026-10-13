@@ -2,8 +2,9 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import MediaLandingEditor from '../components/MediaLandingEditor.vue'
 
-type Album = { id: number; name: string; description: string }
+type Album = { id: number; name: string; description: string; coverId?: number }
 type MediaPhoto = { id: number; name: string; albums: number[]; published: boolean; tone: number; src?: string }
 type UploadItem = { file: File; preview: string }
 
@@ -39,6 +40,26 @@ const visiblePhotos = computed(() => photos.value.filter(photo => {
   return photo.albums.includes(Number(albumFilter.value))
 }))
 const albumName = (id: number) => albums.value.find(album => album.id === id)?.name || 'Álbum removido'
+function albumPhotos(id: number) { return photos.value.filter(photo => photo.albums.includes(id)) }
+function albumCover(album: Album): MediaPhoto | undefined {
+  const items = albumPhotos(album.id)
+  if (!items.length) return undefined
+  const selected = items.find(photo => photo.id === album.coverId)
+  if (selected) return selected
+  const stored = items.find(photo => photo.id === autoCovers.get(album.id))
+  if (stored) return stored
+  const choice = items[Math.floor(Math.random() * items.length)]
+  if (choice) autoCovers.set(album.id, choice.id)
+  return choice
+}
+function openCoverPicker(albumId: number) {
+  coverPickerAlbumId.value = albumId
+}
+function chooseAlbumCover(photoId: number | undefined) {
+  const album = albums.value.find(item => item.id === coverPickerAlbumId.value)
+  if (album) album.coverId = photoId
+  coverPickerAlbumId.value = null
+}
 const uploadedUrls: string[] = []
 const uploadDialog = ref(false)
 const uploads = ref<UploadItem[]>([])
@@ -49,27 +70,14 @@ const albumDialog = ref(false)
 const albumDraft = ref('')
 const albumDescriptionDraft = ref('')
 const editingAlbumId = ref<number | null>(null)
+const coverPickerAlbumId = ref<number | null>(null)
+const autoCovers = new Map<number, number>()
 const cropDialog = ref(false)
 const zoom = ref(115)
 const positionX = ref(50)
 const positionY = ref(50)
 const displayWidth = ref(100)
 const displayHeight = ref(100)
-const landingSection = ref('Intro / Heroes')
-const editorialTitle = ref('Oficina de Arduino na UFRB')
-const editorialDescription = ref('Confira os registros da nossa oficina e conheça as atividades da IEEE RAS UFRB.')
-const editorialDestination = ref('album')
-const editorialAlbum = ref(2)
-const editorialButton = ref('Ver fotos')
-const landingSections = [
-  { name: 'Intro / Heroes', detail: 'Imagens e destaques com botão para evento, álbum ou seção', symbol: '✦' },
-  { name: 'Sobre', detail: 'Apenas fotografia e enquadramento', symbol: '▧' },
-  { name: 'Equipe e conquistas', detail: 'Fotos da equipe e registros de conquistas', symbol: '♜' },
-  { name: 'Robôs', detail: 'Imagens de apresentação dos robôs', symbol: '⚙' },
-  { name: 'Eventos', detail: 'Imagens e informações dinâmicas', symbol: '▦' },
-  { name: 'Patrocinadores', detail: 'Logos, tamanhos e ordenação', symbol: '◇' },
-  { name: 'Competição', detail: 'Seção pública e Hero competitivo opcional', symbol: '★' }
-]
 
 function togglePhoto(id: number, multi: boolean) {
   if (multi) selectedIds.value = selectedIds.value.includes(id)
@@ -102,6 +110,7 @@ function removeAlbum(id: number) {
   photos.value.forEach(photo => { photo.albums = photo.albums.filter(albumId => albumId !== id) })
   albums.value = albums.value.filter(album => album.id !== id)
   if (albumFilter.value === String(id)) albumFilter.value = 'all'
+  autoCovers.delete(id)
   ElMessage.info('Álbum removido da prévia; as fotos foram preservadas.')
 }
 function fileChange(event: Event) {
@@ -215,8 +224,9 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
               <el-checkbox v-for="album in albums" :key="album.id" :model-value="selectedPhoto.albums.includes(album.id)"
                 @change="changePhotoAlbum(album.id, Boolean($event))">{{ album.name }}</el-checkbox>
             </div>
-            <label>Visibilidade (prévia)</label>
-            <el-switch v-model="selectedPhoto.published" active-text="Publicada" inactive-text="Privada" inline-prompt />
+            <label>Exibir na Galeria pública (após integração)</label>
+            <el-switch v-model="selectedPhoto.published" active-text="Sim" inactive-text="Não" />
+            <p class="media-visibility-help">Esta opção simula a futura publicação. Fotos privadas permanecem na Biblioteca; a Galeria pública mostrará somente fotos autorizadas. A prévia local não sincroniza as duas aplicações.</p>
             <div class="media-detail-actions"><el-button @click="openCrop">Editar enquadramento</el-button></div>
           </template>
           <div v-else class="media-empty">Selecione uma imagem para visualizar seus detalhes.</div>
@@ -228,11 +238,13 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
       <div class="media-album-grid">
         <article v-for="(album, i) in albums" :key="album.id" class="media-panel media-album-card">
           <div class="media-album-cover" :class="'tone-' + (i % 9)">
-            <span>▧</span><b>{{ photos.filter(p => p.albums.includes(album.id)).length }} fotos</b>
+            <img v-if="albumCover(album)?.src" :src="albumCover(album)?.src" :alt="'Capa de ' + album.name" />
+            <span v-else>▧</span><b>{{ albumPhotos(album.id).length }} fotos</b>
           </div>
           <div class="media-album-body"><h2>{{ album.name }}</h2><p>{{ album.description || 'Coleção de imagens' }}</p>
             <div class="media-album-actions">
               <el-button size="small" type="primary" plain @click="showAlbum(album.id)">Ver fotos</el-button>
+              <el-button size="small" @click="openCoverPicker(album.id)">Escolher capa</el-button>
               <el-button size="small" @click="openAlbumDialog(album)">Editar</el-button>
               <el-popconfirm title="Remover álbum? As fotos serão mantidas." @confirm="removeAlbum(album.id)">
                 <template #reference><el-button size="small" text type="danger">Excluir</el-button></template>
@@ -245,33 +257,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
     </template>
 
     <template v-else>
-      <div class="media-landing-layout">
-        <div class="media-section-list">
-          <button v-for="item in landingSections" :key="item.name" :class="{ active: landingSection === item.name }"
-            @click="landingSection = item.name"><span>{{ item.symbol }}</span><strong>{{ item.name }}</strong><small>{{ item.detail }}</small></button>
-        </div>
-        <section class="media-panel media-section-editor">
-          <span class="media-kicker">EDIÇÃO POR SEÇÃO</span>
-          <h2>{{ landingSection }}</h2>
-          <template v-if="landingSection === 'Intro / Heroes'">
-            <p>Os textos institucionais permanecem fixos. Este editor permitirá adicionar destaques com links para álbuns, eventos e outras seções.</p>
-            <div class="media-demo-hero"><div class="media-demo-hero-copy"><small>DESTAQUE / PUBLICAÇÃO</small><h3>{{ editorialTitle }}</h3><p>{{ editorialDescription }}</p><span>{{ editorialButton || 'Ver fotos' }} →</span></div></div>
-            <div class="media-form-grid">
-              <el-form-item label="Título do destaque"><el-input v-model="editorialTitle" /></el-form-item>
-              <el-form-item label="Botão"><el-input v-model="editorialButton" /></el-form-item>
-              <el-form-item label="Destino do botão"><el-select v-model="editorialDestination"><el-option label="Álbum da Galeria" value="album" /><el-option label="Galeria completa" value="gallery" /><el-option label="Evento" value="event" /><el-option label="Seção da Landing" value="section" /></el-select></el-form-item>
-              <el-form-item v-if="editorialDestination === 'album'" label="Álbum de destino"><el-select v-model="editorialAlbum"><el-option v-for="album in albums" :key="album.id" :label="album.name" :value="album.id"/></el-select></el-form-item>
-              <el-form-item class="wide" label="Descrição"><el-input v-model="editorialDescription" type="textarea" :rows="3"/></el-form-item>
-            </div>
-            <el-button @click="demoOnly">Salvar rascunho (em breve)</el-button>
-          </template>
-          <template v-else>
-            <p>{{ landingSections.find(item => item.name === landingSection)?.detail }}.</p>
-            <div class="media-section-placeholder"><span>▧</span><strong>Área de prévia: {{ landingSection }}</strong><small>As opções serão ligadas ao acervo após a aprovação destas interfaces.</small></div>
-            <el-button @click="router.push('/midia')">Escolher imagem da Biblioteca</el-button>
-          </template>
-        </section>
-      </div>
+      <MediaLandingEditor :photos="photos" :albums="albums" />
     </template>
 
     <el-dialog v-model="uploadDialog" title="Adicionar fotos à Biblioteca" width="min(620px, 94vw)" destroy-on-close>
@@ -288,6 +274,18 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
       <template #footer><el-button @click="uploadDialog = false">Cancelar</el-button><el-button type="primary" @click="confirmUpload">Adicionar à prévia</el-button></template>
     </el-dialog>
 
+
+    <el-dialog :model-value="coverPickerAlbumId !== null" title="Capa do álbum" width="min(650px, 94vw)" @close="coverPickerAlbumId = null">
+      <p class="media-dialog-intro">Escolha uma fotografia do álbum como capa. Sem seleção, uma das fotos será escolhida automaticamente e permanecerá estável na prévia.</p>
+      <div v-if="coverPickerAlbumId !== null && albumPhotos(coverPickerAlbumId).length" class="media-cover-picker">
+        <button v-for="photo in albumPhotos(coverPickerAlbumId)" :key="photo.id" type="button" @click="chooseAlbumCover(photo.id)">
+          <span class="media-cover-thumb" :class="'tone-' + photo.tone"><img v-if="photo.src" :src="photo.src" :alt="photo.name"/><span v-else>▧</span></span>
+          <small>{{ photo.name }}</small>
+        </button>
+      </div>
+      <div v-else class="media-empty">Adicione fotos a este álbum antes de escolher uma capa.</div>
+      <template #footer><el-button @click="chooseAlbumCover(undefined)">Usar capa automática</el-button><el-button @click="coverPickerAlbumId = null">Cancelar</el-button></template>
+    </el-dialog>
     <el-dialog v-model="albumDialog" :title="editingAlbumId === null ? 'Criar álbum' : 'Editar álbum'" width="min(480px, 94vw)">
       <el-form label-position="top"><el-form-item label="Nome"><el-input v-model="albumDraft" placeholder="Ex.: Oficina de Arduino" /></el-form-item>
         <el-form-item label="Descrição"><el-input v-model="albumDescriptionDraft" type="textarea" :rows="3"/></el-form-item></el-form>
@@ -339,7 +337,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
 .media-photo-tile{border:1px solid #e8e2e7;border-radius:10px;overflow:hidden;background:#fff;text-align:left;cursor:pointer;display:block;padding:0;min-width:0;font:inherit}
 .media-photo-tile.selected{border-color:#b51649;box-shadow:0 0 0 2px #b5164923}
 .media-photo-image{height:140px;display:grid;place-items:center;position:relative;overflow:hidden}
-.media-photo-image img,.media-detail-photo img{width:100%;height:100%;object-fit:cover}
+.media-photo-image img,.media-detail-photo img{width:100%;height:100%;object-fit:contain;padding:5px;background:#f9f7f9}
 .media-photo-symbol{font-size:45px;color:#ffffffad}
 .media-tile-check{position:absolute;top:8px;right:8px;background:#fff;color:#a80f3e;width:22px;height:22px;display:grid;place-items:center;border-radius:6px;font-size:14px;font-weight:800}
 .media-tile-caption{padding:9px 10px;display:block}.media-tile-caption strong{font-size:11px;display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.media-tile-caption small{display:block;color:#8c7d88;margin-top:4px;font-size:10px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
@@ -353,7 +351,16 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
 .media-empty{text-align:center;padding:48px 10px;color:#8e808c}
 .media-album-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .media-album-card{overflow:hidden}.media-album-cover{height:160px;display:flex;align-items:center;justify-content:center;position:relative;color:#fff}.media-album-cover>span{font-size:48px;opacity:.65}.media-album-cover b{position:absolute;right:12px;bottom:12px;background:#21132680;padding:5px 9px;border-radius:6px;font-size:11px}
+.media-album-cover img{width:100%;height:100%;object-fit:contain;background:#f9f7f9}
 .media-album-body{padding:17px}.media-album-body h2{font-size:17px;margin:0 0 7px}.media-album-body p{color:#857985;font-size:12px;margin:0 0 17px}.media-album-actions{display:flex;gap:4px;flex-wrap:wrap}
+.media-album-actions :deep(.el-button){margin-left:0}
+.media-visibility-help{color:#887b87;font-size:11px;line-height:1.5;margin:9px 0 0}
+.media-cover-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0;max-height:410px;overflow:auto}
+.media-cover-picker button{border:1px solid #e8e2e7;background:white;border-radius:10px;overflow:hidden;cursor:pointer;padding:6px;min-width:0;text-align:left}
+.media-cover-picker button:hover{border-color:#ab1747}
+.media-cover-thumb{display:grid;place-items:center;height:118px;background:#faf7fa;color:#98748a;font-size:28px;overflow:hidden}
+.media-cover-thumb img{width:100%;height:100%;object-fit:contain}
+.media-cover-picker small{display:block;font-size:10px;margin:8px 3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .media-album-add{border:2px dashed #e3c7d4;border-radius:14px;background:#fffafb;color:#a80f3e;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:275px;gap:11px;cursor:pointer;font:inherit}.media-album-add span{font-size:40px}.media-album-add small{font-size:11px;color:#8e818b;max-width:160px}
 .media-landing-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}.media-section-list{display:flex;flex-direction:column;gap:7px}
 .media-section-list button{border:1px solid #e9e2e8;background:#fff;border-radius:11px;text-align:left;padding:15px 14px 15px 51px;min-height:70px;position:relative;cursor:pointer;font:inherit}
@@ -372,5 +379,5 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
 @media(max-width:1360px){.media-library-grid{grid-template-columns:minmax(0,1fr) 225px}.media-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.media-photo-image{height:115px}}
 @media(max-width:1100px){.media-library-grid{grid-template-columns:1fr}.media-details{position:static}.media-photo-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.media-album-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:750px){.media-heading{align-items:start}.media-heading p{font-size:12px}.media-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.media-stats>div{padding:12px}.media-stats strong{font-size:20px}.media-stats span{font-size:10px}.media-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.media-photo-image{height:130px}.media-landing-layout{grid-template-columns:1fr}.media-section-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.media-section-list button{min-height:70px}.media-form-grid{grid-template-columns:1fr}.media-crop-wrap{grid-template-columns:1fr}.media-crop-preview{max-width:100%}}
-@media(max-width:450px){.media-header-actions{width:100%;justify-content:space-between}.media-album-grid{grid-template-columns:1fr}.media-photo-image{height:108px}.media-panel.media-browser{padding:10px}.media-controls{flex-wrap:wrap}.media-filter-line :deep(.el-select){width:100%!important}.media-section-list{grid-template-columns:1fr}.media-section-editor{padding:14px}}
+@media(max-width:450px){.media-cover-picker{grid-template-columns:repeat(2,minmax(0,1fr))}.media-header-actions{width:100%;justify-content:space-between}.media-album-grid{grid-template-columns:1fr}.media-photo-image{height:108px}.media-panel.media-browser{padding:10px}.media-controls{flex-wrap:wrap}.media-filter-line :deep(.el-select){width:100%!important}.media-section-list{grid-template-columns:1fr}.media-section-editor{padding:14px}}
 </style>
