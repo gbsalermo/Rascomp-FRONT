@@ -54,3 +54,9 @@ Porta padrão: `http://localhost:5175`.
 Evitar ampliar o catálogo manual como solução definitiva. Upload, armazenamento, créditos, ordenação e publicação devem convergir para o modelo de mídia/CMS do RasComp.
 
 Documentação global: `../docs/README.md`.
+
+## Checkpoint visual — Galeria com fotos primeiro (13/10/2026)
+
+Na branch `v1-pos-cloud-gestao-midia`, `http://localhost:5175/` inicia em **Todas as fotos**; **Álbuns** é opção de filtro que abre coleções. Categorias, lightbox com navegação, páginas de álbum e layout responsivo funcionam com ilustrações SVG locais geradas em `src/data/albums.ts` (não são fotografias reais). Para testar: `npm install && npm run dev` na pasta `photo-gallery`.
+
+Esta aplicação independente é **somente o ambiente de prévia da interface**, sem persistência ou conexão com a Gestão. A decisão arquitetural permanece integrar a experiência na Landing em `/galeria` após validação visual, sem ativar outro deploy de produção. Não confundir os mocks com dados reais.
