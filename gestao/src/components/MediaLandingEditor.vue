@@ -62,6 +62,9 @@ const heroes = ref<EditableHero[]>(originalHeroSeeds.map(item => ({...item,showB
 const selectedHeroId = ref<string>(heroes.value[0]?.id || '')
 const selectedHero = computed(() => heroes.value.find(item => item.id === selectedHeroId.value))
 const selectedHeroIndex = computed(() => heroes.value.findIndex(item => item.id === selectedHeroId.value))
+const heroPreviewUrl = computed(() => photo(selectedHero.value?.photoId)?.src || legacyImagePath(selectedHero.value?.imagePath))
+const badHeroImageUrls = ref<Set<string>>(new Set())
+function onHeroImageError() { if (heroPreviewUrl.value) badHeroImageUrls.value.add(heroPreviewUrl.value) }
 function addHero() {
   const id = 'editorial-' + Date.now()
   heroes.value.push({
@@ -225,8 +228,9 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
             </div>
           </div>
           <div class="editor-hero-preview">
-            <img v-if="photo(selectedHero.photoId)?.src || selectedHero.imagePath"
-              :src="photo(selectedHero.photoId)?.src || legacyImagePath(selectedHero.imagePath)" alt="Imagem selecionada do Hero" />
+            <img v-if="heroPreviewUrl && !badHeroImageUrls.has(heroPreviewUrl)"
+              :src="heroPreviewUrl" @error="onHeroImageError" alt="Imagem selecionada do Hero" />
+            <span v-else-if="heroPreviewUrl" class="editor-image-unavailable">Imagem original indisponível nesta prévia — você pode escolher outra da Biblioteca.</span>
             <div class="editor-hero-copy">
               <small>{{ selectedHero.eyebrow || 'DESTAQUE EDITORIAL' }}</small>
               <h3>{{ selectedHero.title || 'Título do Hero' }}</h3>
@@ -410,6 +414,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 .media-editor-block{border-top:1px solid #eee7ed;padding-top:18px}
 .editor-hero-preview{position:relative;overflow:hidden;min-height:205px;display:flex;align-items:center;border-radius:12px;background:linear-gradient(105deg,#29172e,#914565);margin:13px 0 11px;color:#fff}
 .editor-hero-preview>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.editor-image-unavailable{position:absolute;top:10px;right:10px;max-width:280px;padding:7px 10px;background:#fff;color:#753950;font-size:10px;border-radius:7px;z-index:1}
 .editor-hero-preview:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#241524ce,transparent);pointer-events:none}
 .editor-hero-copy{position:relative;z-index:1;max-width:480px;padding:21px}
 .editor-hero-copy small{font-size:10px;letter-spacing:.07em;color:#f7cadd}
