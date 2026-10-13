@@ -84,3 +84,11 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 **Teste manual:** iniciar backend local para login da Gestão, `cd gestao && npm ci && npm run dev` (5173), `cd photo-gallery && npm install && npm run dev` (5175). A Galeria ainda executa como app isolada para a prévia; a absorção em `landing-page/galeria` será uma implementação posterior conforme decisão previamente aprovada.
 
 **Próximo gate:** o responsável validar UX desktop/mobile, biblioteca, álbum, editor de imagem e navegação da Galeria. Depois implementar a camada persistente, API e integração seção a seção. Nada desta branch foi publicado em produção.
+
+
+## Regra de ambiente para perfil DEV — 13/10/2026
+- Todo usuário **DEV** mantém acesso total à Gestão DEV e à **Gestão de Mídia**, sem troca de perfil/conta/token.
+- Dentro da sidebar, um seletor **AMBIENTE DEV** com as opções **Gestão DEV** e **Gestão de Mídia** faz a navegação entre `/` e `/midia`.
+- Em rotas `/midia/**`, a sidebar do DEV exibe apenas Biblioteca, Álbuns e Landing. Fora delas, exibe os recursos tradicionais de administração/competição. O contexto de competição e alertas operacionais não devem ocupar a interface editorial.
+- O perfil **MIDIA** continua com acesso exclusivamente editorial, sem opção de entrar em Gestão DEV; GESTAO e PARTICIPANTE não ganham acesso ao CMS. Autorização de backend permanece obrigatória quando a API do CMS for implementada.
+- Teste local: login DEV -> alternar repetidamente ambientes -> navegar Biblioteca/Álbuns/Landing -> voltar à Gestão DEV sem relogin. Conferir sidebar recolhida, mobile, menu e negativa de acesso por usuário GESTAO.
