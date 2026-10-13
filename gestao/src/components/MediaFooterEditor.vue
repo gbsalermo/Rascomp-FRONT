@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
 // Espelho EDITORIAL do Footer atual, não um serviço de persistência.
@@ -36,8 +36,6 @@ const original: FooterDraft = {
 }
 function copy():FooterDraft {return {...original,links:original.links.map(link=>({...link}))}}
 const footer=ref<FooterDraft>(copy())
-const restored=ref(false)
-const emailHref=computed(()=>footer.value.email.trim() ? 'mailto:'+footer.value.email.trim() : '')
 const isHttpUrl=(url:string)=>{try {let parsed=new URL(url);return ['https:','http:'].includes(parsed.protocol)}catch{return false}}
 function testPreview() {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(footer.value.email.trim())) {
@@ -53,8 +51,7 @@ function testPreview() {
 }
 function restore() {
  footer.value=copy()
- restored.value=true
- ElMessage.success('Dados do Footer restaurados aos valores originais desta prévia.')
+ ElMessage.success('Dados do Footer restaurados aos valores padrão encontrados no código da Landing.')
 }
 </script>
 
@@ -125,10 +122,8 @@ function restore() {
     <div class="footer-editor-actions">
       <el-button type="primary" @click="testPreview">Validar prévia local</el-button>
       <el-button @click="restore">Restaurar dados originais</el-button>
-      <span v-if="restored">Valores de referência restaurados.</span>
     </div>
     <p class="footer-editor-warning">Interface de teste: estas edições ainda não alteram os arquivos da Landing nem a produção. Contatos e links reais continuam vindos do Footer atual até a implantação do CMS.</p>
-    <a v-if="false" :href="emailHref" aria-hidden="true">Contato</a>
   </div>
 </template>
 
