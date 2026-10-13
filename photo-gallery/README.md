@@ -63,3 +63,6 @@ Esta aplicação independente é **somente o ambiente de prévia da interface**,
 
 ## Revisão visual da Galeria — segunda rodada
 O mosaico de **Todas as fotos** preserva o enquadramento original das miniaturas (`object-fit: contain`), com cards e quebras responsivas refinados. A visualização de **Álbuns** continua separada por filtro. Esta prévia utiliza imagens demonstrativas próprias, e não recebe as fotografias selecionadas em `gestao/`: isso depende da API CMS que será implementada após aprovação das interfaces. Mudanças restritas à branch `v1-pos-cloud-gestao-midia`.
+
+## Privacidade e visualização pública — checkpoint local (13/10)
+A Galeria **não é a Biblioteca interna**: para uma foto aparecer aqui, deve estar explicitamente marcada como publicada e autorizada para exibição pública no catálogo. Os componentes do índice e dos álbuns filtram itens `published === true`; não exibem nome de arquivo, textos de legenda por foto nem metadados internos sobrepostos. O texto alternativo descritivo permanece para acessibilidade. As imagens SVG atuais são **exemplos exclusivamente para testar o layout**, não vieram da Gestão. A sincronização real exige backend e revisão de permissões.
