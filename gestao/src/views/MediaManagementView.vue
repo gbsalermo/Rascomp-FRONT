@@ -240,7 +240,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
             </div>
           </div>
         </article>
-        <button class="media-album-add" @click="openAlbumDialog"><span>＋</span><strong>Criar novo álbum</strong><small>As imagens podem pertencer a vários álbuns.</small></button>
+        <button class="media-album-add" @click="openAlbumDialog()"><span>＋</span><strong>Criar novo álbum</strong><small>As imagens podem pertencer a vários álbuns.</small></button>
       </div>
     </template>
 
