@@ -65,14 +65,6 @@ const devSections = [
     ]
   },
   {
-    label: 'Mídia',
-    items: [
-      { label: 'Biblioteca', to: '/midia', icon: Picture },
-      { label: 'Álbuns', to: '/midia/albuns', icon: Collection },
-      { label: 'Landing', to: '/midia/landing', icon: Grid }
-    ]
-  },
-  {
     label: 'Administração',
     items: [
       { label: 'Usuários', to: '/usuarios', icon: User }
@@ -99,9 +91,22 @@ const mediaSections = [
   }
 ]
 
+// Mudar o ambiente visual nunca altera role, token ou capacidades da conta.
+const isDevMediaWorkspace = computed(() => auth.isDev && /^\\/midia(?:\\/|$)/.test(route.path))
+const devMediaSections = [
+  {
+    label: 'Gestão de Mídia',
+    items: [
+      { label: 'Biblioteca', to: '/midia', icon: Picture },
+      { label: 'Álbuns', to: '/midia/albuns', icon: Collection },
+      { label: 'Landing', to: '/midia/landing', icon: Grid }
+    ]
+  }
+]
 const sections = computed(() => {
   if (auth.isParticipant) return participantSections
   if (auth.isMedia) return mediaSections
+  if (isDevMediaWorkspace.value) return devMediaSections
   if (auth.isDev) return devSections
   return devSections.filter((section) => section.label !== 'Administração')
 })
@@ -145,7 +150,8 @@ const roleLabel = computed(() => {
 })
 const panelLabel = computed(() => {
   if (auth.isParticipant) return 'Portal do Participante'
-  if (auth.isMedia) return 'Painel de Mídia'
+  if (auth.isMedia || isDevMediaWorkspace.value) return 'Gestão de Mídia'
+  if (auth.isDev) return 'Gestão DEV'
   return 'Painel de Gestão'
 })
 const alertCount = computed(() => alerts.value.length)
@@ -266,7 +272,7 @@ watch(() => competition.selectedId, loadAlerts)
         <el-icon><component :is="collapsed ? ArrowRight : ArrowLeft" /></el-icon>
       </button>
 
-      <button class="brand sidebar-brand-v2" @click="go(auth.isParticipant ? '/minha-equipe' : '/')">
+      <button class="brand sidebar-brand-v2" @click="go(auth.isParticipant ? '/minha-equipe' : auth.isMedia || isDevMediaWorkspace ? '/midia' : '/')">
         <span class="sidebar-rascomp-logo" aria-hidden="true">
           <svg viewBox="0 0 96 96">
             <path d="M48 15v10" /><circle cx="48" cy="11" r="4" /><rect x="22" y="28" width="52" height="45" rx="14" />
@@ -281,7 +287,21 @@ watch(() => competition.selectedId, loadAlerts)
 
       <div class="sidebar-divider" />
 
-      <div v-if="auth.canOperateCompetition" class="sidebar-competition-mobile">
+      <div v-if="auth.isDev" class="dev-workspace-switch" aria-label="Selecionar ambiente">
+        <span v-if="!collapsed" class="dev-workspace-caption">AMBIENTE DEV</span>
+        <button type="button" class="dev-workspace-option" :class="{ active: !isDevMediaWorkspace }"
+          :title="collapsed ? 'Gestão DEV' : undefined" :aria-current="!isDevMediaWorkspace ? 'page' : undefined"
+          @click="go('/')">
+          <el-icon><DataBoard /></el-icon><span v-if="!collapsed">Gestão DEV</span>
+        </button>
+        <button type="button" class="dev-workspace-option" :class="{ active: isDevMediaWorkspace }"
+          :title="collapsed ? 'Gestão de Mídia' : undefined" :aria-current="isDevMediaWorkspace ? 'page' : undefined"
+          @click="go('/midia')">
+          <el-icon><Picture /></el-icon><span v-if="!collapsed">Gestão de Mídia</span>
+        </button>
+      </div>
+
+      <div v-if="auth.canOperateCompetition && !isDevMediaWorkspace" class="sidebar-competition-mobile">
         <span>{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
         <el-select
           v-if="auth.isDev"
@@ -321,7 +341,7 @@ watch(() => competition.selectedId, loadAlerts)
           </div>
         </div>
 
-        <div v-if="auth.canOperateCompetition" class="topbar-competition-switch">
+        <div v-if="auth.canOperateCompetition && !isDevMediaWorkspace" class="topbar-competition-switch">
           <div class="competition-switch-copy">
             <span>{{ auth.isDev ? 'Competição em foco' : 'Competição vigente' }}</span>
             <small>{{ competition.selectedCompetition?.status?.replaceAll('_', ' ') || 'Sem edição operacional' }}</small>
@@ -342,7 +362,7 @@ watch(() => competition.selectedId, loadAlerts)
         </div>
 
         <div class="topbar-user">
-          <el-dropdown v-if="auth.canOperateCompetition" trigger="click" placement="bottom-end" @visible-change="(visible: boolean) => visible && loadAlerts()">
+          <el-dropdown v-if="auth.canOperateCompetition && !isDevMediaWorkspace" trigger="click" placement="bottom-end" @visible-change="(visible: boolean) => visible && loadAlerts()">
             <button class="notification-bell" aria-label="Abrir alertas" title="Alertas da competição">
               <el-badge :value="alertCount" :hidden="alertCount === 0" :max="9">
                 <el-icon><Bell /></el-icon>
@@ -392,3 +412,53 @@ watch(() => competition.selectedId, loadAlerts)
     </main>
   </div>
 </template>
+
+<style scoped>
+/* Alternância de ambiente visível apenas para DEV. Não troca permissões nem login. */
+.dev-workspace-switch {
+  display: grid;
+  gap: 3px;
+  padding: 10px 10px 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, .10);
+}
+.dev-workspace-caption {
+  padding: 0 8px 7px;
+  font-size: .64rem;
+  font-weight: 850;
+  letter-spacing: .09em;
+  color: rgba(255, 255, 255, .43);
+}
+.dev-workspace-option {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(255,255,255,.7);
+  font: inherit;
+  font-size: .79rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background .16s, color .16s;
+}
+.dev-workspace-option:hover {
+  background: rgba(195, 21, 73, .13);
+  color: #fff;
+}
+.dev-workspace-option.active {
+  border-color: rgba(228, 71, 121, .27);
+  background: rgba(195, 21, 73, .28);
+  color: #fff;
+}
+.dev-workspace-option .el-icon { font-size: 1rem; flex-shrink: 0; }
+.collapsed .dev-workspace-switch { padding: 10px 4px 13px; }
+.collapsed .dev-workspace-option { justify-content: center; padding: 10px 4px; }
+@media(max-width: 980px) {
+  .dev-workspace-option { min-height: 44px; }
+}
+</style>
