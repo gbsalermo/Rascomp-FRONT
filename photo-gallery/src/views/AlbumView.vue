@@ -7,9 +7,10 @@ const route = useRoute()
 const selectedIndex = ref<number | null>(null)
 
 const album = computed(() => findAlbum(route.params.slug))
+const publicPhotos = computed(() => album.value?.photos.filter(photo=>photo.published===true) || [])
 const selectedPhoto = computed<GalleryPhoto | null>(() => {
   if (selectedIndex.value == null || !album.value) return null
-  return album.value.photos[selectedIndex.value] || null
+  return publicPhotos.value[selectedIndex.value] || null
 })
 
 function openPhoto(index: number) {
@@ -22,7 +23,7 @@ function closeLightbox() {
 
 function previousPhoto() {
   if (selectedIndex.value == null || !album.value) return
-  selectedIndex.value = (selectedIndex.value - 1 + album.value.photos.length) % album.value.photos.length
+  selectedIndex.value = (selectedIndex.value - 1 + publicPhotos.value.length) % album.value.photos.length
 }
 
 function nextPhoto() {
@@ -45,7 +46,7 @@ watch(() => route.params.slug, closeLightbox)
           <p>{{ album.description }}</p>
         </div>
         <div class="album-summary">
-          <strong>{{ album.count }}</strong>
+          <strong>{{ publicPhotos.length }}</strong>
           <span>fotos no álbum</span>
           <small>{{ album.date }}</small>
         </div>
@@ -53,7 +54,7 @@ watch(() => route.params.slug, closeLightbox)
 
       <div class="album-photo-grid">
         <button
-          v-for="(photo, index) in album.photos"
+          v-for="(photo, index) in publicPhotos"
           :key="photo.id"
           type="button"
           class="album-photo-card"
@@ -88,7 +89,7 @@ watch(() => route.params.slug, closeLightbox)
           <strong>{{ album.title }}</strong>
           <small>Foto {{ selectedIndex + 1 }}</small>
         </div>
-        <p>{{ selectedIndex + 1 }} / {{ album.photos.length }}</p>
+        <p>{{ selectedIndex + 1 }} / {{ publicPhotos.length }}</p>
       </div>
 
       <button type="button" class="lightbox-arrow next" aria-label="Próxima foto" @click="nextPhoto">›</button>
