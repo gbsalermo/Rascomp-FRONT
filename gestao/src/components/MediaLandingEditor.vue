@@ -163,31 +163,66 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
       <p>{{ sections.find(item => item.name === section)?.description }}.</p>
 
       <template v-if="section === 'Intro / Heroes'">
-        <div class="media-editor-block">
-          <h3>Publicação / destaque no Hero</h3>
-          <p>Adicione uma chamada editorial aos slides da Intro sem mudar os textos institucionais fixos.</p>
-          <div class="editor-hero-preview">
-            <img v-if="photo(heroPhotoId)?.src" :src="photo(heroPhotoId)?.src" alt="Prévia do Hero" />
-            <div class="editor-hero-copy"><small>DESTAQUE EDITORIAL</small><h3>{{ heroTitle || 'Título da publicação' }}</h3><p>{{ heroDescription }}</p><span>{{ heroButton || 'Ver mais' }} →</span></div>
-          </div>
-          <div class="editor-actions"><el-button @click="openPicker('hero')">{{ heroPhotoId ? 'Trocar imagem do Hero' : 'Escolher imagem do Hero' }}</el-button><span class="editor-photo-name">{{ photo(heroPhotoId)?.name || 'Nenhuma imagem selecionada' }}</span></div>
-          <div class="editor-form-grid">
-            <el-form-item label="Título"><el-input v-model="heroTitle" maxlength="100" show-word-limit/></el-form-item>
-            <el-form-item label="Texto do botão"><el-input v-model="heroButton" maxlength="40"/></el-form-item>
-            <el-form-item label="Destino do botão"><el-select v-model="heroDestination">
-              <el-option value="album" label="Álbum da Galeria"/><el-option value="gallery" label="Galeria completa"/><el-option value="event" label="Evento"/><el-option value="section" label="Seção da Landing"/>
-            </el-select></el-form-item>
-            <el-form-item v-if="heroDestination === 'album'" label="Álbum de destino"><el-select v-model="heroAlbum" placeholder="Escolha o álbum">
-              <el-option v-for="album in albums" :key="album.id" :label="album.name" :value="album.id"/>
-            </el-select></el-form-item>
-            <el-form-item v-else-if="heroDestination === 'event' || heroDestination === 'section'" :label="heroDestination === 'event' ? 'Evento relacionado' : 'Seção de destino'">
-              <el-select v-if="heroDestination === 'event'" v-model="heroTarget"><el-option v-for="event in events" :key="event.id" :label="event.title || 'Evento sem título'" :value="String(event.id)"/></el-select>
-              <el-select v-else v-model="heroTarget"><el-option v-for="item in sections" :key="item.name" :label="item.name" :value="item.name"/></el-select>
-            </el-form-item>
-            <el-form-item label="Descrição" class="span-two"><el-input v-model="heroDescription" type="textarea" :rows="3" maxlength="300" show-word-limit /></el-form-item>
-          </div>
-          <el-checkbox v-model="heroActive">Manter este destaque ativo no carrossel</el-checkbox>
+        <div class="editor-heading">
+          <div><h3>Heroes da Intro</h3><p>Gerencie os slides que já existem na Landing e os novos destaques. Selecione um item para editar.</p></div>
+          <el-button type="primary" plain @click="addHero">+ Adicionar Hero</el-button>
         </div>
+        <div class="editor-inventory">
+          <button v-for="(item,index) in heroes" :key="item.id" type="button" class="editor-inventory-card" :class="{active:selectedHeroId===item.id}" @click="selectedHeroId=item.id">
+            <span class="editor-inventory-counter">{{ index + 1 }}</span>
+            <span class="editor-inventory-summary">
+              <strong>{{ item.title || 'Novo Hero (sem título)' }}</strong>
+              <small>{{ item.existing ? 'Já existe na Landing' : 'Novo destaque' }} · {{ item.active ? 'Ativo' : 'Desativado' }}</small>
+            </span>
+            <span class="editor-inventory-arrow">→</span>
+          </button>
+        </div>
+        <div v-if="selectedHero" class="media-editor-block">
+          <div class="editor-heading">
+            <div><h3>Editar Hero {{ selectedHeroIndex + 1 }}</h3><p>{{ selectedHero.existing ? 'Baseado no slide atual da Landing' : 'Novo destaque editorial' }} · Alterações apenas na prévia.</p></div>
+            <div class="editor-inline-actions">
+              <el-button size="small" :disabled="selectedHeroIndex===0" @click="reorderHero(-1)">↑</el-button>
+              <el-button size="small" :disabled="selectedHeroIndex===heroes.length-1" @click="reorderHero(1)">↓</el-button>
+              <el-button size="small" type="danger" plain @click="removeHero">Remover</el-button>
+            </div>
+          </div>
+          <div class="editor-hero-preview">
+            <img v-if="photo(selectedHero.photoId)?.src || selectedHero.imagePath"
+              :src="photo(selectedHero.photoId)?.src || legacyImagePath(selectedHero.imagePath)" alt="Imagem selecionada do Hero" />
+            <div class="editor-hero-copy">
+              <small>{{ selectedHero.eyebrow || 'DESTAQUE EDITORIAL' }}</small>
+              <h3>{{ selectedHero.title || 'Título do Hero' }}</h3>
+              <p>{{ selectedHero.description }}</p>
+              <span>{{ selectedHero.button || 'Ver mais' }} →</span>
+            </div>
+          </div>
+          <div class="editor-actions">
+            <el-button @click="openPicker('hero')">{{ selectedHero.photoId || selectedHero.imagePath ? 'Trocar imagem' : 'Escolher imagem' }}</el-button>
+            <el-button v-if="selectedHero.photoId" @click="selectedHero.photoId=undefined">Restaurar imagem original</el-button>
+            <span class="editor-photo-name">{{ photo(selectedHero.photoId)?.name || selectedHero.imagePath || 'Nenhuma imagem selecionada' }}</span>
+          </div>
+          <div class="editor-form-grid">
+            <el-form-item label="Chamada superior"><el-input v-model="selectedHero.eyebrow" maxlength="50"/></el-form-item>
+            <el-form-item label="Título"><el-input v-model="selectedHero.title" maxlength="120" show-word-limit/></el-form-item>
+            <el-form-item label="Texto do botão"><el-input v-model="selectedHero.button" maxlength="40"/></el-form-item>
+            <el-form-item label="Destino do botão"><el-select v-model="selectedHero.destination">
+              <el-option value="album" label="Álbum da Galeria"/><el-option value="gallery" label="Galeria completa"/>
+              <el-option value="event" label="Evento"/><el-option value="section" label="Seção da Landing"/>
+            </el-select></el-form-item>
+            <el-form-item v-if="selectedHero.destination === 'album'" label="Álbum de destino"><el-select v-model="selectedHero.target">
+              <el-option v-for="album in albums" :key="album.id" :label="album.name" :value="String(album.id)"/>
+            </el-select></el-form-item>
+            <el-form-item v-else-if="selectedHero.destination === 'event'" label="Evento relacionado"><el-select v-model="selectedHero.target">
+              <el-option v-for="event in events" :key="event.id" :label="event.title" :value="event.id"/>
+            </el-select></el-form-item>
+            <el-form-item v-else-if="selectedHero.destination === 'section'" label="Seção de destino"><el-select v-model="selectedHero.target">
+              <el-option v-for="item in sections" :key="item.name" :label="item.name" :value="item.name"/>
+            </el-select></el-form-item>
+            <el-form-item label="Descrição" class="span-two"><el-input v-model="selectedHero.description" type="textarea" :rows="3" maxlength="300" show-word-limit /></el-form-item>
+          </div>
+          <el-switch v-model="selectedHero.active" active-text="Hero ativo" inactive-text="Oculto na prévia" />
+        </div>
+        <div v-else class="editor-empty">Nenhum Hero cadastrado nesta prévia. Clique em Adicionar Hero.</div>
       </template>
 
       <template v-else-if="section === 'Sobre'">
@@ -287,6 +322,16 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 </template>
 
 <style scoped>
+.editor-inventory{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:7px 0 14px}
+.editor-inventory-card{border:1px solid #e7dfe6;border-radius:10px;background:white;padding:12px;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;min-width:0}
+.editor-inventory-card.active{border-color:#aa1747;background:#fff4f7;box-shadow:0 0 0 1px #aa17472a}
+.editor-inventory-counter{height:29px;width:29px;min-width:29px;display:grid;place-items:center;border-radius:8px;background:#f5ecf1;color:#ad1747;font-weight:850;font-size:12px}
+.editor-inventory-summary{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.editor-inventory-summary strong{font-size:12px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.editor-inventory-summary small{color:#8d818b;font-size:10px}
+.editor-inventory-arrow{color:#ad1747}
+@media(max-width:700px){.editor-inventory{grid-template-columns:1fr}}
+
 .media-landing-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start}
 .media-section-list{display:flex;flex-direction:column;gap:8px}
 .media-section-list button{border:1px solid #e8e2e7;background:#fff;border-radius:12px;min-height:68px;text-align:left;padding:12px 13px 12px 49px;position:relative;cursor:pointer;font:inherit}
