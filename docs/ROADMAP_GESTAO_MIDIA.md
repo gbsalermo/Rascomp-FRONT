@@ -110,3 +110,11 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 **Limites do checkpoint atual:** os conteúdos ficam em memória, inclusive os arquivos selecionados via object URLs; não são persistidos, não chegam ao R2 e **não aparecem automaticamente em `photo-gallery/`**. Essa integração entre aplicações exige a API do acervo (etapas seguintes). O projeto em `photo-gallery/` ainda usa dataset ilustrativo, não fotos enviadas à Gestão.
 
 **Próximos testes visuais:** escolher imagem do Hero; Sobre sequência; fotos de cada cargo; limites e ordem de voluntários; CRUD de conquistas/eventos; Robôs por categoria/banner; logos e zoom; banner e hero de Competição; capa manual/automática; imagens completas e clareza da opção de publicação; validar Galeria em mobile e desktop. CI deve permanecer verde; PR #7 DRAFT e sem merge até aceite.
+
+## Ajuste solicitado — visibilidade definida no upload e padrão do usuário (13/10/2026)
+- No modal **Adicionar fotos à Biblioteca**, o usuário define **exibição do lote**: `Privadas — apenas na Biblioteca` ou `Públicas — Galeria após integração`. A escolha se aplica a todas as fotos enviadas no lote, independentemente do álbum.
+- O usuário configura o **padrão para novos envios** independentemente da escolha do lote atual; o modal é iniciado com esse padrão ao ser aberto novamente.
+- Na fase de prévia, a preferência é mantida em `localStorage` com chave isolada pelo ID de usuário e pelo navegador, não em MySQL. A implementação persistente futura deverá armazenar a preferência por usuário no backend, se exigida por múltiplos dispositivos.
+- Cada foto pode ter a publicação alterada individualmente depois na Biblioteca, sem mudar o padrão definido para futuros uploads.
+- Upload direto de arquivos pelo editor da Landing usa o padrão dessa conta. Não há publicação real nem ligação com a Galeria demonstrativa independente nesta fase.
+- Testar: upload público/privado, lotes múltiplos, alterar padrão e reabrir modal, trocar usuário, mudar publicação posterior e reiniciar frontend, sem publicar em produção.
