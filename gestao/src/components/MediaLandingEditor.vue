@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { originalHeroSeeds, originalAwardSeeds, originalEventSeeds, existingRobotCategorySeeds, type SeedHero } from '../content/landingEditorialSeeds'
 
-type MediaPhoto = { id: number; name: string; src?: string; tone: number; albums: number[]; published: boolean }
+type MediaPhoto = { id: number; name: string; src?: string; tone: number; albums: number[]; published: boolean; sourcePath?: string }
 type Album = { id: number; name: string; description: string; coverId?: number }
-type Award = { id: number; title: string; year: string; detail: string; photoId?: number }
-type EditorialEvent = { id: number; title: string; date: string; description: string; photoId?: number }
+type Award = { id: number; sourceId?: string; title: string; place: string; event: string; year: string; detail: string; photoId?: number; existing: boolean; active: boolean }
+type EditorialEvent = { id: string; sourceId?: string; title: string; date: string; endDate: string; description: string; location: string; type: string; photoId?: number; existing: boolean; active: boolean }
 type Sponsor = { id: number; photoId?: number; url: string; zoom: number }
 type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-banner' | 'robot' | 'event' | 'sponsor' | 'sponsor-change' | 'competition-section' | 'competition-hero'
 
@@ -33,25 +34,49 @@ const volunteerPhotos = ref<number[]>([])
 const VOLUNTEER_LIMIT = 12
 const sponsors = ref<Sponsor[]>([])
 const SPONSOR_LIMIT = 12
-const awards = ref<Award[]>([])
-const events = ref<EditorialEvent[]>([])
-const categories = [
-  { key: 'sumo', label: 'Sumô' },
-  { key: 'mini-sumo', label: 'Mini Sumô' },
-  { key: 'hockey', label: 'Hockey' },
-  { key: 'follow-line', label: 'Follow Line' }
-] as const
+const awards = ref<Award[]>(originalAwardSeeds.map(item=>({...item})))
+const events = ref<EditorialEvent[]>(originalEventSeeds.map(item=>({...item})))
+const categories = existingRobotCategorySeeds
 const robotCategory = ref<string>('sumo')
-const robotPhotos = ref<Record<string, number[]>>({ sumo: [], 'mini-sumo': [], hockey: [], 'follow-line': [] })
-const robotBannerId = ref<number | undefined>()
-const heroPhotoId = ref<number | undefined>()
-const heroTitle = ref('Oficina de Arduino na UFRB')
-const heroDescription = ref('Confira os registros da oficina e conheça nossas atividades.')
-const heroButton = ref('Ver fotos')
-const heroDestination = ref('album')
-const heroAlbum = ref<number | undefined>()
-const heroTarget = ref('')
-const heroActive = ref(true)
+const initialRobotPhotos = (key: string) => props.photos
+  .filter(item => item.sourcePath?.includes('/assets/robots/' + key + '/'))
+  .filter(item => !item.sourcePath?.includes('/assets/robots/banners/'))
+  .map(item => item.id)
+const robotPhotos = ref<Record<string, number[]>>({
+  sumo: initialRobotPhotos('sumo'),
+  'mini-sumo': initialRobotPhotos('mini-sumo'),
+  hockey: initialRobotPhotos('hockey'),
+  'follow-line': initialRobotPhotos('follow-line')
+})
+const robotBannerId = ref<number | undefined>(props.photos.find(item=>item.sourcePath?.includes('/assets/robots/banners/'))?.id)
+// Conteúdo vigente da Landing pré-carregado para editar apenas na prévia local.
+type EditableHero = SeedHero & { photoId?: number; albumId?: number }
+const heroes = ref<EditableHero[]>(originalHeroSeeds.map(item => ({...item})))
+const selectedHeroId = ref<string>(heroes.value[0]?.id || '')
+const selectedHero = computed(() => heroes.value.find(item => item.id === selectedHeroId.value))
+const selectedHeroIndex = computed(() => heroes.value.findIndex(item => item.id === selectedHeroId.value))
+function addHero() {
+  const id = 'editorial-' + Date.now()
+  heroes.value.push({
+    id, sourceId: id, existing: false, eyebrow: 'Novidade da RAS', title: '',
+    description: '', button: 'Ver mais', destination: 'gallery',
+    target: '', imagePath: '', active: true
+  })
+  selectedHeroId.value = id
+}
+async function removeHero() {
+  if (!selectedHero.value) return
+  try {
+    await ElMessageBox.confirm('Remover este Hero somente da prévia local?', 'Remover Hero', {type:'warning',confirmButtonText:'Remover',cancelButtonText:'Cancelar'})
+  } catch { return }
+  const index=selectedHeroIndex.value
+  heroes.value.splice(index,1)
+  selectedHeroId.value = heroes.value[Math.min(index,heroes.value.length-1)]?.id || ''
+}
+function reorderHero(delta: number) { move(heroes.value,selectedHeroIndex.value,delta) }
+function legacyImagePath(path: string | undefined) {
+  return path ? 'https://rasufrb.site' + path : ''
+}
 const competitionBannerId = ref<number | undefined>()
 const competitionHeroPhotoId = ref<number | undefined>()
 const competitionHeroEnabled = ref(false)
@@ -86,7 +111,7 @@ function selectPhoto(id: number) {
   if (pickTarget.value === 'volunteer' && volunteerPhotos.value.length >= VOLUNTEER_LIMIT) return
   if (pickTarget.value === 'sponsor' && sponsors.value.length >= SPONSOR_LIMIT) return
   switch (pickTarget.value) {
-    case 'hero': heroPhotoId.value = id; break
+    case 'hero': if (selectedHero.value) selectedHero.value.photoId = id; break
     case 'about': aboutPhotos.value.push(id); break
     case 'board': board.value[pickIndex.value]!.photoId = id; break
     case 'volunteer': volunteerPhotos.value.push(id); break
@@ -120,8 +145,8 @@ function move<T>(items: T[], index: number, delta: number) {
   const [item] = items.splice(index, 1)
   if (item !== undefined) items.splice(target, 0, item)
 }
-function addAward() { awards.value.push({ id: Date.now(), title: '', year: String(new Date().getFullYear()), detail: '' }) }
-function addEvent() { events.value.push({ id: Date.now(), title: '', date: '', description: '' }) }
+function addAward() { awards.value.push({ id: Date.now(), title: '', place:'', event:'', year: String(new Date().getFullYear()), detail: '', existing:false, active:true }) }
+function addEvent() { events.value.push({ id: 'event-'+Date.now(), title: '', date: '', endDate:'', description: '', location:'', type:'Participações', existing:false, active:true }) }
 function applyPreview() { ElMessage.success('Alterações aplicadas na prévia local. Nenhum conteúdo foi publicado.') }
 </script>
 
