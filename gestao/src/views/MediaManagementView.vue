@@ -47,12 +47,14 @@ const albums = ref<Album[]>([
 ])
 // Fotografias atualmente versionadas na Landing, para edição na prévia.
  // Esta ponte estática é TEMPORÁRIA: o CMS real fará inventário/migração para o R2.
+const originalAboutPhotos = import.meta.glob('../../../landing-page/src/assets/about/*.{jpg,jpeg,png,webp,avif}', { eager:true, query:'?url', import:'default' }) as Record<string,string>
 const originalRobotPhotos = import.meta.glob('../../../landing-page/src/assets/robots/**/*.{jpg,jpeg,png,webp,avif}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
 const originalBoardPhotos = import.meta.glob('../../../landing-page/src/assets/team/board/*.{jpg,jpeg,png,webp,avif}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
 const originalVolunteerPhotos = import.meta.glob('../../../landing-page/src/assets/team/volunteers/*.{jpg,jpeg,png,webp,avif}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
 const originalPartnerPhotos = import.meta.glob('../../../landing-page/src/assets/footer/partners/*.{jpg,jpeg,png,webp,avif,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
 const originalEventPhotos = import.meta.glob('../../../landing-page/src/assets/{rcx.jpg,rrc.jpeg,congresso.png}', { eager: true, query: '?url', import: 'default' }) as Record<string,string>
 const originalAssets = [
+  ...Object.entries(originalAboutPhotos),
   ...Object.entries(originalRobotPhotos),
   ...Object.entries(originalBoardPhotos),
   ...Object.entries(originalVolunteerPhotos),
@@ -62,7 +64,7 @@ const originalAssets = [
 const legacyPhotos: MediaPhoto[] = originalAssets.map(([sourcePath,src],index)=>({
   id:10000+index,
   name:sourcePath.split('/').pop() || 'imagem-existente',
-  sourcePath, src, tone:index%9, albums:[], published:true
+  sourcePath, src, tone:index%9, albums:[], published:false
 }))
 const photos = ref<MediaPhoto[]>([
   { id: 1, name: 'robo-competicao.jpg', albums: [1], published: true, tone: 0 },
@@ -397,6 +399,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
 .media-header-actions{display:flex;align-items:center;gap:10px}
 .media-demo-label{font-size:10px;color:#9b4b67;background:#fff1f6;border:1px solid #f3d7e3;border-radius:7px;padding:8px}
 .media-management :deep(.el-button--primary){--el-button-bg-color:#aa1645;--el-button-border-color:#aa1645;--el-button-hover-bg-color:#8c123a;--el-button-hover-border-color:#8c123a}
+.media-management :deep(.el-button--primary:not(.is-plain)):not(.is-text){color:#fff!important;--el-button-text-color:#fff;--el-button-hover-text-color:#fff}
 .media-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .media-stats>div{background:#fff;border:1px solid #e9e2e8;border-radius:13px;padding:16px 19px;min-height:83px}
 .media-stats span,.media-stats strong{display:block}.media-stats span{font-size:12px;color:#81757f}.media-stats strong{font-size:26px;margin-top:5px}
