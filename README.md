@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="landing-page/public/ieee-ras-official.png" alt="Identidade visual do RasComp" width="290">
+  <img src="https://raw.githubusercontent.com/gbsalermo/Rascomp/main/rascomp/docs/LogoRAS.png" alt="Identidade visual do RasComp" width="290">
 
   # RasComp — Interfaces Web
 
