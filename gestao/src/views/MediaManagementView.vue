@@ -3,13 +3,41 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import MediaLandingEditor from '../components/MediaLandingEditor.vue'
+import { useAuthStore } from '../store'
 
 type Album = { id: number; name: string; description: string; coverId?: number }
 type MediaPhoto = { id: number; name: string; albums: number[]; published: boolean; tone: number; src?: string }
 type UploadItem = { file: File; preview: string }
+type MediaVisibility = 'private' | 'public'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
+
+// Preferência local por conta: vale apenas para este navegador.
+const visibilityPreferenceKey = computed(() => 'rascomp.media.defaultVisibility.' + (auth.user?.id ?? 'anonymous'))
+function loadVisibilityPreference(): MediaVisibility {
+  try {
+    return localStorage.getItem(visibilityPreferenceKey.value) === 'public' ? 'public' : 'private'
+  } catch {
+    return 'private'
+  }
+}
+const defaultVisibility = ref<MediaVisibility>(loadVisibilityPreference())
+const uploadVisibility = ref<MediaVisibility>(defaultVisibility.value)
+function changeDefaultVisibility(value: string) {
+  const choice: MediaVisibility = value === 'public' ? 'public' : 'private'
+  defaultVisibility.value = choice
+  try {
+    localStorage.setItem(visibilityPreferenceKey.value, choice)
+  } catch {
+    ElMessage.warning('Não foi possível salvar a preferência neste navegador.')
+  }
+}
+function openUploadDialog() {
+  uploadVisibility.value = defaultVisibility.value
+  uploadDialog.value = true
+}
 const section = computed(() => route.path.endsWith('/albuns') ? 'albums' : route.path.endsWith('/landing') ? 'landing' : 'library')
 const albums = ref<Album[]>([
   { id: 1, name: 'Competições', description: 'Registros de competições e arenas' },
@@ -118,7 +146,7 @@ function addPhotoForEditor(file: File): number {
   const url = URL.createObjectURL(file)
   uploadedUrls.push(url)
   const id = Math.max(0, ...photos.value.map(item => item.id)) + 1
-  photos.value.unshift({ id, name: file.name, src: url, albums: [], published: false, tone: id % 9 })
+  photos.value.unshift({ id, name: file.name, src: url, albums: [], published: defaultVisibility.value === 'public', tone: id % 9 })
   return id
 }
 function fileChange(event: Event) {
@@ -140,7 +168,7 @@ function confirmUpload() {
   }
   const start = Math.max(0, ...photos.value.map(photo => photo.id)) + 1
   const added = uploads.value.map((item, i): MediaPhoto => ({
-    id: start + i, name: item.file.name, albums: ids, published: false,
+    id: start + i, name: item.file.name, albums: ids, published: uploadVisibility.value === 'public',
     tone: (start + i) % 9, src: item.preview
   }))
   photos.value = [...added, ...photos.value]
@@ -178,7 +206,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
       </div>
       <div class="media-header-actions">
         <span class="media-demo-label">Demonstração local</span>
-        <el-button v-if="section === 'library'" type="primary" @click="uploadDialog = true">＋ Adicionar fotos</el-button>
+        <el-button v-if="section === 'library'" type="primary" @click="openUploadDialog">＋ Adicionar fotos</el-button>
         <el-button v-if="section === 'albums'" type="primary" @click="openAlbumDialog()">＋ Novo álbum</el-button>
         <el-button v-if="section === 'landing'" type="primary" plain @click="demoOnly">Prévia do site</el-button>
       </div>
@@ -234,7 +262,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
             </div>
             <label>Exibir na Galeria pública (após integração)</label>
             <el-switch v-model="selectedPhoto.published" active-text="Sim" inactive-text="Não" />
-            <p class="media-visibility-help">Esta opção simula a futura publicação. Fotos privadas permanecem na Biblioteca; a Galeria pública mostrará somente fotos autorizadas. A prévia local não sincroniza as duas aplicações.</p>
+            <p class="media-visibility-help">Esta opção simula a futura publicação. Fotos privadas permanecem na Biblioteca. Fotos marcadas como públicas serão exibidas na Galeria quando a integração estiver pronta; você pode alterar isso a qualquer momento. A prévia local não sincroniza as duas aplicações.</p>
             <div class="media-detail-actions"><el-button @click="openCrop">Editar enquadramento</el-button></div>
           </template>
           <div v-else class="media-empty">Selecione uma imagem para visualizar seus detalhes.</div>
@@ -279,6 +307,24 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
         <el-checkbox-group v-model="targetAlbumIds"><el-checkbox v-for="album in albums" :key="album.id" :value="album.id">{{ album.name }}</el-checkbox></el-checkbox-group>
       </div>
       <el-input v-if="uploadTarget === 'new'" v-model="newAlbumName" placeholder="Nome do novo álbum" />
+      <div class="media-upload-visibility">
+        <strong>Exibição das fotos deste envio</strong>
+        <el-radio-group v-model="uploadVisibility" class="media-visibility-radio">
+          <el-radio value="private">Privadas — apenas na Biblioteca</el-radio>
+          <el-radio value="public">Públicas — aparecerão na Galeria após a integração</el-radio>
+        </el-radio-group>
+        <div class="media-default-row">
+          <div>
+            <strong>Padrão para novos envios</strong>
+            <small>Salvo para sua conta neste navegador e aplicado ao abrir o próximo upload.</small>
+          </div>
+          <el-select :model-value="defaultVisibility" style="width:180px;flex-shrink:0" @change="changeDefaultVisibility">
+            <el-option label="Privadas" value="private" />
+            <el-option label="Públicas" value="public" />
+          </el-select>
+        </div>
+        <p>O padrão pode ser diferente da escolha deste lote. Depois, você poderá mudar cada foto na Biblioteca. Nenhuma imagem é publicada de verdade nesta prévia local.</p>
+      </div>
       <template #footer><el-button @click="uploadDialog = false">Cancelar</el-button><el-button type="primary" @click="confirmUpload">Adicionar à prévia</el-button></template>
     </el-dialog>
 
@@ -381,7 +427,14 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
 .media-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 15px}.media-form-grid .wide{grid-column:1/-1}
 .media-section-placeholder{min-height:250px;background:linear-gradient(145deg,#f5eff3,#f9f8fb);border:1px dashed #dbcdd8;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:17px 0;color:#8c7287;gap:10px;text-align:center;padding:15px}
 .media-section-placeholder>span{font-size:54px}.media-section-placeholder strong{font-size:14px}.media-section-placeholder small{font-size:11px}
-.media-dialog-intro{color:#756a75;font-size:12px}.media-upload-drop{display:grid;place-items:center;min-height:103px;border:2px dashed #dfbacc;border-radius:11px;background:#fff7fa;color:#a80f3e;font-size:13px;font-weight:800;cursor:pointer}.media-upload-drop input{display:none}
+.media-dialog-intro{color:#756a75;font-size:12px}
+.media-upload-visibility{display:flex;flex-direction:column;gap:10px;margin-top:17px;padding:16px;border-radius:10px;border:1px solid #ebe3e9;background:#fcfafb}
+.media-upload-visibility>strong,.media-default-row strong{font-size:12px;color:#332331}
+.media-upload-visibility p,.media-default-row small{font-size:11px;color:#837581;line-height:1.5;margin:0}
+.media-visibility-radio{display:flex;align-items:flex-start;flex-direction:column;gap:4px}
+.media-default-row{border-top:1px solid #ebe3e9;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.media-default-row>div{display:flex;flex-direction:column;gap:4px}
+@media(max-width:480px){.media-default-row{flex-direction:column;align-items:stretch}.media-default-row :deep(.el-select){width:100%!important}}.media-upload-drop{display:grid;place-items:center;min-height:103px;border:2px dashed #dfbacc;border-radius:11px;background:#fff7fa;color:#a80f3e;font-size:13px;font-weight:800;cursor:pointer}.media-upload-drop input{display:none}
 .media-upload-preview{display:flex;gap:7px;overflow:auto;margin:12px 0}.media-upload-preview>div{min-width:84px;width:100px}.media-upload-preview img{height:66px;width:100%;object-fit:cover;border-radius:6px}.media-upload-preview span{display:block;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .media-dialog-choice{margin:15px 0}.dialog-checks{margin:12px 0}.media-crop-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:25px;align-items:start}.media-crop-preview{max-width:100%;margin:10px auto;display:grid;place-items:center;overflow:hidden;border-radius:10px;font-size:58px;color:#ffffffbb}.media-crop-preview img{width:100%;height:100%;object-fit:cover}.media-crop-inputs label{display:block;font-size:11px;color:#695c68;margin-bottom:10px}
 @media(max-width:1360px){.media-library-grid{grid-template-columns:minmax(0,1fr) 225px}.media-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.media-photo-image{height:115px}}
