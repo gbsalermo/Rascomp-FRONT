@@ -32,7 +32,7 @@ const board = ref([
   { role: 'Marketing', photoId: existingBoardIds[4] },
   { role: 'Orientador', photoId: existingBoardIds[5] }
 ])
-const aboutPhotos = ref<number[]>([])
+const aboutPhotos = ref<number[]>(props.photos.filter(item=>item.sourcePath?.includes('/assets/about/')).sort((a,b)=>(a.sourcePath||'').localeCompare(b.sourcePath||'','pt-BR',{numeric:true})).map(item=>item.id))
 const volunteerPhotos = ref<number[]>(existingVolunteerIds.slice(0,12))
 const VOLUNTEER_LIMIT = 12
 const sponsors = ref<Sponsor[]>(existingSponsorIds.slice(0,12).map((photoId,i)=>({id:i+1,photoId,url:'',zoom:100})))
@@ -57,8 +57,8 @@ const robotPhotos = ref<Record<string, number[]>>({
 })
 const robotBannerId = ref<number | undefined>(props.photos.find(item=>item.sourcePath?.includes('/assets/robots/banners/'))?.id)
 // Conteúdo vigente da Landing pré-carregado para editar apenas na prévia local.
-type EditableHero = SeedHero & { photoId?: number; albumId?: number }
-const heroes = ref<EditableHero[]>(originalHeroSeeds.map(item => ({...item})))
+type EditableHero = SeedHero & { photoId?: number; albumId?: number; showButton: boolean }
+const heroes = ref<EditableHero[]>(originalHeroSeeds.map(item => ({...item,showButton:true})))
 const selectedHeroId = ref<string>(heroes.value[0]?.id || '')
 const selectedHero = computed(() => heroes.value.find(item => item.id === selectedHeroId.value))
 const selectedHeroIndex = computed(() => heroes.value.findIndex(item => item.id === selectedHeroId.value))
@@ -67,7 +67,7 @@ function addHero() {
   heroes.value.push({
     id, sourceId: id, existing: false, eyebrow: 'Novidade da RAS', title: '',
     description: '', button: 'Ver mais', destination: 'gallery',
-    target: '', imagePath: '', active: true
+    target: '', imagePath: '', active: true, showButton: true
   })
   selectedHeroId.value = id
 }
@@ -85,10 +85,22 @@ function restoreHero() {
   const current = selectedHero.value
   if (!current || !current.existing) return
   const original = originalHeroSeeds.find(item => item.sourceId===current.sourceId)
-  if (original) Object.assign(current, {...original, photoId:undefined})
+  if (original) {
+    Object.assign(current, {...original, photoId:undefined,showButton:true})
+    ElMessage.success('Hero restaurado para título, texto, botão, imagem e estado originais nesta prévia.')
+  }
 }
 function legacyImagePath(path: string | undefined) {
-  return path ? 'https://rasufrb.site' + path : ''
+  if (!path || !path.startsWith('/media/assets/')) return ''
+  if (import.meta.env.DEV) return '/__rascomp_landing_media/' + path.slice('/media/assets/'.length)
+  return 'https://rasufrb.site' + path
+}
+function restoreMissingOriginalHeroes() {
+  const absent = originalHeroSeeds.filter(item => !heroes.value.some(hero => hero.sourceId===item.sourceId))
+  if (!absent.length) { ElMessage.info('Todos os Heroes originais já estão na lista.'); return }
+  for (const item of absent) heroes.value.push({...item,showButton:true})
+  selectedHeroId.value=absent[0]?.id || selectedHeroId.value
+  ElMessage.success(absent.length+' slide(s) original(is) restaurado(s) na prévia.')
 }
 const competitionBannerId = ref<number | undefined>()
 const competitionHeroPhotoId = ref<number | undefined>()
@@ -187,7 +199,10 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
       <template v-if="section === 'Intro / Heroes'">
         <div class="editor-heading">
           <div><h3>Heroes da Intro</h3><p>Gerencie os slides que já existem na Landing e os novos destaques. Selecione um item para editar.</p></div>
-          <el-button type="primary" plain @click="addHero">+ Adicionar Hero</el-button>
+          <div class="editor-inline-actions">
+            <el-button size="small" @click="restoreMissingOriginalHeroes">Recuperar originais removidos</el-button>
+            <el-button type="primary" plain @click="addHero">+ Adicionar Hero</el-button>
+          </div>
         </div>
         <div class="editor-inventory">
           <button v-for="(item,index) in heroes" :key="item.id" type="button" class="editor-inventory-card" :class="{active:selectedHeroId===item.id}" @click="selectedHeroId=item.id">
@@ -216,7 +231,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
               <small>{{ selectedHero.eyebrow || 'DESTAQUE EDITORIAL' }}</small>
               <h3>{{ selectedHero.title || 'Título do Hero' }}</h3>
               <p>{{ selectedHero.description }}</p>
-              <span>{{ selectedHero.button || 'Ver mais' }} →</span>
+              <span v-if="selectedHero.showButton">{{ selectedHero.button || 'Ver mais' }} →</span>
             </div>
           </div>
           <div class="editor-actions">
@@ -227,23 +242,26 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
           <div class="editor-form-grid">
             <el-form-item label="Chamada superior"><el-input v-model="selectedHero.eyebrow" maxlength="50"/></el-form-item>
             <el-form-item label="Título"><el-input v-model="selectedHero.title" maxlength="120" show-word-limit/></el-form-item>
-            <el-form-item label="Texto do botão"><el-input v-model="selectedHero.button" maxlength="40"/></el-form-item>
-            <el-form-item label="Destino do botão"><el-select v-model="selectedHero.destination">
+            <el-form-item v-if="selectedHero.showButton" label="Texto do botão"><el-input v-model="selectedHero.button" maxlength="40"/></el-form-item>
+            <el-form-item v-if="selectedHero.showButton" label="Destino do botão"><el-select v-model="selectedHero.destination">
               <el-option value="album" label="Álbum da Galeria"/><el-option value="gallery" label="Galeria completa"/>
               <el-option value="event" label="Evento"/><el-option value="section" label="Seção da Landing"/>
             </el-select></el-form-item>
-            <el-form-item v-if="selectedHero.destination === 'album'" label="Álbum de destino"><el-select v-model="selectedHero.target">
+            <el-form-item v-if="selectedHero.showButton && selectedHero.destination === 'album'" label="Álbum de destino"><el-select v-model="selectedHero.target">
               <el-option v-for="album in albums" :key="album.id" :label="album.name" :value="String(album.id)"/>
             </el-select></el-form-item>
-            <el-form-item v-else-if="selectedHero.destination === 'event'" label="Evento relacionado"><el-select v-model="selectedHero.target">
+            <el-form-item v-else-if="selectedHero.showButton && selectedHero.destination === 'event'" label="Evento relacionado"><el-select v-model="selectedHero.target">
               <el-option v-for="event in events" :key="event.id" :label="event.title" :value="event.id"/>
             </el-select></el-form-item>
-            <el-form-item v-else-if="selectedHero.destination === 'section'" label="Seção de destino"><el-select v-model="selectedHero.target">
+            <el-form-item v-else-if="selectedHero.showButton && selectedHero.destination === 'section'" label="Seção de destino"><el-select v-model="selectedHero.target">
               <el-option v-for="item in sections" :key="item.name" :label="item.name" :value="item.name"/>
             </el-select></el-form-item>
             <el-form-item label="Descrição" class="span-two"><el-input v-model="selectedHero.description" type="textarea" :rows="3" maxlength="300" show-word-limit /></el-form-item>
           </div>
-          <el-switch v-model="selectedHero.active" active-text="Hero ativo" inactive-text="Oculto na prévia" />
+          <div class="editor-switch-row">
+            <el-switch v-model="selectedHero.showButton" active-text="Hero com botão" inactive-text="Hero sem botão" />
+            <el-switch v-model="selectedHero.active" active-text="Hero ativo" inactive-text="Oculto na prévia" />
+          </div>
         </div>
         <div v-else class="editor-empty">Nenhum Hero cadastrado nesta prévia. Clique em Adicionar Hero.</div>
       </template>
@@ -405,6 +423,8 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 .editor-form-grid :deep(.el-form-item){min-width:0;display:flex;flex-direction:column;align-items:stretch}
 .editor-form-grid :deep(.el-form-item__label){justify-content:flex-start}
 .editor-original-tag{font-size:10px;font-weight:600;color:#ac4067;margin-left:8px}
+.media-section-editor :deep(.el-button--primary:not(.is-plain)):not(.is-text){color:#fff!important;--el-button-text-color:#fff;--el-button-hover-text-color:#fff;--el-button-active-text-color:#fff}
+.editor-switch-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:10px 0}
 .editor-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .editor-heading h3{margin:0 0 3px}.editor-heading p{margin:0}
 .editor-spaced{margin-top:25px}
@@ -419,7 +439,8 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 .editor-board-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0}
 .editor-board-card{padding:10px;border:1px solid #eee7eb;border-radius:11px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .editor-board-card strong{font-size:12px}
-.editor-wide-image{height:185px;border-radius:10px;border:1px dashed #dbccd7;background:#f7f4f7;display:grid;place-items:center;color:#98758b;font-size:55px;margin:12px 0}
+.editor-wide-image{height:185px;min-height:185px;max-height:185px;width:100%;min-width:0;border-radius:10px;border:1px dashed #dbccd7;background:#f7f4f7;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#98758b;font-size:55px;margin:12px 0}
+.editor-wide-image img{position:absolute;inset:0;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;display:block}
 .editor-record{border:1px solid #e8e1e7;border-radius:11px;padding:15px;margin:9px 0;background:#fff}
 .editor-record-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.editor-record-title strong{font-size:13px}
 .editor-category-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
