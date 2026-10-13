@@ -216,3 +216,14 @@ BLOCO 3                        🧪 aguardando validação manual
 Agenda unificada disponível em `/agenda`; Partidas permanece como detalhe das chaves e Resultados consolida vencedores por categoria.
 
 Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅; 166 testes backend; MySQL/Flyway V18/testdata ✅.
+
+
+## Checkpoint visual — Gestão de Mídia (13/10/2026)
+
+Na branch `v1-pos-cloud-gestao-midia`, as rotas protegidas por `manageMedia` estão disponíveis para DEV/MIDIA:
+
+- `/midia`: Biblioteca, filtros, detalhes, upload local simulado e associação a álbuns.
+- `/midia/albuns`: cartões de álbuns, criação, renomeação, exclusão sem apagar fotos.
+- `/midia/landing`: seções editoriais e prévia de publicação no Hero vinculada a eventos/galeria.
+
+Execute `npm ci && npm run dev` na pasta `gestao` (com backend local disponível para autenticação). As fotos de exemplo são **simuladas em memória** e arquivos selecionados ficam apenas no navegador; nenhuma operação grava banco/R2. A alteração de conteúdo do Hero e o editor de enquadramento são somente prévias visuais. A `main` não foi alterada por este checkpoint.
