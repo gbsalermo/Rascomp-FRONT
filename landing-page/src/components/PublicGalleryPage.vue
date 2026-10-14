@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import {computed,onMounted,onBeforeUnmount,ref} from 'vue'
+import {computed,onMounted,onBeforeUnmount,ref,watch} from 'vue'
+import {preloadImages,showPreparedImage} from '../utils/imagePreload'
 import {API_URL} from '../api'
 
 type Photo={id:number;src:string;alt:string;albumIds:number[];published:boolean}
@@ -26,6 +27,20 @@ const featured=computed(()=>{
   return items.slice(0,3)
 })
 const showing=computed(()=>selected.value!==null?displayed.value[selected.value]||null:null)
+// Preparar as fotos exibidas na Galeria, sem solicitar novamente ao abrir o modal.
+watch(displayed,items=>preloadImages(items.map(photo=>photo.src),Math.min(items.length,12)),{immediate:true})
+let galleryNavigation=0
+function openPhoto(index:number){
+  const photo=displayed.value[index]
+  if(!photo)return
+  const token=++galleryNavigation
+  void showPreparedImage(photo.src,()=>{
+    if(token!==galleryNavigation)return
+    selected.value=index
+    preloadImages([displayed.value[index-1]?.src,displayed.value[index+1]?.src])
+  })
+}
+function closePhoto(){++galleryNavigation;selected.value=null}
 const isPreview=new URLSearchParams(window.location.search).get('rascomp_gallery_preview')==='1'
 const temporaryUrls:string[]=[]
 const allowedPreviewOrigins=['https://app.rasufrb.site','http://localhost:5173','http://127.0.0.1:5173']
@@ -76,16 +91,16 @@ async function loadGallery(){
 function chooseAlbum(id:number){
   albumId.value=id
   view.value='todas'
-  selected.value=null
+  closePhoto()
 }
-function goBack(){albumId.value=null;view.value='albuns';selected.value=null}
+function goBack(){albumId.value=null;view.value='albuns';closePhoto()}
 function shift(delta:number){
   if(selected.value===null || displayed.value.length<2)return
-  selected.value=(selected.value+delta+displayed.value.length)%displayed.value.length
+  openPhoto((selected.value+delta+displayed.value.length)%displayed.value.length)
 }
 function onKey(e:KeyboardEvent){
   if(selected.value===null)return
-  if(e.key==='Escape'){selected.value=null;return}
+  if(e.key==='Escape'){closePhoto();return}
   if(e.key==='ArrowLeft')shift(-1)
   if(e.key==='ArrowRight')shift(1)
 }
@@ -164,7 +179,7 @@ onBeforeUnmount(()=>{
     </div>
     <div v-else-if="displayed.length" class="photo-wall">
       <button v-for="(photo,index) in displayed" :key="photo.id" :aria-label="'Abrir fotografia '+(index+1)"
-        class="photo-tile" @click="selected=index"><img :src="photo.src" :alt="photo.alt" loading="lazy"/></button>
+        class="photo-tile" @click="openPhoto(index)"><img :src="photo.src" :alt="photo.alt" loading="lazy"/></button>
     </div>
     <div v-else class="gallery-empty">Ainda não há fotografias públicas nesta seleção.</div>
   </main>
@@ -173,8 +188,8 @@ onBeforeUnmount(()=>{
       <a href="/">Voltar ao site institucional →</a>
     </div>
   </footer>
-  <div v-if="showing" class="gallery-modal" role="dialog" aria-modal="true" aria-label="Visualizar fotografia" @click.self="selected=null">
-    <div class="gallery-modal-top"><span>{{ (selected??0)+1 }} / {{ displayed.length }}</span><button aria-label="Fechar" @click="selected=null">×</button></div>
+  <div v-if="showing" class="gallery-modal" role="dialog" aria-modal="true" aria-label="Visualizar fotografia" @click.self="closePhoto">
+    <div class="gallery-modal-top"><span>{{ (selected??0)+1 }} / {{ displayed.length }}</span><button aria-label="Fechar" @click="closePhoto">×</button></div>
     <button v-if="displayed.length>1" class="prev" aria-label="Anterior" @click="shift(-1)">‹</button>
     <img :src="showing.src" :alt="showing.alt"/>
     <button v-if="displayed.length>1" class="next" aria-label="Próxima" @click="shift(1)">›</button>
