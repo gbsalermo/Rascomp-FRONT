@@ -39,6 +39,7 @@ const currentCategory = computed(() => categories.value.find((item) => item.id =
 const currentBracket = computed(() => brackets.value.find((item) => item.id === bracketId.value))
 const historicalSelected = computed(() => currentBracket.value?.atual === false)
 const canGenerate = computed(() => currentCompetition.value?.status === 'INSCRICOES_ENCERRADAS')
+const canInspect = computed(() => currentCompetition.value?.status === 'EM_ANDAMENTO')
 const filteredBrackets = computed(() =>
   brackets.value
     .filter((item) => !categoryId.value || item.categoryId === categoryId.value)
@@ -154,6 +155,7 @@ function inspectionTagType(registration: Registration) {
 }
 
 function openInspection(row?: Registration) {
+  if (!canInspect.value) return ElMessage.warning('Inspeções só podem ser registradas após iniciar a competição.')
   resetInspection()
   inspection.registrationId = row?.id
   inspectionUnit.value = currentCategory.value?.sumoPhysicalClass === 'SUMO_3KG' ? 'kg' : 'g'
@@ -321,6 +323,7 @@ function resetInspection() {
 }
 
 async function saveInspection() {
+  if (!canInspect.value) return ElMessage.warning('Inicie a competição antes de registrar inspeções.')
   if (!inspection.registrationId || inspection.aprovada === undefined) {
     return ElMessage.warning('Informe a inscrição e a decisão APTO/INAPTO.')
   }
@@ -394,7 +397,7 @@ onMounted(initialize)
       </div>
       <div class="heading-actions">
         <el-button @click="judgeDialog = true">Cadastrar juiz</el-button>
-        <el-button @click="openInspection()">Nova inspeção</el-button>
+        <el-button :disabled="!canInspect" title="Disponível somente com a competição em andamento" @click="openInspection()">Nova inspeção</el-button>
         <el-button
           class="brand-button"
           :disabled="!canGenerate"
@@ -494,6 +497,7 @@ onMounted(initialize)
                 v-if="row.status === 'APROVADA' && latestInspection(row.id)?.aprovada !== true"
                 size="small"
                 @click="openInspection(row)"
+                :disabled="!canInspect"
               >Inspecionar</el-button>
               <el-button
                 v-if="canDisqualify(row)"
@@ -595,7 +599,7 @@ onMounted(initialize)
       </div>
       <template #footer>
         <el-button @click="inspectionDialog = false">Cancelar</el-button>
-        <el-button class="brand-button" @click="saveInspection">Salvar inspeção</el-button>
+        <el-button class="brand-button" :disabled="!canInspect" @click="saveInspection">Salvar inspeção</el-button>
       </template>
     </el-dialog>
 
