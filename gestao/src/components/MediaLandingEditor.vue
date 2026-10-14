@@ -377,12 +377,20 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
         <div class="editor-actions"><strong>{{ categories.find(c=>c.key===robotCategory)?.label }}</strong><el-button type="primary" plain @click="openPicker('robot')">+ Adicionar foto nesta categoria</el-button></div>
         <div v-if="robotPhotos[robotCategory]?.length" class="editor-image-grid">
           <div v-for="(id,i) in robotPhotos[robotCategory]" :key="id + '-' + i" class="editor-image-item">
-            <div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :alt="photo(id)?.name"/><span v-else>▧</span></div>
+            <div class="editor-image editor-robot-photo"><img v-if="photo(id)?.src" :src="photo(id)?.src" :style="frameStyle('robot:'+robotCategory+':'+id)" :alt="robotLabel(id)"/><span v-else>▧</span>
+              <span v-if="robotTitleLocations[id]==='overlay' && robotLabel(id)" class="editor-robot-label-overlay">{{ robotLabel(id) }}</span>
+            </div>
+            <strong v-if="robotTitleLocations[id]!=='overlay'" class="editor-robot-label-below">{{ robotLabel(id) || 'Robô sem nome' }}</strong>
             <small>{{ photo(id)?.sourcePath ? 'Imagem atual da Landing' : 'Nova imagem' }}</small>
-            <el-input :model-value="robotTitles[id] ?? photo(id)?.name.replace(/\\.[^.]+$/,'')" size="small" placeholder="Nome do robô"
+            <el-input :model-value="robotTitles[id] ?? robotLabel(id)" size="small" maxlength="70" placeholder="Nome exibido na Landing"
               @update:model-value="robotTitles[id]=String($event)" />
+            <el-select :model-value="robotTitleLocations[id] ?? 'below'" size="small" @change="robotTitleLocations[id]=$event as 'below'|'overlay'">
+              <el-option label="Nome abaixo da foto" value="below"/>
+              <el-option label="Nome sobre a foto" value="overlay"/>
+            </el-select>
             <div class="editor-inline-actions">
               <el-button size="small" @click="openPicker('robot-change',i)">Trocar foto</el-button>
+              <el-button size="small" :disabled="!photo(id)?.src" @click="openAdjustment('robot:'+robotCategory+':'+id,id,'Robô — '+robotLabel(id))">Ajustar foto</el-button>
               <el-button size="small" :disabled="i===0" @click="move(robotPhotos[robotCategory]!,i,-1)">↑</el-button>
               <el-button size="small" :disabled="i===(robotPhotos[robotCategory]?.length || 0)-1" @click="move(robotPhotos[robotCategory]!,i,1)">↓</el-button>
               <el-button size="small" text type="danger" @click="robotPhotos[robotCategory]!.splice(i,1)">Remover</el-button>
@@ -403,7 +411,9 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
           <el-form-item label="Categoria"><el-select v-model="event.type"><el-option v-for="type in ['Participações','Oficinas','Palestras','Competições','Projeto Social']" :key="type" :label="type" :value="type"/></el-select></el-form-item>
           <el-form-item class="span-two" label="Descrição"><el-input v-model="event.description" type="textarea" :rows="2"/></el-form-item></div>
           <el-switch v-model="event.active" active-text="Exibir evento" inactive-text="Oculto na prévia" />
-          <div class="editor-actions"><el-button size="small" @click="openPicker('event',i)">Escolher foto do evento</el-button><span class="editor-photo-name">{{ photo(event.photoId)?.name || 'Nenhuma foto selecionada' }}</span></div>
+          <div class="editor-actions"><el-button size="small" @click="openPicker('event',i)">Escolher foto do evento</el-button>
+            <el-button size="small" :disabled="!photo(event.photoId)?.src" @click="openAdjustment('event:'+event.id,event.photoId,'Evento — '+event.title)">Ajustar imagem</el-button>
+            <span class="editor-photo-name">{{ photo(event.photoId)?.name || 'Nenhuma foto selecionada' }}</span></div>
         </div><div v-if="!events.length" class="editor-empty">Nenhum evento editorial adicionado na prévia local.</div>
       </template>
 
@@ -411,9 +421,10 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
         <div class="editor-heading"><div><h3>Logos de patrocinadores</h3><p>Carrossel com até {{ SPONSOR_LIMIT }} logos; remova, reordene e ajuste o tamanho de cada uma.</p></div><el-button type="primary" plain :disabled="sponsors.length>=SPONSOR_LIMIT" @click="openPicker('sponsor')">+ Adicionar logo ({{ sponsors.length }}/{{ SPONSOR_LIMIT }})</el-button></div>
         <div v-for="(item,i) in sponsors" :key="item.id" class="editor-record">
           <div class="editor-record-title"><strong>Patrocinador {{ i+1 }}</strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(sponsors,i,-1)">↑</el-button><el-button size="small" :disabled="i===sponsors.length-1" @click="move(sponsors,i,1)">↓</el-button><el-button type="danger" text size="small" @click="sponsors.splice(i,1)">Remover</el-button></div></div>
-          <div class="editor-sponsor-row"><div class="editor-sponsor-image"><img v-if="photo(item.photoId)?.src" :src="photo(item.photoId)?.src" :alt="photo(item.photoId)?.name" :style="{transform:'scale('+item.zoom/100+')'}"/><span v-else>▧</span></div>
-            <div class="editor-sponsor-fields"><el-form-item label="Link (opcional)"><el-input v-model="item.url" placeholder="https://..."/></el-form-item><label>Zoom da logo: {{ item.zoom }}%</label><el-slider v-model="item.zoom" :min="60" :max="160"/></div></div>
-          <el-button size="small" @click="openPicker('sponsor-change',i)">Trocar logo</el-button>
+          <div class="editor-sponsor-row"><div class="editor-sponsor-image"><img v-if="photo(item.photoId)?.src" :src="photo(item.photoId)?.src" :alt="photo(item.photoId)?.name" :style="frameStyle('sponsor:'+item.id)"/><span v-else>▧</span></div>
+            <div class="editor-sponsor-fields"><el-form-item label="Link (opcional)"><el-input v-model="item.url" placeholder="https://..."/></el-form-item></div></div>
+          <div class="editor-actions"><el-button size="small" @click="openPicker('sponsor-change',i)">Trocar logo</el-button>
+            <el-button size="small" :disabled="!photo(item.photoId)?.src" @click="openAdjustment('sponsor:'+item.id,item.photoId,'Patrocinador '+(i+1))">Ajustar imagem</el-button></div>
         </div><div v-if="!sponsors.length" class="editor-empty">Adicione logos da Biblioteca. Não serão usados automaticamente os logos institucionais do rodapé.</div>
       </template>
 
@@ -423,11 +434,12 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
         </div>
         <h3>Imagem principal da seção Competição</h3>
         <div class="editor-wide-image">
-          <img v-if="photo(competitionBannerId)?.src" :src="photo(competitionBannerId)?.src" alt="Imagem editorial da seção Competição"/>
+          <img v-if="photo(competitionBannerId)?.src" :src="photo(competitionBannerId)?.src" :style="frameStyle('competition-banner')" alt="Imagem editorial da seção Competição"/>
           <span v-else>▧</span>
         </div>
         <div class="editor-actions">
           <el-button @click="openPicker('competition-section')">{{ competitionBannerId ? 'Trocar imagem da seção' : 'Escolher imagem da seção' }}</el-button>
+          <el-button :disabled="!photo(competitionBannerId)?.src" @click="openAdjustment('competition-banner',competitionBannerId,'Imagem principal da Competição')">Ajustar imagem</el-button>
           <el-button v-if="competitionBannerId" size="small" @click="competitionBannerId=undefined">Remover imagem</el-button>
         </div>
         <el-form-item label="Texto complementar da seção (opcional)" class="editor-spaced">
@@ -439,8 +451,8 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
           <div><h3>Hero competitivo na Intro</h3><p>Mesma composição visual da Intro, com título, lote e status protegidos e provenientes da API.</p></div>
           <el-switch v-model="competitionHeroEnabled" active-text="Ativo" inactive-text="Oculto" />
         </div>
-        <div class="editor-hero-preview editor-hero-competition">
-          <img v-if="photo(competitionHeroPhotoId)?.src" :src="photo(competitionHeroPhotoId)?.src" alt="Imagem escolhida para o Hero competitivo"/>
+        <div v-if="competitionHeroEffective" class="editor-hero-preview editor-hero-competition">
+          <img v-if="photo(competitionHeroPhotoId)?.src" :src="photo(competitionHeroPhotoId)?.src" :style="frameStyle('competition-hero')" alt="Imagem escolhida para o Hero competitivo"/>
           <div class="editor-hero-copy">
             <small>STATUS DAS INSCRIÇÕES · API</small>
             <h3>Nome da competição (API)</h3>
@@ -452,9 +464,14 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
             <div class="editor-competition-actions"><span>Botão principal · API</span><span v-if="competitionHeroShowExtra">{{ competitionHeroExtraLabel || 'Veja também' }} ↗</span></div>
           </div>
         </div>
+        <div v-else class="editor-disabled-hero">
+          <strong>Hero competitivo oculto</strong>
+          <span>Mesmo com competição vigente, este Hero não será incluído na Intro após a integração do CMS. A seção Competição e os dados da API permanecem ativos.</span>
+        </div>
         <p class="editor-competition-notice">Prévia estrutural: os rótulos “API” serão preenchidos pelos dados reais quando a integração estiver concluída. Não representam uma competição fictícia.</p>
         <div class="editor-actions">
           <el-button @click="openPicker('competition-hero')">{{ competitionHeroPhotoId ? 'Trocar foto do Hero' : 'Escolher foto do Hero' }}</el-button>
+          <el-button :disabled="!photo(competitionHeroPhotoId)?.src" @click="openAdjustment('competition-hero',competitionHeroPhotoId,'Hero competitivo')">Ajustar imagem</el-button>
           <el-button v-if="competitionHeroPhotoId" size="small" @click="competitionHeroPhotoId=undefined">Remover foto</el-button>
           <span class="editor-photo-name">{{ photo(competitionHeroPhotoId)?.name || 'Nenhuma foto selecionada' }}</span>
         </div>
@@ -494,6 +511,9 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
       <div class="editor-footer"><el-button type="primary" @click="applyPreview">Aplicar na prévia local</el-button><span>Nenhum dado será salvo no banco ou publicado na Landing nesta fase.</span></div>
     </section>
 
+    <MediaImageAdjustment v-model="adjustmentOpen" :label="adjustmentLabel"
+      :src="activeAdjustmentSrc" :adjustment="frameFor(activeAdjustmentKey)"
+      @save="saveAdjustment"/>
     <el-dialog class="media-photo-picker-dialog" v-model="pickerOpen" title="Escolher imagem da Biblioteca" width="min(850px, 95vw)" append-to-body>
       <p class="editor-picker-help">Selecione uma das imagens já enviadas à Biblioteca. A imagem original será preservada.</p>
       <div class="editor-picker-uploader"><label>+ Enviar foto(s) do computador<input type="file" accept="image/*" multiple @change="directUpload" /></label><small>Também adiciona as fotos à Biblioteca nesta demonstração.</small></div>
@@ -512,6 +532,16 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
 </template>
 
 <style scoped>
+.editor-disabled-hero{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:24px;border:1px dashed #dab8c7;background:#fff5f8;color:#714958;border-radius:10px;font-size:12px;line-height:1.5}
+.editor-disabled-hero strong{font-size:14px}
+.editor-robot-photo{position:relative}
+.editor-robot-label-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,rgba(18,12,24,.82),transparent);color:white;font-size:12px;font-weight:800;padding:28px 10px 10px;text-align:center;overflow-wrap:anywhere}
+.editor-robot-label-below{font-size:12px;color:#281f2c;display:block;margin-top:8px;overflow-wrap:anywhere}
+.media-section-editor :deep(.el-button--small){min-height:35px;padding:8px 13px;font-size:12px}
+.editor-inline-actions{gap:7px}
+.editor-category-tabs button{min-height:43px;padding:11px 17px}
+.editor-hero-preview>img,.editor-image>img,.editor-wide-image>img,.editor-sponsor-image>img{max-width:none;max-height:none}
+
 .editor-inventory{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:7px 0 14px}
 .editor-inventory-card{border:1px solid #e7dfe6;border-radius:10px;background:white;padding:12px;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;min-width:0}
 .editor-inventory-card.active{border-color:#aa1747;background:#fff4f7;box-shadow:0 0 0 1px #aa17472a}
