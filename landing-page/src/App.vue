@@ -20,7 +20,11 @@ const mediaPublicationReady=ref(false)
 const displayedMediaDraft=computed(()=>localMediaDraft.value||publishedMediaDraft.value)
 // O CMS só altera seções explicitamente editadas; snapshots antigos preservam o site original.
 const publishedSections=computed<string[]>(()=>{
-  if(localMediaDraft.value)return ['heroes','about','team','robots','events','sponsors','competition','footer']
+  if(localMediaDraft.value){
+    const selected=(localMediaDraft.value as PreviewDraft & {__editedSections?:string[]}).__editedSections
+    // A prévia não deve redefinir seções que só possuem defaults do editor.
+    return Array.isArray(selected)?selected:[]
+  }
   const candidate=publishedMediaDraft.value as (PreviewDraft & {__editedSections?:unknown})|null
   if(Array.isArray(candidate?.__editedSections)){
     const explicit=candidate.__editedSections.filter((value):value is string=>typeof value==='string')
