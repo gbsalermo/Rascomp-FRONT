@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { HOME_MEDIA } from '../content/homeMedia'
+import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/localMediaPreview'
 
 const props = defineProps<{
   competition?: any
@@ -8,6 +9,7 @@ const props = defineProps<{
   registrations: any[]
   currentRegistrationLot?: any
   managementUrl: string
+  mediaPreview?: PreviewDraft|null
 }>()
 
 type HeroTone = 'competition' | 'institutional' | 'community' | 'workshop' | 'award'
@@ -28,6 +30,8 @@ type HeroSlide = {
   kind?: 'competition'
   categories?: string[]
   lotLabel?: string
+  previewFrame?: PreviewFrame
+  showButton?: boolean
 }
 
 type QuickLink = {
@@ -61,7 +65,21 @@ const competitionLotLabel = computed(() =>
   props.currentRegistrationLot?.nome || ''
 )
 
-const institutionalSlides = computed<HeroSlide[]>(() => [
+const institutionalSlides = computed<HeroSlide[]>(() => {
+  if(props.mediaPreview){
+    const authored=props.mediaPreview.heroes.filter(item=>item.active).map((item):HeroSlide=>({
+      id:item.id,eyebrow:item.eyebrow,title:item.title,description:item.description,
+      cta:item.cta,href:item.href||'#top',showButton:item.showButton,
+      tone:'institutional',image:item.image?.src,imageAlt:item.title,
+      previewFrame:item.image?.frame,mediaLabel:'Destaque editorial da RAS UFRB'
+    }))
+    return authored.length ? authored : [{
+      id:'media-empty-preview',eyebrow:'Prévia editorial',title:'Nenhum Hero ativado',
+      description:'Ative um Hero na Gestão de Mídia para visualizar aqui.',cta:'',
+      href:'#top',showButton:false,tone:'institutional',imageAlt:'',mediaLabel:'Sem destaque ativo'
+    }]
+  }
+  return [
   {
     id: 'ras',
     eyebrow: 'IEEE RAS UFRB',
@@ -122,11 +140,12 @@ const institutionalSlides = computed<HeroSlide[]>(() => [
     imageAlt: HOME_MEDIA.hero.awards.alt,
     mediaLabel: 'Foto de premiação ou competição'
   }
-])
+]})
 
 const slides = computed<HeroSlide[]>(() => {
   const base = institutionalSlides.value
 
+  if (props.mediaPreview && !props.mediaPreview.competition.heroEnabled) return base
   if (!competitionVisible.value || !props.competition) return base
 
   return [
@@ -139,16 +158,21 @@ const slides = computed<HeroSlide[]>(() => {
             ? 'Inscrições encerradas'
             : 'Competição em andamento',
       title: props.competition.nome,
-      description:
-        props.competition.descricao ||
-        'Acompanhe a competição vigente da IEEE RAS UFRB, conheça as categorias e veja as atualizações oficiais desta edição.',
+      description: [
+        props.competition.descricao || 'Acompanhe a competição vigente da IEEE RAS UFRB.',
+        ...(props.mediaPreview ? [props.mediaPreview.competition.subtitle,props.mediaPreview.competition.description] : [])
+      ].filter(Boolean).join(' — '),
       cta: props.competition.status === 'INSCRICOES_ABERTAS' ? 'Inscrever-se' : 'Área do participante',
       href: props.managementUrl,
-      secondary: 'Acompanhar evento',
-      secondaryHref: '#competicao-atual',
+      secondary:props.mediaPreview
+        ? (props.mediaPreview.competition.showExtra ? props.mediaPreview.competition.extraLabel : undefined)
+        : 'Acompanhar evento',
+      secondaryHref:props.mediaPreview?.competition.extraDestination==='gallery' ? '#galeria'
+        : props.mediaPreview?.competition.extraDestination==='events' ? '#eventos' : '#competicao-atual',
       tone: 'competition',
-      image: undefined,
-      imageAlt: '',
+      image:props.mediaPreview?.competition.heroImage?.src,
+      previewFrame:props.mediaPreview?.competition.heroImage?.frame,
+      imageAlt: 'Hero da competição',
       mediaLabel: 'Competição vigente da IEEE RAS UFRB',
       kind: 'competition',
       categories: competitionCategories.value.map((item) => item.nome),
@@ -232,6 +256,7 @@ onBeforeUnmount(stopTimer)
             v-if="activeSlide.image"
             class="stage-media"
             :src="activeSlide.image"
+            :style="previewImageStyle(activeSlide.previewFrame)"
             :alt="activeSlide.imageAlt"
           />
           <div v-else class="stage-visual-placeholder" aria-hidden="true">
@@ -272,8 +297,9 @@ onBeforeUnmount(stopTimer)
             <div class="highlights-actions" :class="{ 'competition-actions': activeSlide.kind === 'competition' }">
               <a
                 v-if="
+                  activeSlide.showButton !== false && (
                   activeSlide.kind !== 'competition' ||
-                  (activeSlide.href && ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(competition?.status))
+                  (activeSlide.href && ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(competition?.status)))
                 "
                 class="highlight-primary"
                 :href="activeSlide.href"

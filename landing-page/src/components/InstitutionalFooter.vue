@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import {type PreviewDraft} from '../content/localMediaPreview'
+const props=defineProps<{mediaPreview?:PreviewDraft|null}>()
+const footer=computed(()=>props.mediaPreview?.footer)
+const linkHref=(id:string,defaultUrl:string)=>footer.value?.links.find(item=>item.id===id)?.url || defaultUrl
 const partnerLogoModules = import.meta.glob(
   '../assets/footer/partners/*.{jpg,jpeg,png,webp,avif,svg}',
   {
@@ -8,19 +13,13 @@ const partnerLogoModules = import.meta.glob(
   }
 ) as Record<string, string>
 
-const contactEmail = String(
-  import.meta.env.VITE_RAS_EMAIL || 'ieeerasufrb@gmail.com'
-).trim()
+const contactEmail = computed(()=>footer.value?.email || String(import.meta.env.VITE_RAS_EMAIL || 'ieeerasufrb@gmail.com').trim())
 
-const instagramUrl = String(
-  import.meta.env.VITE_INSTAGRAM_URL || 'https://www.instagram.com/ieeerasufrb/'
-).trim()
+const instagramUrl = computed(()=>footer.value?.instagram || String(import.meta.env.VITE_INSTAGRAM_URL || 'https://www.instagram.com/ieeerasufrb/').trim())
 
-const whatsappUrl = String(
-  import.meta.env.VITE_WHATSAPP_URL || 'https://wa.me/5573981264674'
-).trim()
+const whatsappUrl = computed(()=>footer.value?.whatsapp || String(import.meta.env.VITE_WHATSAPP_URL || 'https://wa.me/5573981264674').trim())
 
-const emailHref = `mailto:${contactEmail}`
+const emailHref = computed(()=>`mailto:${contactEmail.value}`)
 
 function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
   const entry = Object.entries(partnerLogoModules).find(([path]) => {
@@ -56,7 +55,7 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
             </span>
             <div>
               <strong>UFRB — Campus Cruz das Almas</strong>
-              <small>Cruz das Almas, BA — Brasil</small>
+              <small>{{ footer?.campusDetail || 'Cruz das Almas, BA — Brasil' }}</small>
             </div>
           </div>
         </section>
@@ -66,25 +65,25 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
           <h3>Links úteis</h3>
           <span class="footer-heading-line" aria-hidden="true" />
 
-          <a href="https://www.ufrb.edu.br/" target="_blank" rel="noreferrer">
+          <a :href="linkHref('ufrb','https://www.ufrb.edu.br/')" target="_blank" rel="noreferrer">
             <strong>UFRB</strong>
             <small>Universidade Federal do Recôncavo da Bahia</small>
             <span aria-hidden="true">↗</span>
           </a>
 
-          <a href="https://www.ieee.org/" target="_blank" rel="noreferrer">
+          <a :href="linkHref('ieee','https://www.ieee.org/')" target="_blank" rel="noreferrer">
             <strong>IEEE</strong>
             <small>Institute of Electrical and Electronics Engineers</small>
             <span aria-hidden="true">↗</span>
           </a>
 
-          <a href="https://www.ieee-ras.org/" target="_blank" rel="noreferrer">
+          <a :href="linkHref('ieee-ras','https://www.ieee-ras.org/')" target="_blank" rel="noreferrer">
             <strong>IEEE RAS</strong>
             <small>Robotics & Automation Society</small>
             <span aria-hidden="true">↗</span>
           </a>
 
-          <a href="https://www.ieee.org.br/" target="_blank" rel="noreferrer">
+          <a :href="linkHref('ieee-br','https://www.ieee.org.br/')" target="_blank" rel="noreferrer">
             <strong>IEEE Brasil</strong>
             <small>Atuação e iniciativas do IEEE no Brasil</small>
             <span aria-hidden="true">↗</span>
@@ -133,15 +132,15 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
           </div>
 
           <p class="footer-support-copy">
-            <strong>Apoie o projeto.</strong>
-            Quer contribuir com nossas ações, eventos e iniciativas? Fale conosco e ajude a fortalecer a robótica e a tecnologia na comunidade.
+            <strong>{{ footer?.supportTitle || 'Apoie o projeto.' }}</strong>
+            {{ footer?.supportMessage || 'Quer contribuir com nossas ações, eventos e iniciativas? Fale conosco e ajude a fortalecer a robótica e a tecnologia na comunidade.' }}
           </p>
         </section>
 
         <section class="footer-contact-column">
           <h3>Fale conosco</h3>
           <span class="footer-heading-line" aria-hidden="true" />
-          <p>Tem dúvidas, sugestões ou quer saber mais sobre a RAS UFRB? Entre em contato conosco.</p>
+          <p>{{ footer?.contactIntro || 'Tem dúvidas, sugestões ou quer saber mais sobre a RAS UFRB? Entre em contato conosco.' }}</p>
 
           <div class="footer-contact-cards">
             <a class="footer-contact-card" :href="emailHref">
@@ -168,7 +167,7 @@ function partnerLogo(name: 'ufrb' | 'ieee' | 'cetec') {
                   <circle cx="17.2" cy="6.8" r=".9" class="footer-icon-dot"/>
                 </svg>
               </span>
-              <div><strong>Instagram</strong><small>@ieeerasufrb</small></div>
+              <div><strong>Instagram</strong><small>{{ footer?.instagramHandle || '@ieeerasufrb' }}</small></div>
               <b aria-hidden="true">›</b>
             </a>
 

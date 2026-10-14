@@ -216,3 +216,53 @@ BLOCO 3                        🧪 aguardando validação manual
 Agenda unificada disponível em `/agenda`; Partidas permanece como detalhe das chaves e Resultados consolida vencedores por categoria.
 
 Checkpoint: Frontend Checks #213 ✅; Backend Tests #493 ✅; 166 testes backend; MySQL/Flyway V18/testdata ✅.
+
+
+## Checkpoint visual — Gestão de Mídia (13/10/2026)
+
+Na branch `v1-pos-cloud-gestao-midia`, as rotas protegidas por `manageMedia` estão disponíveis para DEV/MIDIA:
+
+- `/midia`: Biblioteca, filtros, detalhes, upload local simulado e associação a álbuns.
+- `/midia/albuns`: cartões de álbuns, criação, renomeação, exclusão sem apagar fotos.
+- `/midia/landing`: seções editoriais e prévia de publicação no Hero vinculada a eventos/galeria.
+
+Execute `npm ci && npm run dev` na pasta `gestao` (com backend local disponível para autenticação). As fotos de exemplo são **simuladas em memória** e arquivos selecionados ficam apenas no navegador; nenhuma operação grava banco/R2. A alteração de conteúdo do Hero e o editor de enquadramento são somente prévias visuais. A `main` não foi alterada por este checkpoint.
+
+## Validação dos editores específicos da Landing
+Na branch `v1-pos-cloud-gestao-midia`, navegue em `/midia/landing`: Intro / Heroes (imagem e publicação), Sobre (sequência de fotos), Equipe e Conquistas (cargos fixos, voluntários limitados a 12 e conquistas editáveis), Robôs (banner e quatro categorias), Eventos (foto, data, detalhes e ordem), Patrocinadores (até 12 logos) e Competição (imagem e Hero editorial, sem interferir na API). O seletor de foto permite enviar arquivo diretamente para a prévia local da Biblioteca. A opção de exibição pública é um controle ilustrativo — **não envia imagens à Galeria independente**. Em `/midia/albuns`, testar capa manual ou automática e visualização sem recorte. O PR #7 segue em rascunho, pendente de validação manual.
+
+## Padrão de exibição das imagens na prévia local
+Em `/midia` → **Adicionar fotos**, escolha para o lote `Privadas` ou `Públicas` e defina separadamente o **padrão para novos envios**. A preferência do usuário DEV/MIDIA é memorizada somente neste navegador por ID de conta; cada novo modal usa esse padrão inicialmente, mas permite sobrescrever para o lote corrente. O upload direto das seções da Landing também respeita o padrão. Depois de adicionar as fotos, o campo **Exibir na Galeria pública (após integração)** no detalhe permite modificar uma foto individualmente. **Tudo permanece em memória e não sincroniza com a Galeria pública nesta fase.**
+
+## Edição de conteúdos já existentes — checkpoint visual
+O editor de `/midia/landing` agora inicia **Intro / Heroes** com os quatro slides institucionais originais (`ras`, `schools`, `workshops`, `awards`) e permite selecionar, editar, trocar fotos, ativar/ocultar, mover na ordem, adicionar, remover e restaurar o Hero original. Eventos e conquistas já existentes são inicializados a partir do inventário editorial versionado em `src/content/landingEditorialSeeds.ts`. Os arquivos de robôs/categorias, diretoria, voluntários e logos vêm das pastas de assets da Landing como imagens de prévia, permitindo alterações nas listas sem alterar os arquivos de origem. **Nenhuma mudança é publicada**: é um snapshot de interface em memória, que será migrado ao CMS persistente após validação. Para validar, abra `/midia/landing` com conta DEV/MIDIA e teste edições nos itens marcados `Já existe na Landing`.
+
+## Testes adicionais do editor (13/10)
+Faça login local e abra `/midia/landing`: no Hero, edite qualquer slide atual, altere campos/imagem, clique **Restaurar original** e confira o aviso; marque/desmarque **Hero com botão**; remova um original e teste **Recuperar originais removidos**. Em **Sobre**, agora devem aparecer as fotos existentes de `landing-page/src/assets/about/`. Em **Robôs**, o banner deve ficar contido em sua prévia sem bloquear abas ou ações. Todos os arquivos públicos antigos dos Heroes são servidos localmente pelo plugin Vite dev `/__rascomp_landing_media/`; arquivos inválidos geram fallback. Fotos internas versionadas começam privadas por padrão. Reinicie `npm run dev` após atualizar a branch, pois `vite.config.ts` mudou.
+
+## Gestão de Mídia — Hero competitivo e Footer
+Em `/midia/landing`, abra **Competição** para testar o Hero competitivo: foto, subtítulo, texto extra, ativo/inativo e botão secundário opcional. Os valores “API” são apenas indicadores da fonte dos dados oficiais (nome, situação, lote, categorias e CTA principal). Abra **Footer** para editar, visualizar e restaurar contatos, localização, textos de apoio e URLs de instituições. Os dados iniciais são padrões encontrados no código da Landing, não valores buscados ao vivo. Nada nessa versão muda os dados da competição ou publica alterações no Footer real.
+
+## QA — enquadramento e Hero competitivo
+Em `/midia/landing` abra **Competição**: ao desativar o Hero, sua prévia some e uma mensagem explica que a seção principal continua independente; ao ativar, volta a prévia. Esta regra ainda exige integração ao CMS para surtir efeito na Landing pública. Em **Robôs**, escolha uma foto da categoria, edite o nome mostrado e escolha legenda sobre ou abaixo da foto. Teste **Ajustar foto** e altere zoom, largura, altura, posição e encaixe; repita com banner, Hero, Sobre, diretoria, conquistas, eventos, patrocinadores e competição. Os ajustes não alteram o arquivo original e ainda são exclusivamente da sessão local. Botões pequenos ganharam tamanho maior.
+
+## Prévia da Landing real (somente desenvolvimento local)
+Inicie dois terminais no repositório `Rascomp-FRONT`:
+```powershell
+cd gestao
+npm ci
+npm run dev
+```
+```powershell
+cd landing-page
+npm install
+npm run dev
+```
+Com o backend de autenticação disponível, entre com perfil DEV/MIDIA em `http://localhost:5173/midia/landing`, edite um slide e clique **Prévia do site**. Isso abrirá a Landing verdadeira em `http://localhost:5174/?rascomp_media_preview=1`, identificada com a faixa **PRÉVIA LOCAL — NÃO PUBLICADA**. Ao modificar algo na Gestão, clique **Aplicar na prévia local** para atualizar a aba aberta. A navegação para links externos/inscrição é bloqueada no modo de prévia. Se a janela for bloqueada, permita pop-ups do localhost. Esse fluxo não grava banco, R2, arquivos estáticos ou publicações e não funciona em produção; o estado atual só existe na sessão do navegador.
+
+
+## Nova prévia da Galeria e publicação independente
+Na Biblioteca, um arquivo pode ser usado na Landing e permanecer **privado** na Galeria. O upload individual/em lote tem seleção Pública/Privada e padrão do usuário; cada foto mantém seu próprio switch de visibilidade. Os filtros **Na Galeria** e **Privadas** ajudam a revisar o acervo. Em **Biblioteca** ou **Álbuns**, clique **Prévia da Galeria** para abrir `localhost:5175` com **somente fotos públicas** desta sessão, inclusive imagens sem álbum. Clique novamente para atualizar após mudar o estado das imagens. Nenhuma ação altera a Galeria publicada: é prévia local segura, como a Prévia do site. Somente depois do backend CMS o usuário poderá Salvar rascunho/Publicar alterações de verdade.
+
+## Teste: seleção em lote e Intro da Galeria (14/10/2026)
+Em Biblioteca, clique **Selecionar várias**: selecione várias fotos com cliques simples (não precisa Ctrl), use **Adicionar a álbuns** para associá-las a 1+ álbuns preservando associações anteriores ou **Excluir selecionadas** para excluí-las da sessão após confirmação. As alterações não apagam fotos versionadas nem são salvas no banco. Em Biblioteca/Álbuns, clique **Destaques da Galeria**, escolha três imagens públicas diferentes na ordem 1–3, confirme, e clique **Prévia da Galeria**. A Landing institucional e a Galeria pública efetiva não são modificadas. Fotos enviadas pelo editor de Heroes e demais seções entram privadas na Galeria por padrão; podem ser publicadas explicitamente depois pela Biblioteca. A Galeria acessada diretamente em 5175 ainda mostra exemplos SVG; a prévia de verdade da Biblioteca precisa ser aberta pelo botão da Gestão. Rascunho em memória apenas.

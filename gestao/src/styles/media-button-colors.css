@@ -1,0 +1,83 @@
+/*
+ * RasComp — Gestão de Mídia
+ * Botões de ação (preenchidos): vermelho institucional + texto branco.
+ * Mantém contraste legível nos botões neutros, de texto e de remoção.
+ * Importado após os CSS globais para não depender do scoped dos componentes.
+ */
+.media-management {
+  --el-color-primary: #aa1645;
+  --el-color-primary-light-3: #c83763;
+  --el-color-primary-light-5: #d96f91;
+  --el-color-primary-light-7: #e9adbf;
+  --el-color-primary-light-8: #f2c9d6;
+  --el-color-primary-light-9: #fbeaf0;
+  --el-color-primary-dark-2: #851035;
+}
+
+/* Corrige o texto azul padrão do Element Plus nos botões vermelhos,
+   inclusive os gerados nos componentes filhos (Landing e Footer). */
+.media-management .el-button.el-button--primary:not(.is-text):not(.is-link) {
+  --el-button-bg-color: #aa1645;
+  --el-button-border-color: #aa1645;
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: #851035;
+  --el-button-hover-border-color: #851035;
+  --el-button-hover-text-color: #ffffff;
+  --el-button-active-bg-color: #70102f;
+  --el-button-active-border-color: #70102f;
+  --el-button-active-text-color: #ffffff;
+  color: #ffffff !important;
+  background-color: #aa1645 !important;
+  border-color: #aa1645 !important;
+}
+.media-management .el-button.el-button--primary:not(.is-text):not(.is-link):hover,
+.media-management .el-button.el-button--primary:not(.is-text):not(.is-link):focus-visible {
+  color: #ffffff !important;
+  background-color: #851035 !important;
+  border-color: #851035 !important;
+}
+.media-management .el-button.el-button--primary:not(.is-text):not(.is-link):active {
+  color: #ffffff !important;
+  background-color: #70102f !important;
+  border-color: #70102f !important;
+}
+.media-management .el-button.el-button--primary:not(.is-text):not(.is-link).is-disabled {
+  color: #ffffff !important;
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* Ações secundárias ficam claras e com texto escuro, nunca branco sobre branco. */
+.media-management .el-button.el-button--default:not(.is-text):not(.is-link),
+.media-management .el-button:not([class*="el-button--"]):not(.is-text):not(.is-link) {
+  --el-button-text-color: #493a48;
+  --el-button-hover-text-color: #851035;
+}
+
+/* Diálogos enviados ao body pelo Element Plus (Teleport). */
+.media-upload-dialog .el-button.el-button--primary,
+.media-album-dialog .el-button.el-button--primary,
+.media-cover-dialog .el-button.el-button--primary,
+.media-crop-dialog .el-button.el-button--primary,
+.media-photo-picker-dialog .el-button.el-button--primary,
+.media-image-adjustment-dialog .el-button.el-button--primary {
+  --el-button-text-color: #ffffff;
+  --el-button-hover-text-color: #ffffff;
+  --el-button-active-text-color: #ffffff;
+  --el-button-bg-color: #aa1645;
+  --el-button-border-color: #aa1645;
+  --el-button-hover-bg-color: #851035;
+  --el-button-hover-border-color: #851035;
+  color: #ffffff !important;
+  background: #aa1645 !important;
+  border-color: #aa1645 !important;
+}
+.media-upload-dialog .el-button.el-button--primary:hover,
+.media-album-dialog .el-button.el-button--primary:hover,
+.media-cover-dialog .el-button.el-button--primary:hover,
+.media-crop-dialog .el-button.el-button--primary:hover,
+.media-photo-picker-dialog .el-button.el-button--primary:hover,
+.media-image-adjustment-dialog .el-button.el-button--primary:hover {
+  color: #ffffff !important;
+  background: #851035 !important;
+}

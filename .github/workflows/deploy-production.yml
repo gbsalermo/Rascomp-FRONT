@@ -1,0 +1,105 @@
+name: Deploy Production (RasComp CMS)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'gestao/**'
+      - 'landing-page/**'
+      - '.github/workflows/deploy-production.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: rascomp-production-workers
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify-cms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Confirm backend CMS deployed and responding
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Waiting for https://api.rasufrb.site/api/v1/public/media/gallery ..."
+          for attempt in $(seq 1 20); do
+            code=$(curl -L -sS -m 12 -o /tmp/rascomp-gallery-response.json -w '%{http_code}' \
+              'https://api.rasufrb.site/api/v1/public/media/gallery' || true)
+            if [ "$code" = "200" ] && grep -q '"photos"' /tmp/rascomp-gallery-response.json; then
+              echo "Backend CMS publication endpoint is responding."
+              exit 0
+            fi
+            echo "Attempt $attempt/20: backend CMS not ready (HTTP $code)."
+            sleep 15
+          done
+          echo "::error::CMS backend unavailable. Workers were NOT deployed."
+          exit 1
+
+  deploy-management:
+    needs: verify-cms
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    defaults:
+      run:
+        working-directory: gestao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: gestao/package-lock.json
+      - name: Verify deployment credentials exist
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Missing CLOUDFLARE_API_TOKEN GitHub secret"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Missing CLOUDFLARE_ACCOUNT_ID GitHub secret"; exit 1; }
+      - run: npm ci
+      - run: npm run build:cloud
+      - name: Deploy Gestão Worker
+        run: npx --yes wrangler@4 deploy
+
+  deploy-landing:
+    needs: deploy-management
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    defaults:
+      run:
+        working-directory: landing-page
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: landing-page/package-lock.json
+      - run: npm ci
+      - run: npm run build:cloud
+      - name: Deploy Landing Worker
+        run: npx --yes wrangler@4 deploy
+
+  smoke:
+    needs: deploy-landing
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check public pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in 'https://rasufrb.site/' 'https://rasufrb.site/galeria' 'https://app.rasufrb.site/'; do
+            echo "Smoke: $url"
+            curl -L -f -sS --max-time 20 -o /dev/null "$url"
+          done

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/localMediaPreview'
+const props=defineProps<{mediaPreview?:PreviewDraft|null}>()
 
 const sponsorsCarousel = ref<HTMLElement | null>(null)
 const volunteersCarousel = ref<HTMLElement | null>(null)
@@ -65,7 +67,10 @@ const sponsorLogoModules = import.meta.glob(
   { eager: true, query: '?url', import: 'default' }
 ) as Record<string, string>
 
-const sponsorLogos = computed(() => {
+const sponsorLogos = computed<{src:string;name:string;frame?:PreviewFrame}[]>(() => {
+  if(props.mediaPreview)return props.mediaPreview.sponsors.filter(item=>item.image?.src).map(item=>({
+    src:item.image!.src,name:item.name,frame:item.image?.frame
+  }))
   const logos = Object.entries(sponsorLogoModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
     .map(([path, src]) => ({
@@ -96,14 +101,16 @@ const board: BoardMember[] = [
   { id: 6, name: 'Orientador', role: 'Orientador', area: 'Orientação acadêmica', initials: 'O' }
 ]
 
-const boardImages = computed(() =>
-  Object.entries(boardImageModules)
+const boardImages = computed(() => props.mediaPreview
+  ? props.mediaPreview.board.map(item=>item.image?.src||'')
+  : Object.entries(boardImageModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
     .map(([, src]) => src)
 )
 
-const volunteerImages = computed(() =>
-  Object.entries(volunteerImageModules)
+const volunteerImages = computed(() => props.mediaPreview
+  ? props.mediaPreview.volunteers.map(item=>item.src)
+  : Object.entries(volunteerImageModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
     .map(([, src]) => src)
 )
@@ -114,7 +121,7 @@ const volunteerLoopImages = computed(() =>
     : volunteerImages.value
 )
 
-const awards: Award[] = [
+const originalAwards: Award[] = [
   {
     id: 1,
     place: 'Vice-campeão',
@@ -152,6 +159,11 @@ const awards: Award[] = [
     tone: 'gold'
   }
 ]
+const awards=computed<Award[]>(()=>props.mediaPreview ?
+  props.mediaPreview.awards.filter(item=>item.active).map((item,index)=>({
+    id:item.id,place:item.place,title:item.title,event:item.event,description:item.description,
+    year:item.year,tone:originalAwards.find(award=>award.id===item.id)?.tone || (index%2===0?'gold':'silver')
+  })) : originalAwards)
 </script>
 
 <template>
@@ -185,6 +197,7 @@ const awards: Award[] = [
               v-if="boardImages[index]"
               class="team-board-photo"
               :src="boardImages[index]"
+              :style="previewImageStyle(props.mediaPreview?.board[index]?.image?.frame)"
               :alt="`${person.name} — ${person.role}`"
             />
             <div v-else class="team-board-photo-placeholder" aria-hidden="true">
@@ -235,6 +248,7 @@ const awards: Award[] = [
             >
               <img
                 :src="photo"
+                :style="previewImageStyle(props.mediaPreview?.volunteers[index % (volunteerImages.length||1)]?.frame)"
                 :alt="index < volunteerImages.length ? `Registro coletivo de voluntários da RAS UFRB ${index + 1}` : ''"
               />
             </figure>
@@ -279,6 +293,8 @@ const awards: Award[] = [
               </svg>
             </span>
 
+            <img v-if="props.mediaPreview?.awards.find(item=>item.id===award.id)?.image?.src" class="team-preview-award-photo"
+              :src="props.mediaPreview?.awards.find(item=>item.id===award.id)?.image?.src" alt="Registro da conquista"/>
             <div class="team-award-main">
               <strong>{{ award.place }} — {{ award.title }}</strong>
               <span>{{ award.event }}</span>
@@ -313,7 +329,7 @@ const awards: Award[] = [
               :key="logo.name + '-' + index"
               class="team-sponsor-slide"
               :aria-hidden="index >= sponsorCycleLogos.length ? 'true' : undefined">
-              <img :src="logo.src" :alt="index < sponsorCycleLogos.length ? logo.name : ''" loading="eager" decoding="async" />
+              <img :src="logo.src" :style="previewImageStyle(logo.frame)" :alt="index < sponsorCycleLogos.length ? logo.name : ''" loading="eager" decoding="async" />
             </div>
           </div>
         </div>
@@ -321,3 +337,7 @@ const awards: Award[] = [
     </div>
   </section>
 </template>
+
+<style scoped>
+.team-preview-award-photo{width:68px;height:68px;object-fit:contain;border-radius:9px;flex-shrink:0;background:#f3eef3}
+</style>

@@ -6,11 +6,13 @@ import {
   type LandingEvent,
   eventPeriod
 } from '../content/events'
+import {type PreviewDraft} from '../content/localMediaPreview'
 
 const props = defineProps<{
   managementUrl: string
   registrationOpen: boolean
   competitionModeEnabled: boolean
+  mediaPreview?:PreviewDraft|null
 }>()
 
 const emit = defineEmits<{
@@ -66,14 +68,36 @@ onBeforeUnmount(() => {
   if (dateRefresh) window.clearInterval(dateRefresh)
 })
 
+const currentEvents=computed<LandingEvent[]>(()=>{
+  if(!props.mediaPreview)return LANDING_EVENTS
+  return props.mediaPreview.events.filter(e=>e.active).map(entry=>{
+    const original=LANDING_EVENTS.find(event=>event.id===entry.id)
+    const starting=entry.date||original?.startDate||'2026-01-01'
+    const ending=entry.endDate||starting
+    const date=new Date(starting+'T12:00:00')
+    const dateDay=starting.slice(8,10)||'01'
+    const dateMonth=Number.isNaN(date.getTime())?'—':new Intl.DateTimeFormat('pt-BR',{month:'short'}).format(date).toUpperCase().replace('.','')
+    return {
+      ...(original||LANDING_EVENTS[0]!),id:entry.id,title:entry.title,
+      description:entry.description,summary:entry.description.slice(0,160),
+      location:entry.location,type:entry.type as LandingEvent['type'],
+      startDate:starting,endDate:ending,dateDay,dateMonth,
+      dateLabel:starting===ending?dateDay+' '+dateMonth:dateDay+' '+dateMonth+' — '+ending.slice(8,10)+' '+dateMonth,
+      image:entry.image?.src || original?.image || '',
+      eyebrow:original?.eyebrow || entry.type,
+      tone:original?.tone||'purple',temporalLabel:original?.temporalLabel||'Próximo',
+      organizedByRas:original?.organizedByRas||false
+    }
+  })
+})
 const visibleEvents = computed(() => {
-  if (activeFilter.value === 'Todos os eventos') return LANDING_EVENTS
+  if (activeFilter.value === 'Todos os eventos') return currentEvents.value
 
   if (activeFilter.value === 'Organizados pela RAS') {
-    return LANDING_EVENTS.filter((event) => event.organizedByRas)
+    return currentEvents.value.filter((event) => event.organizedByRas)
   }
 
-  return LANDING_EVENTS.filter((event) => event.type === activeFilter.value)
+  return currentEvents.value.filter((event) => event.type === activeFilter.value)
 })
 
 const agendaEvents = computed(() =>
@@ -83,7 +107,7 @@ const agendaEvents = computed(() =>
 const highlightedEvents = computed(() => visibleEvents.value.filter((event) => period(event) !== 'past').slice(0, 4))
 
 const recentEvents = computed(() => [
-  ...LANDING_EVENTS.filter((event) => period(event) === 'past')
+  ...currentEvents.value.filter((event) => period(event) === 'past')
     .map((event) => ({
       id: event.id, title: event.title, dateLabel: event.dateLabel,
       summary: event.summary, image: event.image, tone: event.tone,

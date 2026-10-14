@@ -1,9 +1,11 @@
-export type GalleryCategory = 'RRC' | 'Oficinas' | 'RAS nas Escolas' | 'Premiações' | 'Eventos'
+export type GalleryCategory = 'RRC' | 'Oficinas' | 'RAS nas Escolas' | 'Premiações' | 'Eventos' | 'Álbuns'
 
 export type GalleryPhoto = {
   id: string
   src?: string
   alt: string
+  /** Somente fotos explicitamente publicadas podem integrar a Galeria. */
+  published: boolean
 }
 
 export type GalleryAlbum = {
@@ -17,62 +19,57 @@ export type GalleryAlbum = {
   photos: GalleryPhoto[]
 }
 
-function placeholders(slug: string, title: string, amount = 12): GalleryPhoto[] {
-  return Array.from({ length: amount }, (_, index) => ({
-    id: `${slug}-${index + 1}`,
-    alt: `${title} — foto ${index + 1}`
+// Imagens SVG geradas somente para testar a interface visual local.
+// Elas NÃO são fotos reais nem conteúdo carregado do CMS.
+const colors: Record<GalleryCategory, [string, string]> = {
+  RRC: ['#384b74', '#bb687e'],
+  Oficinas: ['#426a74', '#b89a79'],
+  'RAS nas Escolas': ['#627492', '#d39d75'],
+  Premiações: ['#6e3c78', '#bf648a'],
+  Eventos: ['#446277', '#ba8c83'],
+  Álbuns: ['#67476c', '#ad8492']
+}
+function demonstrationImage(category: GalleryCategory, index: number): string {
+  const [a,b] = colors[category]
+  const shift = (index * 37) % 160
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 590">
+    <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>
+    <rect width="840" height="590" fill="url(#g)"/>
+    <circle cx="${660-shift}" cy="80" r="210" fill="#ffffff" opacity=".075"/>
+    <path d="M0 430 Q250 ${350+shift/2} 400 420 T840 390 V590 H0" fill="#1d1b38" opacity=".31"/>
+    <g transform="translate(${145 + shift/4} 138)" stroke="#f8f0f5" stroke-width="14" fill="none" stroke-linejoin="round">
+       <rect x="45" y="135" width="395" height="205" rx="38" fill="#ffffff" fill-opacity=".075"/>
+       <rect x="142" y="40" width="195" height="105" rx="26" fill="#ffffff" fill-opacity=".10"/>
+       <path d="M240 40 V-4 M222 -5 h36 M45 215H-20M440 215h65"/>
+       <circle cx="145" cy="232" r="29" fill="#ffffff" fill-opacity=".28"/>
+       <circle cx="337" cy="232" r="29" fill="#ffffff" fill-opacity=".28"/>
+       <path d="M172 294 Q239 333 310 293"/>
+    </g>
+    <rect x="26" y="26" width="788" height="538" rx="22" fill="none" stroke="#ffffff" stroke-opacity=".15" stroke-width="3"/>
+  </svg>`
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
+}
+function demonstrationPhotos(slug: string, title: string, category: GalleryCategory, amount = 8): GalleryPhoto[] {
+  return Array.from({length:amount}, (_,index)=>({
+    id: slug + '-' + (index + 1),
+    alt: 'Registro ilustrativo de ' + title,
+    published: true, // Exemplos autorizados do protótipo; imagens internas da Gestão NÃO entram aqui.
+    src: demonstrationImage(category, index)
   }))
 }
-
-export const albums: GalleryAlbum[] = [
-  {
-    slug: 'rrc-2026',
-    title: 'RRC 2026',
-    category: 'RRC',
-    description: 'Momentos das edições do RRC e da nossa equipe em ação dentro e fora das pistas.',
-    date: '11–13 abr. 2026',
-    count: 48,
-    photos: placeholders('rrc-2026', 'RRC 2026')
-  },
-  {
-    slug: 'oficina-de-robotica',
-    title: 'Oficina de Robótica',
-    category: 'Oficinas',
-    description: 'Capacitação, aprendizado e compartilhamento de conhecimento com a comunidade.',
-    date: '22 mai. 2026',
-    count: 32,
-    photos: placeholders('oficina-de-robotica', 'Oficina de Robótica')
-  },
-  {
-    slug: 'ras-nas-escolas',
-    title: 'RAS nas Escolas',
-    category: 'RAS nas Escolas',
-    description: 'Tecnologia, inspiração e ciência em atividades realizadas com escolas da região.',
-    date: '03 jun. 2026',
-    count: 27,
-    photos: placeholders('ras-nas-escolas', 'RAS nas Escolas')
-  },
-  {
-    slug: 'conquistas-e-premiacoes',
-    title: 'Conquistas e Premiações',
-    category: 'Premiações',
-    description: 'Registros de conquistas que representam trabalho, dedicação e evolução técnica.',
-    date: '2025–2026',
-    count: 41,
-    photos: placeholders('conquistas-e-premiacoes', 'Conquistas e Premiações')
-  },
-  {
-    slug: 'eventos-institucionais',
-    title: 'Eventos Institucionais',
-    category: 'Eventos',
-    description: 'Palestras, workshops, integrações e momentos que fortalecem a comunidade da RAS UFRB.',
-    date: '2025–2026',
-    count: 36,
-    photos: placeholders('eventos-institucionais', 'Eventos Institucionais')
-  }
+const seed: Array<Omit<GalleryAlbum,'photos'|'cover'|'count'>> = [
+  { slug:'rrc-2026', title:'RRC 2026', category:'RRC', description:'Robôs, arenas e equipes em uma competição de robótica.', date:'Competições' },
+  { slug:'oficina-de-robotica', title:'Oficina de Robótica', category:'Oficinas', description:'Aprendizado prático e compartilhamento de conhecimento.', date:'Oficinas' },
+  { slug:'ras-nas-escolas', title:'RAS nas Escolas', category:'RAS nas Escolas', description:'Encontros de tecnologia e ciência com a comunidade.', date:'Extensão' },
+  { slug:'conquistas-e-premiacoes', title:'Conquistas e Premiações', category:'Premiações', description:'Momentos importantes da trajetória da equipe.', date:'Conquistas' },
+  { slug:'eventos-institucionais', title:'Eventos Institucionais', category:'Eventos', description:'Palestras, atividades e integração da RAS UFRB.', date:'Eventos' }
 ]
+export const albums: GalleryAlbum[] = seed.map(item => {
+  const photos = demonstrationPhotos(item.slug, item.title, item.category).filter(photo=>photo.published === true)
+  return { ...item, photos, cover: photos[0]?.src, count: photos.length }
+})
 
 export function findAlbum(slug?: string | string[]) {
   const value = Array.isArray(slug) ? slug[0] : slug
-  return albums.find((album) => album.slug === value)
+  return albums.find(album => album.slug === value)
 }

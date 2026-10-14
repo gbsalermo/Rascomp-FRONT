@@ -2056,3 +2056,79 @@ LANDING
 → não usa primeira competição, histórica ou futura como fallback
 → polling reconsulta o contexto publicado para também retirar uma competição da tela quando o DEV remover a vigente
 ```
+
+
+## Checkpoint UI-first — Gestão de Mídia e Galeria, 13/10/2026
+
+- Branch de desenvolvimento: `v1-pos-cloud-gestao-midia`; **não mergeada na main**; produção intacta.
+- `gestao/src/views/MediaManagementView.vue` com rotas `/midia`, `/midia/albuns`, `/midia/landing`, capability `manageMedia` e entrada de sidebar para DEV/MIDIA.
+- `photo-gallery/src/views/GalleryHomeView.vue` exibe **Todas as fotos** primeiro, categorias e **Álbuns** como filtro; dataset ilustrativo local em `photo-gallery/src/data/albums.ts`.
+- Upload de imagens no browser, criação/associação de álbuns e prévia de recorte funcionam somente em memória. Nada é persistido em MySQL/R2; publicação real está fora desse checkpoint.
+- Próximo: validar visualmente em desktop/mobile, só depois implementar backend/biblioteca persistente e absorver Galeria na Landing.
+- PR draft #7 serve exclusivamente a CI e revisão; **não fazer merge/deploy sem aprovação explícita**.
+
+
+## Checkpoint — Alternância DEV entre Gestão e Mídia (13/10/2026)
+- Branch `v1-pos-cloud-gestao-midia` inclui seletor de ambiente na sidebar de `gestao/src/views/ShellLayout.vue`, visível **apenas para DEV**.
+- `Gestão DEV` abre `/`; `Gestão de Mídia` abre `/midia`. O ambiente visual acompanha a rota, sem modificar papel, sessão ou token.
+- Para DEV em `/midia/**`, o menu mostra exclusivamente Biblioteca, Álbuns e Landing e oculta o contexto/alertas da competição. O perfil MIDIA continua restrito ao editorial.
+- Confirmar GitHub Actions Frontend Checks e testes manuais com usuário DEV antes da aprovação.
+
+## Rodada de revisão visual da Gestão de Mídia (13/10/2026, segundo checkpoint)
+- `gestao/src/components/MediaLandingEditor.vue` introduz **editor específico por seção**, substituindo placeholders genéricos: Hero com foto/CTA/destino, Sobre com sequência de fotos, Equipe com seis cargos fixos, voluntários (máx. visual de 12), conquistas editáveis/ordenáveis, Robôs com banner e categorias, Eventos com cadastro/foto/ordem, patrocinadores com logos/zoom/ordem (máx. visual de 12) e seção Competição sem alterar dados oficiais da API.
+- O seletor de fotos dos editores permite envio direto de arquivos locais, adicionando-os somente à memória da Biblioteca. **Não confundir com upload no backend**.
+- Biblioteca: álbum com capa manual ou automática entre fotos associadas; miniaturas completas sem crop; controle de visibilidade renomeado para **Exibir na Galeria pública (após integração)**, explicando que o protótipo não sincroniza as aplicações.
+- `photo-gallery/src/styles.css`: mosaico refinado e fotos exibidas por `object-fit: contain`, evitando cortes.
+- `docs/ROADMAP_GESTAO_MIDIA.md` contém a matriz de testes da segunda rodada. Sem merge em `main` ou deploy cloud; PR #7 permanece draft.
+- GitHub Actions Frontend Checks e Photo Gallery Checks verdes no commit `f1f512c4f4c56b8bb24a4493db6955210e6c8117`.
+
+## UI-first — editores agora partem dos dados preexistentes (13/10/2026)
+O responsável solicitou que a Gestão de Mídia **edite o conteúdo já apresentado na Landing**, em vez de apenas adicionar itens. Fontes auditadas: `landing-page/src/components/HighlightsHero.vue`, `landing-page/src/content/homeMedia.ts`, `landing-page/src/content/events.ts`, `landing-page/src/components/TeamRobotsAwards.vue`, `landing-page/src/components/RobotsShowcase.vue`. `gestao/src/content/landingEditorialSeeds.ts` preserva uma base estática com os quatro Heroes existentes, três eventos e quatro conquistas; `gestao/src/views/MediaManagementView.vue` usa glob dos assets versionados da Landing para a prévia visual dos robôs, diretoria, voluntários e marcas.
+O editor `gestao/src/components/MediaLandingEditor.vue` agora permite selecionar/editar/remover/reordenar os Heroes originais e novos, restaurar Hero original, editar e reordenar eventos/conquistas existentes e trocar fotos/nomes das imagens dos robôs da categoria. **Não é sincronização nem CRUD real sobre produção**: estado apenas em memória. Próximo passo pós-aceite é importação idempotente (sourceId, ordem, mídia, publicação), persistência, API pública/editorial e desativação gradual do fallback estático com validação de equivalência. PR #7 continua draft, main intocada.
+
+## QA local — Heroes, Sobre, Robôs e privacidade da Galeria (13/10/2026)
+- Ajustadas `gestao/src/components/MediaLandingEditor.vue` e `gestao/src/views/MediaManagementView.vue`: Hero com CTA opcional, restauração completa dos campos existentes com feedback, recuperação de slides originais removidos; assets do Sobre carregados do repositório; miniatura de Robôs com limites dimensionais; botão primário vermelho com texto branco; assets legados marcados privados por padrão.
+- `gestao/vite.config.ts` ganhou middleware **apenas no servidor Vite de desenvolvimento** para visualizar arquivos públicos da Landing, com diretório e extensões permitidos. Não será publicado no Worker.
+- `photo-gallery/src/data/albums.ts`, `views/GalleryHomeView.vue`, `views/AlbumView.vue`, `styles.css` filtram itens `published:true`, eliminam rótulos de cada foto no mosaico e apresentam fotos completas.
+- O app de Galeria continua isolado na porta 5175, com imagens SVG demonstrativas, enquanto o editor está em 5173. O vínculo real com Biblioteca pública depende de API e fluxo de publicação; evitar apresentar esta prévia como publicação efetiva.
+- Continuar PR #7 em DRAFT, sem merge ou deploy até validação visual e CMS persistente.
+
+## Checkpoint Gestão de Mídia — Competição e Footer
+No ramo `v1-pos-cloud-gestao-midia`, `gestao/src/components/MediaLandingEditor.vue` apresenta Hero competitivo com foto, subtítulo, descrição extra, botão secundário opcional e controle de visibilidade. Título, lote, categorias, situação das inscrições e CTA principal são **protegidos porque vêm da API**; a prévia exibe placeholders identificados, não dados reais.
+`gestao/src/components/MediaFooterEditor.vue` implementa editor local de contatos (e-mail, Instagram, WhatsApp), localização exibida, texto de contato e apoio, destinos dos links institucionais e prévia, preservando os nomes, as logos, a estrutura e os créditos do Footer público. Os campos são seeds dos defaults de `landing-page/src/components/InstitutionalFooter.vue`, **não há API CMS, persistência nem publicação**. PR #7 continua draft.
+
+
+## Visual — botões da Gestão de Mídia
+O tema local `gestao/src/styles/media-button-colors.css` centraliza o vermelho institucional e **texto branco** dos botões de ação preenchidos em todas as páginas/editoriais; é importado ao fim do CSS da Gestão em `gestao/src/main.ts`. Diálogos teletransportados receberam classes próprias para não herdar o azul default do Element Plus. Botões neutros/outline preservam contraste escuro. Sem mudanças em `main` ou deploy.
+
+## Checkpoint mídia — enquadramento por uso e rotulagem de robôs
+- Editor compartilhado `gestao/src/components/MediaImageAdjustment.vue` com ajuste não destrutivo: zoom, largura/altura relativas ao slot, deslocamento horizontal/vertical e `cover/contain`. Aplicado na prévia da Gestão a Hero, Sobre, equipe, conquistas, robôs, eventos, patrocinadores e imagens da competição. Configurações em memória por chave de uso.
+- Fotos dos robôs recebem título editável individualmente e seletor de legenda sobre/abaixo da imagem. Na Landing atual, `RobotsShowcase.vue` ainda determina nomes pelo filename; precisa consumir os metadados CMS após migração/API.
+- Toggle `competitionHeroEnabled` agora condiciona a **prévia** do Hero competitivo; política de produção definida como não incluir slide se desativado, independentemente de competição ativa, sem alterar API ou seção Competição. A Landing ainda não consome essa configuração do CMS.
+- Botões pequenos dos editores foram ampliados sem afetar outras páginas. PR #7 segue DRAFT; sem deploy ou merge até aceite e camada persistente.
+
+## Prévia do site local — Gestão e Landing conectadas por rascunho (13/10/2026)
+A nova ponte só funciona localmente: `gestao/src/views/MediaManagementView.vue` envia o rascunho de `MediaLandingEditor.createPreviewDraft()` à janela `localhost:5174/?rascomp_media_preview=1` por mensagem com origin e token verificados. `landing-page/src/content/localMediaPreview.ts` mantém um `shallowRef` temporário; `landing-page/src/App.vue` liga o listener e passa o conteúdo aos componentes reais da Landing, com banner "PRÉVIA LOCAL — NÃO PUBLICADA".
+Componentes de Landing que recebem dados de prévia: `HighlightsHero`, `InstitutionalAbout`, `TeamRobotsAwards`, `RobotsShowcase`, `InstitutionalEvents`, `InstitutionalFooter`. Imagens de uploads `blob:` são transportadas como `Blob` para a janela local (não para R2). A Gestão emite atualização ao clicar em `Aplicar na prévia local`. `MediaFooterEditor` expõe somente sua cópia em memória ao pai; o componente permanece montado nas trocas de seção.
+Nenhum endpoint, registro ou Cloudflare Worker novo; em produção a prévia é desabilitada. Necessário executar Gestão em 5173 e Landing em 5174. Confirmar os checks de Landing e Gestão antes do teste manual; PR #7 permanece draft.
+
+## Retorno de teste manual — Prévia da Landing (13/10/2026)
+O responsável confirmou **'testei e funcionou'** após testar a prévia da Landing iniciada pela Gestão de Mídia. Registrar como **validação manual do fluxo de pré-visualização local** (Gestão 5173 → Landing 5174), não como aceite da publicação persistente ou de todas as seções. Próximo trabalho: revisão/acabamento da Galeria pública e teste de privacidade dos ativos. Sem merge na `main` e sem deploy.
+
+
+## Checkpoint: Galeria agradável e fotos públicas opcionais (13/10/2026)
+A Galeria em `photo-gallery/` ganhou acabamento editorial/masonry sem cortes e componente `GalleryLightbox.vue` acessível, com Escape e setas, sem nomes de arquivos visíveis. A listagem principal deduplica imagens e mostra TODAS as fotografias publicadas (com ou sem álbum); Álbuns é filtro, seus cards só aparecem quando contêm fotos públicas, e as capas respeitam a publicação da foto. `photo-gallery/src/data/localGalleryPreview.ts` faz a ponte local com a Gestão pela ação **Prévia da Galeria** em Biblioteca/Álbuns, recebendo **somente fotos públicas** por `postMessage` com origin/token controlados; arquivos temporários via Blob. A Biblioteca ganhou chips de filtro Na Galeria/Privadas. A presença em uma seção da Landing nunca ativa publicação na Galeria automaticamente.
+A aplicação na porta 5175 ainda é independente da Landing; a integração online e o controle de visibilidade no backend serão implementados após aprovação. O catálogo SVG é demo, não acervo publicado; em modo prévia local, conteúdo real da Biblioteca substitui inteiramente os exemplos. Sem mudanças em main/Cloud.
+
+## Ajustes finais de Galeria (14/10/2026) — aguardando teste manual
+Em `gestao/src/views/MediaManagementView.vue`: modo **Selecionar várias** com seleção por cliques, barra de ações em lote, associação N:N por união sem duplicação e exclusão confirmada da prévia em memória; botão **Destaques da Galeria** com três seletores ordenados de fotos públicas reais. `openGalleryPreview()` passa `featuredPhotoIds`, além das fotografias/álbuns, a `photo-gallery/src/data/localGalleryPreview.ts`, cujo retorno público implementa a escolha e fallback apenas com fotos publicadas. `GalleryHomeView.vue` usa a ordenação desses IDs na colagem da Intro. CSS em `gallery-polish.css` adapta quando há 1 ou 2 fotos. Fotos incluídas por editores da Landing iniciam privadas explicitamente. Testes automáticos de build devem ser verificados; QA em navegador pelo responsável ainda pendente. O acesso direto a 5175 continua sendo **catálogo ilustrativo**, não reflete a Biblioteca; use o botão Prévia da Galeria da Gestão para examinar o conteúdo da sessão. PR #7 draft; sem merge/deploy.
+
+## CMS persistente — integração técnica concluída em branches, smoke online pendente (14/10/2026)
+Frontend `v1-pos-cloud-gestao-midia`:
+- `gestao/src/api/media.ts`: biblioteca/álbuns CRUD e uploads usando JWT contra API; thumbnails privados carregados como Blob autenticado.
+- `gestao/src/api/mediaDraft.ts`: migração não destrutiva dos recursos editoriais selecionados para R2 ao salvar rascunho; reutilização de IDs de arquivos já persistidos sem reupload.
+- `MediaManagementView.vue`: hidratação de workspace MySQL, restauração da edição de Landing/Footer, salvar rascunho, confirmação de publicação, edição de visibilidade, associação em lote e álbuns persistentes; prévia por postMessage/nonce/origin tanto localhost quanto `app.rasufrb.site` → `rasufrb.site`.
+- `landing-page/src/App.vue`: lê snapshot publicado do CMS; fallback da Landing institucional estática se API indisponível/nenhum documento publicado. `/galeria` integrada ao domínio com `PublicGalleryPage.vue`, sem fotos ilustrativas em produção; CTA da Landing aponta para `/galeria`. Galeria autônoma em `photo-gallery` também lê API pública por padrão, ilustrações apenas no modo DEV `?demo=1`.
+- **CI verde** Frontend Checks, Landing Checks, Photo Gallery Checks no commit c5db9795412ecfca3fea976dba2c120d17d81d73 (landing link padrão atualizado depois, precisa verificar último HEAD).
+- Backend API e migration na branch homônima do repositório `gbsalermo/Rascomp`, PR #13 draft.
+- Não houve merge nem deploy. Prévia online precisa ser validada manualmente; MySQL/R2/Cloudflare em produção, migração de imagens existentes, visibilidade pública, exclusões e rollback precisam de smoke controlado. A UI não deve afirmar sucesso de publicação sem confirmação da API.

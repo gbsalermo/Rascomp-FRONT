@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/localMediaPreview'
+const props=defineProps<{mediaPreview?:PreviewDraft|null}>()
 
 type RobotCategorySlug = 'sumo' | 'mini-sumo' | 'hockey' | 'follow-line'
 
@@ -7,6 +9,8 @@ type RobotPhoto = {
   src: string
   name: string
   path: string
+  frame?:PreviewFrame
+  labelPosition?:'overlay'|'below'
 }
 
 type RobotCategory = {
@@ -68,6 +72,14 @@ function robotNameFromPath(path: string) {
 }
 
 const photosByCategory = computed<Record<RobotCategorySlug, RobotPhoto[]>>(() => {
+  if(props.mediaPreview){
+    return Object.fromEntries(categories.map(item=>[
+      item.slug,(props.mediaPreview?.robots.categories[item.slug]||[]).filter(photo=>photo.src).map(photo=>({
+        src:photo.src,path:'draft-'+photo.id,name:photo.name,
+        frame:photo.frame,labelPosition:photo.labelPosition
+      }))
+    ])) as Record<RobotCategorySlug,RobotPhoto[]>
+  }
   const result: Record<RobotCategorySlug, RobotPhoto[]> = {
     'sumo': [],
     'mini-sumo': [],
@@ -94,6 +106,7 @@ const photosByCategory = computed<Record<RobotCategorySlug, RobotPhoto[]>>(() =>
 })
 
 const genericBanner = computed(() => {
+  if(props.mediaPreview)return props.mediaPreview.robots.banner?.src||''
   const entries = Object.entries(robotBannerModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
 
@@ -127,6 +140,7 @@ function selectCategory(category: RobotCategorySlug) {
           v-if="genericBanner"
           class="robots-showcase-hero-image"
           :src="genericBanner"
+          :style="previewImageStyle(props.mediaPreview?.robots.banner?.frame)"
           alt="Robôs e projetos da IEEE RAS UFRB"
         />
         <div v-else class="robots-showcase-hero-placeholder" aria-hidden="true" />
@@ -210,8 +224,8 @@ function selectCategory(category: RobotCategorySlug) {
             :key="robot.path"
             class="robots-category-card"
           >
-            <img :src="robot.src" :alt="robot.name" />
-            <span>{{ robot.name }}</span>
+            <img :src="robot.src" :alt="robot.name" :style="previewImageStyle(robot.frame)" />
+            <span :class="{'preview-robot-label-overlay':robot.labelPosition==='overlay'}">{{ robot.name }}</span>
           </article>
         </div>
 
@@ -223,3 +237,8 @@ function selectCategory(category: RobotCategorySlug) {
     </div>
   </section>
 </template>
+
+<style scoped>
+.robots-category-card{position:relative;overflow:hidden}
+.preview-robot-label-overlay{position:absolute;bottom:0;left:0;right:0;display:block;text-align:center;background:linear-gradient(0deg,#1b102add,transparent);color:white!important;padding:26px 10px 12px;z-index:1}
+</style>

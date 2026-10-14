@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/localMediaPreview'
+const props=defineProps<{mediaPreview?:PreviewDraft|null}>()
 
 type AboutTab = 'ieee' | 'ras'
 
@@ -9,6 +11,7 @@ type AboutSlide = {
   detail: string
   src: string
   alt: string
+  frame?: PreviewFrame
 }
 
 const aboutImageModules = import.meta.glob(
@@ -33,7 +36,8 @@ function filenameToLabel(path: string) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
-const photos = computed<AboutSlide[]>(() =>
+const photos = computed<AboutSlide[]>(() => props.mediaPreview ?
+  props.mediaPreview.about.map((item,index)=>({id:'preview-about-'+index,label:item.name||'RAS UFRB',detail:'Registro da IEEE RAS UFRB.',src:item.src,alt:'Fotografia institucional da RAS UFRB',frame:item.frame})) :
   Object.entries(aboutImageModules)
     .sort(([pathA], [pathB]) => pathA.localeCompare(pathB, 'pt-BR', { numeric: true }))
     .map(([path, src], index) => {
@@ -148,6 +152,7 @@ onBeforeUnmount(stopPhotoTimer)
               v-if="activePhotoItem.src"
               class="about-photo-image"
               :src="activePhotoItem.src"
+              :style="previewImageStyle(activePhotoItem.frame)"
               :alt="activePhotoItem.alt"
             />
             <div v-else class="about-photo-placeholder" aria-hidden="true" />
