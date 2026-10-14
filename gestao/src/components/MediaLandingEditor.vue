@@ -13,6 +13,8 @@ type Sponsor = { id: number; photoId?: number; url: string; zoom: number }
 type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-banner' | 'robot' | 'robot-change' | 'event' | 'sponsor' | 'sponsor-change' | 'competition-section' | 'competition-hero'
 
 const props = defineProps<{ photos: MediaPhoto[]; albums: Album[]; uploadPhoto: (file: File) => number }>()
+const emit = defineEmits<{(event:'draft-applied',draft:ReturnType<typeof createPreviewDraft>):void}>()
+const footerEditorRef = ref<{getPreviewData:()=>Record<string,unknown>} | null>(null)
 const sections = [
   { name: 'Intro / Heroes', description: 'Imagens e publicações com links para álbuns ou eventos', icon: '✦' },
   { name: 'Sobre', description: 'Sequência de fotos; texto institucional preservado', icon: '▧' },
@@ -235,7 +237,68 @@ function move<T>(items: T[], index: number, delta: number) {
 }
 function addAward() { awards.value.push({ id: Date.now(), title: '', place:'', event:'', year: String(new Date().getFullYear()), detail: '', existing:false, active:true }) }
 function addEvent() { events.value.push({ id: 'event-'+Date.now(), title: '', date: '', endDate:'', description: '', location:'', type:'Participações', existing:false, active:true }) }
-function applyPreview() { ElMessage.success('Alterações aplicadas na prévia local. Nenhum conteúdo foi publicado.') }
+const srcFor=(id?:number)=>photo(id)?.src ? new URL(photo(id)!.src!,location.origin).href : ''
+function previewImage(id:number|undefined,key:string,override?:string) {
+  const source=override || srcFor(id)
+  return source ? {src:source,frame:frameFor(key)} : undefined
+}
+function sectionHref(section:string) {
+  const target:Record<string,string>={'Sobre':'#sobre','Equipe e conquistas':'#equipe','Robôs':'#robos','Eventos':'#eventos','Competição':'#competicao-atual','Footer':'#contato','Intro / Heroes':'#top'}
+  return target[section] || '#top'
+}
+function heroHref(item:EditableHero) {
+  if(item.destination==='gallery' || item.destination==='album')return '#galeria'
+  if(item.destination==='event')return '#eventos'
+  return sectionHref(item.target)
+}
+function createPreviewDraft(){
+  return {
+    heroes:heroes.value.map(item=>({
+      id:item.id,eyebrow:item.eyebrow,title:item.title,description:item.description,
+      cta:item.button,href:heroHref(item),showButton:item.showButton,active:item.active,
+      image:previewImage(item.photoId,'hero:'+item.id,item.photoId?undefined:legacyImagePath(item.imagePath))
+    })),
+    about:aboutPhotos.value.map(id=>previewImage(id,'about:'+id)).filter(Boolean),
+    board:board.value.map(item=>({role:item.role,image:previewImage(item.photoId,'board:'+item.role)})),
+    volunteers:volunteerPhotos.value.map(id=>previewImage(id,'volunteer:'+id)).filter(Boolean),
+    awards:awards.value.map(item=>({
+      id:item.id,title:item.title,place:item.place,event:item.event,
+      description:item.detail,year:item.year,active:item.active,
+      image:previewImage(item.photoId,'award:'+item.id)
+    })),
+    robots:{
+      banner:previewImage(robotBannerId.value,'robot-banner'),
+      categories:Object.fromEntries(Object.entries(robotPhotos.value).map(([category,ids])=>[
+        category,ids.map(id=>({
+          id,src:srcFor(id),name:robotLabel(id),labelPosition:robotTitleLocations.value[id]||'below',
+          frame:frameFor('robot:'+category+':'+id)
+        }))
+      ]))
+    },
+    events:events.value.map(item=>({
+      id:item.id,title:item.title,date:item.date,endDate:item.endDate,location:item.location,
+      description:item.description,type:item.type,active:item.active,image:previewImage(item.photoId,'event:'+item.id)
+    })),
+    sponsors:sponsors.value.map(item=>({
+      id:item.id,name:photo(item.photoId)?.name?.replace(/\\.[^.]+$/,'')||'Patrocinador',
+      url:item.url,image:previewImage(item.photoId,'sponsor:'+item.id)
+    })),
+    competition:{
+      sectionImage:previewImage(competitionBannerId.value,'competition-banner'),sectionText:competitionText.value,
+      heroEnabled:competitionHeroEnabled.value,
+      heroImage:previewImage(competitionHeroPhotoId.value,'competition-hero'),
+      subtitle:competitionHeroSubtitle.value,description:competitionHeroDescription.value,
+      showExtra:competitionHeroShowExtra.value,extraLabel:competitionHeroExtraLabel.value,
+      extraDestination:competitionHeroExtraDestination.value
+    },
+    footer:footerEditorRef.value?.getPreviewData()??null
+  }
+}
+function applyPreview() {
+  emit('draft-applied',createPreviewDraft())
+  ElMessage.success('Rascunho atualizado. A prévia aberta recebe as alterações sem publicar nada.')
+}
+defineExpose({createPreviewDraft})
 </script>
 
 <template>
@@ -504,9 +567,9 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
         </div>
       </template>
 
-      <template v-else-if="section === 'Footer'">
-        <MediaFooterEditor />
-      </template>
+      <template v-else-if="section === 'Footer'"><p>Edite e confira os contatos na prévia da Landing.</p></template>
+      <!-- Mantém os dados do Footer montados quando se alterna entre as seções. -->
+      <MediaFooterEditor v-show="section === 'Footer'" ref="footerEditorRef" />
 
       <div class="editor-footer"><el-button type="primary" @click="applyPreview">Aplicar na prévia local</el-button><span>Nenhum dado será salvo no banco ou publicado na Landing nesta fase.</span></div>
     </section>
