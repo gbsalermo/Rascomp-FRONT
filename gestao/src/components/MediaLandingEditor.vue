@@ -260,7 +260,12 @@ function addEvent() { events.value.push({ id: 'event-'+Date.now(), title: '', da
 const srcFor=(id?:number)=>photo(id)?.src ? new URL(photo(id)!.src!,location.origin).href : ''
 function previewImage(id:number|undefined,key:string,override?:string) {
   const source=override || srcFor(id)
-  return source ? {src:new URL(source,location.origin).href,frame:frameFor(key)} : undefined
+  if(!source)return undefined
+  const frame=frameFor(key)
+  // Os valores iniciais de Gestão não são uma edição: preservar o CSS do MVP.
+  const frameAdjusted=Object.prototype.hasOwnProperty.call(imageAdjustments.value,key)
+    && JSON.stringify(frame)!==JSON.stringify(defaultFrame(key))
+  return {src:new URL(source,location.origin).href,frame,frameAdjusted}
 }
 function sectionHref(section:string) {
   const target:Record<string,string>={'Sobre':'#sobre','Equipe e conquistas':'#equipe','Robôs':'#robos','Eventos':'#eventos','Competição':'#competicao-atual','Footer':'#contato','Intro / Heroes':'#top'}
