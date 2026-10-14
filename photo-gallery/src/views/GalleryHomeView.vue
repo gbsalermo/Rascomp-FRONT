@@ -23,7 +23,15 @@ const filteredPhotos = computed<GalleryPhoto[]>(()=>{
   return photos.value.filter(photo=>categoryIds.has(photo.id))
 })
 const albums = computed(()=>collection.value.albums.filter(album=>album.photos.some(photo=>photo.published===true && !!photo.src)))
-const previewCollage = computed(()=>photos.value.slice(0,3))
+const previewCollage = computed(()=>{
+  const byId=new Map(photos.value.map(photo=>[photo.id,photo]))
+  const ordered=collection.value.featuredPhotoIds.map(id=>byId.get(id)).filter((p):p is GalleryPhoto=>Boolean(p))
+  for(const photo of photos.value) {
+    if(ordered.length===3)break
+    if(!ordered.some(item=>item.id===photo.id)) ordered.push(photo)
+  }
+  return ordered.slice(0,3)
+})
 const selectedIndex = ref<number|null>(null)
 const selectedPhoto = computed(()=>selectedIndex.value!==null ? filteredPhotos.value[selectedIndex.value] : null)
 const selectedAlbumLink=computed(()=>{
@@ -62,9 +70,10 @@ const filterLabel=(value:string)=>value==='RRC' ? 'Competições' : value==='Pre
           <div class="gallery-intro-stats" aria-label="Conteúdo da galeria">
             <span><strong>{{ photos.length }}</strong> {{ photos.length===1 ? 'fotografia' : 'fotografias' }}</span>
             <span><strong>{{ albums.length }}</strong> {{ albums.length===1 ? 'álbum' : 'álbuns' }}</span>
+            <span v-if="!galleryPreviewMode" class="gallery-intro-demo-label">Exemplos ilustrativos</span>
           </div>
         </div>
-        <div v-if="previewCollage.length" class="gallery-hero-collage gallery-editorial-collage" aria-hidden="true">
+        <div v-if="previewCollage.length" class="gallery-hero-collage gallery-editorial-collage" :class="'count-'+previewCollage.length" aria-hidden="true">
           <div v-for="(item,index) in previewCollage" :key="item.id" :class="'collage-'+index">
             <img :src="item.src" alt="" />
           </div>
