@@ -6,6 +6,7 @@ import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/
 
 const props = defineProps<{
   competition?: any
+  competitionHeroEnabled?: boolean
   categories: any[]
   registrations: any[]
   currentRegistrationLot?: any
@@ -146,7 +147,7 @@ const institutionalSlides = computed<HeroSlide[]>(() => {
 const slides = computed<HeroSlide[]>(() => {
   const base = institutionalSlides.value
 
-  if (props.mediaPreview && !props.mediaPreview.competition.heroEnabled) return base
+  if (!props.competitionHeroEnabled) return base
   if (!competitionVisible.value || !props.competition) return base
 
   return [
