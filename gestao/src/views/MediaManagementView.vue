@@ -338,14 +338,18 @@ function openGalleryIntroDialog() {
   galleryIntroSlots.value = [...galleryIntroIds.value, null, null].slice(0, 3)
   galleryIntroDialog.value = true
 }
-function saveGalleryIntro() {
+async function saveGalleryIntro() {
   if (galleryIntroIds.value.length !== 3) {
     ElMessage.warning('Selecione três fotografias públicas com imagem para preencher os destaques.')
     return
   }
+  if(cmsReady.value){
+    try{await mediaApi.saveFeatured(galleryIntroIds.value)}
+    catch(error){ElMessage.error('Falha ao salvar os destaques no MySQL.');return}
+  }
   galleryIntroSlots.value = [...galleryIntroIds.value]
   galleryIntroDialog.value = false
-  ElMessage.success('As três fotos da Intro foram definidas na prévia local. Clique em Prévia da Galeria para conferir.')
+  ElMessage.success(cmsReady.value?'Destaques salvos no MySQL. Publique as alterações para atualizar visitantes.':'Destaques alterados na prévia local.')
 }
 function toggleMultiSelection() {
   multiSelectionMode.value = !multiSelectionMode.value
@@ -359,13 +363,17 @@ function openBulkAlbumDialog() {
   bulkAlbumIds.value = []
   bulkAlbumDialog.value = true
 }
-function addSelectedToAlbums() {
+async function addSelectedToAlbums() {
   if (!selectedIds.value.length || !bulkAlbumIds.value.length) {
     ElMessage.warning('Selecione pelo menos um álbum.')
     return
   }
   const validIds = new Set(albums.value.map(album => album.id))
   const toAdd = bulkAlbumIds.value.filter(id => validIds.has(id))
+  if(cmsReady.value){
+    try{await mediaApi.bulkAlbums(selectedIds.value,toAdd)}
+    catch(error){ElMessage.error('Não foi possível adicionar as fotografias aos álbuns.');return}
+  }
   selectedPhotos.value.forEach(photo => {
     photo.albums = [...new Set([...photo.albums, ...toAdd])]
   })
@@ -383,6 +391,15 @@ async function deleteSelectedPhotos() {
     )
   } catch { return }
   const ids = new Set(selectedIds.value)
+  if(cmsReady.value){
+    try{
+      for(const id of ids)await mediaApi.deletePhoto(id)
+    }catch(error){
+      ElMessage.error('Exclusão interrompida: alguma fotografia está publicada ou em uso. Atualize a Biblioteca.')
+      await loadCmsWorkspace()
+      return
+    }
+  }
   photos.value = photos.value.filter(item => !ids.has(item.id))
   albums.value.forEach(album => {
     if (album.coverId && ids.has(album.coverId)) album.coverId = undefined
@@ -517,10 +534,24 @@ function confirmUpload() {
   uploadDialog.value = false
   ElMessage.success('Fotos adicionadas apenas à prévia local (sem envio ao servidor).')
 }
-function changePhotoAlbum(id: number, enabled: boolean) {
+async function changePhotoAlbum(id: number, enabled: boolean) {
   const photo = selectedPhoto.value
   if (!photo) return
-  photo.albums = enabled ? [...new Set([...photo.albums, id])] : photo.albums.filter(albumId => albumId !== id)
+  const next=enabled ? [...new Set([...photo.albums, id])] : photo.albums.filter(albumId => albumId !== id)
+  if(cmsReady.value){
+    try{await mediaApi.albumsForPhoto(photo.id,next)}
+    catch(error){ElMessage.error('Não foi possível salvar a associação no MySQL.');return}
+  }
+  photo.albums=next
+}
+async function persistVisibility(published:boolean) {
+  const target=selectedPhoto.value
+  if(!target)return
+  if(cmsReady.value){
+    try{await mediaApi.visibility(target.id,published)}
+    catch(error){target.published=!published;ElMessage.error('Não foi possível salvar a visibilidade.');return}
+  }
+  ElMessage.info(cmsReady.value?'Visibilidade salva no rascunho. Publique para aplicar na Galeria.':'Visibilidade alterada somente na prévia.')
 }
 function openCrop() {
   if (!selectedPhoto.value) return
@@ -624,7 +655,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
                 @change="changePhotoAlbum(album.id, Boolean($event))">{{ album.name }}</el-checkbox>
             </div>
             <label>Exibir na Galeria pública (após integração)</label>
-            <el-switch v-model="selectedPhoto.published" active-text="Sim" inactive-text="Não" />
+            <el-switch v-model="selectedPhoto.published" active-text="Sim" inactive-text="Não" @change="persistVisibility(Boolean($event))"/>
             <p class="media-visibility-help">A visibilidade é independente do uso na Landing: uma foto pode aparecer no Hero e permanecer privada na Galeria. Para conferir o resultado, clique em <strong>Prévia da Galeria</strong>; os dados ainda não são publicados.</p>
             <div class="media-detail-actions"><el-button @click="openCrop">Editar enquadramento</el-button></div>
           </template>
