@@ -21,6 +21,8 @@ export async function prepareEditorialUpload(
     if(id!==undefined)return mediaApi.publicUrl(id)
     const stored=sourceCache.get(src)
     if(stored!==undefined)return mediaApi.publicUrl(stored)
+    const localAsset=photos.find(photo=>photo.persisted && photo.src && new URL(photo.src,location.origin).href===new URL(src,location.origin).href)
+    if(localAsset)return mediaApi.publicUrl(localAsset.id)
     const url=new URL(src,location.origin)
     if(url.protocol!=='blob:' && url.origin!==location.origin)
       throw Error('Imagem externa precisa ser importada para a Biblioteca antes da publicação.')
