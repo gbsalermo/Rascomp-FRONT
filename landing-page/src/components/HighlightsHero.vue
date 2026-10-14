@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { preloadImages, showPreparedImage } from '../utils/imagePreload'
 import { HOME_MEDIA } from '../content/homeMedia'
 import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/localMediaPreview'
 
@@ -207,28 +208,26 @@ const quickLinks = computed<QuickLink[]>(() => [
 
 const activeSlide = computed(() => slides.value[current.value] || slides.value[0])
 
-function goTo(index: number) {
-  current.value = index
-  restartTimer()
+let navigationSequence=0
+function navigateTo(index:number) {
+  if(!slides.value.length)return
+  const next=(index+slides.value.length)%slides.value.length
+  const sequence=++navigationSequence
+  const slide=slides.value[next]
+  void showPreparedImage(slide?.image,()=>{
+    if(sequence!==navigationSequence)return
+    current.value=next
+    preloadImages([slides.value[(next+1)%slides.value.length]?.image,slides.value[(next+2)%slides.value.length]?.image])
+  })
 }
-
-function previous() {
-  current.value = (current.value - 1 + slides.value.length) % slides.value.length
-  restartTimer()
-}
-
-function next() {
-  current.value = (current.value + 1) % slides.value.length
-  restartTimer()
-}
-
+function goTo(index: number) { navigateTo(index); restartTimer() }
+function previous() { navigateTo(current.value-1); restartTimer() }
+function next() { navigateTo(current.value+1); restartTimer() }
 function startTimer() {
   stopTimer()
-  timer = window.setInterval(() => {
-    current.value = (current.value + 1) % slides.value.length
-  }, 9000)
+  timer = window.setInterval(() => navigateTo(current.value+1), 9000)
 }
-
+watch(slides,(items)=>preloadImages(items.map(item=>item.image),items.length),{immediate:true})
 function stopTimer() {
   if (timer) window.clearInterval(timer)
   timer = undefined
