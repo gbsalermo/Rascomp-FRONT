@@ -132,7 +132,7 @@ async function openGalleryPreview(){
   const files:Record<string,Blob>={}
   const prepared=await Promise.all(publicPhotos.map(async item=>{
     let src=new URL(item.src!,location.origin).href
-    if(item.src!.startsWith('blob:')){
+    if(item.src!.startsWith('blob:') || (isProductionManagement && new URL(item.src!,location.origin).origin===location.origin)){
       try {
         const blob=await fetch(item.src!).then(response=>response.blob())
         if(!blob.type.startsWith('image/'))return null
