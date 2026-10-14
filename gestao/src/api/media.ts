@@ -29,6 +29,7 @@ export const mediaApi = {
   saveDraft:(draft:unknown)=>http.put(base+'/draft',draft),
   saveFeatured:(ids:number[])=>http.put(base+'/featured',ids),
   publish:(expectedVersion:number)=>http.post<{version:number}>(base+'/publish',{expectedVersion}).then(r=>r.data),
+  publishGallery:(expectedVersion:number)=>http.post<{version:number}>(base+'/publish/gallery',{expectedVersion}).then(r=>r.data),
   privatePath:(id:number)=>base+'/assets/'+id+'/content',
   publicUrl:(id:number)=>API_URL+'/api/v1/public/media/assets/'+id+'/content'
 }

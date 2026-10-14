@@ -375,7 +375,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState})
         </div>
         <div v-if="selectedHero" class="media-editor-block">
           <div class="editor-heading">
-            <div><h3>Editar Hero {{ selectedHeroIndex + 1 }}</h3><p>{{ selectedHero.existing ? 'Baseado no slide atual da Landing' : 'Novo destaque editorial' }} · Alterações apenas na prévia.</p></div>
+            <div><h3>Editar Hero {{ selectedHeroIndex + 1 }}</h3><p>{{ selectedHero.existing ? 'Baseado no slide atual da Landing' : 'Novo destaque editorial' }} · Salve o rascunho e publique pela Gestão quando estiver pronto.</p></div>
             <div class="editor-inline-actions">
               <el-button size="small" :disabled="selectedHeroIndex===0" @click="reorderHero(-1)">↑</el-button>
               <el-button size="small" :disabled="selectedHeroIndex===heroes.length-1" @click="reorderHero(1)">↓</el-button>
@@ -571,9 +571,9 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState})
         </div>
         <div v-else class="editor-disabled-hero">
           <strong>Hero competitivo oculto</strong>
-          <span>Mesmo com competição vigente, este Hero não será incluído na Intro após a integração do CMS. A seção Competição e os dados da API permanecem ativos.</span>
+          <span>Mesmo com competição vigente, este Hero não será exibido na Intro quando as alterações forem publicadas. A seção Competição e os dados oficiais da API continuam disponíveis.</span>
         </div>
-        <p class="editor-competition-notice">Prévia estrutural: os rótulos “API” serão preenchidos pelos dados reais quando a integração estiver concluída. Não representam uma competição fictícia.</p>
+        <p class="editor-competition-notice">Prévia do conteúdo editorial: os rótulos “API” representam campos que permanecem vinculados aos dados oficiais da competição.</p>
         <div class="editor-actions">
           <el-button @click="openPicker('competition-hero')">{{ competitionHeroPhotoId ? 'Trocar foto do Hero' : 'Escolher foto do Hero' }}</el-button>
           <el-button :disabled="!photo(competitionHeroPhotoId)?.src" @click="openAdjustment('competition-hero',competitionHeroPhotoId,'Hero competitivo')">Ajustar imagem</el-button>
@@ -613,7 +613,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState})
       <!-- Mantém os dados do Footer montados quando se alterna entre as seções. -->
       <MediaFooterEditor v-show="section === 'Footer'" ref="footerEditorRef" />
 
-      <div class="editor-footer"><el-button type="primary" @click="applyPreview">Aplicar na prévia local</el-button><span>Nenhum dado será salvo no banco ou publicado na Landing nesta fase.</span></div>
+      <div class="editor-footer"><el-button type="primary" @click="applyPreview">Atualizar prévia</el-button><span>Use <strong>Salvar rascunho</strong> na Gestão para guardar as alterações no MySQL e <strong>Publicar alterações</strong> para atualizar a Landing. A prévia não publica automaticamente.</span></div>
     </section>
 
     <MediaImageAdjustment v-model="adjustmentOpen" :label="adjustmentLabel"
@@ -621,7 +621,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState})
       @save="saveAdjustment"/>
     <el-dialog class="media-photo-picker-dialog" v-model="pickerOpen" title="Escolher imagem da Biblioteca" width="min(850px, 95vw)" append-to-body>
       <p class="editor-picker-help">Selecione uma das imagens já enviadas à Biblioteca. A imagem original será preservada.</p>
-      <div class="editor-picker-uploader"><label>+ Enviar foto(s) do computador<input type="file" accept="image/*" multiple @change="directUpload" /></label><small>Também adiciona as fotos à Biblioteca nesta demonstração.</small></div>
+      <div class="editor-picker-uploader"><label>+ Enviar foto(s) do computador<input type="file" accept="image/*" multiple @change="directUpload" /></label><small>Adiciona a foto à seleção do editor. Ao salvar o rascunho, a imagem é enviada ao R2.</small></div>
       <div class="editor-picker-filters"><el-input v-model="pickSearch" clearable placeholder="Buscar imagem pelo nome"/>
         <el-select v-model="pickFilter" style="width:200px"><el-option label="Todas" value="all"/><el-option label="Sem álbum" value="none"/><el-option v-for="album in albums" :key="album.id" :label="album.name" :value="String(album.id)"/></el-select></div>
       <div v-if="visiblePhotos.length" class="editor-picker-grid">
