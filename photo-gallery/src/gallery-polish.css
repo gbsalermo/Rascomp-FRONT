@@ -612,3 +612,17 @@
   .gallery-editorial-album,.gallery-photo-piece,.gallery-editorial-filters button{transition:none;}
   .gallery-editorial-album:hover,.gallery-photo-piece:hover,.gallery-editorial-filters button:hover{transform:none;}
 }
+
+/* Destaques editoriais: apresentação adequada mesmo com menos de 3 fotos públicas. */
+.gallery-editorial-collage.count-1 {grid-template-columns:1fr;grid-template-rows:minmax(250px,1fr);}
+.gallery-editorial-collage.count-1>div {grid-row:auto;}
+.gallery-editorial-collage.count-2 {grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(250px,1fr);}
+.gallery-editorial-collage.count-2>div {grid-row:auto;}
+.gallery-intro-stats .gallery-intro-demo-label {
+  border:1px solid #e3d8e4;
+  border-radius:999px;
+  padding:5px 10px;
+  font-weight:750;
+  font-size:.67rem;
+  color:#946d87;
+}
