@@ -1,18 +1,33 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MediaLandingEditor from '../components/MediaLandingEditor.vue'
+import { mediaApi, type MediaWorkspace, type ApiMediaPhoto } from '../api/media'
 import { useAuthStore } from '../store'
 
 type Album = { id: number; name: string; description: string; coverId?: number }
-type MediaPhoto = { id: number; name: string; albums: number[]; published: boolean; tone: number; src?: string; sourcePath?: string }
+type MediaPhoto = { id: number; name: string; albums: number[]; published: boolean; tone: number; src?: string; sourcePath?: string; persisted?: boolean }
 type UploadItem = { file: File; preview: string }
 type MediaVisibility = 'private' | 'public'
 
 const route = useRoute()
 const router = useRouter()
-const landingEditor = ref<{createPreviewDraft:()=>Record<string,unknown>}|null>(null)
+type MediaEditorApi = {
+  createPreviewDraft:()=>Record<string,unknown>
+  getEditorState:()=>Record<string,unknown>
+  restoreEditorState:(state:Record<string,unknown>)=>void
+}
+const landingEditor = ref<MediaEditorApi|null>(null)
+const cmsLoading = ref(true)
+const cmsReady = ref(false)
+const cmsError = ref('')
+const cmsBusy = ref(false)
+const cmsVersion = ref(0)
+const persistedEditorialDraft = ref<Record<string,unknown>|null>(null)
+const cmsStatus = computed(()=>cmsReady.value ? 'Conectado ao CMS (MySQL/R2)' : cmsLoading.value ? 'Conectando ao CMS…' : 'CMS indisponível')
+const canEditMedia = computed(()=>cmsReady.value && !cmsBusy.value)
+
 const landingPreviewOrigin = 'http://localhost:5174'
 let previewPopup:Window|null=null
 let previewToken=''
@@ -202,6 +217,56 @@ const photos = ref<MediaPhoto[]>([
   { id: 9, name: 'laboratorio.jpg', albums: [], published: false, tone: 8 },
   ...legacyPhotos
 ])
+// No modo hospedado, nunca apresentar as nove fotos fictícias como acervo existente.
+if (!import.meta.env.DEV) {
+  photos.value=[]
+  albums.value=[]
+}
+async function loadCmsWorkspace() {
+  cmsLoading.value=true
+  cmsError.value=''
+  try {
+    const data:MediaWorkspace=await mediaApi.workspace()
+    cmsVersion.value=data.version
+    const oldPhotos=photos.value
+    // Preservar recursos estáticos originais para edição/migração manual, mas
+    // não tratá-los como mídias persistidas/publicadas na Galeria.
+    photos.value=[...data.photos.map((item:ApiMediaPhoto):MediaPhoto=>({
+      id:item.id,name:item.name,albums:item.albums,published:item.published,
+      src:undefined,persisted:true,tone:item.id%9
+    })),...legacyPhotos.map(x=>({...x,published:false}))]
+    albums.value=data.albums.map(item=>({
+      id:item.id,name:item.name,description:item.description,coverId:item.coverId??undefined
+    }))
+    cmsReady.value=true
+    galleryIntroSlots.value=[
+      ...(Array.isArray(data.featuredPhotoIds)?data.featuredPhotoIds:[]),
+      null,null,null
+    ].slice(0,3)
+    persistedEditorialDraft.value=data.editorialDraft
+    await nextTick()
+    if(Object.keys(data.editorialDraft||{}).length&&data.editorialDraft?._editorState && landingEditor.value)
+      landingEditor.value.restoreEditorState(data.editorialDraft._editorState as Record<string,unknown>)
+    // Protege assets privados: thumbnails são obtidas COM JWT, não por URL pública.
+    await Promise.allSettled(data.photos.map(async item=>{
+      const blob=await mediaApi.image(item.id)
+      const url=URL.createObjectURL(blob)
+      uploadedUrls.push(url)
+      const photo=photos.value.find(p=>p.id===item.id && p.persisted)
+      if(photo)photo.src=url
+      else URL.revokeObjectURL(url)
+    }))
+    cmsError.value=''
+    void oldPhotos
+  }catch(error){
+    cmsReady.value=false
+    cmsError.value=error instanceof Error?error.message:'Erro de comunicação com o CMS'
+    // Em produção, esconder a simulação, para não parecer conteúdo salvo.
+    if(!import.meta.env.DEV){photos.value=[];albums.value=[]}
+  }finally{cmsLoading.value=false}
+}
+onMounted(()=>{void loadCmsWorkspace()})
+
 const search = ref('')
 const albumFilter = ref('all')
 const selectedIds = ref<number[]>([])
