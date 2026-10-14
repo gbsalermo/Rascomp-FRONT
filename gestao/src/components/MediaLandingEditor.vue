@@ -14,7 +14,7 @@ type PickTarget = 'hero' | 'about' | 'board' | 'volunteer' | 'award' | 'robots-b
 
 const props = defineProps<{ photos: MediaPhoto[]; albums: Album[]; uploadPhoto: (file: File) => number }>()
 const emit = defineEmits<{(event:'draft-applied',draft:ReturnType<typeof createPreviewDraft>):void}>()
-const footerEditorRef = ref<{getPreviewData:()=>Record<string,unknown>} | null>(null)
+const footerEditorRef = ref<{getPreviewData:()=>Record<string,unknown>;setPreviewData:(data:Record<string,unknown>)=>void} | null>(null)
 const sections = [
   { name: 'Intro / Heroes', description: 'Imagens e publicações com links para álbuns ou eventos', icon: '✦' },
   { name: 'Sobre', description: 'Sequência de fotos; texto institucional preservado', icon: '▧' },
@@ -298,7 +298,49 @@ function applyPreview() {
   emit('draft-applied',createPreviewDraft())
   ElMessage.success('Rascunho atualizado. A prévia aberta recebe as alterações sem publicar nada.')
 }
-defineExpose({createPreviewDraft})
+function getEditorState():Record<string,unknown> {
+  return JSON.parse(JSON.stringify({
+    heroes:heroes.value,board:board.value,aboutPhotos:aboutPhotos.value,
+    volunteerPhotos:volunteerPhotos.value,sponsors:sponsors.value,
+    awards:awards.value,events:events.value,robotPhotos:robotPhotos.value,
+    robotTitles:robotTitles.value,robotTitleLocations:robotTitleLocations.value,
+    robotBannerId:robotBannerId.value,imageAdjustments:imageAdjustments.value,
+    competitionBannerId:competitionBannerId.value,competitionHeroPhotoId:competitionHeroPhotoId.value,
+    competitionHeroEnabled:competitionHeroEnabled.value,competitionText:competitionText.value,
+    competitionHeroSubtitle:competitionHeroSubtitle.value,competitionHeroDescription:competitionHeroDescription.value,
+    competitionHeroShowExtra:competitionHeroShowExtra.value,
+    competitionHeroExtraLabel:competitionHeroExtraLabel.value,
+    competitionHeroExtraDestination:competitionHeroExtraDestination.value,
+    footer:footerEditorRef.value?.getPreviewData()
+  }))
+}
+function restoreEditorState(saved:Record<string,unknown>) {
+  if(!saved||typeof saved!=='object')return
+  if(Array.isArray(saved.heroes))heroes.value=saved.heroes as EditableHero[]
+  if(Array.isArray(saved.board))board.value=saved.board as typeof board.value
+  if(Array.isArray(saved.aboutPhotos))aboutPhotos.value=saved.aboutPhotos as number[]
+  if(Array.isArray(saved.volunteerPhotos))volunteerPhotos.value=saved.volunteerPhotos as number[]
+  if(Array.isArray(saved.sponsors))sponsors.value=saved.sponsors as Sponsor[]
+  if(Array.isArray(saved.awards))awards.value=saved.awards as Award[]
+  if(Array.isArray(saved.events))events.value=saved.events as EditorialEvent[]
+  if(saved.robotPhotos && typeof saved.robotPhotos==='object')robotPhotos.value=saved.robotPhotos as Record<string,number[]>
+  if(saved.robotTitles && typeof saved.robotTitles==='object')robotTitles.value=saved.robotTitles as Record<number,string>
+  if(saved.robotTitleLocations && typeof saved.robotTitleLocations==='object')robotTitleLocations.value=saved.robotTitleLocations as Record<number,'overlay'|'below'>
+  if(saved.imageAdjustments && typeof saved.imageAdjustments==='object')imageAdjustments.value=saved.imageAdjustments as Record<string,ImageAdjustment>
+  if(typeof saved.robotBannerId==='number')robotBannerId.value=saved.robotBannerId
+  if(typeof saved.competitionBannerId==='number')competitionBannerId.value=saved.competitionBannerId
+  if(typeof saved.competitionHeroPhotoId==='number')competitionHeroPhotoId.value=saved.competitionHeroPhotoId
+  if(typeof saved.competitionHeroEnabled==='boolean')competitionHeroEnabled.value=saved.competitionHeroEnabled
+  if(typeof saved.competitionText==='string')competitionText.value=saved.competitionText
+  if(typeof saved.competitionHeroSubtitle==='string')competitionHeroSubtitle.value=saved.competitionHeroSubtitle
+  if(typeof saved.competitionHeroDescription==='string')competitionHeroDescription.value=saved.competitionHeroDescription
+  if(typeof saved.competitionHeroShowExtra==='boolean')competitionHeroShowExtra.value=saved.competitionHeroShowExtra
+  if(typeof saved.competitionHeroExtraLabel==='string')competitionHeroExtraLabel.value=saved.competitionHeroExtraLabel
+  if(['competition','gallery','events'].includes(String(saved.competitionHeroExtraDestination)))competitionHeroExtraDestination.value=saved.competitionHeroExtraDestination as typeof competitionHeroExtraDestination.value
+  if(saved.footer && typeof saved.footer==='object')footerEditorRef.value?.setPreviewData(saved.footer as Record<string,unknown>)
+  selectedHeroId.value=heroes.value[0]?.id||''
+}
+defineExpose({createPreviewDraft,getEditorState,restoreEditorState})
 </script>
 
 <template>
