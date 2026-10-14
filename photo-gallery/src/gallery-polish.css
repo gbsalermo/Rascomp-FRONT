@@ -15,10 +15,15 @@
   max-width: 1500px;
   min-height: 78px;
 }
-.gallery-brand-mark {
-  background: linear-gradient(130deg,#4d206e,#9d204d);
-  box-shadow: 0 6px 15px rgba(72,27,66,.15);
+/* A mesma identidade utilizada no header da Landing, sem caixa genérica. */
+.gallery-brand-logo {
+  display: block;
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
+
 .gallery-site-header nav {
   gap: 10px;
 }
@@ -569,7 +574,7 @@
   .gallery-site-header nav {gap:3px;}
   .gallery-site-header nav a {font-size:.7rem;padding:9px 7px;}
   .gallery-brand {gap:8px;}
-  .gallery-brand-mark {height:36px;width:36px;}
+  .gallery-brand-logo {height:46px;width:46px;}
   .gallery-brand strong{font-size:.78rem;}
   .gallery-editorial-intro{grid-template-columns:1fr;gap:23px;padding:42px 0 25px;margin-bottom:37px;min-height:0;}
   .gallery-editorial-intro h1{font-size:clamp(2.6rem,10vw,4.1rem);}
@@ -595,7 +600,7 @@
 }
 @media(max-width:380px) {
   .gallery-site-header nav a{font-size:.65rem;padding:8px 5px;}
-  .gallery-brand-mark{height:32px;width:32px;font-size:.6rem;}
+  .gallery-brand-logo{height:42px;width:42px;}
   .gallery-editorial-intro h1{font-size:2.3rem;}
   .gallery-photo-masonry{columns:2;column-gap:6px;}
   .gallery-photo-piece{margin-bottom:6px;}
