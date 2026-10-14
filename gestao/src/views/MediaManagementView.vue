@@ -18,6 +18,8 @@ type MediaEditorApi = {
   createPreviewDraft:()=>Record<string,unknown>
   getEditorState:()=>Record<string,unknown>
   restoreEditorState:(state:Record<string,unknown>)=>void
+  getEditedSections:()=>string[]
+  setEditedSections:(sections:unknown)=>void
 }
 const landingEditor = ref<MediaEditorApi|null>(null)
 const devMode = import.meta.env.DEV
@@ -254,6 +256,7 @@ async function loadCmsWorkspace() {
     ].slice(0,3)
     persistedEditorialDraft.value=data.editorialDraft
     await nextTick()
+    landingEditor.value?.setEditedSections(data.editorialDraft?.__editedSections)
     if(Object.keys(data.editorialDraft||{}).length&&data.editorialDraft?._editorState && landingEditor.value)
       landingEditor.value.restoreEditorState(data.editorialDraft._editorState as Record<string,unknown>)
     // Protege assets privados: thumbnails são obtidas COM JWT, não por URL pública.
@@ -280,7 +283,7 @@ async function saveEditorialDraft(){
   cmsBusy.value=true
   try{
     const draft=await prepareEditorialUpload(
-      landingEditor.value.createPreviewDraft(),
+      {...landingEditor.value.createPreviewDraft(),__editedSections:landingEditor.value.getEditedSections()},
       landingEditor.value.getEditorState(),
       photos.value,
       (id,name,source,blob)=>{
@@ -323,8 +326,10 @@ async function publishChanges(){
 
 watch([landingEditor,persistedEditorialDraft],()=>{
   const state=persistedEditorialDraft.value?._editorState
-  if(landingEditor.value && state && typeof state==='object')
+  if(landingEditor.value && state && typeof state==='object'){
+    landingEditor.value.setEditedSections(persistedEditorialDraft.value?.__editedSections)
     landingEditor.value.restoreEditorState(state as Record<string,unknown>)
+  }
 },{flush:'post'})
 
 
