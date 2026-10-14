@@ -10,6 +10,7 @@ const props = defineProps<{
   competitionMedia?: PreviewDraft['competition'] | null
   categories: any[]
   registrations: any[]
+  enabledCategoryIds: number[]
   currentRegistrationLot?: any
   managementUrl: string
   mediaPreview?: PreviewDraft|null
@@ -52,17 +53,9 @@ const competitionVisible = computed(() =>
   publicCompetitionStatuses.includes(props.competition?.status)
 )
 
-const competitionCategories = computed(() => {
-  const registrationCategoryIds = new Set(
-    props.registrations.map((item) => item.categoryId).filter(Boolean)
-  )
-
-  return props.categories.filter(
-    (item) =>
-      item.competitionId === props.competition?.id ||
-      registrationCategoryIds.has(item.id)
-  )
-})
+const competitionCategories = computed(() =>
+  props.categories.filter((item) => props.enabledCategoryIds.includes(item.id))
+)
 
 const competitionLotLabel = computed(() =>
   props.currentRegistrationLot?.nome || ''
