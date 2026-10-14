@@ -245,3 +245,17 @@ Em `/midia/landing`, abra **Competição** para testar o Hero competitivo: foto,
 
 ## QA — enquadramento e Hero competitivo
 Em `/midia/landing` abra **Competição**: ao desativar o Hero, sua prévia some e uma mensagem explica que a seção principal continua independente; ao ativar, volta a prévia. Esta regra ainda exige integração ao CMS para surtir efeito na Landing pública. Em **Robôs**, escolha uma foto da categoria, edite o nome mostrado e escolha legenda sobre ou abaixo da foto. Teste **Ajustar foto** e altere zoom, largura, altura, posição e encaixe; repita com banner, Hero, Sobre, diretoria, conquistas, eventos, patrocinadores e competição. Os ajustes não alteram o arquivo original e ainda são exclusivamente da sessão local. Botões pequenos ganharam tamanho maior.
+
+## Prévia da Landing real (somente desenvolvimento local)
+Inicie dois terminais no repositório `Rascomp-FRONT`:
+```powershell
+cd gestao
+npm ci
+npm run dev
+```
+```powershell
+cd landing-page
+npm install
+npm run dev
+```
+Com o backend de autenticação disponível, entre com perfil DEV/MIDIA em `http://localhost:5173/midia/landing`, edite um slide e clique **Prévia do site**. Isso abrirá a Landing verdadeira em `http://localhost:5174/?rascomp_media_preview=1`, identificada com a faixa **PRÉVIA LOCAL — NÃO PUBLICADA**. Ao modificar algo na Gestão, clique **Aplicar na prévia local** para atualizar a aba aberta. A navegação para links externos/inscrição é bloqueada no modo de prévia. Se a janela for bloqueada, permita pop-ups do localhost. Esse fluxo não grava banco, R2, arquivos estáticos ou publicações e não funciona em produção; o estado atual só existe na sessão do navegador.
