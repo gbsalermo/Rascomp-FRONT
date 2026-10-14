@@ -164,6 +164,7 @@ function restoreMissingOriginalHeroes() {
 const competitionBannerId = ref<number | undefined>()
 const competitionHeroPhotoId = ref<number | undefined>()
 const competitionHeroEnabled = ref(false)
+const institutionalOnly = ref(false)
 const competitionHeroEffective = computed(()=>competitionHeroEnabled.value)
 // Esta opção controla APENAS o Hero; a competição/API e sua seção são independentes.
 // A aplicação da regra na Landing requer CMS persistente, fora deste checkpoint.
@@ -311,6 +312,7 @@ function createPreviewDraft(){
     competition:{
       sectionImage:previewImage(competitionBannerId.value,'competition-banner'),sectionText:competitionText.value,
       heroEnabled:competitionHeroEnabled.value,
+      institutionalOnly:institutionalOnly.value,
       heroImage:previewImage(competitionHeroPhotoId.value,'competition-hero'),
       subtitle:competitionHeroSubtitle.value,description:competitionHeroDescription.value,
       showExtra:competitionHeroShowExtra.value,extraLabel:competitionHeroExtraLabel.value,
@@ -331,7 +333,7 @@ function getEditorState():Record<string,unknown> {
     robotTitles:robotTitles.value,robotTitleLocations:robotTitleLocations.value,
     robotBannerId:robotBannerId.value,imageAdjustments:imageAdjustments.value,
     competitionBannerId:competitionBannerId.value,competitionHeroPhotoId:competitionHeroPhotoId.value,
-    competitionHeroEnabled:competitionHeroEnabled.value,competitionText:competitionText.value,
+    competitionHeroEnabled:competitionHeroEnabled.value,institutionalOnly:institutionalOnly.value,competitionText:competitionText.value,
     competitionHeroSubtitle:competitionHeroSubtitle.value,competitionHeroDescription:competitionHeroDescription.value,
     competitionHeroShowExtra:competitionHeroShowExtra.value,
     competitionHeroExtraLabel:competitionHeroExtraLabel.value,
@@ -356,6 +358,7 @@ function restoreEditorState(saved:Record<string,unknown>) {
   if(typeof saved.competitionBannerId==='number')competitionBannerId.value=saved.competitionBannerId
   if(typeof saved.competitionHeroPhotoId==='number')competitionHeroPhotoId.value=saved.competitionHeroPhotoId
   if(typeof saved.competitionHeroEnabled==='boolean')competitionHeroEnabled.value=saved.competitionHeroEnabled
+  if(typeof saved.institutionalOnly==='boolean')institutionalOnly.value=saved.institutionalOnly
   if(typeof saved.competitionText==='string')competitionText.value=saved.competitionText
   if(typeof saved.competitionHeroSubtitle==='string')competitionHeroSubtitle.value=saved.competitionHeroSubtitle
   if(typeof saved.competitionHeroDescription==='string')competitionHeroDescription.value=saved.competitionHeroDescription
@@ -389,7 +392,7 @@ function getEditedSections():string[]{
     robots:['robotPhotos','robotTitles','robotTitleLocations','robotBannerId'],
     events:['events'],
     sponsors:['sponsors'],
-    competition:['competitionBannerId','competitionHeroPhotoId','competitionHeroEnabled','competitionText','competitionHeroSubtitle','competitionHeroDescription','competitionHeroShowExtra','competitionHeroExtraLabel','competitionHeroExtraDestination'],
+    competition:['competitionBannerId','competitionHeroPhotoId','competitionHeroEnabled','institutionalOnly','competitionText','competitionHeroSubtitle','competitionHeroDescription','competitionHeroShowExtra','competitionHeroExtraLabel','competitionHeroExtraDestination'],
     footer:['footer']
   }
   const touched=Object.entries(sections).filter(([,fields])=>fields.some(field=>
@@ -613,6 +616,10 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
       <template v-else-if="section === 'Competição'">
         <div class="editor-info">
           O nome da competição, o estado das inscrições, o lote atual, as categorias e o botão principal vêm da API. A Gestão de Mídia complementa a apresentação, sem modificar os dados oficiais.
+        </div>
+        <div class="editor-heading editor-spaced">
+          <div><h3>Modo institucional (ocultar competição)</h3><p>Ativado: a Landing fica exclusivamente institucional, mesmo com competição vigente. Desativado: nas inscrições abertas só o Hero pode aparecer se habilitado abaixo; após encerrar inscrições, a seção Competição aparece automaticamente durante a disputa.</p></div>
+          <el-switch v-model="institutionalOnly" active-text="Somente institucional" inactive-text="Competição automática" />
         </div>
         <h3>Imagem principal da seção Competição</h3>
         <div class="editor-wide-image">
