@@ -107,7 +107,7 @@ function closeMobile() {
           <a href="#contato" @click="closeMobile">Contato</a>
         </nav>
 
-        <template v-if="competitionModeEnabled">
+        <template v-if="competitionModeEnabled && competitionVisible">
           <a
             v-if="(registrationOpen || participantAccess) && managementUrl"
             class="header-registration-cta desktop-registration-cta"
