@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted } from 'vue'
-import {startGalleryPreviewListener} from './data/localGalleryPreview'
+import {startGalleryPreviewListener,loadPublishedGallery} from './data/localGalleryPreview'
 let cleanup:(()=>void)|undefined
-onMounted(()=>{cleanup=startGalleryPreviewListener()})
+onMounted(()=>{cleanup=startGalleryPreviewListener();void loadPublishedGallery()})
 onBeforeUnmount(()=>cleanup?.())
 const siteUrl = (import.meta.env.VITE_SITE_URL || 'http://localhost:5174').replace(/\/$/, '')
 </script>
