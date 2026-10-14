@@ -1,119 +1,131 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { albums, type GalleryCategory, type GalleryPhoto } from '../data/albums'
+import { galleryCollection, galleryPreviewMode } from '../data/localGalleryPreview'
+import GalleryLightbox from '../components/GalleryLightbox.vue'
+import type { GalleryPhoto } from '../data/albums'
 
-type Filter = 'Todas' | 'Álbuns' | GalleryCategory
-type VisiblePhoto = { photo: GalleryPhoto; albumSlug: string; albumTitle: string; category: GalleryCategory }
 const route = useRoute()
 const router = useRouter()
-const activeFilter = ref<Filter>(route.query.ver === 'albuns' ? 'Álbuns' : 'Todas')
-const filters: Filter[] = ['Todas', 'Álbuns', 'RRC', 'Oficinas', 'RAS nas Escolas', 'Premiações', 'Eventos']
-const allPhotos = computed<VisiblePhoto[]>(() => {
-  const unique = new Map<string, VisiblePhoto>()
-  for (const album of albums) {
-    for (const photo of album.photos) {
-      if (photo.published !== true) continue
-      if (!unique.has(photo.id)) unique.set(photo.id, {
-        photo, albumSlug: album.slug, albumTitle: album.title, category: album.category
-      })
-    }
-  }
-  return [...unique.values()]
+type GalleryFilter = string
+const currentFilter = ref<GalleryFilter>(route.query.ver === 'albuns' ? 'Álbuns' : 'Todas')
+const collection = galleryCollection
+const filters = computed<GalleryFilter[]>(()=>[
+  'Todas','Álbuns',
+  ...new Set(collection.value.albums.map(album=>album.category).filter(category=>category!=='Álbuns')),
+])
+const photos = computed<GalleryPhoto[]>(()=>collection.value.photos.filter(photo=>photo.published === true && !!photo.src))
+const filteredPhotos = computed<GalleryPhoto[]>(()=>{
+  if(currentFilter.value==='Todas')return photos.value
+  const categoryIds = new Set(collection.value.albums
+    .filter(album=>album.category===currentFilter.value)
+    .flatMap(album=>album.photos.map(photo=>photo.id)))
+  return photos.value.filter(photo=>categoryIds.has(photo.id))
 })
-const filteredPhotos = computed(() =>
-  activeFilter.value === 'Todas'
-    ? allPhotos.value
-    : allPhotos.value.filter(item => item.category === activeFilter.value)
-)
-const visibleAlbums = computed(() => albums.filter(album => album.photos.some(photo=>photo.published===true)))
+const albums = computed(()=>collection.value.albums.filter(album=>album.photos.some(photo=>photo.published===true && !!photo.src)))
+const previewCollage = computed(()=>photos.value.slice(0,3))
 const selectedIndex = ref<number|null>(null)
-const selected = computed(() =>
-  selectedIndex.value === null ? null : filteredPhotos.value[selectedIndex.value] || null
-)
-function setFilter(value: Filter) {
-  activeFilter.value = value
-  selectedIndex.value = null
-  if (value === 'Álbuns') router.replace({path:'/',query:{ver:'albuns'}})
-  else if (route.query.ver) router.replace({path:'/'})
-}
-watch(() => route.query.ver, ver => {
-  if (ver === 'albuns') activeFilter.value = 'Álbuns'
-  else if (activeFilter.value === 'Álbuns') activeFilter.value = 'Todas'
+const selectedPhoto = computed(()=>selectedIndex.value!==null ? filteredPhotos.value[selectedIndex.value] : null)
+const selectedAlbumLink=computed(()=>{
+  if(!selectedPhoto.value)return undefined
+  const related=albums.value.find(album=>album.photos.some(photo=>photo.id===selectedPhoto.value?.id))
+  return related ? '/albuns/'+related.slug : undefined
 })
-function previousPhoto() {
-  if (selectedIndex.value === null || !filteredPhotos.value.length) return
-  selectedIndex.value = (selectedIndex.value - 1 + filteredPhotos.value.length) % filteredPhotos.value.length
+function chooseFilter(filter:GalleryFilter) {
+  currentFilter.value=filter
+  selectedIndex.value=null
+  router.replace({path:'/',query:filter==='Álbuns' ? {ver:'albuns'} : {}})
 }
-function nextPhoto() {
-  if (selectedIndex.value === null || !filteredPhotos.value.length) return
-  selectedIndex.value = (selectedIndex.value + 1) % filteredPhotos.value.length
-}
+watch(()=>route.query.ver, value=>{
+  if(value==='albuns') currentFilter.value='Álbuns'
+  else if(currentFilter.value==='Álbuns')currentFilter.value='Todas'
+})
+watch(filteredPhotos,()=>{
+  if(selectedIndex.value!==null && selectedIndex.value>=filteredPhotos.value.length)selectedIndex.value=null
+})
+const filterLabel=(value:string)=>value==='RRC' ? 'Competições' : value==='Premiações' ? 'Conquistas' : value
 </script>
 
 <template>
-  <div class="gallery-home-page gallery-redesign">
+  <section class="gallery-redesign gallery-public-home">
     <div class="gallery-page-container">
-      <header class="gallery-redesign-intro">
-        <div>
-          <span class="gallery-kicker">Registros da nossa trajetória</span>
-          <h1>Nossa história<br>em imagens.</h1>
-          <p>Competições, oficinas, projetos e conquistas que fazem parte da trajetória da IEEE RAS UFRB.</p>
+      <div v-if="galleryPreviewMode" class="gallery-preview-ribbon" role="status">
+        <strong>PRÉVIA LOCAL DA GALERIA</strong>
+        <span>Somente fotografias marcadas como públicas na Gestão · Nada foi publicado</span>
+      </div>
+
+      <header class="gallery-redesign-intro gallery-editorial-intro">
+        <div class="gallery-editorial-copy">
+          <span class="gallery-kicker">IEEE Robotics & Automation Society · UFRB</span>
+          <h1>Momentos que<br><em>contam histórias.</em></h1>
+          <p>Um olhar sobre o que construímos juntos: competições, oficinas, encontros e experiências com a robótica.</p>
+          <div class="gallery-intro-stats" aria-label="Conteúdo da galeria">
+            <span><strong>{{ photos.length }}</strong> {{ photos.length===1 ? 'fotografia' : 'fotografias' }}</span>
+            <span><strong>{{ albums.length }}</strong> {{ albums.length===1 ? 'álbum' : 'álbuns' }}</span>
+          </div>
         </div>
-        <div class="gallery-hero-collage" aria-hidden="true">
-          <img v-for="(item,index) in allPhotos.slice(0,3)" :key="item.photo.id" :class="'collage-' + index"
-            :src="item.photo.src" alt="" />
+        <div v-if="previewCollage.length" class="gallery-hero-collage gallery-editorial-collage" aria-hidden="true">
+          <div v-for="(item,index) in previewCollage" :key="item.id" :class="'collage-'+index">
+            <img :src="item.src" alt="" />
+          </div>
+        </div>
+        <div v-else class="gallery-editorial-placeholder" aria-hidden="true">
+          <span>✳</span><strong>IEEE RAS</strong><small>Nossas memórias</small>
         </div>
       </header>
 
-      <div class="gallery-redesign-section-title">
-        <div><span class="gallery-kicker">ACERVO FOTOGRÁFICO</span><h2>{{ activeFilter === 'Álbuns' ? 'Explore os álbuns' : 'Todas as fotos' }}</h2></div>
-        <span>{{ activeFilter === 'Álbuns' ? visibleAlbums.length + ' álbuns ilustrativos' : filteredPhotos.length + ' imagens ilustrativas' }}</span>
+      <div class="gallery-collection-heading">
+        <div>
+          <span class="gallery-kicker">EXPLORE NOSSO ACERVO</span>
+          <h2>{{ currentFilter==='Álbuns' ? 'Coleções e álbuns' : currentFilter==='Todas' ? 'Todas as fotografias' : filterLabel(currentFilter) }}</h2>
+          <p>{{ currentFilter==='Álbuns' ? 'Descubra as fotografias reunidas por atividade e ocasião.' : 'Fotografias que fazem parte da história da RAS UFRB.' }}</p>
+        </div>
+        <span class="gallery-collection-counter">{{ currentFilter==='Álbuns' ? albums.length : filteredPhotos.length }} {{ currentFilter==='Álbuns' ? 'coleções' : 'fotografias' }}</span>
       </div>
-
-      <div class="gallery-filter-bar gallery-redesign-filters" aria-label="Filtrar a galeria">
+      <nav class="gallery-filter-bar gallery-editorial-filters" aria-label="Filtrar fotografias">
         <button v-for="filter in filters" :key="filter" type="button"
-          :class="{active:activeFilter===filter}" @click="setFilter(filter)">
-          {{ filter === 'RRC' ? 'Competições' : filter === 'Premiações' ? 'Conquistas' : filter }}
-        </button>
-      </div>
+          :aria-pressed="currentFilter===filter" :class="{active:currentFilter===filter}"
+          @click="chooseFilter(filter)">{{ filterLabel(filter) }}</button>
+      </nav>
 
-      <div v-if="activeFilter === 'Álbuns'" class="gallery-index-grid">
-        <article v-for="album in visibleAlbums" :key="album.slug" class="gallery-index-card">
-          <RouterLink :to="'/albuns/' + album.slug" class="gallery-index-media" :aria-label="'Abrir álbum ' + album.title">
-            <img v-if="album.cover" :src="album.cover" :alt="'Capa demonstrativa de ' + album.title" />
-            <span v-else class="gallery-placeholder-cover">{{ album.title }}</span>
-          </RouterLink>
-          <div class="gallery-index-copy">
-            <span class="gallery-category-pill">{{ album.category }}</span>
-            <h2>{{ album.title }}</h2>
-            <p>{{ album.description }}</p>
-            <div class="gallery-redesign-card-bottom"><span>{{ album.photos.length }} imagens</span><RouterLink :to="'/albuns/' + album.slug">Ver álbum →</RouterLink></div>
+      <div v-if="currentFilter==='Álbuns' && albums.length" class="gallery-editorial-albums">
+        <RouterLink v-for="album in albums" :key="album.slug" :to="'/albuns/'+album.slug" class="gallery-editorial-album">
+          <div class="gallery-editorial-album-art">
+            <img v-if="album.cover" :src="album.cover" :alt="'Capa do álbum '+album.title" loading="lazy"/>
+            <div v-else class="gallery-editorial-album-placeholder" aria-hidden="true">✳</div>
+            <span class="gallery-album-count">{{ album.photos.length }} {{ album.photos.length===1 ? 'foto' : 'fotos' }}</span>
           </div>
-        </article>
+          <div class="gallery-editorial-album-info">
+            <h3>{{ album.title }}</h3>
+            <p>{{ album.description || 'Momentos registrados pela equipe.' }}</p>
+            <span>Explorar álbum <span aria-hidden="true">↗</span></span>
+          </div>
+        </RouterLink>
       </div>
-      <div v-else-if="filteredPhotos.length" class="gallery-all-photos">
-        <button v-for="(item,index) in filteredPhotos" :key="item.photo.id" class="gallery-all-photo"
-          :aria-label="'Ampliar ' + item.photo.alt" @click="selectedIndex = index">
-          <img v-if="item.photo.src" :src="item.photo.src" :alt="item.photo.alt" loading="lazy" />
-          <span v-else class="gallery-placeholder-cover">{{ item.albumTitle }}</span>
-          <!-- Externo vê a imagem, não o nome do arquivo ou identificação sobreposta. -->
+
+      <div v-else-if="currentFilter!=='Álbuns' && filteredPhotos.length" class="gallery-photo-masonry">
+        <button v-for="(photo,index) in filteredPhotos" :key="photo.id"
+          type="button" class="gallery-photo-piece" :aria-label="'Abrir fotografia '+(index+1)"
+          @click="selectedIndex=index">
+          <img v-if="photo.src" :src="photo.src" :alt="photo.alt" loading="lazy" decoding="async"/>
         </button>
       </div>
-      <p v-else class="gallery-development-note">Ainda não existem fotos publicadas neste filtro.</p>
 
-      <p class="gallery-redesign-disclaimer">Interface de demonstração local — imagens ilustrativas. A integração com a Biblioteca e o acervo publicado será realizada na próxima etapa.</p>
-    </div>
-
-    <div v-if="selected && selectedIndex !== null" class="gallery-lightbox" role="dialog" aria-modal="true" :aria-label="selected.photo.alt" @keydown.esc="selectedIndex = null">
-      <button type="button" class="lightbox-close" aria-label="Fechar foto" @click="selectedIndex = null">×</button>
-      <button type="button" class="lightbox-arrow previous" aria-label="Foto anterior" @click="previousPhoto">‹</button>
-      <div class="lightbox-content">
-        <img v-if="selected.photo.src" :src="selected.photo.src" :alt="selected.photo.alt"/>
-        <p>{{ selectedIndex + 1 }} / {{ filteredPhotos.length }}</p>
-        <RouterLink class="gallery-lightbox-album-link" :to="'/albuns/' + selected.albumSlug">Ver álbum →</RouterLink>
+      <div v-else class="gallery-public-empty">
+        <div class="gallery-empty-symbol" aria-hidden="true">✳</div>
+        <h3>{{ galleryPreviewMode ? 'Nenhuma foto pública nesta prévia' : 'Novas memórias estão a caminho' }}</h3>
+        <p>{{ galleryPreviewMode
+          ? 'Na Biblioteca, marque uma foto como pública e clique em “Prévia da Galeria”. Fotos privadas e fotos usadas somente na Landing ficam de fora.'
+          : 'Ainda não há fotografias disponíveis nesta seleção. Explore outras categorias ou volte em breve.' }}</p>
+        <button v-if="currentFilter!=='Todas'" type="button" @click="chooseFilter('Todas')">Ver todas as fotos →</button>
       </div>
-      <button type="button" class="lightbox-arrow next" aria-label="Próxima foto" @click="nextPhoto">›</button>
+
+      <div v-if="!galleryPreviewMode" class="gallery-sample-notice">
+        <span>Prévia de interface</span>
+        <p>As imagens exibidas nesta fase são ilustrativas. O acervo real será carregado somente após a publicação autorizada na Gestão de Mídia.</p>
+      </div>
     </div>
-  </div>
+    <GalleryLightbox :photos="filteredPhotos" :selected-index="selectedIndex" :album-url="selectedAlbumLink"
+      @select="selectedIndex=$event" @close="selectedIndex=null"/>
+  </section>
 </template>
