@@ -16,6 +16,16 @@ import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraf
 
 const publishedMediaDraft=ref<PreviewDraft|null>(null)
 const displayedMediaDraft=computed(()=>localMediaDraft.value||publishedMediaDraft.value)
+// O CMS só altera seções explicitamente editadas; snapshots antigos preservam o site original.
+const publishedSections=computed<string[]>(()=>{
+  if(localMediaDraft.value)return ['heroes','about','team','robots','events','sponsors','competition','footer']
+  const candidate=publishedMediaDraft.value as (PreviewDraft & {__editedSections?:unknown})|null
+  return Array.isArray(candidate?.__editedSections)
+    ? candidate.__editedSections.filter((value):value is string=>typeof value==='string') : []
+})
+function sectionDraft(section:string){
+  return publishedSections.value.includes(section)?displayedMediaDraft.value:null
+}
 async function loadPublishedMedia() {
   try{
     const response=await fetch(API_URL+'/api/v1/public/media/editorial',{cache:'no-store'})
@@ -362,17 +372,17 @@ onBeforeUnmount(() => {
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
         :management-url="managementUrl"
-        :media-preview="displayedMediaDraft"
+        :media-preview="sectionDraft('heroes')"
       />
-      <InstitutionalAbout :media-preview="displayedMediaDraft" />
-      <TeamRobotsAwards :media-preview="displayedMediaDraft" />
-      <RobotsShowcase :media-preview="displayedMediaDraft" />
+      <InstitutionalAbout :media-preview="sectionDraft('about')" />
+      <TeamRobotsAwards :media-preview="sectionDraft('team')" />
+      <RobotsShowcase :media-preview="sectionDraft('robots')" />
       <InstitutionalGallery />
       <InstitutionalEvents
         :management-url="managementUrl"
         :registration-open="displayedRegistrationOpen"
         :competition-mode-enabled="competitionModeEnabled"
-        :media-preview="displayedMediaDraft"
+        :media-preview="sectionDraft('events')"
         @registration-unavailable="showRegistrationUnavailable"
       />
 
@@ -408,7 +418,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <InstitutionalFooter :media-preview="displayedMediaDraft" />
+    <InstitutionalFooter :media-preview="sectionDraft('footer')" />
 
     <Transition name="registration-notice">
       <aside
