@@ -535,25 +535,45 @@ function fileChange(event: Event) {
   })
   input.value = ''
 }
-function confirmUpload() {
-  if (!uploads.value.length) { ElMessage.warning('Selecione pelo menos uma imagem.'); return }
-  let ids: number[] = []
-  if (uploadTarget.value === 'existing') ids = [...targetAlbumIds.value]
-  if (uploadTarget.value === 'new') {
-    if (!newAlbumName.value.trim()) { ElMessage.warning('Informe o nome do novo álbum.'); return }
-    ids = [createAlbum(newAlbumName.value)]
-  }
-  const start = Math.max(0, ...photos.value.map(photo => photo.id)) + 1
-  const added = uploads.value.map((item, i): MediaPhoto => ({
-    id: start + i, name: item.file.name, albums: ids, published: uploadVisibility.value === 'public',
-    tone: (start + i) % 9, src: item.preview
-  }))
-  photos.value = [...added, ...photos.value]
-  selectedIds.value = added.map(item => item.id)
-  albumFilter.value = 'all'
-  uploads.value = []
-  uploadDialog.value = false
-  ElMessage.success('Fotos adicionadas apenas à prévia local (sem envio ao servidor).')
+async function confirmUpload() {
+  if(!uploads.value.length){ElMessage.warning('Selecione pelo menos uma imagem.');return}
+  if(cmsBusy.value)return
+  cmsBusy.value=true
+  try{
+    let ids:number[]=[]
+    if(uploadTarget.value==='existing')ids=[...targetAlbumIds.value]
+    if(uploadTarget.value==='new'){
+      const title=newAlbumName.value.trim()
+      if(!title){ElMessage.warning('Informe o nome do álbum.');return}
+      const id=cmsReady.value?await mediaApi.createAlbum(title):createAlbum(title)
+      if(cmsReady.value)albums.value.push({id,name:title,description:''})
+      ids=[id]
+    }
+    const added:MediaPhoto[]=[]
+    let next=Math.max(0,...photos.value.map(p=>p.id))+1
+    for(const item of uploads.value){
+      if(cmsReady.value){
+        const uploaded=await mediaApi.upload(item.file,uploadVisibility.value==='public')
+        if(ids.length)await mediaApi.albumsForPhoto(uploaded.id,ids)
+        added.push({
+          id:uploaded.id,name:uploaded.name,albums:ids,published:uploadVisibility.value==='public',
+          persisted:true,tone:uploaded.id%9,src:item.preview
+        })
+      }else added.push({
+        id:next++,name:item.file.name,albums:ids,published:uploadVisibility.value==='public',
+        tone:next%9,src:item.preview
+      })
+    }
+    photos.value=[...added,...photos.value]
+    selectedIds.value=added.map(item=>item.id)
+    albumFilter.value='all'
+    uploads.value=[]
+    uploadDialog.value=false
+    ElMessage.success(cmsReady.value?'Fotografias armazenadas no R2 e registradas no MySQL. Publique para aparecerem na Galeria.':'Fotos inseridas na prévia local.')
+  }catch(error){
+    ElMessage.error(error instanceof Error?error.message:'Falha no upload de imagem')
+    if(cmsReady.value)await loadCmsWorkspace()
+  }finally{cmsBusy.value=false}
 }
 async function changePhotoAlbum(id: number, enabled: boolean) {
   const photo = selectedPhoto.value
