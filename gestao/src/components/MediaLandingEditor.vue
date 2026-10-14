@@ -52,7 +52,7 @@ const robotTitleLocations = ref<Record<number,'below'|'overlay'>>({})
 type ImageAdjustment = {zoom:number;width:number;height:number;x:number;y:number;fit:'cover'|'contain'}
 const imageAdjustments = ref<Record<string,ImageAdjustment>>({})
 const activeAdjustmentKey = ref('')
-const activeAdjustmentPhotoId = ref<number | undefined>()
+const activeAdjustmentSrc = ref('')
 const adjustmentOpen = ref(false)
 const adjustmentLabel = ref('')
 function defaultFrame(key:string): ImageAdjustment {
@@ -74,10 +74,11 @@ function frameStyle(key:string) {
     transform:`translate(${(frame.x-50)*.7}%,${(frame.y-50)*.7}%) scale(${frame.zoom/100})`
   }
 }
-function openAdjustment(key:string,id:number|undefined,label:string) {
-  if (!photo(id)?.src) {ElMessage.warning('Escolha uma imagem antes de ajustar o enquadramento.');return}
+function openAdjustment(key:string,id:number|undefined,label:string,sourceUrl?:string) {
+  const src=sourceUrl || photo(id)?.src
+  if (!src) {ElMessage.warning('Escolha uma imagem antes de ajustar o enquadramento.');return}
   activeAdjustmentKey.value=key
-  activeAdjustmentPhotoId.value=id
+  activeAdjustmentSrc.value=src
   adjustmentLabel.value=label
   adjustmentOpen.value=true
 }
