@@ -308,14 +308,16 @@ async function loadTeams(silent = false) {
 }
 
 async function loadTeam(silent = false) {
-  competitors.value = []
-  robots.value = []
-  registrations.value = []
-  cancellationPendingIds.value = new Set()
-  photoMap.value = {}
-  responsibleMap.value = {}
-  followMap.value = {}
-  sumoMap.value = {}
+  if (!silent) {
+    competitors.value = []
+    robots.value = []
+    registrations.value = []
+    cancellationPendingIds.value = new Set()
+    photoMap.value = {}
+    responsibleMap.value = {}
+    followMap.value = {}
+    sumoMap.value = {}
+  }
   if (!teamId.value) return
 
   if (!silent) loading.value = true
