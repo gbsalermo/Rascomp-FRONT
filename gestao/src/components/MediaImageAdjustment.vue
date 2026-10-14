@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
-export type ImageAdjustment = {
+type ImageAdjustment = {
   zoom: number
   width: number
   height: number
