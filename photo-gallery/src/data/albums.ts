@@ -26,7 +26,8 @@ const colors: Record<GalleryCategory, [string, string]> = {
   Oficinas: ['#426a74', '#b89a79'],
   'RAS nas Escolas': ['#627492', '#d39d75'],
   Premiações: ['#6e3c78', '#bf648a'],
-  Eventos: ['#446277', '#ba8c83']
+  Eventos: ['#446277', '#ba8c83'],
+  Álbuns: ['#67476c', '#ad8492']
 }
 function demonstrationImage(category: GalleryCategory, index: number): string {
   const [a,b] = colors[category]
