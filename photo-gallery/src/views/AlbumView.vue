@@ -1,106 +1,65 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { findAlbum, type GalleryPhoto } from '../data/albums'
+import { galleryCollection, galleryPreviewMode } from '../data/localGalleryPreview'
+import GalleryLightbox from '../components/GalleryLightbox.vue'
 
-const route = useRoute()
-const selectedIndex = ref<number | null>(null)
-
-const album = computed(() => findAlbum(route.params.slug))
-const publicPhotos = computed(() => album.value?.photos.filter(photo=>photo.published===true) || [])
-const selectedPhoto = computed<GalleryPhoto | null>(() => {
-  if (selectedIndex.value == null || !album.value) return null
-  return publicPhotos.value[selectedIndex.value] || null
+const route=useRoute()
+const selectedIndex=ref<number|null>(null)
+const album=computed(()=>galleryCollection.value.albums.find(item=>item.slug===route.params.slug))
+const publicPhotos=computed(()=>album.value?.photos.filter(photo=>photo.published===true && !!photo.src)||[])
+watch(()=>route.params.slug,()=>selectedIndex.value=null)
+watch(publicPhotos,()=>{
+  if(selectedIndex.value!==null && selectedIndex.value>=publicPhotos.value.length)selectedIndex.value=null
 })
-
-function openPhoto(index: number) {
-  selectedIndex.value = index
-}
-
-function closeLightbox() {
-  selectedIndex.value = null
-}
-
-function previousPhoto() {
-  if (selectedIndex.value == null || !album.value) return
-  selectedIndex.value = (selectedIndex.value - 1 + publicPhotos.value.length) % album.value.photos.length
-}
-
-function nextPhoto() {
-  if (selectedIndex.value == null || !album.value) return
-  selectedIndex.value = (selectedIndex.value + 1) % album.value.photos.length
-}
-
-watch(() => route.params.slug, closeLightbox)
 </script>
 
 <template>
-  <section v-if="album" class="album-page">
+  <section class="album-page gallery-public-album">
     <div class="gallery-page-container">
-      <RouterLink :to="{ path: '/', query: { ver: 'albuns' } }" class="album-back-link">← Voltar aos álbuns</RouterLink>
-
-      <header class="album-heading">
-        <div>
-          <span class="gallery-category-pill">{{ album.category }}</span>
-          <h1>{{ album.title }}</h1>
-          <p>{{ album.description }}</p>
-        </div>
-        <div class="album-summary">
-          <strong>{{ publicPhotos.length }}</strong>
-          <span>fotos no álbum</span>
-          <small>{{ album.date }}</small>
-        </div>
-      </header>
-
-      <div class="album-photo-grid">
-        <button
-          v-for="(photo, index) in publicPhotos"
-          :key="photo.id"
-          type="button"
-          class="album-photo-card"
-          :aria-label="`Abrir ${photo.alt}`"
-          @click="openPhoto(index)"
-        >
-          <img v-if="photo.src" :src="photo.src" :alt="photo.alt" loading="lazy" />
-          <span v-else class="album-photo-placeholder">
-            <small>{{ album.category }}</small>
-            <strong>Foto {{ index + 1 }}</strong>
-            <em>Imagem real a adicionar</em>
-          </span>
-        </button>
+      <div v-if="galleryPreviewMode" class="gallery-preview-ribbon" role="status">
+        <strong>PRÉVIA LOCAL DA GALERIA</strong><span>Somente fotografias públicas · Nenhuma alteração foi publicada</span>
       </div>
-
-      <div class="album-more-note">
-        <strong>Estrutura pronta para as fotos reais</strong>
-        <p>
-          Estas imagens são ilustrações usadas para testar a interface local. A integração posterior substituirá este catálogo pelo acervo publicado na Gestão de Mídia.
-        </p>
-      </div>
-    </div>
-
-    <div v-if="selectedPhoto && selectedIndex != null" class="gallery-lightbox" role="dialog" aria-modal="true" :aria-label="selectedPhoto.alt">
-      <button type="button" class="lightbox-close" aria-label="Fechar foto" @click="closeLightbox">×</button>
-      <button type="button" class="lightbox-arrow previous" aria-label="Foto anterior" @click="previousPhoto">‹</button>
-
-      <div class="lightbox-content">
-        <img v-if="selectedPhoto.src" :src="selectedPhoto.src" :alt="selectedPhoto.alt" />
-        <div v-else class="lightbox-placeholder">
-          <span>{{ album.category }}</span>
-          <strong>{{ album.title }}</strong>
-          <small>Foto {{ selectedIndex + 1 }}</small>
+      <template v-if="album">
+        <RouterLink :to="{path:'/',query:{ver:'albuns'}}" class="album-back-link">← Todos os álbuns</RouterLink>
+        <header class="album-heading gallery-album-hero">
+          <div class="gallery-album-hero-copy">
+            <span class="gallery-kicker">REGISTROS DA IEEE RAS UFRB</span>
+            <h1>{{ album.title }}</h1>
+            <p>{{ album.description || 'Uma coleção de momentos da equipe.' }}</p>
+            <div class="gallery-album-hero-meta">
+              <span>{{ publicPhotos.length }} {{ publicPhotos.length===1?'fotografia':'fotografias' }}</span>
+              <span v-if="album.date">{{ album.date }}</span>
+            </div>
+          </div>
+          <div v-if="album.cover" class="gallery-album-hero-cover">
+            <img :src="album.cover" :alt="'Capa do álbum '+album.title"/>
+          </div>
+        </header>
+        <div v-if="publicPhotos.length" class="gallery-photo-masonry">
+          <button v-for="(photo,index) in publicPhotos" :key="photo.id" type="button"
+            :aria-label="'Abrir fotografia '+(index+1)" class="gallery-photo-piece"
+            @click="selectedIndex=index">
+            <img :src="photo.src" :alt="photo.alt" loading="lazy" decoding="async"/>
+          </button>
         </div>
-        <p>{{ selectedIndex + 1 }} / {{ publicPhotos.length }}</p>
+        <div v-else class="gallery-public-empty">
+          <div class="gallery-empty-symbol" aria-hidden="true">✳</div>
+          <h2>Álbum sem fotografias públicas</h2>
+          <p>Apenas imagens autorizadas para a Galeria ficam visíveis. Fotos internas não aparecem aqui.</p>
+          <RouterLink to="/">Voltar para todas as fotos →</RouterLink>
+        </div>
+        <RouterLink to="/" class="gallery-album-footer-link">← Voltar à Galeria</RouterLink>
+      </template>
+      <div v-else class="gallery-public-empty gallery-album-not-found">
+        <div class="gallery-empty-symbol" aria-hidden="true">✳</div>
+        <h1>Álbum não encontrado</h1>
+        <p>Este álbum não existe ou não possui fotografias publicadas.</p>
+        <RouterLink to="/">Voltar para todas as fotos →</RouterLink>
       </div>
-
-      <button type="button" class="lightbox-arrow next" aria-label="Próxima foto" @click="nextPhoto">›</button>
+      <p v-if="!galleryPreviewMode && album" class="gallery-album-sample-disclaimer">Imagens ilustrativas desta fase de validação. O acervo público real será conectado após a aprovação.</p>
     </div>
-  </section>
-
-  <section v-else class="album-not-found">
-    <div class="gallery-page-container">
-      <span class="gallery-kicker">Álbum não encontrado</span>
-      <h1>Esse álbum não existe.</h1>
-      <RouterLink to="/">Voltar para a galeria</RouterLink>
-    </div>
+    <GalleryLightbox :photos="publicPhotos" :selected-index="selectedIndex"
+      @select="selectedIndex=$event" @close="selectedIndex=null"/>
   </section>
 </template>
