@@ -2092,3 +2092,7 @@ O editor `gestao/src/components/MediaLandingEditor.vue` agora permite selecionar
 - `photo-gallery/src/data/albums.ts`, `views/GalleryHomeView.vue`, `views/AlbumView.vue`, `styles.css` filtram itens `published:true`, eliminam rótulos de cada foto no mosaico e apresentam fotos completas.
 - O app de Galeria continua isolado na porta 5175, com imagens SVG demonstrativas, enquanto o editor está em 5173. O vínculo real com Biblioteca pública depende de API e fluxo de publicação; evitar apresentar esta prévia como publicação efetiva.
 - Continuar PR #7 em DRAFT, sem merge ou deploy até validação visual e CMS persistente.
+
+## Checkpoint Gestão de Mídia — Competição e Footer
+No ramo `v1-pos-cloud-gestao-midia`, `gestao/src/components/MediaLandingEditor.vue` apresenta Hero competitivo com foto, subtítulo, descrição extra, botão secundário opcional e controle de visibilidade. Título, lote, categorias, situação das inscrições e CTA principal são **protegidos porque vêm da API**; a prévia exibe placeholders identificados, não dados reais.
+`gestao/src/components/MediaFooterEditor.vue` implementa editor local de contatos (e-mail, Instagram, WhatsApp), localização exibida, texto de contato e apoio, destinos dos links institucionais e prévia, preservando os nomes, as logos, a estrutura e os créditos do Footer público. Os campos são seeds dos defaults de `landing-page/src/components/InstitutionalFooter.vue`, **não há API CMS, persistência nem publicação**. PR #7 continua draft.
