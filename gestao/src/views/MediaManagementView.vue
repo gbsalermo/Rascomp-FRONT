@@ -75,8 +75,11 @@ function sendPreview() {
 async function updatePreview(source?:Record<string,unknown>) {
   const draft=source??landingEditor.value?.createPreviewDraft()
   if(!draft)return
+  // Aplicar somente as seções modificadas; as demais vêm da publicação vigente.
+  const sections=landingEditor.value?.getEditedSections()??[]
+  const scopedDraft={...draft,__editedSections:sections}
   const id=++pendingConversion
-  const next=await preparePreviewPacket(draft)
+  const next=await preparePreviewPacket(scopedDraft)
   if(id!==pendingConversion)return
   previewPacket=next
   sendPreview()
