@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MediaLandingEditor from '../components/MediaLandingEditor.vue'
 import { mediaApi, type MediaWorkspace, type ApiMediaPhoto } from '../api/media'
+import { prepareEditorialUpload } from '../api/mediaDraft'
 import { useAuthStore } from '../store'
 
 type Album = { id: number; name: string; description: string; coverId?: number }
@@ -269,6 +270,42 @@ async function loadCmsWorkspace() {
   }finally{cmsLoading.value=false}
 }
 onMounted(()=>{void loadCmsWorkspace()})
+async function saveEditorialDraft(){
+  if(!canEditMedia.value || !landingEditor.value)return
+  cmsBusy.value=true
+  try{
+    const draft=await prepareEditorialUpload(
+      landingEditor.value.createPreviewDraft(),
+      landingEditor.value.getEditorState(),
+      photos.value,
+      (id,name,source,blob)=>{
+        const url=URL.createObjectURL(blob)
+        uploadedUrls.push(url)
+        photos.value.unshift({id,name,src:url,albums:[],published:false,persisted:true,tone:id%9})
+      }
+    )
+    await mediaApi.saveDraft(draft)
+    persistedEditorialDraft.value=draft
+    cmsDraftSaved.value=true
+    ElMessage.success('Rascunho salvo no MySQL, sem publicar no site.')
+  }catch(error){
+    ElMessage.error(error instanceof Error?error.message:'Não foi possível salvar o rascunho.')
+  }finally{cmsBusy.value=false}
+}
+async function publishEditorial(){
+  if(!canEditMedia.value || !cmsDraftSaved.value)return
+  cmsBusy.value=true
+  try{
+    const response=await mediaApi.publish(cmsVersion.value)
+    cmsVersion.value=response.version
+    cmsDraftSaved.value=false
+    confirmPublishOpen.value=false
+    ElMessage.success('Versão publicada: '+response.version+'. A Galeria mostrará somente fotos públicas.')
+  }catch(error){
+    ElMessage.error(error instanceof Error?error.message:'Falha ao publicar rascunho.')
+  }finally{cmsBusy.value=false}
+}
+
 watch([landingEditor,persistedEditorialDraft],()=>{
   const state=persistedEditorialDraft.value?._editorState
   if(landingEditor.value && state && typeof state==='object')
