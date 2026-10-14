@@ -12,6 +12,72 @@ type MediaVisibility = 'private' | 'public'
 
 const route = useRoute()
 const router = useRouter()
+const landingEditor = ref<{createPreviewDraft:()=>Record<string,unknown>}|null>(null)
+const landingPreviewOrigin = 'http://localhost:5174'
+let previewPopup:Window|null=null
+let previewToken=''
+let popupReady=false
+let previewPacket:{draft:Record<string,unknown>;files:Record<string,Blob>}|null=null
+let pendingConversion=0
+async function preparePreviewPacket(source:Record<string,unknown>) {
+  const files:Record<string,Blob>={}
+  const visit=async (value:unknown):Promise<unknown>=>{
+    if(Array.isArray(value))return Promise.all(value.map(visit))
+    if(value && typeof value==='object'){
+      const result:Record<string,unknown>={}
+      for(const [key,item] of Object.entries(value)){
+        if(key==='src' && typeof item==='string'){
+          if(item.startsWith('blob:')){
+            const identifier='image-'+Object.keys(files).length
+            try {
+              const blob=await fetch(item).then(r=>r.blob())
+              if(blob.type.startsWith('image/')) {files[identifier]=blob;result[key]='rascomp-file:'+identifier}
+              else result[key]=''
+            }catch{result[key]=''}
+          }else result[key]=item
+        }else result[key]=await visit(item)
+      }
+      return result
+    }
+    return value
+  }
+  return {draft:await visit(source) as Record<string,unknown>,files}
+}
+function sendPreview() {
+  if(!popupReady || !previewPopup || previewPopup.closed || !previewPacket || !previewToken)return
+  previewPopup.postMessage({type:'rascomp:media-draft',token:previewToken,...previewPacket},landingPreviewOrigin)
+}
+async function updatePreview(source?:Record<string,unknown>) {
+  const draft=source??landingEditor.value?.createPreviewDraft()
+  if(!draft)return
+  const id=++pendingConversion
+  const next=await preparePreviewPacket(draft)
+  if(id!==pendingConversion)return
+  previewPacket=next
+  sendPreview()
+}
+function previewMessage(event:MessageEvent) {
+  if(event.origin!==landingPreviewOrigin || event.source!==previewPopup)return
+  if(event.data?.type!=='rascomp:media-ready' || event.data?.token!==previewToken)return
+  popupReady=true
+  sendPreview()
+}
+window.addEventListener('message',previewMessage)
+async function openSitePreview() {
+  if(!import.meta.env.DEV || !['localhost','127.0.0.1'].includes(location.hostname)) {
+    ElMessage.warning('A prévia de edição só pode ser aberta no ambiente local.');return
+  }
+  if(!landingEditor.value){ElMessage.warning('Abra a seção Landing para gerar a prévia.');return}
+  if(!previewPopup || previewPopup.closed) {
+    previewToken=crypto.randomUUID()
+    popupReady=false
+    previewPopup=window.open(landingPreviewOrigin+'/?rascomp_media_preview=1#preview='+previewToken,'rascomp-media-site-preview')
+    if(!previewPopup){ElMessage.warning('O navegador bloqueou a janela. Permita pop-ups para localhost.');return}
+  }else previewPopup.focus()
+  ElMessage.info('Prévia local: mantenha o site Landing rodando em localhost:5174.')
+  await updatePreview()
+}
+
 const auth = useAuthStore()
 
 // Preferência local por conta: vale apenas para este navegador.
@@ -213,7 +279,7 @@ function openCrop() {
 }
 function demoOnly() { ElMessage.info('Editor demonstrativo. A gravação no backend será implementada após sua aprovação visual.') }
 function showAlbum(id: number) { albumFilter.value = String(id); router.push('/midia') }
-onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
+onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);uploadedUrls.forEach(url => URL.revokeObjectURL(url))})
 </script>
 
 <template>
@@ -230,7 +296,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
         <span class="media-demo-label">Demonstração local</span>
         <el-button v-if="section === 'library'" type="primary" @click="openUploadDialog">＋ Adicionar fotos</el-button>
         <el-button v-if="section === 'albums'" type="primary" @click="openAlbumDialog()">＋ Novo álbum</el-button>
-        <el-button v-if="section === 'landing'" type="primary" plain @click="demoOnly">Prévia do site</el-button>
+        <el-button v-if="section === 'landing'" type="primary" @click="openSitePreview">Prévia do site ↗</el-button>
       </div>
     </div>
 
@@ -315,7 +381,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
     </template>
 
     <template v-else>
-      <MediaLandingEditor :photos="photos" :albums="albums" :upload-photo="addPhotoForEditor" />
+      <MediaLandingEditor ref="landingEditor" :photos="photos" :albums="albums" :upload-photo="addPhotoForEditor" @draft-applied="updatePreview" />
     </template>
 
     <el-dialog class="media-upload-dialog" v-model="uploadDialog" title="Adicionar fotos à Biblioteca" width="min(620px, 94vw)" destroy-on-close>
