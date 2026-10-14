@@ -22,6 +22,9 @@
   height: 54px;
   object-fit: contain;
   flex-shrink: 0;
+  margin-right: 25px;
+  transform: scale(2);
+  transform-origin: center;
 }
 
 .gallery-site-header nav {
