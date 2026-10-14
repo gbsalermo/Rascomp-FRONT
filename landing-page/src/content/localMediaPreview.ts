@@ -7,6 +7,7 @@ export type PreviewImage = { src:string; name?:string; frame?:PreviewFrame }
 export type PreviewHero = { id:string; title:string; eyebrow:string; description:string; cta:string; href:string; showButton:boolean; active:boolean; image?:PreviewImage }
 export type PreviewRobot = PreviewImage & { id:number; name:string; labelPosition:'overlay'|'below' }
 export type PreviewDraft = {
+  __editedSections?: string[]
   heroes: PreviewHero[]
   about: PreviewImage[]
   board: {role:string;image?:PreviewImage}[]
