@@ -1,4 +1,4 @@
-export type GalleryCategory = 'RRC' | 'Oficinas' | 'RAS nas Escolas' | 'Premiações' | 'Eventos'
+export type GalleryCategory = 'RRC' | 'Oficinas' | 'RAS nas Escolas' | 'Premiações' | 'Eventos' | 'Álbuns'
 
 export type GalleryPhoto = {
   id: string
