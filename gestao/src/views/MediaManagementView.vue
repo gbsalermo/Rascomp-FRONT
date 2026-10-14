@@ -78,6 +78,64 @@ async function openSitePreview() {
   await updatePreview()
 }
 
+// Prévia local da Galeria: a Gestão envia APENAS fotos explicitamente públicas.
+const galleryPreviewOrigin='http://localhost:5175'
+let galleryPopup:Window|null=null
+let galleryToken=''
+let galleryReady=false
+let galleryPacket:{draft:Record<string,unknown>;files:Record<string,Blob>}|null=null
+function sendGalleryPreview(){
+  if(!galleryReady||!galleryPopup||galleryPopup.closed||!galleryToken||!galleryPacket)return
+  galleryPopup.postMessage({type:'rascomp:gallery-draft',token:galleryToken,...galleryPacket},galleryPreviewOrigin)
+}
+function galleryMessage(event:MessageEvent){
+  if(event.origin!==galleryPreviewOrigin||event.source!==galleryPopup)return
+  if(event.data?.type!=='rascomp:gallery-ready'||event.data?.token!==galleryToken)return
+  galleryReady=true
+  sendGalleryPreview()
+}
+window.addEventListener('message',galleryMessage)
+async function openGalleryPreview(){
+  if(!import.meta.env.DEV||!['localhost','127.0.0.1'].includes(location.hostname)){
+    ElMessage.warning('A prévia da Galeria está disponível somente no ambiente local.');return
+  }
+  if(!galleryPopup||galleryPopup.closed){
+    galleryToken=crypto.randomUUID()
+    galleryReady=false
+    galleryPopup=window.open(galleryPreviewOrigin+'/?rascomp_gallery_preview=1#preview='+galleryToken,'rascomp-gallery-editorial-preview')
+    if(!galleryPopup){ElMessage.warning('Permita pop-ups do localhost para abrir a Galeria.');return}
+  }else galleryPopup.focus()
+  const publicPhotos=photos.value.filter(item=>item.published===true&&!!item.src).slice(0,400)
+  const files:Record<string,Blob>={}
+  const prepared=await Promise.all(publicPhotos.map(async item=>{
+    let src=new URL(item.src!,location.origin).href
+    if(item.src!.startsWith('blob:')){
+      try {
+        const blob=await fetch(item.src!).then(response=>response.blob())
+        if(!blob.type.startsWith('image/'))return null
+        const name='gallery-'+item.id
+        files[name]=blob
+        src='rascomp-file:'+name
+      }catch{return null}
+    }
+    return {
+      id:item.id,src,
+      albumIds:[...item.albums],
+      published:true as const,
+      alt:'Fotografia publicada pela IEEE RAS UFRB'
+    }
+  }))
+  const approved=prepared.filter(item=>item!==null)
+  galleryPacket={
+    draft:{photos:approved,albums:albums.value.map(album=>({
+      id:album.id,name:album.name,description:album.description,coverId:album.coverId
+    }))},
+    files
+  }
+  sendGalleryPreview()
+  ElMessage.info(approved.length+' foto(s) públicas enviadas somente para a prévia local da Galeria. Nada foi publicado.')
+}
+
 const auth = useAuthStore()
 
 // Preferência local por conta: vale apenas para este navegador.
@@ -279,7 +337,7 @@ function openCrop() {
 }
 function demoOnly() { ElMessage.info('Editor demonstrativo. A gravação no backend será implementada após sua aprovação visual.') }
 function showAlbum(id: number) { albumFilter.value = String(id); router.push('/midia') }
-onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);uploadedUrls.forEach(url => URL.revokeObjectURL(url))})
+onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);window.removeEventListener('message',galleryMessage);uploadedUrls.forEach(url => URL.revokeObjectURL(url))})
 </script>
 
 <template>
@@ -294,6 +352,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);uplo
       </div>
       <div class="media-header-actions">
         <span class="media-demo-label">Demonstração local</span>
+        <el-button v-if="section === 'library' || section === 'albums'" @click="openGalleryPreview">Prévia da Galeria ↗</el-button>
         <el-button v-if="section === 'library'" type="primary" @click="openUploadDialog">＋ Adicionar fotos</el-button>
         <el-button v-if="section === 'albums'" type="primary" @click="openAlbumDialog()">＋ Novo álbum</el-button>
         <el-button v-if="section === 'landing'" type="primary" @click="openSitePreview">Prévia do site ↗</el-button>
@@ -350,7 +409,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);uplo
             </div>
             <label>Exibir na Galeria pública (após integração)</label>
             <el-switch v-model="selectedPhoto.published" active-text="Sim" inactive-text="Não" />
-            <p class="media-visibility-help">Esta opção simula a futura publicação. Fotos privadas permanecem na Biblioteca. Fotos marcadas como públicas serão exibidas na Galeria quando a integração estiver pronta; você pode alterar isso a qualquer momento. A prévia local não sincroniza as duas aplicações.</p>
+            <p class="media-visibility-help">A visibilidade é independente do uso na Landing: uma foto pode aparecer no Hero e permanecer privada na Galeria. Para conferir o resultado, clique em <strong>Prévia da Galeria</strong>; os dados ainda não são publicados.</p>
             <div class="media-detail-actions"><el-button @click="openCrop">Editar enquadramento</el-button></div>
           </template>
           <div v-else class="media-empty">Selecione uma imagem para visualizar seus detalhes.</div>
@@ -411,7 +470,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);uplo
             <el-option label="Públicas" value="public" />
           </el-select>
         </div>
-        <p>O padrão pode ser diferente da escolha deste lote. Depois, você poderá mudar cada foto na Biblioteca. Nenhuma imagem é publicada de verdade nesta prévia local.</p>
+        <p>Estar em um Hero, evento, equipe ou outra seção <strong>não publica a foto na Galeria</strong>. A escolha deste lote é independente e cada foto poderá ser alterada depois na Biblioteca. Nenhuma imagem é publicada de verdade nesta prévia local.</p>
       </div>
       <template #footer><el-button @click="uploadDialog = false">Cancelar</el-button><el-button type="primary" @click="confirmUpload">Adicionar à prévia</el-button></template>
     </el-dialog>
