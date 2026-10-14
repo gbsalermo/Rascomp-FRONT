@@ -210,6 +210,8 @@ const visiblePhotos = computed(() => photos.value.filter(photo => {
   const q = photo.name.toLocaleLowerCase('pt-BR').includes(search.value.toLocaleLowerCase('pt-BR'))
   if (!q) return false
   if (albumFilter.value === 'none') return photo.albums.length === 0
+  if (albumFilter.value === 'public') return photo.published
+  if (albumFilter.value === 'private') return !photo.published
   if (albumFilter.value === 'all') return true
   return photo.albums.includes(Number(albumFilter.value))
 }))
@@ -374,6 +376,8 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
           <div class="media-filter-line">
             <button :class="{ active: albumFilter === 'all' }" @click="albumFilter = 'all'">Todas</button>
             <button :class="{ active: albumFilter === 'none' }" @click="albumFilter = 'none'">Sem álbum</button>
+            <button :class="{ active: albumFilter === 'public' }" @click="albumFilter = 'public'">Na Galeria</button>
+            <button :class="{ active: albumFilter === 'private' }" @click="albumFilter = 'private'">Privadas</button>
             <el-select v-model="albumFilter" style="width:190px" placeholder="Escolher álbum">
               <el-option label="Todos os álbuns" value="all" />
               <el-option v-for="album in albums" :key="album.id" :label="album.name" :value="String(album.id)" />
