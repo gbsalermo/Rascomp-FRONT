@@ -281,6 +281,21 @@ async function loadCmsWorkspace() {
   }finally{cmsLoading.value=false}
 }
 onMounted(()=>{void loadCmsWorkspace()})
+function mediaRequestError(error:unknown, fallback:string):string {
+  if(error && typeof error==='object'){
+    const data=(error as {response?:{data?:unknown}}).response?.data
+    if(data && typeof data==='object'){
+      const details=data as Record<string,unknown>
+      for(const key of ['detail','message','error']){
+        const value=details[key]
+        if(typeof value==='string' && value.trim() && !/^Bad Request$/i.test(value.trim()))
+          return value
+      }
+    }
+    if(typeof data==='string' && data.trim())return data
+  }
+  return error instanceof Error && !/Request failed with status code/i.test(error.message)?error.message:fallback
+}
 async function saveEditorialDraft(){
   if(!canEditMedia.value || !landingEditor.value)return
   cmsBusy.value=true
@@ -301,7 +316,7 @@ async function saveEditorialDraft(){
     const savedSections=Array.isArray(draft.__editedSections) ? draft.__editedSections as string[] : []
     ElMessage.success(savedSections.length ? 'Rascunho salvo. Seções: '+savedSections.join(', ')+'. Ainda não publicado.' : 'Rascunho salvo sem seções editoriais modificadas identificadas.')
   }catch(error){
-    ElMessage.error(error instanceof Error?error.message:'Não foi possível salvar o rascunho.')
+    ElMessage.error(mediaRequestError(error,'Não foi possível salvar o rascunho. Verifique a resposta da API.'))
   }finally{cmsBusy.value=false}
 }
 async function publishChanges(){
@@ -324,7 +339,7 @@ async function publishChanges(){
       ? 'Landing e Galeria publicadas na versão '+response.version+'.'
       : 'Galeria publicada! As fotos públicas e os álbuns já podem aparecer em /galeria.')
   }catch(error){
-    ElMessage.error(error instanceof Error?error.message:'Não foi possível publicar. Verifique o CMS e atualize os dados.')
+    ElMessage.error(mediaRequestError(error,'Não foi possível publicar. Verifique o CMS e atualize os dados.'))
   }finally{cmsBusy.value=false}
 }
 
