@@ -185,3 +185,9 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 - A prévia não transforma o catálogo demonstrativo `photo-gallery/` num acervo público. Galeria e biblioteca real continuam sujeitas à futura integração CMS/backend.
 - QA manual: start Gestão em 5173 e Landing em 5174; editar Hero existente e abrir Prévia do site; conferir carrossel, foto e CTA; voltar à Gestão, alterar ordem, nome de robô, texto de evento e Footer, clicar Aplicar na prévia local e conferir a aba atualizando sem reload; testar imagens carregadas pelo upload local, bloqueio de links de inscrição, faixa de não-publicação e desligamento/ligamento de Hero competitivo com competição elegível. Fechar a prévia ou recarregar Gestão perde o rascunho em memória — esperado.
 - Não realizar merge do PR #7 draft ou deploy antes do aceite e API CMS persistente.
+
+## Aceite manual parcial — Prévia da Landing (13/10/2026)
+- O responsável testou e confirmou que o fluxo de **Prévia do site** funciona localmente: Gestão de Mídia (5173) → Landing real em modo prévia (5174), com as alterações do rascunho.
+- **Validado apenas o fluxo de pré-visualização local**. Isso não equivale à aprovação de todos os editores, da publicação online ou da integração do CMS.
+- Próximo checkpoint: **testes e acabamento da Galeria pública**, com fotografias publicadas explicitamente, ausência de nomes de arquivos/etiquetas sobrepostas e navegação Todas/Álbuns.
+- Ainda pendentes: armazenamento persistente de rascunhos, controle de publicação, prévia autenticada online, API/CMS/R2, smoke em produção e aprovação explícita antes do merge. PR #7 permanece draft; manter `main` e produção intactas.
