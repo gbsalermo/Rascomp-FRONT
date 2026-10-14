@@ -19,8 +19,8 @@ export type PreviewPhoto = {
   published: true
   alt: string
 }
-export type GalleryDraft = { albums: PreviewAlbum[]; photos: PreviewPhoto[] }
-type GalleryCollection = { photos: GalleryPhoto[]; albums: GalleryAlbum[]; isPreview: boolean }
+export type GalleryDraft = { albums: PreviewAlbum[]; photos: PreviewPhoto[]; featuredPhotoIds?: number[] }
+type GalleryCollection = { photos: GalleryPhoto[]; albums: GalleryAlbum[]; featuredPhotoIds: string[]; isPreview: boolean }
 const draft = shallowRef<GalleryDraft | null>(null)
 const temporaryUrls: string[] = []
 
@@ -80,9 +80,14 @@ export function startGalleryPreviewListener() {
       }))
       .filter((item: PreviewPhoto) => Boolean(item.src))
 
+    const allowed = new Set(photos.map(photo=>photo.id))
     draft.value = {
       photos,
       albums: data.draft.albums.filter((item: PreviewAlbum) => typeof item.id === 'number' && typeof item.name === 'string'),
+      featuredPhotoIds: Array.isArray(data.draft.featuredPhotoIds)
+        ? [...new Set((data.draft.featuredPhotoIds as unknown[])
+            .filter((id):id is number=>typeof id==='number' && allowed.has(id)))].slice(0,3)
+        : [],
     }
   }
   window.addEventListener('message', receive)
@@ -91,7 +96,7 @@ export function startGalleryPreviewListener() {
 }
 export const galleryCollection = computed<GalleryCollection>(() => {
   if (galleryPreviewMode) {
-    const data = draft.value ?? { photos: [], albums: [] }
+    const data = draft.value ?? { photos: [], albums: [],featuredPhotoIds: [] }
     const photos: GalleryPhoto[] = data.photos.map(item => ({
       id: String(item.id), alt: item.alt, src: item.src, published: true,
     }))
@@ -113,7 +118,7 @@ export const galleryCollection = computed<GalleryCollection>(() => {
       })
       .filter(album => album.photos.length > 0)
 
-    return { photos, albums, isPreview: true }
+    return { photos, albums, featuredPhotoIds:(data.featuredPhotoIds||[]).map(String), isPreview: true }
   }
   // Apenas o catálogo explicitamente ilustrativo, nunca recursos internos da Landing.
   const demoAlbums = demonstrationAlbums.map(album => ({
@@ -122,5 +127,5 @@ export const galleryCollection = computed<GalleryCollection>(() => {
   }))
   const unique = new Map<string, GalleryPhoto>()
   for (const album of demoAlbums) for (const photo of album.photos) unique.set(photo.id, photo)
-  return { photos: [...unique.values()], albums: demoAlbums, isPreview: false }
+  return { photos: [...unique.values()], albums: demoAlbums, featuredPhotoIds:[...unique.keys()].slice(0,3), isPreview: false }
 })
