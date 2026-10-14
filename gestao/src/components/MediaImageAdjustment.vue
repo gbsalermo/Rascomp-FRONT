@@ -18,7 +18,7 @@ const dragging=ref<{clientX:number;clientY:number;x:number;y:number}|null>(null)
 const destination=computed(()=>{
   const key=props.targetKey||''
   if(key.startsWith('hero:'))return {label:'Hero da Intro',w:1200,h:650}
-  if(key.startsWith('about:'))return {label:'Carrossel Sobre — quadro real desktop',w:620,h:405}
+  if(key.startsWith('about:'))return {label:'Carrossel Sobre — proporção da caixa na Landing',w:590,h:468}
   if(key.startsWith('sponsor:'))return {label:'Logo de patrocinador',w:186,h:76}
   if(key.startsWith('robot-banner')||key.startsWith('competition-banner'))return {label:'Banner horizontal',w:1100,h:410}
   if(key.startsWith('robot:'))return {label:'Foto do robô',w:340,h:220}
@@ -103,6 +103,6 @@ function save(){
 .image-adjustment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 23px}
 .image-adjustment-grid label{font-size:12px;color:#5f5260}
 @media(max-width:600px){.image-adjustment-stage{height:210px}.image-adjustment-grid{grid-template-columns:1fr}}
-.image-adjustment-stage--about{max-height:none}
-@media(max-width:600px){.image-adjustment-stage--about{height:auto}}
+.image-adjustment-stage--about{width:min(100%,590px);max-height:none;align-self:flex-start;aspect-ratio:590/468}
+@media(max-width:600px){.image-adjustment-stage--about{height:auto;width:100%}}
 </style>
