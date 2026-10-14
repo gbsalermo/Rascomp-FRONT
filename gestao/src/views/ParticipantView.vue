@@ -85,6 +85,7 @@ const registrations = ref<Registration[]>([])
 const personalRegistrations = ref<ParticipantCompetitionRegistration[]>([])
 const competitions = ref<Competition[]>([])
 const categories = ref<Category[]>([])
+const enabledCategoryIds = ref<number[]>([])
 const cancellationPendingIds = ref<Set<number>>(new Set())
 const institutions = ref<Array<{ id: number; nome: string; sigla?: string }>>([])
 const availableTeams = ref<PublicTeamOption[]>([])
@@ -228,6 +229,7 @@ const availableRegistrationCategories = computed(() => {
   )
 
   return categories.value.filter((category) => {
+    if (!enabledCategoryIds.value.includes(category.id)) return false
     if (category.ativo === false || duplicateCategoryIds.has(category.id)) return false
     if (category.modalidade !== 'SUMO') return true
     if (hasUnclassifiedSumo) return false
