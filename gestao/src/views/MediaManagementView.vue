@@ -371,7 +371,9 @@ function addPhotoForEditor(file: File): number {
   const url = URL.createObjectURL(file)
   uploadedUrls.push(url)
   const id = Math.max(0, ...photos.value.map(item => item.id)) + 1
-  photos.value.unshift({ id, name: file.name, src: url, albums: [], published: defaultVisibility.value === 'public', tone: id % 9 })
+  // Fotos adicionadas por um editor da Landing começam privadas na Galeria.
+  // A publicação é uma ação independente e explícita na Biblioteca.
+  photos.value.unshift({ id, name: file.name, src: url, albums: [], published: false, tone: id % 9 })
   return id
 }
 function fileChange(event: Event) {
