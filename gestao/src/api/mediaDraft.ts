@@ -24,6 +24,11 @@ export async function prepareEditorialUpload(
     const localAsset=photos.find(photo=>photo.persisted && photo.src && new URL(photo.src,location.origin).href===new URL(src,location.origin).href)
     if(localAsset)return mediaApi.publicUrl(localAsset.id)
     const url=new URL(src,location.origin)
+    // Assets institucionais que já estão publicados na Landing são referências
+    // estáticas legítimas: não exigem reupload ao salvar um rascunho editorial.
+    // A exceção é restrita ao domínio oficial e à pasta de mídia da Landing.
+    if(url.origin==='https://rasufrb.site' && url.pathname.startsWith('/media/assets/'))
+      return url.href
     if(url.protocol!=='blob:' && url.origin!==location.origin)
       throw Error('Imagem externa precisa ser importada para a Biblioteca antes da publicação.')
     const response=await fetch(url.href)
