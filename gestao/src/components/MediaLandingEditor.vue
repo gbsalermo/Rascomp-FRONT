@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MediaFooterEditor from './MediaFooterEditor.vue'
 import MediaImageAdjustment from './MediaImageAdjustment.vue'
@@ -340,7 +340,32 @@ function restoreEditorState(saved:Record<string,unknown>) {
   if(saved.footer && typeof saved.footer==='object')footerEditorRef.value?.setPreviewData(saved.footer as Record<string,unknown>)
   selectedHeroId.value=heroes.value[0]?.id||''
 }
-defineExpose({createPreviewDraft,getEditorState,restoreEditorState})
+// O estado inicial é a Landing institucional original, não o último snapshot total do CMS.
+let baselineState:Record<string,unknown>|null=null
+let priorEditedSections:string[]=[]
+onMounted(()=>{baselineState=getEditorState()})
+function setEditedSections(value:unknown){
+  priorEditedSections=Array.isArray(value)?value.filter((item):item is string=>typeof item==='string'):[]
+}
+function getEditedSections():string[]{
+  const current=getEditorState()
+  if(!baselineState)return priorEditedSections
+  const sections:Record<string,string[]>={
+    heroes:['heroes'],
+    about:['aboutPhotos','imageAdjustments'],
+    team:['board','volunteerPhotos','awards'],
+    robots:['robotPhotos','robotTitles','robotTitleLocations','robotBannerId'],
+    events:['events'],
+    sponsors:['sponsors'],
+    competition:['competitionBannerId','competitionHeroPhotoId','competitionHeroEnabled','competitionText','competitionHeroSubtitle','competitionHeroDescription','competitionHeroShowExtra','competitionHeroExtraLabel','competitionHeroExtraDestination'],
+    footer:['footer']
+  }
+  const touched=Object.entries(sections).filter(([,fields])=>fields.some(field=>
+    JSON.stringify(current[field]??null)!==JSON.stringify(baselineState?.[field]??null)
+  )).map(([section])=>section)
+  return Array.from(new Set([...priorEditedSections,...touched]))
+}
+defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSections,setEditedSections})
 </script>
 
 <template>
