@@ -111,7 +111,7 @@ onBeforeUnmount(()=>{
   <header class="public-gallery-nav">
     <div class="public-gallery-shell nav-content">
       <a href="/" class="public-gallery-brand" aria-label="Voltar ao site IEEE RAS UFRB">
-        <img src="/ieee-ras-official.png" alt="IEEE RAS" />
+        <img class="gallery-brand-logo" src="/ieee-ras-official.png" alt="IEEE RAS" />
         <span><strong>IEEE RAS UFRB</strong><small>Galeria de fotos</small></span>
       </a>
       <nav aria-label="Navegação da Galeria">
@@ -187,7 +187,16 @@ onBeforeUnmount(()=>{
 .public-gallery-nav{background:#fff;border-bottom:1px solid #eee4ea}
 .nav-content{display:flex;align-items:center;justify-content:space-between;gap:15px;min-height:83px}
 .public-gallery-brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:#2b2131}
-.public-gallery-brand img{width:54px;height:54px;object-fit:contain}
+.gallery-brand-logo {
+  display: block;
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-right: 25px;
+  transform: scale(2);
+  transform-origin: center;
+}
 .public-gallery-brand span{display:grid;gap:3px}
 .public-gallery-brand strong{font-weight:900;font-size:13px}.public-gallery-brand small{color:#817481;font-size:10px}
 .public-gallery-nav nav{display:flex;align-items:center;gap:8px}
