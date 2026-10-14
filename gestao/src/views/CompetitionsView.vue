@@ -29,6 +29,7 @@ const windowHistory = ref<CompetitionRegistrationWindowChange[]>([])
 const registrationLots = ref<RegistrationLot[]>([])
 const categoryCatalog = ref<Category[]>([])
 const enabledCategories = ref<number[]>([])
+const categoriesLoading = ref(false)
 const editingId = ref<number | null>(null)
 const windowForm = reactive({ novaDataFim: '', motivo: '' })
 const lotForm = reactive<RegistrationLot>({ nome: '', dataInicio: '', dataFim: '' })
@@ -232,7 +233,11 @@ function openEdit(row?: Competition) {
   Object.assign(form, JSON.parse(JSON.stringify(target)))
   editingId.value = target.id || null
   enabledCategories.value=[]
-  if(target.id)void adminApi.competitionCategories(target.id).then(ids=>enabledCategories.value=ids).catch(()=>ElMessage.error('Não foi possível carregar categorias da edição.'))
+  categoriesLoading.value=Boolean(target.id)
+  if(target.id)void adminApi.competitionCategories(target.id)
+    .then(ids=>enabledCategories.value=ids)
+    .catch(()=>ElMessage.error('Não foi possível carregar categorias da edição. Não salve antes de tentar novamente.'))
+    .finally(()=>{categoriesLoading.value=false})
   editionsOpen.value = false
   dialog.value = true
 }
@@ -364,6 +369,7 @@ async function clearCurrentEdition(row: Competition) {
 }
 
 async function save() {
+  if(categoriesLoading.value){ ElMessage.warning('Aguarde o carregamento das categorias.'); return }
   if (!form.nome || !form.inicioInscricoes || !form.fimInscricoes || !form.dataInicio || !form.dataFim) {
     ElMessage.warning('Preencha os campos obrigatórios.')
     return
@@ -672,7 +678,7 @@ onMounted(load)
         <div class="span-2">
           <strong>Categorias disponíveis nesta competição</strong>
           <p class="muted">Somente as selecionadas poderão receber inscrições de robôs. Futebol ficará disponível para inscrições; suas partidas serão implementadas depois.</p>
-          <el-checkbox-group v-model="enabledCategories" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <el-checkbox-group v-model="enabledCategories" :disabled="categoriesLoading" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
             <el-checkbox v-for="category in categoryCatalog.filter(c=>c.ativo!==false)" :key="category.id" :value="category.id">{{category.nome}}</el-checkbox>
           </el-checkbox-group>
         </div>
@@ -686,7 +692,7 @@ onMounted(load)
       </div>
       <template #footer>
         <el-button @click="dialog = false">Cancelar</el-button>
-        <el-button class="brand-button" @click="save">Salvar</el-button>
+        <el-button class="brand-button" :disabled="categoriesLoading" @click="save">Salvar</el-button>
       </template>
     </el-dialog>
 
