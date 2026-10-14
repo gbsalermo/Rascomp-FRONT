@@ -30,7 +30,7 @@ const publishedSections=computed<string[]>(()=>{
   // Snapshots publicados antes de __editedSections já continham as fotos e seus
   // enquadramentos. Restaurar apenas Sobre/Patrocinadores com referências R2,
   // sem sobrescrever os demais componentes com dados legados do CMS.
-  const hasManagedPhoto=(src:unknown)=>typeof src==='string' && /\\/api\\/v1\\/public\\/media\\/assets\\/\\d+\\/content/.test(src)
+  const hasManagedPhoto=(src:unknown)=>typeof src==='string' && src.includes('/api/v1/public/media/assets/') && src.includes('/content')
   const legacySections:string[]=[]
   if(hasNewHero)legacySections.push('heroes')
   if(candidate?.about?.some(photo=>hasManagedPhoto(photo.src)))legacySections.push('about')
