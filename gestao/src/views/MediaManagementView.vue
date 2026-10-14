@@ -20,6 +20,7 @@ type MediaEditorApi = {
   restoreEditorState:(state:Record<string,unknown>)=>void
 }
 const landingEditor = ref<MediaEditorApi|null>(null)
+const devMode = import.meta.env.DEV
 const cmsLoading = ref(true)
 const cmsReady = ref(false)
 const cmsError = ref('')
@@ -631,9 +632,9 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
     <div v-if="cmsError" class="media-connect-error">
       <strong>CMS ainda não conectado.</strong>
       <span>{{ cmsError }}</span>
-      <span v-if="import.meta.env.DEV">Durante o desenvolvimento, é possível revisar a demonstração local; nada será salvo sem o backend.</span>
+      <span v-if="devMode">Durante o desenvolvimento, é possível revisar a demonstração local; nada será salvo sem o backend.</span>
     </div>
-    <template v-if="cmsReady || (import.meta.env.DEV && !cmsLoading)">
+    <template v-if="cmsReady || (devMode && !cmsLoading)">
       <template v-if="section === 'library'">
       <div class="media-stats">
         <div><span>Imagens na Biblioteca</span><strong>{{ photos.length }}</strong></div>
