@@ -68,8 +68,13 @@ const sponsorLogoModules = import.meta.glob(
 ) as Record<string, string>
 
 const sponsorLogos = computed<{src:string;name:string;frame?:PreviewFrame}[]>(() => {
+  // A publicação define fotos e ordem. Enquadramentos implícitos/legados
+  // do CMS não devem sobrescrever as dimensões responsivas do MVP.
+  // Um ajuste futuro só será aplicado quando explicitamente sinalizado.
   if(props.sponsorsPreview)return props.sponsorsPreview.sponsors.filter(item=>item.image?.src).map(item=>({
-    src:item.image!.src,name:item.name,frame:item.image?.frame
+    src:item.image!.src,name:item.name,
+    frame:(item.image as (typeof item.image & {frameAdjusted?:boolean}))?.frameAdjusted===true
+      ? item.image?.frame : undefined
   }))
   const logos = Object.entries(sponsorLogoModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
