@@ -732,7 +732,12 @@ async function onRegistrationCompetitionChange() {
   registrationForm.categoryId=undefined
   if(registrationForm.competitionId){
     try{enabledCategoryIds.value=await publicApi.competitionCategories(registrationForm.competitionId)}
-    catch{ElMessage.error('Não foi possível carregar as categorias habilitadas desta competição.')}
+    catch{
+      // Contingência enquanto a API publicada no Render não expõe essa leitura
+      // ao participante. Nunca contorna a validação de inscrição do backend.
+      enabledCategoryIds.value=categories.value.filter(item=>item.ativo!==false).map(item=>item.id)
+      ElMessage.warning('Categorias habilitadas indisponíveis temporariamente. O sistema validará a categoria escolhida ao enviar a inscrição.')
+    }
   }
   refreshRegistrationCategory()
 }
