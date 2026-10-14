@@ -7,6 +7,7 @@ import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/
 const props = defineProps<{
   competition?: any
   competitionHeroEnabled?: boolean
+  competitionMedia?: PreviewDraft['competition'] | null
   categories: any[]
   registrations: any[]
   currentRegistrationLot?: any
@@ -162,18 +163,18 @@ const slides = computed<HeroSlide[]>(() => {
       title: props.competition.nome,
       description: [
         props.competition.descricao || 'Acompanhe a competição vigente da IEEE RAS UFRB.',
-        ...(props.mediaPreview ? [props.mediaPreview.competition.subtitle,props.mediaPreview.competition.description] : [])
+        ...(props.competitionMedia ? [props.competitionMedia.subtitle,props.competitionMedia.description] : [])
       ].filter(Boolean).join(' — '),
       cta: props.competition.status === 'INSCRICOES_ABERTAS' ? 'Inscrever-se' : 'Área do participante',
       href: props.managementUrl,
-      secondary:props.mediaPreview
-        ? (props.mediaPreview.competition.showExtra ? props.mediaPreview.competition.extraLabel : undefined)
+      secondary:props.competitionMedia
+        ? (props.competitionMedia?.showExtra ? props.competitionMedia?.extraLabel : undefined)
         : 'Acompanhar evento',
-      secondaryHref:props.mediaPreview?.competition.extraDestination==='gallery' ? '#galeria'
-        : props.mediaPreview?.competition.extraDestination==='events' ? '#eventos' : '#competicao-atual',
+      secondaryHref:props.competitionMedia?.extraDestination==='gallery' ? '#galeria'
+        : props.competitionMedia?.extraDestination==='events' ? '#eventos' : '#competicao-atual',
       tone: 'competition',
-      image:props.mediaPreview?.competition.heroImage?.src,
-      previewFrame:props.mediaPreview?.competition.heroImage?.frame,
+      image:props.competitionMedia?.heroImage?.src,
+      previewFrame:props.competitionMedia?.heroImage?.frame,
       imageAlt: 'Hero da competição',
       mediaLabel: 'Competição vigente da IEEE RAS UFRB',
       kind: 'competition',
