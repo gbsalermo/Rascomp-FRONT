@@ -145,6 +145,7 @@ const slides = computed<HeroSlide[]>(() => {
   if (!competitionVisible.value || !props.competition) return base
 
   return [
+    ...base,
     {
       id: 'competition-current',
       eyebrow:
@@ -173,8 +174,7 @@ const slides = computed<HeroSlide[]>(() => {
       kind: 'competition',
       categories: competitionCategories.value.map((item) => item.nome),
       lotLabel: competitionLotLabel.value
-    },
-    ...base
+    }
   ]
 })
 
