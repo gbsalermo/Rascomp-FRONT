@@ -9,6 +9,8 @@ export const api = {
     publicApi
       .get(`/competicoes/${competitionId}/lote-atual`)
       .then((r) => r.status === 204 ? undefined : r.data),
+  enabledCategories: (competitionId: number) =>
+    publicApi.get<number[]>(`/competicoes/${competitionId}/categorias-habilitadas`).then((r) => r.data),
   categories: (modalidade?: string) =>
     publicApi.get('/categorias', { params: modalidade ? { modalidade } : undefined }).then((r) => r.data),
   teams: () => publicApi.get('/equipes').then((r) => r.data),
