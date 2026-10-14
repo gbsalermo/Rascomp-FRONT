@@ -259,3 +259,7 @@ npm install
 npm run dev
 ```
 Com o backend de autenticação disponível, entre com perfil DEV/MIDIA em `http://localhost:5173/midia/landing`, edite um slide e clique **Prévia do site**. Isso abrirá a Landing verdadeira em `http://localhost:5174/?rascomp_media_preview=1`, identificada com a faixa **PRÉVIA LOCAL — NÃO PUBLICADA**. Ao modificar algo na Gestão, clique **Aplicar na prévia local** para atualizar a aba aberta. A navegação para links externos/inscrição é bloqueada no modo de prévia. Se a janela for bloqueada, permita pop-ups do localhost. Esse fluxo não grava banco, R2, arquivos estáticos ou publicações e não funciona em produção; o estado atual só existe na sessão do navegador.
+
+
+## Nova prévia da Galeria e publicação independente
+Na Biblioteca, um arquivo pode ser usado na Landing e permanecer **privado** na Galeria. O upload individual/em lote tem seleção Pública/Privada e padrão do usuário; cada foto mantém seu próprio switch de visibilidade. Os filtros **Na Galeria** e **Privadas** ajudam a revisar o acervo. Em **Biblioteca** ou **Álbuns**, clique **Prévia da Galeria** para abrir `localhost:5175` com **somente fotos públicas** desta sessão, inclusive imagens sem álbum. Clique novamente para atualizar após mudar o estado das imagens. Nenhuma ação altera a Galeria publicada: é prévia local segura, como a Prévia do site. Somente depois do backend CMS o usuário poderá Salvar rascunho/Publicar alterações de verdade.
