@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { api } from './api'
+import { api, API_URL } from './api'
 import InstitutionalHeader from './components/InstitutionalHeader.vue'
 import HighlightsHero from './components/HighlightsHero.vue'
 import InstitutionalAbout from './components/InstitutionalAbout.vue'
@@ -11,8 +11,32 @@ import InstitutionalEvents from './components/InstitutionalEvents.vue'
 import ActiveCompetition from './components/ActiveCompetition.vue'
 import InstitutionalFooter from './components/InstitutionalFooter.vue'
 import PublicNotFound from './components/PublicNotFound.vue'
-import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview} from './content/localMediaPreview'
+import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraft} from './content/localMediaPreview'
 
+const publishedMediaDraft=ref<PreviewDraft|null>(null)
+const displayedMediaDraft=computed(()=>localMediaDraft.value||publishedMediaDraft.value)
+async function loadPublishedMedia() {
+  try{
+    const response=await fetch(API_URL+'/api/v1/public/media/editorial',{cache:'no-store'})
+    if(!response.ok)return
+    const draft=await response.json() as PreviewDraft
+    if(!draft||!Array.isArray(draft.heroes))return
+    const resolve=(value:unknown):unknown=>{
+      if(Array.isArray(value))return value.map(resolve)
+      if(value&&typeof value==='object'){
+        const mapped:Record<string,unknown>={}
+        for(const [key,item]of Object.entries(value))
+          mapped[key]=key==='src'&&typeof item==='string'&&item.startsWith('/')
+            ? API_URL+item : resolve(item)
+        return mapped
+      }
+      return value
+    }
+    publishedMediaDraft.value=resolve(draft) as PreviewDraft
+  }catch{
+    // Em indisponibilidade do CMS, preservar a Landing institucional estática.
+  }
+}
 const loading = ref(true)
 const error = ref('')
 const competitions = ref<any[]>([])
@@ -280,6 +304,7 @@ async function updateBracket(value: number) {
 
 onMounted(async () => {
   stopPreview=startLocalMediaPreview()
+  void loadPublishedMedia()
   updateBackToTopVisibility()
   window.addEventListener('scroll', scheduleBackToTopUpdate, { passive: true })
 
@@ -334,17 +359,17 @@ onBeforeUnmount(() => {
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
         :management-url="managementUrl"
-        :media-preview="localMediaDraft"
+        :media-preview="displayedMediaDraft"
       />
-      <InstitutionalAbout :media-preview="localMediaDraft" />
-      <TeamRobotsAwards :media-preview="localMediaDraft" />
-      <RobotsShowcase :media-preview="localMediaDraft" />
+      <InstitutionalAbout :media-preview="displayedMediaDraft" />
+      <TeamRobotsAwards :media-preview="displayedMediaDraft" />
+      <RobotsShowcase :media-preview="displayedMediaDraft" />
       <InstitutionalGallery />
       <InstitutionalEvents
         :management-url="managementUrl"
         :registration-open="displayedRegistrationOpen"
         :competition-mode-enabled="competitionModeEnabled"
-        :media-preview="localMediaDraft"
+        :media-preview="displayedMediaDraft"
         @registration-unavailable="showRegistrationUnavailable"
       />
 
@@ -380,7 +405,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <InstitutionalFooter :media-preview="localMediaDraft" />
+    <InstitutionalFooter :media-preview="displayedMediaDraft" />
 
     <Transition name="registration-notice">
       <aside
