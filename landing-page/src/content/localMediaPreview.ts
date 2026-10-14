@@ -54,8 +54,8 @@ export function startLocalMediaPreview() {
   const source=window.opener
   const token=new URLSearchParams(window.location.hash.slice(1)).get('preview')
   if(!token || !/^[\w-]{16,90}$/.test(token))return ()=>{}
-  const parentOrigin=allowedOrigins.find(origin => origin === document.referrer?.replace(/\/[^/]*$/, '')) ||
-    (window.location.hostname==='127.0.0.1' ? allowedOrigins[1] : allowedOrigins[0])!
+  const referrerOrigin=(()=>{try{return new URL(document.referrer).origin}catch{return ''}})()
+  const parentOrigin=allowedOrigins.find(origin=>origin===referrerOrigin) || allowedOrigins[0]!
   const onMessage=(event:MessageEvent)=>{
     if(event.source!==source || !allowedOrigins.includes(event.origin))return
     const message=event.data
