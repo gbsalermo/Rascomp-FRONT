@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { galleryCollection, galleryPreviewMode } from '../data/localGalleryPreview'
+import { galleryCollection, galleryPreviewMode, demoGalleryMode } from '../data/localGalleryPreview'
 import GalleryLightbox from '../components/GalleryLightbox.vue'
 
 const route=useRoute()
@@ -57,7 +57,7 @@ watch(publicPhotos,()=>{
         <p>Este álbum não existe ou não possui fotografias publicadas.</p>
         <RouterLink to="/">Voltar para todas as fotos →</RouterLink>
       </div>
-      <p v-if="!galleryPreviewMode && album" class="gallery-album-sample-disclaimer">Imagens ilustrativas desta fase de validação. O acervo público real será conectado após a aprovação.</p>
+      <p v-if="demoGalleryMode && album" class="gallery-album-sample-disclaimer">Imagens ilustrativas desta fase de validação. O acervo público real será conectado após a aprovação.</p>
     </div>
     <GalleryLightbox :photos="publicPhotos" :selected-index="selectedIndex"
       @select="selectedIndex=$event" @close="selectedIndex=null"/>
