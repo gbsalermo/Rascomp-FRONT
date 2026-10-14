@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import MediaLandingEditor from '../components/MediaLandingEditor.vue'
 import { useAuthStore } from '../store'
 
@@ -129,7 +129,7 @@ async function openGalleryPreview(){
   galleryPacket={
     draft:{photos:approved,albums:albums.value.map(album=>({
       id:album.id,name:album.name,description:album.description,coverId:album.coverId
-    }))},
+    })),featuredPhotoIds:galleryIntroIds.value.filter(id=>approved.some(photo=>photo.id===id))},
     files
   }
   sendGalleryPreview()
@@ -204,7 +204,83 @@ const photos = ref<MediaPhoto[]>([
 ])
 const search = ref('')
 const albumFilter = ref('all')
-const selectedIds = ref<number[]>([1])
+const selectedIds = ref<number[]>([])
+const multiSelectionMode = ref(false)
+const selectedPhotos = computed(() => photos.value.filter(item => selectedIds.value.includes(item.id)))
+const bulkAlbumDialog = ref(false)
+const bulkAlbumIds = ref<number[]>([])
+const galleryIntroDialog = ref(false)
+const galleryIntroSlots = ref<(number | null)[]>([null, null, null])
+const galleryEligiblePhotos = computed(() => photos.value.filter(photo => photo.published && !!photo.src))
+const galleryIntroIds = computed(() => {
+  const allowed = galleryEligiblePhotos.value.map(photo => photo.id)
+  const selected = galleryIntroSlots.value.filter((id): id is number => id !== null && allowed.includes(id))
+  const result = [...new Set(selected)]
+  for (const id of allowed) {
+    if (result.length === 3) break
+    if (!result.includes(id)) result.push(id)
+  }
+  return result.slice(0, 3)
+})
+function openGalleryIntroDialog() {
+  galleryIntroSlots.value = [...galleryIntroIds.value, null, null].slice(0, 3)
+  galleryIntroDialog.value = true
+}
+function saveGalleryIntro() {
+  if (galleryIntroIds.value.length !== 3) {
+    ElMessage.warning('Selecione três fotografias públicas com imagem para preencher os destaques.')
+    return
+  }
+  galleryIntroSlots.value = [...galleryIntroIds.value]
+  galleryIntroDialog.value = false
+  ElMessage.success('As três fotos da Intro foram definidas na prévia local. Clique em Prévia da Galeria para conferir.')
+}
+function toggleMultiSelection() {
+  multiSelectionMode.value = !multiSelectionMode.value
+  selectedIds.value = []
+}
+function selectVisiblePhotos() {
+  selectedIds.value = [...new Set([...selectedIds.value, ...visiblePhotos.value.map(photo => photo.id)])]
+}
+function openBulkAlbumDialog() {
+  if (!selectedIds.value.length) return
+  bulkAlbumIds.value = []
+  bulkAlbumDialog.value = true
+}
+function addSelectedToAlbums() {
+  if (!selectedIds.value.length || !bulkAlbumIds.value.length) {
+    ElMessage.warning('Selecione pelo menos um álbum.')
+    return
+  }
+  const validIds = new Set(albums.value.map(album => album.id))
+  const toAdd = bulkAlbumIds.value.filter(id => validIds.has(id))
+  selectedPhotos.value.forEach(photo => {
+    photo.albums = [...new Set([...photo.albums, ...toAdd])]
+  })
+  bulkAlbumDialog.value = false
+  ElMessage.success(selectedIds.value.length+' foto(s) associadas aos álbuns nesta prévia. Nenhum arquivo foi duplicado.')
+}
+async function deleteSelectedPhotos() {
+  if (!selectedIds.value.length) return
+  const count = selectedIds.value.length
+  try {
+    await ElMessageBox.confirm(
+      'Remover '+count+' foto(s) da Biblioteca desta sessão? Fotos utilizadas em seções da Landing podem ficar sem imagem na prévia. Os arquivos originais e o banco não serão alterados.',
+      'Excluir fotos selecionadas',
+      { type: 'warning', confirmButtonText: 'Excluir na prévia', cancelButtonText: 'Cancelar', confirmButtonClass: 'media-confirm-danger' }
+    )
+  } catch { return }
+  const ids = new Set(selectedIds.value)
+  photos.value = photos.value.filter(item => !ids.has(item.id))
+  albums.value.forEach(album => {
+    if (album.coverId && ids.has(album.coverId)) album.coverId = undefined
+    if (ids.has(autoCovers.get(album.id) || -1)) autoCovers.delete(album.id)
+  })
+  galleryIntroSlots.value = galleryIntroSlots.value.map(id => id !== null && ids.has(id) ? null : id)
+  selectedIds.value = []
+  ElMessage.success(count+' foto(s) removidas apenas da prévia. Atualize a Galeria pelo botão para refletir a exclusão.')
+}
+
 const selectedPhoto = computed(() => photos.value.find(photo => photo.id === selectedIds.value[0]))
 const visiblePhotos = computed(() => photos.value.filter(photo => {
   const q = photo.name.toLocaleLowerCase('pt-BR').includes(search.value.toLocaleLowerCase('pt-BR'))
@@ -256,10 +332,11 @@ const displayWidth = ref(100)
 const displayHeight = ref(100)
 
 function togglePhoto(id: number, multi: boolean) {
-  if (multi) selectedIds.value = selectedIds.value.includes(id)
-    ? selectedIds.value.filter(value => value !== id)
-    : [...selectedIds.value, id]
-  else selectedIds.value = [id]
+  if (multi || multiSelectionMode.value) {
+    selectedIds.value = selectedIds.value.includes(id)
+      ? selectedIds.value.filter(value => value !== id)
+      : [...selectedIds.value, id]
+  } else selectedIds.value = [id]
 }
 function createAlbum(name: string, description = ''): number {
   const id = Math.max(0, ...albums.value.map(album => album.id)) + 1
@@ -354,6 +431,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
       </div>
       <div class="media-header-actions">
         <span class="media-demo-label">Demonstração local</span>
+        <el-button v-if="section === 'library' || section === 'albums'" @click="openGalleryIntroDialog">Destaques da Galeria</el-button>
         <el-button v-if="section === 'library' || section === 'albums'" @click="openGalleryPreview">Prévia da Galeria ↗</el-button>
         <el-button v-if="section === 'library'" type="primary" @click="openUploadDialog">＋ Adicionar fotos</el-button>
         <el-button v-if="section === 'albums'" type="primary" @click="openAlbumDialog()">＋ Novo álbum</el-button>
@@ -369,6 +447,17 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
       </div>
       <div class="media-library-grid">
         <section class="media-panel media-browser">
+          <div class="media-bulk-toolbar">
+            <el-button :type="multiSelectionMode ? 'primary' : 'default'" :plain="multiSelectionMode"
+              @click="toggleMultiSelection">{{ multiSelectionMode ? 'Concluir seleção' : 'Selecionar várias' }}</el-button>
+            <template v-if="multiSelectionMode">
+              <span class="media-bulk-count">{{ selectedIds.length }} selecionada(s)</span>
+              <el-button @click="selectVisiblePhotos">Selecionar visíveis</el-button>
+              <el-button :disabled="!selectedIds.length" @click="selectedIds=[]">Limpar</el-button>
+              <el-button :disabled="!selectedIds.length" @click="openBulkAlbumDialog">Adicionar a álbuns</el-button>
+              <el-button type="danger" :disabled="!selectedIds.length" @click="deleteSelectedPhotos">Excluir selecionadas</el-button>
+            </template>
+          </div>
           <div class="media-controls">
             <el-input v-model="search" clearable placeholder="Buscar imagens..." class="media-search" />
             <el-button @click="openAlbumDialog()">＋ Novo álbum</el-button>
@@ -386,7 +475,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
           </div>
           <div v-if="visiblePhotos.length" class="media-photo-grid">
             <button v-for="photo in visiblePhotos" :key="photo.id" type="button" class="media-photo-tile"
-              :class="{ selected: selectedIds.includes(photo.id) }" @click="togglePhoto(photo.id, $event.ctrlKey || $event.metaKey)">
+              :class="{ selected: selectedIds.includes(photo.id) }" :aria-pressed="selectedIds.includes(photo.id)" @click="togglePhoto(photo.id, $event.ctrlKey || $event.metaKey)">
               <span class="media-photo-image" :class="'tone-' + photo.tone">
                 <img v-if="photo.src" :src="photo.src" :alt="photo.name" />
                 <span v-else class="media-photo-symbol">{{ ['⚙','◈','★','▣','✦','▦','◆','✳','◇'][photo.tone] }}</span>
@@ -396,10 +485,10 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
             </button>
           </div>
           <div v-else class="media-empty">Nenhuma imagem encontrada para este filtro.</div>
-          <p class="media-hint">Clique para selecionar. Ctrl + clique permite selecionar várias imagens.</p>
+          <p class="media-hint">{{ multiSelectionMode ? 'Selecione fotos com cliques simples. As ações acima afetam todas as selecionadas.' : 'Clique para ver os detalhes. Use Selecionar várias para agir em lote ou Ctrl + clique.' }}</p>
         </section>
         <aside class="media-panel media-details">
-          <template v-if="selectedPhoto">
+          <template v-if="selectedPhoto && (!multiSelectionMode || selectedIds.length === 1)">
             <h2>Detalhes da imagem</h2>
             <div class="media-detail-photo" :class="'tone-' + selectedPhoto.tone">
               <img v-if="selectedPhoto.src" :src="selectedPhoto.src" alt="Prévia da imagem selecionada"/>
@@ -416,6 +505,10 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
             <p class="media-visibility-help">A visibilidade é independente do uso na Landing: uma foto pode aparecer no Hero e permanecer privada na Galeria. Para conferir o resultado, clique em <strong>Prévia da Galeria</strong>; os dados ainda não são publicados.</p>
             <div class="media-detail-actions"><el-button @click="openCrop">Editar enquadramento</el-button></div>
           </template>
+          <div v-else-if="multiSelectionMode && selectedIds.length > 1" class="media-selection-summary">
+            <h2>Seleção múltipla</h2><strong>{{ selectedIds.length }} fotografias</strong>
+            <p>Utilize a barra acima para associá-las aos álbuns ou excluí-las da prévia.</p>
+          </div>
           <div v-else class="media-empty">Selecione uma imagem para visualizar seus detalhes.</div>
         </aside>
       </div>
@@ -446,6 +539,44 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
     <template v-else>
       <MediaLandingEditor ref="landingEditor" :photos="photos" :albums="albums" :upload-photo="addPhotoForEditor" @draft-applied="updatePreview" />
     </template>
+
+    <el-dialog v-model="bulkAlbumDialog" class="media-album-dialog" title="Adicionar seleção aos álbuns"
+      width="min(540px,94vw)">
+      <p class="media-dialog-intro">Adicionar {{ selectedIds.length }} fotos a um ou mais álbuns. As associações existentes serão mantidas, sem duplicar fotos.</p>
+      <el-checkbox-group v-model="bulkAlbumIds" class="media-bulk-album-options">
+        <el-checkbox v-for="album in albums" :key="album.id" :value="album.id">{{ album.name }}</el-checkbox>
+      </el-checkbox-group>
+      <p v-if="!albums.length" class="media-dialog-intro">Crie um álbum antes de associar as fotografias.</p>
+      <template #footer>
+        <el-button @click="bulkAlbumDialog=false">Cancelar</el-button>
+        <el-button type="primary" :disabled="!bulkAlbumIds.length" @click="addSelectedToAlbums">Adicionar fotos</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="galleryIntroDialog" class="media-album-dialog" title="3 fotos principais da Galeria" width="min(790px,96vw)">
+      <p class="media-dialog-intro">Escolha a ordem das três fotos que aparecem no mosaico de abertura. Somente fotografias marcadas como públicas podem ser usadas aqui. O destaque não muda a visibilidade das fotos.</p>
+      <div class="media-intro-picker">
+        <section v-for="slot in 3" :key="slot" class="media-intro-slot">
+          <strong>{{ slot }}ª foto</strong>
+          <div class="media-intro-image">
+            <img v-if="photos.find(p=>p.id===galleryIntroSlots[slot-1])?.src"
+              :src="photos.find(p=>p.id===galleryIntroSlots[slot-1])?.src" alt="Prévia da foto selecionada"/>
+            <span v-else>Escolha uma foto pública</span>
+          </div>
+          <el-select :model-value="galleryIntroSlots[slot-1]" filterable clearable placeholder="Escolher foto"
+            @update:model-value="galleryIntroSlots[slot-1]=($event as number|null)">
+            <el-option v-for="photo in galleryEligiblePhotos" :key="photo.id" :label="photo.name" :value="photo.id"
+              :disabled="galleryIntroSlots.some((id,i)=>id===photo.id && i!==slot-1)"/>
+          </el-select>
+        </section>
+      </div>
+      <p v-if="galleryEligiblePhotos.length<3" class="media-dialog-intro">Para completar a Intro, marque ao menos três fotografias com imagem como públicas na Biblioteca.</p>
+      <p class="media-dialog-intro">As alterações são temporárias. Abra ou atualize a Prévia da Galeria para conferir.</p>
+      <template #footer>
+        <el-button @click="galleryIntroDialog=false">Cancelar</el-button>
+        <el-button type="primary" :disabled="galleryIntroIds.length!==3" @click="saveGalleryIntro">Aplicar destaques na prévia</el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog class="media-upload-dialog" v-model="uploadDialog" title="Adicionar fotos à Biblioteca" width="min(620px, 94vw)" destroy-on-close>
       <p class="media-dialog-intro">Você pode subir uma ou várias imagens e escolher se elas entram em um ou mais álbuns.</p>
@@ -520,6 +651,22 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
 </template>
 
 <style scoped>
+.media-bulk-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:0 0 12px;margin-bottom:13px;border-bottom:1px solid #eee6ec}
+.media-bulk-toolbar .el-button{min-height:35px;margin:0;padding:8px 12px}
+.media-bulk-count{font-weight:750;font-size:12px;color:#a71947;margin:0 2px}
+.media-selection-summary{display:grid;gap:13px;padding:12px;color:#654e60}
+.media-selection-summary h2{margin:0;font-size:16px}
+.media-selection-summary strong{font-size:22px;color:#a71947}
+.media-selection-summary p{font-size:12px;line-height:1.6;color:#746877}
+.media-intro-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.media-intro-slot{min-width:0;display:flex;flex-direction:column;gap:9px;border:1px solid #eee5ec;border-radius:11px;padding:12px;background:#fff}
+.media-intro-slot>strong{color:#a31e50;font-size:12px}
+.media-intro-image{width:100%;height:145px;display:grid;place-items:center;overflow:hidden;border-radius:9px;background:#f6f2f5}
+.media-intro-image>img{width:100%;height:100%;object-fit:contain}
+.media-intro-image>span{font-size:11px;text-align:center;color:#918491}
+.media-bulk-album-options{display:flex;flex-direction:column;gap:10px}
+@media(max-width:640px){.media-intro-picker{grid-template-columns:1fr}.media-intro-slot{min-height:0}.media-intro-image{height:130px}}
+
 .media-management{color:#271e27;max-width:1660px;width:100%;margin:0 auto;padding:4px 2px 34px;gap:19px}
 .media-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .media-kicker{font-size:10px;font-weight:850;letter-spacing:.12em;color:#a80f3e}
