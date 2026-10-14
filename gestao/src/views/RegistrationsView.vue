@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, h, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
@@ -404,6 +404,17 @@ async function openRobotReceipt(row: Registration) {
   }
 }
 
+function approvalMessage(description: string, observation?: string) {
+  const note=observation?.trim()
+  return h('div', {style:{display:'flex',flexDirection:'column',gap:'12px'}}, [
+    h('p',{style:{margin:0}},description),
+    h('div',{style:{padding:'12px',borderRadius:'8px',background:'#f5f2f7',whiteSpace:'pre-wrap',overflowWrap:'anywhere'}},[
+      h('strong',{style:{display:'block',marginBottom:'6px'}},'Observação do participante'),
+      h('span',{},note||'Nenhuma observação enviada.')
+    ])
+  ])
+}
+
 async function reviewParticipant(
   row: ParticipantCompetitionRegistration,
   next: ParticipantCompetitionRegistrationStatus
@@ -415,7 +426,7 @@ async function reviewParticipant(
   try {
     if (approving) {
       await ElMessageBox.confirm(
-        `Aprovar a inscrição de ${row.competitorNome}? Os robôs associados aparecem nesta linha para conferência.`,
+        approvalMessage(`Aprovar a inscrição de ${row.competitorNome}? Os robôs associados aparecem nesta linha para conferência.`,row.observacao),
         'Aprovar participante',
         {
           type: 'success',
@@ -583,7 +594,7 @@ async function review(row: Registration, next: RegistrationStatus) {
       }
 
       await ElMessageBox.confirm(
-        `Deseja aprovar a inscrição do robô ${row.robotNome}, da equipe ${row.teamNome}?`,
+        approvalMessage(`Deseja aprovar a inscrição do robô ${row.robotNome}, da equipe ${row.teamNome}?`,row.observacao),
         'Aprovar inscrição',
         {
           type: 'success',
@@ -1001,6 +1012,14 @@ onMounted(loadBase)
             <span v-else class="muted">Nenhum robô associado</span>
           </template>
         </el-table-column>
+        <el-table-column label="Observação" min-width="210">
+          <template #default="{ row }">
+            <el-tooltip v-if="row.observacao?.trim()" :content="row.observacao" placement="top" :show-after="250">
+              <span class="registration-observation-compact">{{ row.observacao }}</span>
+            </el-tooltip>
+            <span v-else class="muted">Nenhuma observação</span>
+          </template>
+        </el-table-column>
         <el-table-column label="Comprovante" width="145">
           <template #default="{ row }">
             <el-button
@@ -1098,6 +1117,14 @@ onMounted(loadBase)
               <strong>{{ row.requestedByUserNome || 'Organização' }}</strong>
               <span>{{ formatDateTime(row.dataCadastro) }}</span>
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="Observação" min-width="210">
+          <template #default="{ row }">
+            <el-tooltip v-if="row.observacao?.trim()" :content="row.observacao" placement="top" :show-after="250">
+              <span class="registration-observation-compact">{{ row.observacao }}</span>
+            </el-tooltip>
+            <span v-else class="muted">Nenhuma observação</span>
           </template>
         </el-table-column>
         <el-table-column label="Comprovante" width="125">
@@ -1578,4 +1605,8 @@ onMounted(loadBase)
   .manual-entry-form { grid-template-columns:1fr; }
   .manual-entry-form .span-2 { grid-column:auto; }
 }
+</style>
+
+<style scoped>
+.registration-observation-compact{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;white-space:normal;overflow-wrap:anywhere;cursor:help;line-height:1.4}
 </style>
