@@ -69,6 +69,18 @@ export async function prepareEditorialUpload(
       if(photoIdFields.has(field)&&typeof value==='number')result[field]=aliases.get(value)??value
       else if((field==='robotTitles'||field==='robotTitleLocations')&&value&&typeof value==='object')
         result[field]=Object.fromEntries(Object.entries(value).map(([id,text])=>[String(aliases.get(Number(id))??id),text]))
+      else if(field==='imageAdjustments'&&value&&typeof value==='object'){
+        // O enquadramento de Sobre/Robôs usa o ID da foto na chave.
+        // Ao importar o arquivo ao R2, remapear também essa chave;
+        // do contrário o ajuste salvo aponta para o ID local anterior.
+        result[field]=Object.fromEntries(Object.entries(value).map(([key,frame])=>{
+          const updated=key.replace(/:(\\d+)(?=:|$)/g,(part,id)=>{
+            const next=aliases.get(Number(id))
+            return next===undefined?part:':'+next
+          })
+          return [updated,frame]
+        }))
+      }
       else result[field]=remap(value,field)
     }
     return result
