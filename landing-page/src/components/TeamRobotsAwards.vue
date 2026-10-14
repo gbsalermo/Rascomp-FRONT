@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
-import {previewImageStyle,type PreviewDraft} from '../content/localMediaPreview'
+import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/localMediaPreview'
 const props=defineProps<{mediaPreview?:PreviewDraft|null}>()
 
 const sponsorsCarousel = ref<HTMLElement | null>(null)
@@ -67,7 +67,7 @@ const sponsorLogoModules = import.meta.glob(
   { eager: true, query: '?url', import: 'default' }
 ) as Record<string, string>
 
-const sponsorLogos = computed(() => {
+const sponsorLogos = computed<{src:string;name:string;frame?:PreviewFrame}[]>(() => {
   if(props.mediaPreview)return props.mediaPreview.sponsors.filter(item=>item.image?.src).map(item=>({
     src:item.image!.src,name:item.name,frame:item.image?.frame
   }))
