@@ -2114,3 +2114,8 @@ Nenhum endpoint, registro ou Cloudflare Worker novo; em produção a prévia é 
 
 ## Retorno de teste manual — Prévia da Landing (13/10/2026)
 O responsável confirmou **'testei e funcionou'** após testar a prévia da Landing iniciada pela Gestão de Mídia. Registrar como **validação manual do fluxo de pré-visualização local** (Gestão 5173 → Landing 5174), não como aceite da publicação persistente ou de todas as seções. Próximo trabalho: revisão/acabamento da Galeria pública e teste de privacidade dos ativos. Sem merge na `main` e sem deploy.
+
+
+## Checkpoint: Galeria agradável e fotos públicas opcionais (13/10/2026)
+A Galeria em `photo-gallery/` ganhou acabamento editorial/masonry sem cortes e componente `GalleryLightbox.vue` acessível, com Escape e setas, sem nomes de arquivos visíveis. A listagem principal deduplica imagens e mostra TODAS as fotografias publicadas (com ou sem álbum); Álbuns é filtro, seus cards só aparecem quando contêm fotos públicas, e as capas respeitam a publicação da foto. `photo-gallery/src/data/localGalleryPreview.ts` faz a ponte local com a Gestão pela ação **Prévia da Galeria** em Biblioteca/Álbuns, recebendo **somente fotos públicas** por `postMessage` com origin/token controlados; arquivos temporários via Blob. A Biblioteca ganhou chips de filtro Na Galeria/Privadas. A presença em uma seção da Landing nunca ativa publicação na Galeria automaticamente.
+A aplicação na porta 5175 ainda é independente da Landing; a integração online e o controle de visibilidade no backend serão implementados após aprovação. O catálogo SVG é demo, não acervo publicado; em modo prévia local, conteúdo real da Biblioteca substitui inteiramente os exemplos. Sem mudanças em main/Cloud.
