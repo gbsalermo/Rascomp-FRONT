@@ -295,7 +295,8 @@ async function saveEditorialDraft(){
     await mediaApi.saveDraft(draft)
     persistedEditorialDraft.value=draft
     cmsDraftSaved.value=true
-    ElMessage.success('Rascunho salvo no MySQL, sem publicar no site.')
+    const savedSections=Array.isArray(draft.__editedSections) ? draft.__editedSections as string[] : []
+    ElMessage.success(savedSections.length ? 'Rascunho salvo. Seções: '+savedSections.join(', ')+'. Ainda não publicado.' : 'Rascunho salvo sem seções editoriais modificadas identificadas.')
   }catch(error){
     ElMessage.error(error instanceof Error?error.message:'Não foi possível salvar o rascunho.')
   }finally{cmsBusy.value=false}
