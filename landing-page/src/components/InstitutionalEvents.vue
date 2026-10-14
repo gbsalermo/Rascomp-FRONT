@@ -7,7 +7,7 @@ import {
   type LandingEvent,
   eventPeriod
 } from '../content/events'
-import {type PreviewDraft} from '../content/localMediaPreview'
+import {previewImageStyle,type PreviewDraft} from '../content/localMediaPreview'
 
 const props = defineProps<{
   managementUrl: string
@@ -69,6 +69,8 @@ onBeforeUnmount(() => {
   if (dateRefresh) window.clearInterval(dateRefresh)
 })
 
+// Enquadramentos editoriais seguem a identidade do evento, não a posição da lista.
+const eventFrame=(id:string)=>previewImageStyle(props.mediaPreview?.events.find(item=>item.id===id)?.image?.frame)
 const currentEvents=computed<LandingEvent[]>(()=>{
   if(!props.mediaPreview)return LANDING_EVENTS
   return props.mediaPreview.events.filter(e=>e.active).map(entry=>{
@@ -280,7 +282,7 @@ function eventActionHref(event: LandingEvent) {
                 :aria-expanded="event.id === expandedEventId"
                 @click="toggleEvent(event)"
               >
-                <img :src="event.image" :alt="event.title" />
+                <img :src="event.image" :alt="event.title" :style="eventFrame(event.id)" />
 
                 <span class="event-accordion-summary">
                   <span class="event-accordion-date">{{ event.dateLabel }}</span>
@@ -300,7 +302,7 @@ function eventActionHref(event: LandingEvent) {
 
               <div v-if="event.id === expandedEventId" class="event-accordion-content">
                 <div class="event-accordion-visual">
-                  <img :src="event.image" :alt="event.title" />
+                  <img :src="event.image" :alt="event.title" :style="eventFrame(event.id)" />
                 </div>
 
                 <div class="event-accordion-details">
@@ -419,7 +421,7 @@ function eventActionHref(event: LandingEvent) {
             class="event-recent-card"
           >
             <div class="event-recent-media">
-              <img :src="event.image" :alt="event.title" />
+              <img :src="event.image" :alt="event.title" :style="eventFrame(event.id)" />
             </div>
 
             <div class="event-recent-copy">
