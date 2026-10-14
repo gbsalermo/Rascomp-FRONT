@@ -2100,3 +2100,9 @@ No ramo `v1-pos-cloud-gestao-midia`, `gestao/src/components/MediaLandingEditor.v
 
 ## Visual — botões da Gestão de Mídia
 O tema local `gestao/src/styles/media-button-colors.css` centraliza o vermelho institucional e **texto branco** dos botões de ação preenchidos em todas as páginas/editoriais; é importado ao fim do CSS da Gestão em `gestao/src/main.ts`. Diálogos teletransportados receberam classes próprias para não herdar o azul default do Element Plus. Botões neutros/outline preservam contraste escuro. Sem mudanças em `main` ou deploy.
+
+## Checkpoint mídia — enquadramento por uso e rotulagem de robôs
+- Editor compartilhado `gestao/src/components/MediaImageAdjustment.vue` com ajuste não destrutivo: zoom, largura/altura relativas ao slot, deslocamento horizontal/vertical e `cover/contain`. Aplicado na prévia da Gestão a Hero, Sobre, equipe, conquistas, robôs, eventos, patrocinadores e imagens da competição. Configurações em memória por chave de uso.
+- Fotos dos robôs recebem título editável individualmente e seletor de legenda sobre/abaixo da imagem. Na Landing atual, `RobotsShowcase.vue` ainda determina nomes pelo filename; precisa consumir os metadados CMS após migração/API.
+- Toggle `competitionHeroEnabled` agora condiciona a **prévia** do Hero competitivo; política de produção definida como não incluir slide se desativado, independentemente de competição ativa, sem alterar API ou seção Competição. A Landing ainda não consome essa configuração do CMS.
+- Botões pequenos dos editores foram ampliados sem afetar outras páginas. PR #7 segue DRAFT; sem deploy ou merge até aceite e camada persistente.
