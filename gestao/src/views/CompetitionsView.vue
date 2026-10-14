@@ -28,6 +28,7 @@ const registrations = ref<Registration[]>([])
 const windowHistory = ref<CompetitionRegistrationWindowChange[]>([])
 const registrationLots = ref<RegistrationLot[]>([])
 const categoryCatalog = ref<Category[]>([])
+const enabledCategories = ref<number[]>([])
 const editingId = ref<number | null>(null)
 const windowForm = reactive({ novaDataFim: '', motivo: '' })
 const lotForm = reactive<RegistrationLot>({ nome: '', dataInicio: '', dataFim: '' })
@@ -220,6 +221,7 @@ async function load() {
 function openCreate() {
   Object.assign(form, emptyForm())
   editingId.value = null
+  enabledCategories.value=[]
   editionsOpen.value = false
   dialog.value = true
 }
@@ -229,6 +231,8 @@ function openEdit(row?: Competition) {
   if (!target) return
   Object.assign(form, JSON.parse(JSON.stringify(target)))
   editingId.value = target.id || null
+  enabledCategories.value=[]
+  if(target.id)void adminApi.competitionCategories(target.id).then(ids=>enabledCategories.value=ids).catch(()=>ElMessage.error('Não foi possível carregar categorias da edição.'))
   editionsOpen.value = false
   dialog.value = true
 }
@@ -378,9 +382,11 @@ async function save() {
   try {
     if (editingId.value) {
       await adminApi.updateCompetition(editingId.value, { ...form })
-      ElMessage.success('Competição atualizada.')
+      await adminApi.saveCompetitionCategories(editingId.value,enabledCategories.value)
+      ElMessage.success('Competição e categorias atualizadas.')
     } else {
       const created = await adminApi.createCompetition({ ...form })
+      if(created.id)await adminApi.saveCompetitionCategories(created.id,enabledCategories.value)
       ElMessage.success('Nova edição criada. Defina-a como vigente quando estiver pronta para a operação.')
     }
 
@@ -663,6 +669,13 @@ onMounted(load)
         <label>Fim das inscrições<el-date-picker v-model="form.fimInscricoes" value-format="YYYY-MM-DD" type="date" /></label>
         <label>Data inicial<el-date-picker v-model="form.dataInicio" value-format="YYYY-MM-DD" type="date" /></label>
         <label>Data final<el-date-picker v-model="form.dataFim" value-format="YYYY-MM-DD" type="date" /></label>
+        <div class="span-2">
+          <strong>Categorias disponíveis nesta competição</strong>
+          <p class="muted">Somente as selecionadas poderão receber inscrições de robôs. Futebol ficará disponível para inscrições; suas partidas serão implementadas depois.</p>
+          <el-checkbox-group v-model="enabledCategories" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <el-checkbox v-for="category in categoryCatalog.filter(c=>c.ativo!==false)" :key="category.id" :value="category.id">{{category.nome}}</el-checkbox>
+          </el-checkbox-group>
+        </div>
         <label class="span-2">Status operacional
           <el-input :model-value="statusLabels[form.status || 'PLANEJADA']" disabled />
           <small class="muted">
