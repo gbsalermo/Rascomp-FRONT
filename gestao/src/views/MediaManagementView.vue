@@ -448,6 +448,11 @@ async function deleteSelectedPhotos() {
   ElMessage.success(count+' foto(s) removidas da Biblioteca. Publique a Galeria para atualizar os visitantes.')
 }
 
+async function deleteSinglePhoto(id:number) {
+  // Reutiliza a mesma exclusão protegida da Biblioteca (R2/MySQL).
+  selectedIds.value=[id]
+  await deleteSelectedPhotos()
+}
 const selectedPhoto = computed(() => photos.value.find(photo => photo.id === selectedIds.value[0]))
 const visiblePhotos = computed(() => photos.value.filter(photo => {
   const q = photo.name.toLocaleLowerCase('pt-BR').includes(search.value.toLocaleLowerCase('pt-BR'))
@@ -735,7 +740,10 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
             <label>Incluir na próxima publicação da Galeria</label>
             <el-switch v-model="selectedPhoto.published" active-text="Sim" inactive-text="Não" @change="persistVisibility(Boolean($event))"/>
             <p class="media-visibility-help">Fotos marcadas como públicas ficam disponíveis após clicar em <strong>Publicar Galeria</strong>. Uma imagem usada na Landing pode continuar privada na Galeria. Use a Prévia para conferir antes de publicar.</p>
-            <div class="media-detail-actions"><el-button @click="openCrop">Editar enquadramento</el-button></div>
+            <div class="media-detail-actions">
+              <el-button @click="openCrop">Editar enquadramento</el-button>
+              <el-button type="danger" plain :disabled="!canEditMedia" @click="deleteSinglePhoto(selectedPhoto.id)">Excluir foto</el-button>
+            </div>
           </template>
           <div v-else-if="multiSelectionMode && selectedIds.length > 1" class="media-selection-summary">
             <h2>Seleção múltipla</h2><strong>{{ selectedIds.length }} fotografias</strong>
