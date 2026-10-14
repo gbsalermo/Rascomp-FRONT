@@ -17,14 +17,8 @@ import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraf
 const publishedMediaDraft=ref<PreviewDraft|null>(null)
 // Evita exibir assets estáticos e trocá-los pela publicação CMS após o primeiro render.
 const mediaPublicationReady=ref(false)
-const displayedMediaDraft=computed(()=>localMediaDraft.value||publishedMediaDraft.value)
 // O CMS só altera seções explicitamente editadas; snapshots antigos preservam o site original.
 const publishedSections=computed<string[]>(()=>{
-  if(localMediaDraft.value){
-    const selected=(localMediaDraft.value as PreviewDraft & {__editedSections?:string[]}).__editedSections
-    // A prévia não deve redefinir seções que só possuem defaults do editor.
-    return Array.isArray(selected)?selected:[]
-  }
   const candidate=publishedMediaDraft.value as (PreviewDraft & {__editedSections?:unknown})|null
   if(Array.isArray(candidate?.__editedSections)){
     const explicit=candidate.__editedSections.filter((value):value is string=>typeof value==='string')
@@ -44,7 +38,11 @@ const publishedSections=computed<string[]>(()=>{
   return legacySections
 })
 function sectionDraft(section:string){
-  return publishedSections.value.includes(section)?displayedMediaDraft.value:null
+  // Prévia: se a seção foi editada, usar o rascunho local.
+  // Caso contrário, manter exatamente o conteúdo publicado no CMS.
+  const draft=localMediaDraft.value as (PreviewDraft & {__editedSections?:string[]})|null
+  if(draft?.__editedSections?.includes(section))return draft
+  return publishedSections.value.includes(section)?publishedMediaDraft.value:null
 }
 async function loadPublishedMedia() {
   try{
