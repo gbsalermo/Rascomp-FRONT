@@ -441,7 +441,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
       <div class="editor-footer"><el-button type="primary" @click="applyPreview">Aplicar na prévia local</el-button><span>Nenhum dado será salvo no banco ou publicado na Landing nesta fase.</span></div>
     </section>
 
-    <el-dialog v-model="pickerOpen" title="Escolher imagem da Biblioteca" width="min(850px, 95vw)" append-to-body>
+    <el-dialog class="media-photo-picker-dialog" v-model="pickerOpen" title="Escolher imagem da Biblioteca" width="min(850px, 95vw)" append-to-body>
       <p class="editor-picker-help">Selecione uma das imagens já enviadas à Biblioteca. A imagem original será preservada.</p>
       <div class="editor-picker-uploader"><label>+ Enviar foto(s) do computador<input type="file" accept="image/*" multiple @change="directUpload" /></label><small>Também adiciona as fotos à Biblioteca nesta demonstração.</small></div>
       <div class="editor-picker-filters"><el-input v-model="pickSearch" clearable placeholder="Buscar imagem pelo nome"/>
