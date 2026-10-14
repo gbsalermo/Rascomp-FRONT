@@ -15,6 +15,8 @@ import PublicGalleryPage from './components/PublicGalleryPage.vue'
 import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraft} from './content/localMediaPreview'
 
 const publishedMediaDraft=ref<PreviewDraft|null>(null)
+// Evita exibir assets estáticos e trocá-los pela publicação CMS após o primeiro render.
+const mediaPublicationReady=ref(false)
 const displayedMediaDraft=computed(()=>localMediaDraft.value||publishedMediaDraft.value)
 // O CMS só altera seções explicitamente editadas; snapshots antigos preservam o site original.
 const publishedSections=computed<string[]>(()=>{
@@ -60,6 +62,8 @@ async function loadPublishedMedia() {
     publishedMediaDraft.value=resolve(draft) as PreviewDraft
   }catch{
     // Em indisponibilidade do CMS, preservar a Landing institucional estática.
+  }finally{
+    mediaPublicationReady.value=true
   }
 }
 const loading = ref(true)
@@ -379,7 +383,7 @@ onBeforeUnmount(() => {
       @registration-unavailable="showRegistrationUnavailable"
     />
 
-    <main id="top">
+    <main v-if="mediaPublicationReady || mediaPreviewMode" id="top">
       <HighlightsHero
         :competition="displayedCompetition"
         :categories="categories"
