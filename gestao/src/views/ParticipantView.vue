@@ -703,6 +703,7 @@ function canManageRegistration(registration: Registration) {
 }
 
 function categoryOptionLabel(category: Category) {
+  if (category.modalidade === 'FUTEBOL') return category.nome
   if (category.modalidade === 'FOLLOW_LINE') return `${category.nome} · Follow Line`
   const physical = category.sumoPhysicalClass === 'MINI_500G' ? 'Mini 500 g'
     : category.sumoPhysicalClass === 'SUMO_3KG' ? 'Sumô 3 kg'
@@ -721,7 +722,13 @@ function refreshRegistrationCategory() {
   registrationForm.categoryId = availableRegistrationCategories.value[0]?.id
 }
 
-function onRegistrationCompetitionChange() {
+async function onRegistrationCompetitionChange() {
+  enabledCategoryIds.value=[]
+  registrationForm.categoryId=undefined
+  if(registrationForm.competitionId){
+    try{enabledCategoryIds.value=await publicApi.competitionCategories(registrationForm.competitionId)}
+    catch{ElMessage.error('Não foi possível carregar as categorias habilitadas desta competição.')}
+  }
   refreshRegistrationCategory()
 }
 
@@ -750,6 +757,7 @@ function openRegistrationDialog() {
   }
 
   registrationForm.competitionId = availableRobotRegistrationCompetitions.value[0]?.id
+  void onRegistrationCompetitionChange()
   registrationForm.robotId = registrableRobots.value[0]?.id
   registrationForm.robotDescricao = registrableRobots.value[0]?.descricao || ''
   registrationForm.observacao = ''
