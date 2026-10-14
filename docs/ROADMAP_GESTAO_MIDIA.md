@@ -160,3 +160,10 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 - Critério de aceite: alterar campos, visualizar prévia, restaurar, validar URLs e manter créditos e instituições protegidos.
 
 **Fluxo preservado:** interfaces → validação manual local → backend/CMS persistente por etapa e testes → aprovação explícita → merge na `main` → deploy/smoke. Não iniciar merge em PR #7 draft.
+
+
+## Ajuste de estilo — botões na Gestão de Mídia (13/10/2026)
+- Botões de ação vermelhos preenchidos em **Biblioteca, Álbuns, Landing, Competição e Footer** passam a ter letras/ícones **brancos por padrão**, inclusive hover, foco e estado pressionado. O vermelho institucional é controlado centralmente em `gestao/src/styles/media-button-colors.css`, carregado por último no `src/main.ts`.
+- Botões secundários e neutros **não** ficam com letras brancas em fundo branco: preservam contraste escuro. Alertas/remoção e estados desabilitados mantêm identidade própria.
+- Modais da Biblioteca, álbuns, ajuste de imagem e seleção de mídia usam classes específicas no `el-dialog` para preservar o tema mesmo ao renderizar via Teleport no `body`.
+- Critério de aceite: texto branco nos botões preenchidos em todas as seções, inclusive ao passar o mouse; texto legível nos botões de contorno/neutros; nenhuma alteração global no restante da Gestão operacional.
