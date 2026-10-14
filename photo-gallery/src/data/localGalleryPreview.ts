@@ -22,6 +22,21 @@ export type PreviewPhoto = {
 export type GalleryDraft = { albums: PreviewAlbum[]; photos: PreviewPhoto[]; featuredPhotoIds?: number[] }
 type GalleryCollection = { photos: GalleryPhoto[]; albums: GalleryAlbum[]; featuredPhotoIds: string[]; isPreview: boolean }
 const draft = shallowRef<GalleryDraft | null>(null)
+const published = shallowRef<GalleryDraft>({photos:[],albums:[],featuredPhotoIds:[]})
+export const galleryLoadError = shallowRef('')
+const demoGalleryMode = import.meta.env.DEV && new URLSearchParams(window.location.search).get('demo') === '1'
+const galleryApiOrigin = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/,'')
+export async function loadPublishedGallery(){
+  if (galleryPreviewMode || demoGalleryMode) return
+  try {
+    const response=await fetch(galleryApiOrigin+'/api/v1/public/media/gallery',{cache:'no-store'})
+    if(!response.ok)throw Error('API de Galeria indisponível ('+response.status+')')
+    const data=await response.json() as GalleryDraft
+    if(!Array.isArray(data.photos)||!Array.isArray(data.albums))throw Error('Resposta inválida da API de Galeria')
+    published.value=data
+    galleryLoadError.value=''
+  }catch(e){galleryLoadError.value=e instanceof Error?e.message:'Não foi possível carregar a Galeria';published.value={photos:[],albums:[],featuredPhotoIds:[]}}
+}
 const temporaryUrls: string[] = []
 
 export const galleryPreviewMode = import.meta.env.DEV
@@ -95,10 +110,12 @@ export function startGalleryPreviewListener() {
   return () => { window.removeEventListener('message', receive); clearTemporaryUrls() }
 }
 export const galleryCollection = computed<GalleryCollection>(() => {
-  if (galleryPreviewMode) {
-    const data = draft.value ?? { photos: [], albums: [],featuredPhotoIds: [] }
-    const photos: GalleryPhoto[] = data.photos.map(item => ({
-      id: String(item.id), alt: item.alt, src: item.src, published: true,
+  if (!demoGalleryMode) {
+    const data = galleryPreviewMode ? (draft.value ?? { photos: [], albums: [],featuredPhotoIds: [] }) : published.value
+    const photos: GalleryPhoto[] = data.photos.filter(item=>item.published===true).map(item => ({
+      id: String(item.id), alt: item.alt,
+      src: galleryPreviewMode ? item.src : new URL(item.src, galleryApiOrigin).href,
+      published: true,
     }))
     const byId = new Map(data.photos.map((photo) => [photo.id, photo]))
     const albums: GalleryAlbum[] = data.albums
@@ -118,9 +135,9 @@ export const galleryCollection = computed<GalleryCollection>(() => {
       })
       .filter(album => album.photos.length > 0)
 
-    return { photos, albums, featuredPhotoIds:(data.featuredPhotoIds||[]).map(String), isPreview: true }
+    return { photos, albums, featuredPhotoIds:(data.featuredPhotoIds||[]).map(String), isPreview:galleryPreviewMode }
   }
-  // Apenas o catálogo explicitamente ilustrativo, nunca recursos internos da Landing.
+  // Ilustrações disponíveis APENAS em dev com ?demo=1; jamais na aplicação pública.
   const demoAlbums = demonstrationAlbums.map(album => ({
     ...album,
     photos: album.photos.filter(photo => photo.published === true),
