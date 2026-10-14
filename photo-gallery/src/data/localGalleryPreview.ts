@@ -24,7 +24,7 @@ type GalleryCollection = { photos: GalleryPhoto[]; albums: GalleryAlbum[]; featu
 const draft = shallowRef<GalleryDraft | null>(null)
 const published = shallowRef<GalleryDraft>({photos:[],albums:[],featuredPhotoIds:[]})
 export const galleryLoadError = shallowRef('')
-const demoGalleryMode = import.meta.env.DEV && new URLSearchParams(window.location.search).get('demo') === '1'
+export const demoGalleryMode = import.meta.env.DEV && new URLSearchParams(window.location.search).get('demo') === '1'
 const galleryApiOrigin = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/,'')
 export async function loadPublishedGallery(){
   if (galleryPreviewMode || demoGalleryMode) return
