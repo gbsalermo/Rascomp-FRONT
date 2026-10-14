@@ -362,7 +362,7 @@ onMounted(load)
       <el-table :data="visibleCategories" empty-text="Nenhuma categoria em uso neste escopo">
         <el-table-column prop="nome" label="Categoria" min-width="200" />
         <el-table-column label="Modalidade" width="150">
-          <template #default="{ row }">{{ row.modalidade === 'FOLLOW_LINE' ? 'Follow Line' : 'Sumô' }}</template>
+          <template #default="{ row }">{{ row.modalidade === 'FOLLOW_LINE' ? 'Follow Line' : row.modalidade === 'SUMO' ? 'Sumô' : row.modalidade === 'FUTEBOL' ? 'Futebol de Robôs' : row.modalidade }}</template>
         </el-table-column>
         <el-table-column label="Classe física" width="145">
           <template #default="{ row }">{{ physicalClassLabel(row) }}</template>
