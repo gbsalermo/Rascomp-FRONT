@@ -217,6 +217,8 @@ onBeforeUnmount(()=>{
 .public-gallery-nav nav{display:flex;align-items:center;gap:8px}
 .public-gallery-nav nav button,.public-gallery-nav nav a{font:inherit;font-size:12px;border:0;background:none;color:#4c3d50;border-radius:9px;cursor:pointer;padding:12px;text-decoration:none}
 .public-gallery-nav nav button[aria-pressed=true],.public-gallery-nav nav button:hover,.public-gallery-nav nav a:hover{background:#f8edf2;color:#a31b4c}
+.public-gallery-nav nav a[href="/"]{display:inline-flex;align-items:center;justify-content:center;background:#c9003d;color:#fff;border:1px solid #c9003d;font-weight:800;font-size:14px;padding:12px 19px;border-radius:10px}
+.public-gallery-nav nav a[href="/"]:hover{background:#a90034;color:#fff;border-color:#a90034}
 .gallery-landing{display:grid;grid-template-columns:1.3fr 1fr;align-items:center;gap:54px;padding:72px 0 74px}
 .gallery-copy h1{font-weight:950;letter-spacing:-.065em;font-size:clamp(45px,6vw,90px);line-height:1.02;margin:19px 0 22px}
 .gallery-copy h1 em{font-style:normal;color:#a52059}
