@@ -88,6 +88,8 @@ function saveAdjustment(value:ImageAdjustment) {
   const key=activeAdjustmentKey.value
   if(key.startsWith('about:'))markSectionEdited('about')
   if(key.startsWith('sponsor:'))markSectionEdited('sponsors')
+  if(key.startsWith('board:')||key.startsWith('volunteer:')||key.startsWith('award:'))markSectionEdited('team')
+  if(key.startsWith('robot'))markSectionEdited('robots')
   imageAdjustments.value={...imageAdjustments.value,[activeAdjustmentKey.value]:value}
   ElMessage.success('Enquadramento salvo nesta prévia local.')
 }
@@ -195,6 +197,11 @@ function openPicker(target: PickTarget, index = 0) {
 function selectPhoto(id: number) {
   if(pickTarget.value==='about')markSectionEdited('about')
   if(pickTarget.value==='sponsor'||pickTarget.value==='sponsor-change')markSectionEdited('sponsors')
+  if(['board','volunteer','award'].includes(pickTarget.value))markSectionEdited('team')
+  if(['robots-banner','robot','robot-change'].includes(pickTarget.value))markSectionEdited('robots')
+  if(pickTarget.value==='event')markSectionEdited('events')
+  if(pickTarget.value==='hero')markSectionEdited('heroes')
+  if(['competition-section','competition-hero'].includes(pickTarget.value))markSectionEdited('competition')
   if (pickTarget.value === 'volunteer' && volunteerPhotos.value.length >= VOLUNTEER_LIMIT) return
   if (pickTarget.value === 'sponsor' && sponsors.value.length >= SPONSOR_LIMIT) return
   switch (pickTarget.value) {
@@ -238,6 +245,8 @@ function directUpload(event: Event) {
 function move<T>(items: T[], index: number, delta: number) {
   if(items===aboutPhotos.value)markSectionEdited('about')
   if(items===sponsors.value)markSectionEdited('sponsors')
+  if(items===volunteerPhotos.value||items===awards.value||items===board.value)markSectionEdited('team')
+  if(Object.values(robotPhotos.value).some(group=>group===items))markSectionEdited('robots')
   const target = index + delta
   if (target < 0 || target >= items.length) return
   const [item] = items.splice(index, 1)
@@ -489,11 +498,11 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
         </div>
         <div class="editor-heading editor-spaced"><div><h3>Voluntários</h3><p>Carrossel de fotografias. Máximo de {{ VOLUNTEER_LIMIT }} imagens.</p></div><el-button :disabled="volunteerPhotos.length >= VOLUNTEER_LIMIT" @click="openPicker('volunteer')">+ Adicionar foto ({{ volunteerPhotos.length }}/{{ VOLUNTEER_LIMIT }})</el-button></div>
         <div v-if="volunteerPhotos.length" class="editor-image-grid">
-          <div v-for="(id,i) in volunteerPhotos" :key="i" class="editor-image-item"><div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :style="frameStyle('volunteer:'+id)" :alt="photo(id)?.name"/><span v-else>▧</span></div><small>{{ photo(id)?.name }}</small><div class="editor-inline-actions"><el-button size="small" :disabled="!photo(id)?.src" @click="openAdjustment('volunteer:'+id,id,'Voluntário — '+(i+1))">Ajustar</el-button><el-button size="small" :disabled="i===0" @click="move(volunteerPhotos,i,-1)">↑</el-button><el-button size="small" :disabled="i===volunteerPhotos.length-1" @click="move(volunteerPhotos,i,1)">↓</el-button><el-button text type="danger" size="small" @click="volunteerPhotos.splice(i,1)">Remover</el-button></div></div>
+          <div v-for="(id,i) in volunteerPhotos" :key="i" class="editor-image-item"><div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :style="frameStyle('volunteer:'+id)" :alt="photo(id)?.name"/><span v-else>▧</span></div><small>{{ photo(id)?.name }}</small><div class="editor-inline-actions"><el-button size="small" :disabled="!photo(id)?.src" @click="openAdjustment('volunteer:'+id,id,'Voluntário — '+(i+1))">Ajustar</el-button><el-button size="small" :disabled="i===0" @click="move(volunteerPhotos,i,-1)">↑</el-button><el-button size="small" :disabled="i===volunteerPhotos.length-1" @click="move(volunteerPhotos,i,1)">↓</el-button><el-button text type="danger" size="small" @click="markSectionEdited('team');volunteerPhotos.splice(i,1)">Remover</el-button></div></div>
         </div><div v-else class="editor-empty">Nenhuma foto de voluntários escolhida nesta prévia.</div>
         <div class="editor-heading editor-spaced"><div><h3>Conquistas e premiações</h3><p>Gerencie título, ano, detalhes, imagem e ordem de exibição.</p></div><el-button type="primary" plain @click="addAward">+ Adicionar conquista</el-button></div>
         <div v-for="(award,i) in awards" :key="award.id" class="editor-record">
-          <div class="editor-record-title"><strong>{{ award.title || 'Nova conquista' }} <small class="editor-original-tag">{{ award.existing ? 'Na Landing atual' : 'Novo' }}</small></strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(awards,i,-1)">↑</el-button><el-button size="small" :disabled="i===awards.length-1" @click="move(awards,i,1)">↓</el-button><el-popconfirm title="Remover esta conquista da prévia?" @confirm="awards.splice(i,1)"><template #reference><el-button size="small" type="danger" text>Remover</el-button></template></el-popconfirm></div></div>
+          <div class="editor-record-title"><strong>{{ award.title || 'Nova conquista' }} <small class="editor-original-tag">{{ award.existing ? 'Na Landing atual' : 'Novo' }}</small></strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(awards,i,-1)">↑</el-button><el-button size="small" :disabled="i===awards.length-1" @click="move(awards,i,1)">↓</el-button><el-popconfirm title="Remover esta conquista da prévia?" @confirm="markSectionEdited('team');awards.splice(i,1)"><template #reference><el-button size="small" type="danger" text>Remover</el-button></template></el-popconfirm></div></div>
           <div class="editor-form-grid">
           <el-form-item label="Título"><el-input v-model="award.title" placeholder="Ex.: ERBASE — Follow Line"/></el-form-item>
           <el-form-item label="Ano"><el-input v-model="award.year" maxlength="9"/></el-form-item>
