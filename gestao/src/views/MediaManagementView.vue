@@ -318,7 +318,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
       <MediaLandingEditor :photos="photos" :albums="albums" :upload-photo="addPhotoForEditor" />
     </template>
 
-    <el-dialog v-model="uploadDialog" title="Adicionar fotos à Biblioteca" width="min(620px, 94vw)" destroy-on-close>
+    <el-dialog class="media-upload-dialog" v-model="uploadDialog" title="Adicionar fotos à Biblioteca" width="min(620px, 94vw)" destroy-on-close>
       <p class="media-dialog-intro">Você pode subir uma ou várias imagens e escolher se elas entram em um ou mais álbuns.</p>
       <label class="media-upload-drop">＋ &nbsp; Selecionar imagens do computador<input type="file" multiple accept="image/*" @change="fileChange" /></label>
       <div v-if="uploads.length" class="media-upload-preview">
@@ -351,7 +351,7 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
     </el-dialog>
 
 
-    <el-dialog :model-value="coverPickerAlbumId !== null" title="Capa do álbum" width="min(650px, 94vw)" @close="coverPickerAlbumId = null">
+    <el-dialog class="media-cover-dialog" :model-value="coverPickerAlbumId !== null" title="Capa do álbum" width="min(650px, 94vw)" @close="coverPickerAlbumId = null">
       <p class="media-dialog-intro">Escolha uma fotografia do álbum como capa. Sem seleção, uma das fotos será escolhida automaticamente e permanecerá estável na prévia.</p>
       <div v-if="coverPickerAlbumId !== null && albumPhotos(coverPickerAlbumId).length" class="media-cover-picker">
         <button v-for="photo in albumPhotos(coverPickerAlbumId)" :key="photo.id" type="button" @click="chooseAlbumCover(photo.id)">
@@ -362,13 +362,13 @@ onBeforeUnmount(() => uploadedUrls.forEach(url => URL.revokeObjectURL(url)))
       <div v-else class="media-empty">Adicione fotos a este álbum antes de escolher uma capa.</div>
       <template #footer><el-button @click="chooseAlbumCover(undefined)">Usar capa automática</el-button><el-button @click="coverPickerAlbumId = null">Cancelar</el-button></template>
     </el-dialog>
-    <el-dialog v-model="albumDialog" :title="editingAlbumId === null ? 'Criar álbum' : 'Editar álbum'" width="min(480px, 94vw)">
+    <el-dialog class="media-album-dialog" v-model="albumDialog" :title="editingAlbumId === null ? 'Criar álbum' : 'Editar álbum'" width="min(480px, 94vw)">
       <el-form label-position="top"><el-form-item label="Nome"><el-input v-model="albumDraft" placeholder="Ex.: Oficina de Arduino" /></el-form-item>
         <el-form-item label="Descrição"><el-input v-model="albumDescriptionDraft" type="textarea" :rows="3"/></el-form-item></el-form>
       <template #footer><el-button @click="albumDialog = false">Cancelar</el-button><el-button type="primary" @click="saveAlbum">Confirmar</el-button></template>
     </el-dialog>
 
-    <el-dialog v-model="cropDialog" title="Enquadramento da imagem" width="min(800px, 95vw)">
+    <el-dialog class="media-crop-dialog" v-model="cropDialog" title="Enquadramento da imagem" width="min(800px, 95vw)">
       <p class="media-dialog-intro">Prévia local não destrutiva. A imagem original não é alterada.</p>
       <div v-if="selectedPhoto" class="media-crop-wrap">
         <div class="media-crop-preview" :class="'tone-' + selectedPhoto.tone" :style="{ width: displayWidth + '%', height: (160 * displayHeight / 100) + 'px' }">
