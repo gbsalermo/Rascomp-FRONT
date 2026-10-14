@@ -142,3 +142,21 @@ Executar **uma seção por vez**, com teste e aceite ao final de cada uma:
 - **Galeria:** apenas mídia marcada explicitamente como `published:true` entra na listagem e páginas dos álbuns; mosaico público não apresenta nome do arquivo nem legendas sobrepostas. O identificador textual pode permanecer como `alt` descritivo para acessibilidade. O catálogo SVG atual é demonstração com autorização explícita, **não está conectado à Biblioteca**.
 - Limites: alterações em editores/galeria ainda são protótipos locais em memória ou fixtures; os dados e a visibilidade reais serão servidos pela API após migração segura com estado de publicação e permissões. Nenhum commit foi mesclado na `main` ou publicado em Cloudflare/Render.
 - **Teste manual antes do gate:** modificar um Hero existente e restaurar; remover original e recuperar; desabilitar/reativar botão; mostrar sequência prévia do Sobre; verificar banner Robôs sem invadir outras seções; galeria todas/álbum/lightbox sem nomes de fotos; foto marcada privada não entrar no resultado público quando backend for implementado.
+
+## Novos editores solicitados antes do teste — 13/10/2026
+### Competição → Hero competitivo (editor local)
+- O Hero da competição continua derivado dos dados oficiais da API: **nome da competição, status das inscrições, lote atual, categorias, CTA principal e destino** não podem ser sobrescritos pelo CMS.
+- `Landing → Competição` apresenta área editorial separada, com foto escolhida na Biblioteca (ou upload direto), subtítulo, descrição complementar, habilitar/ocultar Hero e botão **secundário opcional** com destino limitado a Competição, Galeria ou Eventos.
+- Há prévia em formato de Hero com **rótulos explícitos “API”** nos dados somente leitura. São placeholders estruturais enquanto não houver integração real; não constituem fatos nem dados de uma competição específica.
+- A edição da imagem/descrição complementares da seção Competição permanece separada do Hero.
+- Critério de aceite: não duplicar título/lote/status cadastrados na competição; foto e textos adicionais podem ser alterados sem efeitos nas entidades operacionais. Não publicar uma competição automaticamente, respeitar a elegibilidade de exibição vigente.
+
+### Landing → Footer (editor local)
+- Adicionada seção **Footer** no menu das seções editoriais, com `gestao/src/components/MediaFooterEditor.vue`.
+- Editáveis: e-mail, Instagram (URL e identificador), WhatsApp (URL e rótulo), localização apresentada, texto de contato, mensagem/chamada de apoio, **destino** dos links UFRB/IEEE/IEEE RAS/IEEE Brasil. Links são validados como HTTP(S), e-mail e URL WhatsApp têm validação básica ao testar.
+- Não editáveis: nomes institucionais e identidade visual, logos oficiais, composição/layout do Footer, direito autoral e crédito dev.
+- Os campos iniciam com defaults do código de `landing-page/src/components/InstitutionalFooter.vue`; a produção também pode usar variáveis `VITE_*` no build, portanto valores do preview não são um fetch de produção.
+- Prévia local simplificada, restaurar padrões e validar campos; **nenhum dado é persistido** na API ou publicado.
+- Critério de aceite: alterar campos, visualizar prévia, restaurar, validar URLs e manter créditos e instituições protegidos.
+
+**Fluxo preservado:** interfaces → validação manual local → backend/CMS persistente por etapa e testes → aprovação explícita → merge na `main` → deploy/smoke. Não iniciar merge em PR #7 draft.
