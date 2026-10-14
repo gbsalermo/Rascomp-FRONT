@@ -7,7 +7,7 @@ export type CompetitionStatus =
   | 'CANCELADA'
 
 export type RegistrationWindowChangeType = 'PRORROGACAO' | 'REABERTURA'
-export type Modalidade = 'SUMO' | 'FOLLOW_LINE'
+export type Modalidade = 'SUMO' | 'FOLLOW_LINE' | 'FUTEBOL'
 export type SumoPhysicalClass = 'MINI_500G' | 'SUMO_3KG'
 export type SumoControlMode = 'AUTONOMO' | 'RC'
 
