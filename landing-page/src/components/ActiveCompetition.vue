@@ -7,6 +7,7 @@ const props = defineProps<{
   teams: any[]
   categories: any[]
   registrations: any[]
+  enabledCategoryIds: number[]
   podiums: any[]
   ranking: any[]
   followAttempts: any[]
@@ -48,16 +49,8 @@ const approvedRegistrations = computed(() =>
   props.registrations.filter((item) => item.status === 'APROVADA')
 )
 
-const registrationCategoryIds = computed(() =>
-  new Set(props.registrations.map((item) => item.categoryId).filter(Boolean))
-)
-
 const competitionCategories = computed(() =>
-  props.categories.filter(
-    (item) =>
-      item.competitionId === props.competition?.id ||
-      registrationCategoryIds.value.has(item.id)
-  )
+  props.categories.filter((item) => props.enabledCategoryIds.includes(item.id))
 )
 
 const followCategories = computed(() =>
