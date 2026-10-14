@@ -1,6 +1,7 @@
 import { shallowRef } from 'vue'
 
-// Canal EXCLUSIVAMENTE de desenvolvimento local. Nada é persistido, salvo ou publicado.
+// Canal temporário de prévia: valida a janela de Gestão, origem e nonce.
+// A sessão autenticada da Gestão envia os dados; a Landing não consulta rascunhos pela API.
 export type PreviewFrame = { zoom:number; width:number; height:number; x:number; y:number; fit:'cover'|'contain' }
 export type PreviewImage = { src:string; name?:string; frame?:PreviewFrame }
 export type PreviewHero = { id:string; title:string; eyebrow:string; description:string; cta:string; href:string; showButton:boolean; active:boolean; image?:PreviewImage }
@@ -18,11 +19,13 @@ export type PreviewDraft = {
   footer: {email:string;instagram:string;instagramHandle:string;whatsapp:string;whatsappLabel:string;campusDetail:string;contactIntro:string;supportTitle:string;supportMessage:string;links:{id:string;label:string;url:string}[]} | null
 }
 export const localMediaDraft = shallowRef<PreviewDraft|null>(null)
-export const mediaPreviewMode = import.meta.env.DEV &&
-  ['localhost','127.0.0.1'].includes(window.location.hostname) &&
-  new URLSearchParams(window.location.search).get('rascomp_media_preview') === '1'
-
-const allowedOrigins = ['http://localhost:5173','http://127.0.0.1:5173']
+const trustedSite = window.location.hostname === 'rasufrb.site'
+const localSite = import.meta.env.DEV && ['localhost','127.0.0.1'].includes(window.location.hostname)
+export const mediaPreviewMode = (localSite || trustedSite)
+  && new URLSearchParams(window.location.search).get('rascomp_media_preview') === '1'
+const allowedOrigins = trustedSite
+  ? ['https://app.rasufrb.site']
+  : ['http://localhost:5173','http://127.0.0.1:5173']
 const objectUrls:string[]=[]
 function releaseUrls() {for(const url of objectUrls)URL.revokeObjectURL(url);objectUrls.length=0}
 function srcFor(value:string,files:Record<string,Blob>):string {
@@ -31,7 +34,8 @@ function srcFor(value:string,files:Record<string,Blob>):string {
     if(!blob || !blob.type.startsWith('image/'))return ''
     const url=URL.createObjectURL(blob);objectUrls.push(url);return url
   }
-  if(value.startsWith('http://localhost:5173/') || value.startsWith('http://127.0.0.1:5173/'))return value
+  if (allowedOrigins.some(origin=>value.startsWith(origin+'/')))return value
+  if (value.startsWith('https://api.rasufrb.site/api/v1/public/media/assets/'))return value
   return ''
 }
 function decodeDraft(draft:PreviewDraft,files:Record<string,Blob>):PreviewDraft {
