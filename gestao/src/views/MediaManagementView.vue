@@ -33,7 +33,10 @@ const persistedEditorialDraft = ref<Record<string,unknown>|null>(null)
 const cmsStatus = computed(()=>cmsReady.value ? 'Conectado ao CMS (MySQL/R2)' : cmsLoading.value ? 'Conectando ao CMS…' : 'CMS indisponível')
 const canEditMedia = computed(()=>cmsReady.value && !cmsBusy.value)
 
-const landingPreviewOrigin = 'http://localhost:5174'
+const isLocalManagement = import.meta.env.DEV && ['localhost','127.0.0.1'].includes(location.hostname)
+const isProductionManagement = location.origin==='https://app.rasufrb.site'
+const previewSupported = isLocalManagement || isProductionManagement
+const landingPreviewOrigin = isProductionManagement ? 'https://rasufrb.site' : 'http://localhost:5174'
 let previewPopup:Window|null=null
 let previewToken=''
 let popupReady=false
@@ -84,8 +87,8 @@ function previewMessage(event:MessageEvent) {
 }
 window.addEventListener('message',previewMessage)
 async function openSitePreview() {
-  if(!import.meta.env.DEV || !['localhost','127.0.0.1'].includes(location.hostname)) {
-    ElMessage.warning('A prévia de edição só pode ser aberta no ambiente local.');return
+  if(!previewSupported) {
+    ElMessage.warning('A prévia só está disponível na Gestão autenticada do RasComp.');return
   }
   if(!landingEditor.value){ElMessage.warning('Abra a seção Landing para gerar a prévia.');return}
   if(!previewPopup || previewPopup.closed) {
@@ -94,12 +97,12 @@ async function openSitePreview() {
     previewPopup=window.open(landingPreviewOrigin+'/?rascomp_media_preview=1#preview='+previewToken,'rascomp-media-site-preview')
     if(!previewPopup){ElMessage.warning('O navegador bloqueou a janela. Permita pop-ups para localhost.');return}
   }else previewPopup.focus()
-  ElMessage.info('Prévia local: mantenha o site Landing rodando em localhost:5174.')
+  ElMessage.info(isProductionManagement ? 'Prévia online privada: nenhuma alteração foi publicada.' : 'Prévia local: mantenha a Landing em localhost:5174.')
   await updatePreview()
 }
 
 // Prévia local da Galeria: a Gestão envia APENAS fotos explicitamente públicas.
-const galleryPreviewOrigin='http://localhost:5175'
+const galleryPreviewOrigin = isProductionManagement ? 'https://rasufrb.site' : 'http://localhost:5175'
 let galleryPopup:Window|null=null
 let galleryToken=''
 let galleryReady=false
@@ -116,13 +119,13 @@ function galleryMessage(event:MessageEvent){
 }
 window.addEventListener('message',galleryMessage)
 async function openGalleryPreview(){
-  if(!import.meta.env.DEV||!['localhost','127.0.0.1'].includes(location.hostname)){
-    ElMessage.warning('A prévia da Galeria está disponível somente no ambiente local.');return
+  if(!previewSupported){
+    ElMessage.warning('A prévia da Galeria requer acesso à Gestão de Mídia.');return
   }
   if(!galleryPopup||galleryPopup.closed){
     galleryToken=crypto.randomUUID()
     galleryReady=false
-    galleryPopup=window.open(galleryPreviewOrigin+'/?rascomp_gallery_preview=1#preview='+galleryToken,'rascomp-gallery-editorial-preview')
+    galleryPopup=window.open(galleryPreviewOrigin+(isProductionManagement?'/galeria':'/')+'?rascomp_gallery_preview=1#preview='+galleryToken,'rascomp-gallery-editorial-preview')
     if(!galleryPopup){ElMessage.warning('Permita pop-ups do localhost para abrir a Galeria.');return}
   }else galleryPopup.focus()
   const publicPhotos=photos.value.filter(item=>item.published===true&&!!item.src).slice(0,400)
@@ -153,7 +156,7 @@ async function openGalleryPreview(){
     files
   }
   sendGalleryPreview()
-  ElMessage.info(approved.length+' foto(s) públicas enviadas somente para a prévia local da Galeria. Nada foi publicado.')
+  ElMessage.info(approved.length+' foto(s) encaminhadas à prévia da Galeria. Nenhuma imagem foi publicada.')
 }
 
 const auth = useAuthStore()
