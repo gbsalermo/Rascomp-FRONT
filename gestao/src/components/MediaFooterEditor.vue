@@ -35,6 +35,7 @@ const original: FooterDraft = {
   ]
 }
 function copy():FooterDraft {return {...original,links:original.links.map(link=>({...link}))}}
+defineExpose({getPreviewData:()=>JSON.parse(JSON.stringify(footer.value)) as FooterDraft})
 const footer=ref<FooterDraft>(copy())
 const isHttpUrl=(url:string)=>{try {let parsed=new URL(url);return ['https:','http:'].includes(parsed.protocol)}catch{return false}}
 function testPreview() {
