@@ -400,6 +400,7 @@ onBeforeUnmount(() => {
       <HighlightsHero
         :competition="displayedCompetition"
         :competition-hero-enabled="competitionHeroEnabled"
+        :competition-media="sectionDraft('competition')?.competition"
         :categories="categories"
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
