@@ -27,7 +27,15 @@ const publishedSections=computed<string[]>(()=>{
   // Compatibilidade com publicações realizadas antes do rastreio por seção:
   // um Hero editorial adicionado deve aparecer sem reescrever as demais seções.
   const hasNewHero=candidate?.heroes?.some(hero=>hero.active && hero.id.startsWith('editorial-'))
-  return hasNewHero?['heroes']:[]
+  // Snapshots publicados antes de __editedSections já continham as fotos e seus
+  // enquadramentos. Restaurar apenas Sobre/Patrocinadores com referências R2,
+  // sem sobrescrever os demais componentes com dados legados do CMS.
+  const hasManagedPhoto=(src:unknown)=>typeof src==='string' && /\\/api\\/v1\\/public\\/media\\/assets\\/\\d+\\/content/.test(src)
+  const legacySections:string[]=[]
+  if(hasNewHero)legacySections.push('heroes')
+  if(candidate?.about?.some(photo=>hasManagedPhoto(photo.src)))legacySections.push('about')
+  if(candidate?.sponsors?.some(item=>hasManagedPhoto(item.image?.src)))legacySections.push('sponsors')
+  return legacySections
 })
 function sectionDraft(section:string){
   return publishedSections.value.includes(section)?displayedMediaDraft.value:null
