@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import {computed, ref, watch } from 'vue'
+import { preloadImages } from '../utils/imagePreload'
 import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/localMediaPreview'
 const props=defineProps<{mediaPreview?:PreviewDraft|null}>()
 
@@ -119,6 +120,7 @@ const activeCategoryData = computed(
   () => categories.find((category) => category.slug === activeCategory.value) || categories[0]
 )
 
+watch(photosByCategory, groups => preloadImages(Object.values(groups).flatMap(items=>items.map(item=>item.src)), 16), {immediate:true})
 const activePhotos = computed(() => photosByCategory.value[activeCategory.value] || [])
 
 function selectCategory(category: RobotCategorySlug) {
