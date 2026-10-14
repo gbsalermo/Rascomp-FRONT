@@ -512,7 +512,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
       <template v-else-if="section === 'Sobre'">
         <div class="editor-heading"><div><h3>Sequência de imagens</h3><p>Os textos da seção Sobre permanecem fixos. Organize a ordem das fotografias.</p></div><el-button type="primary" plain @click="openPicker('about')">+ Adicionar imagem</el-button></div>
         <div v-if="aboutPhotos.length" class="about-actual-preview">
-          <div class="about-actual-preview-heading"><strong>Prévia do quadro real da Landing</strong><span>Referência desktop: caixa de até 405 px de altura, mantendo o recorte e a sobreposição de texto.</span></div>
+          <div class="about-actual-preview-heading"><strong>Prévia do quadro real da Landing</strong><span>Proporção de referência equivalente à caixa real do Sobre (590 × 468); em outras telas, o quadro acompanha o layout.</span></div>
           <div class="about-actual-frame">
             <img v-if="photo(aboutPreviewId)?.src" :src="photo(aboutPreviewId)?.src" :style="frameStyle('about:'+aboutPreviewId)" alt="Prévia da fotografia na seção Sobre" />
             <div class="about-actual-overlay"></div>
@@ -847,11 +847,11 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
 .about-actual-preview-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .about-actual-preview-heading strong{font-size:15px}
 .about-actual-preview-heading span,.about-actual-preview>small{font-size:12px;color:#746976}
-.about-actual-frame{position:relative;width:100%;max-width:620px;height:405px;border:1px solid #e6dfea;border-radius:18px;background:linear-gradient(145deg,#ddd1e4,#86608e);overflow:hidden;box-shadow:0 16px 36px rgba(59,34,69,.07)}
+.about-actual-frame{position:relative;width:100%;max-width:590px;aspect-ratio:590/468;height:auto;border:1px solid #e6dfea;border-radius:18px;background:linear-gradient(145deg,#ddd1e4,#86608e);overflow:hidden;box-shadow:0 16px 36px rgba(59,34,69,.07)}
 .about-actual-frame>img{position:absolute;inset:0;object-fit:cover;max-width:none;max-height:none}
 .about-actual-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(31,21,36,.03) 40%,rgba(31,21,36,.74) 100%);pointer-events:none}
 .about-actual-badge{position:absolute;top:17px;left:17px;color:#fff;background:#732294;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:800}
 .about-actual-caption{position:absolute;left:20px;right:20px;bottom:15px;color:#fff!important;font-size:15px!important;font-weight:700;text-shadow:0 1px 4px #181019}
 .about-actual-preview-controls{display:flex;flex-wrap:wrap;gap:8px}
-@media(max-width:700px){.about-actual-frame{height:320px}}
+@media(max-width:700px){.about-actual-frame{height:auto}}
 </style>
