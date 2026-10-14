@@ -59,7 +59,8 @@
 .media-album-dialog .el-button.el-button--primary,
 .media-cover-dialog .el-button.el-button--primary,
 .media-crop-dialog .el-button.el-button--primary,
-.media-photo-picker-dialog .el-button.el-button--primary {
+.media-photo-picker-dialog .el-button.el-button--primary,
+.media-image-adjustment-dialog .el-button.el-button--primary {
   --el-button-text-color: #ffffff;
   --el-button-hover-text-color: #ffffff;
   --el-button-active-text-color: #ffffff;
@@ -75,7 +76,8 @@
 .media-album-dialog .el-button.el-button--primary:hover,
 .media-cover-dialog .el-button.el-button--primary:hover,
 .media-crop-dialog .el-button.el-button--primary:hover,
-.media-photo-picker-dialog .el-button.el-button--primary:hover {
+.media-photo-picker-dialog .el-button.el-button--primary,
+.media-image-adjustment-dialog .el-button.el-button--primary:hover {
   color: #ffffff !important;
   background: #851035 !important;
 }
