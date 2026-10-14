@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { preloadImages, showPreparedImage } from '../utils/imagePreload'
 import {previewImageStyle,type PreviewDraft,type PreviewFrame} from '../content/localMediaPreview'
 const props=defineProps<{mediaPreview?:PreviewDraft|null}>()
 
@@ -93,32 +94,26 @@ const content = computed(() => {
   }
 })
 
-function goToPhoto(index: number) {
-  activePhoto.value = index
-  restartPhotoTimer()
+let navigationSequence=0
+function navigatePhoto(index:number) {
+  if(!photos.value.length)return
+  const next=(index+photos.value.length)%photos.value.length
+  const sequence=++navigationSequence
+  void showPreparedImage(photos.value[next]?.src,()=>{
+    if(sequence!==navigationSequence)return
+    activePhoto.value=next
+    preloadImages([photos.value[(next+1)%photos.value.length]?.src,photos.value[(next+2)%photos.value.length]?.src])
+  })
 }
-
-function previousPhoto() {
-  if (photos.value.length <= 1) return
-  activePhoto.value = (activePhoto.value - 1 + photos.value.length) % photos.value.length
-  restartPhotoTimer()
-}
-
-function nextPhoto() {
-  if (photos.value.length <= 1) return
-  activePhoto.value = (activePhoto.value + 1) % photos.value.length
-  restartPhotoTimer()
-}
-
-function startPhotoTimer() {
+function goToPhoto(index:number){navigatePhoto(index);restartPhotoTimer()}
+function previousPhoto(){navigatePhoto(activePhoto.value-1);restartPhotoTimer()}
+function nextPhoto(){navigatePhoto(activePhoto.value+1);restartPhotoTimer()}
+function startPhotoTimer(){
   stopPhotoTimer()
-  if (photos.value.length <= 1) return
-
-  photoTimer = window.setInterval(() => {
-    activePhoto.value = (activePhoto.value + 1) % photos.value.length
-  }, 7000)
+  if(photos.value.length<=1)return
+  photoTimer=window.setInterval(()=>navigatePhoto(activePhoto.value+1),7000)
 }
-
+watch(photos,items=>preloadImages(items.map(item=>item.src),items.length),{immediate:true})
 function stopPhotoTimer() {
   if (photoTimer) window.clearInterval(photoTimer)
   photoTimer = undefined
