@@ -79,7 +79,7 @@ async function loadGallery(){
   if(isPreview)return
   loading.value=true
   try{
-    const response=await fetch(API_URL+'/api/v1/public/media/gallery',{cache:'no-store'})
+    const response=await fetch(API_URL+'/api/v1/public/media/gallery')
     if(!response.ok)throw Error('API da Galeria indisponível')
     const data=await response.json() as Gallery
     if(!Array.isArray(data.photos)||!Array.isArray(data.albums))throw Error('Dados inválidos')
