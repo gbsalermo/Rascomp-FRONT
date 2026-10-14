@@ -74,6 +74,7 @@ const competitions = ref<any[]>([])
 const teams = ref<any[]>([])
 const categories = ref<any[]>([])
 const registrations = ref<any[]>([])
+const enabledCategoryIds = ref<number[]>([])
 const currentRegistrationLot = ref<any>()
 const podiums = ref<any[]>([])
 const ranking = ref<any[]>([])
@@ -212,11 +213,10 @@ function showRegistrationUnavailable() {
 }
 
 function competitionFollowCategories() {
-  const registrationCategoryIds = new Set(registrations.value.map((item) => item.categoryId))
   return categories.value.filter(
     (item) =>
       item.modalidade === 'FOLLOW_LINE' &&
-      (item.competitionId === competitionId.value || registrationCategoryIds.has(item.id))
+      enabledCategoryIds.value.includes(item.id)
   )
 }
 
@@ -263,6 +263,7 @@ async function syncPublishedCompetition() {
 async function refreshCompetition() {
   if (!competitionId.value) {
     registrations.value = []
+    enabledCategoryIds.value = []
     currentRegistrationLot.value = undefined
     podiums.value = []
     ranking.value = []
@@ -275,13 +276,15 @@ async function refreshCompetition() {
     return
   }
 
-  const [registrationList, bracketList, podiumList, lot] = await Promise.all([
+  const [registrationList, bracketList, podiumList, lot, enabledIds] = await Promise.all([
     api.registrations(competitionId.value),
     api.brackets(competitionId.value),
     api.podiums(competitionId.value).catch(() => []),
-    api.currentRegistrationLot(competitionId.value).catch(() => undefined)
+    api.currentRegistrationLot(competitionId.value).catch(() => undefined),
+    api.enabledCategories(competitionId.value)
   ])
 
+  enabledCategoryIds.value = enabledIds
   registrations.value = registrationList
   brackets.value = bracketList
   podiums.value = podiumList
@@ -404,6 +407,7 @@ onBeforeUnmount(() => {
         :competition-hero-enabled="competitionHeroEnabled"
         :competition-media="sectionDraft('competition')?.competition"
         :categories="categories"
+        :enabled-category-ids="enabledCategoryIds"
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
         :management-url="managementUrl"
