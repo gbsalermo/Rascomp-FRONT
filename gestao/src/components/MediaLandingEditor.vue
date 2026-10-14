@@ -85,6 +85,9 @@ function openAdjustment(key:string,id:number|undefined,label:string,sourceUrl?:s
   adjustmentOpen.value=true
 }
 function saveAdjustment(value:ImageAdjustment) {
+  const key=activeAdjustmentKey.value
+  if(key.startsWith('about:'))markSectionEdited('about')
+  if(key.startsWith('sponsor:'))markSectionEdited('sponsors')
   imageAdjustments.value={...imageAdjustments.value,[activeAdjustmentKey.value]:value}
   ElMessage.success('Enquadramento salvo nesta prévia local.')
 }
@@ -360,7 +363,7 @@ function getEditedSections():string[]{
   if(!baselineState)return priorEditedSections
   const sections:Record<string,string[]>={
     heroes:['heroes'],
-    about:['aboutPhotos','imageAdjustments'],
+    about:['aboutPhotos'],
     team:['board','volunteerPhotos','awards'],
     robots:['robotPhotos','robotTitles','robotTitleLocations','robotBannerId'],
     events:['events'],
