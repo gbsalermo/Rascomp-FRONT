@@ -190,6 +190,8 @@ function openPicker(target: PickTarget, index = 0) {
   pickerOpen.value = true
 }
 function selectPhoto(id: number) {
+  if(pickTarget.value==='about')markSectionEdited('about')
+  if(pickTarget.value==='sponsor'||pickTarget.value==='sponsor-change')markSectionEdited('sponsors')
   if (pickTarget.value === 'volunteer' && volunteerPhotos.value.length >= VOLUNTEER_LIMIT) return
   if (pickTarget.value === 'sponsor' && sponsors.value.length >= SPONSOR_LIMIT) return
   switch (pickTarget.value) {
@@ -231,6 +233,8 @@ function directUpload(event: Event) {
   if (files.length) ElMessage.info('As imagens foram adicionadas à prévia local da Biblioteca, sem envio à API.')
 }
 function move<T>(items: T[], index: number, delta: number) {
+  if(items===aboutPhotos.value)markSectionEdited('about')
+  if(items===sponsors.value)markSectionEdited('sponsors')
   const target = index + delta
   if (target < 0 || target >= items.length) return
   const [item] = items.splice(index, 1)
@@ -344,6 +348,9 @@ function restoreEditorState(saved:Record<string,unknown>) {
 // O estado inicial é a Landing institucional original, não o último snapshot total do CMS.
 let baselineState:Record<string,unknown>|null=null
 let priorEditedSections:string[]=[]
+function markSectionEdited(section:string){
+  if(!priorEditedSections.includes(section))priorEditedSections.push(section)
+}
 onMounted(()=>{baselineState=getEditorState()})
 function setEditedSections(value:unknown){
   priorEditedSections=Array.isArray(value)?value.filter((item):item is string=>typeof item==='string'):[]
@@ -460,7 +467,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
             <div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :style="frameStyle('about:'+id)" :alt="photo(id)?.name"/><span v-else>▧</span></div>
             <small>{{ photo(id)?.name || 'Foto de exemplo' }}</small>
             <el-button size="small" :disabled="!photo(id)?.src" @click="openAdjustment('about:'+id,id,'Sobre — foto '+(i+1))">Ajustar imagem</el-button>
-            <div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(aboutPhotos,i,-1)">↑</el-button><el-button size="small" :disabled="i===aboutPhotos.length-1" @click="move(aboutPhotos,i,1)">↓</el-button><el-button size="small" type="danger" text @click="aboutPhotos.splice(i,1)">Remover</el-button></div>
+            <div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(aboutPhotos,i,-1)">↑</el-button><el-button size="small" :disabled="i===aboutPhotos.length-1" @click="move(aboutPhotos,i,1)">↓</el-button><el-button size="small" type="danger" text @click="markSectionEdited('about');aboutPhotos.splice(i,1)">Remover</el-button></div>
           </article>
         </div>
         <div v-else class="editor-empty">Nenhuma imagem selecionada. Adicione as fotos da sequência da seção Sobre.</div>
@@ -551,7 +558,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
       <template v-else-if="section === 'Patrocinadores'">
         <div class="editor-heading"><div><h3>Logos de patrocinadores</h3><p>Carrossel com até {{ SPONSOR_LIMIT }} logos; remova, reordene e ajuste o tamanho de cada uma.</p></div><el-button type="primary" plain :disabled="sponsors.length>=SPONSOR_LIMIT" @click="openPicker('sponsor')">+ Adicionar logo ({{ sponsors.length }}/{{ SPONSOR_LIMIT }})</el-button></div>
         <div v-for="(item,i) in sponsors" :key="item.id" class="editor-record">
-          <div class="editor-record-title"><strong>Patrocinador {{ i+1 }}</strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(sponsors,i,-1)">↑</el-button><el-button size="small" :disabled="i===sponsors.length-1" @click="move(sponsors,i,1)">↓</el-button><el-button type="danger" text size="small" @click="sponsors.splice(i,1)">Remover</el-button></div></div>
+          <div class="editor-record-title"><strong>Patrocinador {{ i+1 }}</strong><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(sponsors,i,-1)">↑</el-button><el-button size="small" :disabled="i===sponsors.length-1" @click="move(sponsors,i,1)">↓</el-button><el-button type="danger" text size="small" @click="markSectionEdited('sponsors');sponsors.splice(i,1)">Remover</el-button></div></div>
           <div class="editor-sponsor-row"><div class="editor-sponsor-image"><img v-if="photo(item.photoId)?.src" :src="photo(item.photoId)?.src" :alt="photo(item.photoId)?.name" :style="frameStyle('sponsor:'+item.id)"/><span v-else>▧</span></div>
             <div class="editor-sponsor-fields"><el-form-item label="Link (opcional)"><el-input v-model="item.url" placeholder="https://..."/></el-form-item></div></div>
           <div class="editor-actions"><el-button size="small" @click="openPicker('sponsor-change',i)">Trocar logo</el-button>
