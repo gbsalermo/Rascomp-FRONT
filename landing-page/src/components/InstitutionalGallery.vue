@@ -17,7 +17,7 @@ const galleryImageModules = import.meta.glob(
 ) as Record<string, string>
 
 const galleryUrl = String(
-  import.meta.env.VITE_GALERIA_URL || (import.meta.env.DEV ? 'http://localhost:5175' : '')
+  import.meta.env.VITE_GALERIA_URL || '/galeria'
 ).trim().replace(/\/$/, '')
 
 const previews = computed<GalleryPreview[]>(() =>
