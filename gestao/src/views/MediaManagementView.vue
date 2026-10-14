@@ -436,10 +436,14 @@ function albumCover(album: Album): MediaPhoto | undefined {
 function openCoverPicker(albumId: number) {
   coverPickerAlbumId.value = albumId
 }
-function chooseAlbumCover(photoId: number | undefined) {
+async function chooseAlbumCover(photoId: number | undefined) {
   const album = albums.value.find(item => item.id === coverPickerAlbumId.value)
-  if (album) album.coverId = photoId
-  coverPickerAlbumId.value = null
+  if(album && cmsReady.value){
+    try{await mediaApi.updateAlbum(album.id,album.name,album.description,photoId)}
+    catch(error){ElMessage.error('Não foi possível atualizar a capa.');return}
+  }
+  if(album)album.coverId=photoId
+  coverPickerAlbumId.value=null
 }
 const uploadedUrls: string[] = []
 const uploadDialog = ref(false)
@@ -478,17 +482,34 @@ function openAlbumDialog(album?: Album) {
   albumDescriptionDraft.value = album?.description || ''
   albumDialog.value = true
 }
-function saveAlbum() {
+async function saveAlbum() {
   const name = albumDraft.value.trim()
   if (!name) { ElMessage.warning('Informe o nome do álbum.'); return }
-  if (editingAlbumId.value !== null) {
-    const target = albums.value.find(album => album.id === editingAlbumId.value)
-    if (target) { target.name = name; target.description = albumDescriptionDraft.value }
-  } else createAlbum(name, albumDescriptionDraft.value)
-  albumDialog.value = false
-  ElMessage.success('Álbum alterado nesta demonstração local.')
+  if(cmsReady.value){
+    try{
+      if(editingAlbumId.value!==null){
+        const previous=albums.value.find(album=>album.id===editingAlbumId.value)
+        await mediaApi.updateAlbum(editingAlbumId.value,name,albumDescriptionDraft.value,previous?.coverId)
+        if(previous){previous.name=name;previous.description=albumDescriptionDraft.value}
+      }else{
+        const id=await mediaApi.createAlbum(name,albumDescriptionDraft.value)
+        albums.value.push({id,name,description:albumDescriptionDraft.value})
+      }
+    }catch(error){ElMessage.error('Não foi possível salvar o álbum no MySQL.');return}
+  }else{
+    if(editingAlbumId.value!==null){
+      const album=albums.value.find(item=>item.id===editingAlbumId.value)
+      if(album){album.name=name;album.description=albumDescriptionDraft.value}
+    }else createAlbum(name,albumDescriptionDraft.value)
+  }
+  albumDialog.value=false
+  ElMessage.success(cmsReady.value?'Álbum salvo no MySQL. Publique para atualizar a Galeria.':'Álbum alterado na prévia.')
 }
-function removeAlbum(id: number) {
+async function removeAlbum(id: number) {
+  if(cmsReady.value){
+    try{await mediaApi.deleteAlbum(id)}
+    catch(error){ElMessage.error('Não foi possível excluir o álbum.');return}
+  }
   photos.value.forEach(photo => { photo.albums = photo.albums.filter(albumId => albumId !== id) })
   albums.value = albums.value.filter(album => album.id !== id)
   if (albumFilter.value === String(id)) albumFilter.value = 'all'
