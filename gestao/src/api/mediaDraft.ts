@@ -1,4 +1,5 @@
 import {mediaApi} from './media'
+import {API_URL} from './http'
 
 type LocalImage={id:number;name:string;src?:string;persisted?:boolean}
 const sourceCache=new Map<string,number>()
@@ -57,9 +58,24 @@ export async function prepareEditorialUpload(
     robots:['robots'],events:['events'],sponsors:['sponsors'],
     competition:['competition'],footer:['footer']
   }
+  // O rascunho do editor inclui imagens locais até nas seções não editadas.
+  // Reutilizar os dados já publicados evita mandar blob:/localhost à API
+  // e, principalmente, evita apagar conteúdo que já está no site.
+  const response=await fetch(API_URL+'/api/v1/public/media/editorial',{cache:'no-store'})
+  if(!response.ok)throw Error('Não foi possível consultar a Landing publicada (HTTP '+response.status+'). O rascunho não foi sobrescrito.')
+  const published=await response.json() as Record<string,unknown>
+  if(!published||typeof published!=='object'||Array.isArray(published))
+    throw Error('Resposta editorial publicada inválida. Nada foi salvo.')
   for(const [section,fields] of Object.entries(sectionFields)){
-    if(!changed.has(section))continue
-    for(const field of fields)await migrate(draft[field])
+    for(const field of fields){
+      if(changed.has(section)){
+        await migrate(draft[field])
+      }else if(Object.prototype.hasOwnProperty.call(published,field)){
+        draft[field]=published[field]
+      }else{
+        delete draft[field]
+      }
+    }
   }
   function remap(node:unknown,key=''):unknown {
     if(Array.isArray(node))return node.map(x=>photoIdArrays.has(key)&&typeof x==='number'?aliases.get(x)??x:remap(x))
