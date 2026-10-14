@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, nextTick } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MediaLandingEditor from '../components/MediaLandingEditor.vue'
@@ -24,6 +24,9 @@ const cmsReady = ref(false)
 const cmsError = ref('')
 const cmsBusy = ref(false)
 const cmsVersion = ref(0)
+const cmsDraftSaved = ref(false)
+const confirmPublishOpen = ref(false)
+const importedSourceIds = new Map<string,number>()
 const persistedEditorialDraft = ref<Record<string,unknown>|null>(null)
 const cmsStatus = computed(()=>cmsReady.value ? 'Conectado ao CMS (MySQL/R2)' : cmsLoading.value ? 'Conectando ao CMS…' : 'CMS indisponível')
 const canEditMedia = computed(()=>cmsReady.value && !cmsBusy.value)
@@ -266,6 +269,12 @@ async function loadCmsWorkspace() {
   }finally{cmsLoading.value=false}
 }
 onMounted(()=>{void loadCmsWorkspace()})
+watch([landingEditor,persistedEditorialDraft],()=>{
+  const state=persistedEditorialDraft.value?._editorState
+  if(landingEditor.value && state && typeof state==='object')
+    landingEditor.value.restoreEditorState(state as Record<string,unknown>)
+},{flush:'post'})
+
 
 const search = ref('')
 const albumFilter = ref('all')
