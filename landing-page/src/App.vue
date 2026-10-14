@@ -34,7 +34,7 @@ function sectionDraft(section:string){
 }
 async function loadPublishedMedia() {
   try{
-    const response=await fetch(API_URL+'/api/v1/public/media/editorial',{cache:'no-store'})
+    const response=await fetch(API_URL+'/api/v1/public/media/editorial')
     if(!response.ok)return
     const draft=await response.json() as PreviewDraft
     if(!draft||!Array.isArray(draft.heroes))return
