@@ -397,7 +397,9 @@ onBeforeUnmount(() => {
     />
 
     <main v-if="mediaPublicationReady || mediaPreviewMode" id="top">
+      <div v-if="loading && !mediaPreviewMode" class="hero-initializing" role="status" aria-label="Carregando destaques do site"></div>
       <HighlightsHero
+        v-else
         :competition="displayedCompetition"
         :competition-hero-enabled="competitionHeroEnabled"
         :competition-media="sectionDraft('competition')?.competition"
@@ -485,6 +487,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.hero-initializing{min-height:clamp(390px, 37vw, 630px);background:#151219}
 .rascomp-preview-banner{position:fixed;z-index:9999;top:0;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;padding:9px 17px;background:#2a1427;color:#fff;border:1px solid #b72c5b;border-radius:0 0 12px 12px;box-shadow:0 8px 24px #1c102444;font-size:12px;line-height:1.2;max-width:96vw;flex-wrap:wrap;justify-content:center}
 .rascomp-preview-banner strong{letter-spacing:.06em;font-size:10px;color:#ffd3e3}
 .rascomp-preview-banner span{font-size:11px;color:#f8edf5}
