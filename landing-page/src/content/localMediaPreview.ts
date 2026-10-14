@@ -37,6 +37,8 @@ function srcFor(value:string,files:Record<string,Blob>):string {
   }
   if (allowedOrigins.some(origin=>value.startsWith(origin+'/')))return value
   if (value.startsWith('https://api.rasufrb.site/api/v1/public/media/assets/'))return value
+  // Assets institucionais estáticos usados pelo próprio site também são válidos.
+  if (value.startsWith('https://rasufrb.site/media/assets/'))return value
   return ''
 }
 function decodeDraft(draft:PreviewDraft,files:Record<string,Blob>):PreviewDraft {
