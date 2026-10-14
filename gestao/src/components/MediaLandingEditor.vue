@@ -86,10 +86,13 @@ function openAdjustment(key:string,id:number|undefined,label:string,sourceUrl?:s
 }
 function saveAdjustment(value:ImageAdjustment) {
   const key=activeAdjustmentKey.value
+  if(key.startsWith('hero:'))markSectionEdited('heroes')
   if(key.startsWith('about:'))markSectionEdited('about')
   if(key.startsWith('sponsor:'))markSectionEdited('sponsors')
   if(key.startsWith('board:')||key.startsWith('volunteer:')||key.startsWith('award:'))markSectionEdited('team')
   if(key.startsWith('robot'))markSectionEdited('robots')
+  if(key.startsWith('event:'))markSectionEdited('events')
+  if(key.startsWith('competition-'))markSectionEdited('competition')
   imageAdjustments.value={...imageAdjustments.value,[activeAdjustmentKey.value]:value}
   ElMessage.success('Enquadramento salvo nesta prévia local.')
 }
@@ -387,6 +390,26 @@ function getEditedSections():string[]{
   const touched=Object.entries(sections).filter(([,fields])=>fields.some(field=>
     JSON.stringify(current[field]??null)!==JSON.stringify(baselineState?.[field]??null)
   )).map(([section])=>section)
+  // Enquadramentos são configurações editoriais independentes da seleção da foto.
+  // Publicar precisa incluir a seção mesmo se apenas zoom/posição/tamanho mudou.
+  const beforeFrames=(baselineState?.imageAdjustments??{}) as Record<string,ImageAdjustment>
+  const currentFrames=current.imageAdjustments as Record<string,ImageAdjustment>
+  const sectionForFrame=(key:string):string|undefined=>{
+    if(key.startsWith('hero:'))return 'heroes'
+    if(key.startsWith('about:'))return 'about'
+    if(key.startsWith('board:')||key.startsWith('volunteer:')||key.startsWith('award:'))return 'team'
+    if(key.startsWith('robot'))return 'robots'
+    if(key.startsWith('event:'))return 'events'
+    if(key.startsWith('sponsor:'))return 'sponsors'
+    if(key.startsWith('competition-'))return 'competition'
+    return undefined
+  }
+  for(const key of new Set([...Object.keys(beforeFrames),...Object.keys(currentFrames)])){
+    if(JSON.stringify(beforeFrames[key]??null)!==JSON.stringify(currentFrames[key]??null)){
+      const section=sectionForFrame(key)
+      if(section)touched.push(section)
+    }
+  }
   return Array.from(new Set([...priorEditedSections,...touched]))
 }
 defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSections,setEditedSections})
