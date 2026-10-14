@@ -99,13 +99,24 @@ function guardPreviewNavigation(event:MouseEvent) {
 
 const managementUrl = String(import.meta.env.VITE_GESTAO_URL || (import.meta.env.DEV ? 'http://localhost:5173' : '')).trim()
 
-type LandingMode = 'institutional' | 'auto' | 'competitive'
-const requestedLandingMode = String(import.meta.env.VITE_LANDING_MODE || 'institutional').trim().toLowerCase()
-const landingMode: LandingMode =
-  requestedLandingMode === 'auto' || requestedLandingMode === 'competitive'
-    ? requestedLandingMode
-    : 'institutional'
-const competitionModeEnabled = landingMode !== 'institutional'
+// O controle editorial publicado tem precedência sobre o antigo modo fixo do build.
+// Na ausência de configuração explícita, a seção segue automaticamente o status público.
+const institutionalOnly = computed(() =>
+  (localMediaDraft.value?.competition as (PreviewDraft['competition'] & { institutionalOnly?: boolean }) | undefined)?.institutionalOnly ??
+  (publishedMediaDraft.value?.competition as (PreviewDraft['competition'] & { institutionalOnly?: boolean }) | undefined)?.institutionalOnly ??
+  false
+)
+const competitionModeEnabled = computed(() => !institutionalOnly.value)
+const competitionSectionVisible = computed(() =>
+  competitionModeEnabled.value &&
+  ['INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(currentCompetition.value?.status || '')
+)
+const competitionHeroEnabled = computed(() =>
+  competitionModeEnabled.value &&
+  (localMediaDraft.value?.competition?.heroEnabled ??
+   (publishedSections.value.includes('competition') ? publishedMediaDraft.value?.competition?.heroEnabled : false) ??
+   false)
+)
 
 const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
 const isGalleryPage = normalizedPath === '/galeria'
@@ -117,10 +128,10 @@ const registrationOpen = computed(() =>
   currentCompetition.value?.status === 'INSCRICOES_ABERTAS'
 )
 const displayedCompetition = computed(() =>
-  competitionModeEnabled ? currentCompetition.value : undefined
+  competitionModeEnabled.value ? currentCompetition.value : undefined
 )
 const displayedRegistrationOpen = computed(() =>
-  competitionModeEnabled && registrationOpen.value
+  competitionModeEnabled.value && registrationOpen.value
 )
 const registrationNoticeVisible = ref(false)
 const backToTopVisible = ref(false)
@@ -345,7 +356,7 @@ onMounted(async () => {
   await nextTick()
   setupSectionReveal()
 
-  if (!competitionModeEnabled) {
+  if (!competitionModeEnabled.value) {
     loading.value = false
     return
   }
@@ -388,6 +399,7 @@ onBeforeUnmount(() => {
     <main v-if="mediaPublicationReady || mediaPreviewMode" id="top">
       <HighlightsHero
         :competition="displayedCompetition"
+        :competition-hero-enabled="competitionHeroEnabled"
         :categories="categories"
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
@@ -407,7 +419,7 @@ onBeforeUnmount(() => {
       />
 
       <ActiveCompetition
-        v-if="competitionModeEnabled"
+        v-if="competitionSectionVisible"
         :competition="displayedCompetition"
         :teams="teams"
         :categories="categories"
@@ -429,7 +441,7 @@ onBeforeUnmount(() => {
         @update:bracket-id="updateBracket"
       />
 
-      <section v-if="competitionModeEnabled && error" class="public-section">
+      <section v-if="competitionSectionVisible && error" class="public-section">
         <div class="public-alert">
           <strong>Interface institucional disponível.</strong>
           <p>{{ error }}</p>
