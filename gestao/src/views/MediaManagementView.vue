@@ -232,6 +232,7 @@ async function loadCmsWorkspace() {
   try {
     const data:MediaWorkspace=await mediaApi.workspace()
     cmsVersion.value=data.version
+    cmsDraftSaved.value=Object.keys(data.editorialDraft||{}).length>0
     const oldPhotos=photos.value
     // Preservar recursos estáticos originais para edição/migração manual, mas
     // não tratá-los como mídias persistidas/publicadas na Galeria.
@@ -543,16 +544,25 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
         <p v-else>Gerencie as imagens das seções sem alterar o conteúdo institucional permanente.</p>
       </div>
       <div class="media-header-actions">
-        <span class="media-demo-label">Demonstração local</span>
+        <span class="media-demo-label">{{ cmsStatus }}</span>
+        <el-button v-if="!cmsReady && !cmsLoading" @click="loadCmsWorkspace">Reconectar CMS</el-button>
         <el-button v-if="section === 'library' || section === 'albums'" @click="openGalleryIntroDialog">Destaques da Galeria</el-button>
         <el-button v-if="section === 'library' || section === 'albums'" @click="openGalleryPreview">Prévia da Galeria ↗</el-button>
         <el-button v-if="section === 'library'" type="primary" @click="openUploadDialog">＋ Adicionar fotos</el-button>
         <el-button v-if="section === 'albums'" type="primary" @click="openAlbumDialog()">＋ Novo álbum</el-button>
+        <el-button v-if="section === 'landing'" :disabled="!cmsReady" @click="saveEditorialDraft">Salvar rascunho</el-button>
         <el-button v-if="section === 'landing'" type="primary" @click="openSitePreview">Prévia do site ↗</el-button>
+        <el-button v-if="section === 'landing'" type="primary" :disabled="!canEditMedia || !cmsDraftSaved" @click="confirmPublishOpen=true">Publicar alterações</el-button>
       </div>
     </div>
 
-    <template v-if="section === 'library'">
+    <div v-if="cmsError" class="media-connect-error">
+      <strong>CMS ainda não conectado.</strong>
+      <span>{{ cmsError }}</span>
+      <span v-if="import.meta.env.DEV">Durante o desenvolvimento, é possível revisar a demonstração local; nada será salvo sem o backend.</span>
+    </div>
+    <template v-if="cmsReady || (import.meta.env.DEV && !cmsLoading)">
+      <template v-if="section === 'library'">
       <div class="media-stats">
         <div><span>Imagens na Biblioteca</span><strong>{{ photos.length }}</strong></div>
         <div><span>Sem álbum</span><strong>{{ photos.filter(p => !p.albums.length).length }}</strong></div>
@@ -653,6 +663,15 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
       <MediaLandingEditor ref="landingEditor" :photos="photos" :albums="albums" :upload-photo="addPhotoForEditor" @draft-applied="updatePreview" />
     </template>
 
+    </template>
+    <el-dialog v-model="confirmPublishOpen" title="Confirmar publicação de mídia" width="min(560px,94vw)">
+      <p class="media-dialog-intro">Isso publica a versão do rascunho salva no MySQL e as fotos marcadas como públicas na Galeria. Os visitantes verão a nova versão; fotos privadas continuarão fora da Galeria.</p>
+      <p class="media-dialog-intro">Versão atual: {{ cmsVersion }}. Caso tenha feito alterações depois de salvar, salve novamente antes de continuar.</p>
+      <template #footer>
+        <el-button @click="confirmPublishOpen=false">Cancelar</el-button>
+        <el-button type="primary" :loading="cmsBusy" @click="publishEditorial">Confirmar publicação</el-button>
+      </template>
+    </el-dialog>
     <el-dialog v-model="bulkAlbumDialog" class="media-album-dialog" title="Adicionar seleção aos álbuns"
       width="min(540px,94vw)">
       <p class="media-dialog-intro">Adicionar {{ selectedIds.length }} fotos a um ou mais álbuns. As associações existentes serão mantidas, sem duplicar fotos.</p>
@@ -764,6 +783,8 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
 </template>
 
 <style scoped>
+.media-connect-error{display:flex;flex-direction:column;gap:8px;padding:17px;border:1px solid #d7afc5;border-radius:11px;background:#fff6f8;color:#6a2c4d;font-size:12px}
+
 .media-bulk-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:0 0 12px;margin-bottom:13px;border-bottom:1px solid #eee6ec}
 .media-bulk-toolbar .el-button{min-height:35px;margin:0;padding:8px 12px}
 .media-bulk-count{font-weight:750;font-size:12px;color:#a71947;margin:0 2px}
