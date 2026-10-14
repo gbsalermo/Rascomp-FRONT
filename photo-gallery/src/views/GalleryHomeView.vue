@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { galleryCollection, galleryPreviewMode } from '../data/localGalleryPreview'
+import { galleryCollection, galleryPreviewMode, demoGalleryMode, galleryLoadError, loadPublishedGallery } from '../data/localGalleryPreview'
 import GalleryLightbox from '../components/GalleryLightbox.vue'
 import type { GalleryPhoto } from '../data/albums'
 
@@ -70,7 +70,7 @@ const filterLabel=(value:string)=>value==='RRC' ? 'Competições' : value==='Pre
           <div class="gallery-intro-stats" aria-label="Conteúdo da galeria">
             <span><strong>{{ photos.length }}</strong> {{ photos.length===1 ? 'fotografia' : 'fotografias' }}</span>
             <span><strong>{{ albums.length }}</strong> {{ albums.length===1 ? 'álbum' : 'álbuns' }}</span>
-            <span v-if="!galleryPreviewMode" class="gallery-intro-demo-label">Exemplos ilustrativos</span>
+            <span v-if="demoGalleryMode" class="gallery-intro-demo-label">Exemplos ilustrativos</span>
           </div>
         </div>
         <div v-if="previewCollage.length" class="gallery-hero-collage gallery-editorial-collage" :class="'count-'+previewCollage.length" aria-hidden="true">
@@ -129,7 +129,12 @@ const filterLabel=(value:string)=>value==='RRC' ? 'Competições' : value==='Pre
         <button v-if="currentFilter!=='Todas'" type="button" @click="chooseFilter('Todas')">Ver todas as fotos →</button>
       </div>
 
-      <div v-if="!galleryPreviewMode" class="gallery-sample-notice">
+      <div v-if="!galleryPreviewMode && galleryLoadError" class="gallery-sample-notice">
+        <span>Galeria temporariamente indisponível</span>
+        <p>{{ galleryLoadError }}. Tente novamente em instantes.</p>
+        <button type="button" @click="loadPublishedGallery">Tentar novamente</button>
+      </div>
+      <div v-if="demoGalleryMode" class="gallery-sample-notice">
         <span>Prévia de interface</span>
         <p>As imagens exibidas nesta fase são ilustrativas. O acervo real será carregado somente após a publicação autorizada na Gestão de Mídia.</p>
       </div>
