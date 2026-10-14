@@ -113,7 +113,15 @@ function startPhotoTimer(){
   if(photos.value.length<=1)return
   photoTimer=window.setInterval(()=>navigatePhoto(activePhoto.value+1),7000)
 }
-watch(photos,items=>preloadImages(items.map(item=>item.src),items.length),{immediate:true})
+watch(photos,(items,previous)=>{
+  // Trocas de catálogo não devem reaproveitar o índice de uma foto diferente.
+  navigationSequence++
+  const currentSource=previous?.[activePhoto.value]?.src
+  const retained=currentSource?items.findIndex(item=>item.src===currentSource):-1
+  activePhoto.value=retained>=0?retained:0
+  preloadImages(items.map(item=>item.src),items.length)
+  startPhotoTimer()
+},{immediate:true})
 function stopPhotoTimer() {
   if (photoTimer) window.clearInterval(photoTimer)
   photoTimer = undefined
