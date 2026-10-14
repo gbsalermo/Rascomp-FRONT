@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import MediaFooterEditor from './MediaFooterEditor.vue'
+import MediaImageAdjustment from './MediaImageAdjustment.vue'
 import { originalHeroSeeds, originalAwardSeeds, originalEventSeeds, existingRobotCategorySeeds, type SeedHero } from '../content/landingEditorialSeeds'
 
 type MediaPhoto = { id: number; name: string; src?: string; tone: number; albums: number[]; published: boolean; sourcePath?: string }
@@ -47,6 +48,47 @@ const events = ref<EditorialEvent[]>(originalEventSeeds.map(item=>{
 const categories = existingRobotCategorySeeds
 const robotCategory = ref<string>('sumo')
 const robotTitles = ref<Record<number,string>>({})
+const robotTitleLocations = ref<Record<number,'below'|'overlay'>>({})
+type ImageAdjustment = {zoom:number;width:number;height:number;x:number;y:number;fit:'cover'|'contain'}
+const imageAdjustments = ref<Record<string,ImageAdjustment>>({})
+const activeAdjustmentKey = ref('')
+const activeAdjustmentPhotoId = ref<number | undefined>()
+const adjustmentOpen = ref(false)
+const adjustmentLabel = ref('')
+function defaultFrame(key:string): ImageAdjustment {
+  const natural = key.startsWith('robot-banner') || key.startsWith('sponsor:') || key.startsWith('board:') || key.startsWith('volunteer:') || key.startsWith('about:')
+  return {zoom:100,width:100,height:100,x:50,y:50,fit:natural?'contain':'cover'}
+}
+function frameFor(key:string): ImageAdjustment {
+  return imageAdjustments.value[key] ?? defaultFrame(key)
+}
+function frameStyle(key:string) {
+  const frame=frameFor(key)
+  return {
+    objectFit:frame.fit,
+    objectPosition:frame.x+'% '+frame.y+'%',
+    width:frame.width+'%',
+    height:frame.height+'%',
+    maxWidth:'none',
+    maxHeight:'none',
+    transform:`translate(${(frame.x-50)*.7}%,${(frame.y-50)*.7}%) scale(${frame.zoom/100})`
+  }
+}
+function openAdjustment(key:string,id:number|undefined,label:string) {
+  if (!photo(id)?.src) {ElMessage.warning('Escolha uma imagem antes de ajustar o enquadramento.');return}
+  activeAdjustmentKey.value=key
+  activeAdjustmentPhotoId.value=id
+  adjustmentLabel.value=label
+  adjustmentOpen.value=true
+}
+function saveAdjustment(value:ImageAdjustment) {
+  imageAdjustments.value={...imageAdjustments.value,[activeAdjustmentKey.value]:value}
+  ElMessage.success('Enquadramento salvo nesta prévia local.')
+}
+function robotLabel(id:number) {
+  const original=photo(id)?.name || ''
+  return (robotTitles.value[id] ?? original.replace(/\.[^.]+$/,'').replace(/^\d+[\s_-]*/,'').replace(/[-_]+/g,' ').trim()).trim()
+}
 const initialRobotPhotos = (key: string) => props.photos
   .filter(item => item.sourcePath?.includes('/assets/robots/' + key + '/'))
   .filter(item => !item.sourcePath?.includes('/assets/robots/banners/'))
@@ -110,6 +152,9 @@ function restoreMissingOriginalHeroes() {
 const competitionBannerId = ref<number | undefined>()
 const competitionHeroPhotoId = ref<number | undefined>()
 const competitionHeroEnabled = ref(false)
+const competitionHeroEffective = computed(()=>competitionHeroEnabled.value)
+// Esta opção controla APENAS o Hero; a competição/API e sua seção são independentes.
+// A aplicação da regra na Landing requer CMS persistente, fora deste checkpoint.
 const competitionText = ref('')
 const competitionHeroSubtitle = ref('Participe de mais uma edição da nossa competição!')
 const competitionHeroDescription = ref('Acompanhe a programação e conheça as atividades desta edição.')
