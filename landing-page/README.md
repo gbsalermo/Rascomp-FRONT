@@ -177,3 +177,6 @@ Princípios já aceitos para discussão:
 - escolher provedor de e-mail antes da implementação;
 - acesso remoto de homologação deve estar disponível já no início da B, sem confundir isso com produção aberta;
 - modo local e Cloudflare Tunnel permanecem como contingência oficial.
+
+## Modo prévia local da Gestão de Mídia (não publicado)
+Para simular os dados editados no CMS, execute `npm run dev` nesta pasta (porta 5174) e `npm run dev` em `gestao/` (5173). Na Gestão acesse `/midia/landing` e clique **Prévia do site**. A Landing é aberta com `?rascomp_media_preview=1`, exibe faixa de "NÃO PUBLICADA" e recebe por mensagem segura o rascunho de Hero, Sobre, equipe, conquistas, robôs, eventos, patrocinadores e Footer. Mudanças na Gestão são refletidas após **Aplicar na prévia local**. Uploads locais são transmitidos como Blob apenas entre as abas; nenhum arquivo é enviado ao servidor. O modo é estritamente dev/localhost e não afeta o build cloud, a API ou inscrições reais. Não representa integração persistente com o CMS.
