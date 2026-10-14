@@ -20,8 +20,14 @@ const displayedMediaDraft=computed(()=>localMediaDraft.value||publishedMediaDraf
 const publishedSections=computed<string[]>(()=>{
   if(localMediaDraft.value)return ['heroes','about','team','robots','events','sponsors','competition','footer']
   const candidate=publishedMediaDraft.value as (PreviewDraft & {__editedSections?:unknown})|null
-  return Array.isArray(candidate?.__editedSections)
-    ? candidate.__editedSections.filter((value):value is string=>typeof value==='string') : []
+  if(Array.isArray(candidate?.__editedSections)){
+    const explicit=candidate.__editedSections.filter((value):value is string=>typeof value==='string')
+    if(explicit.length)return explicit
+  }
+  // Compatibilidade com publicações realizadas antes do rastreio por seção:
+  // um Hero editorial adicionado deve aparecer sem reescrever as demais seções.
+  const hasNewHero=candidate?.heroes?.some(hero=>hero.active && hero.id.startsWith('editorial-'))
+  return hasNewHero?['heroes']:[]
 })
 function sectionDraft(section:string){
   return publishedSections.value.includes(section)?displayedMediaDraft.value:null
