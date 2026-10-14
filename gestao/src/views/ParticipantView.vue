@@ -1103,7 +1103,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="heading-actions">
-        <el-button v-if="teams.length" :loading="loading" @click="loadTeams">Atualizar</el-button>
+        <el-button v-if="teams.length" :loading="loading" @click="loadTeams()">Atualizar</el-button>
         <el-select v-if="teams.length > 1" v-model="teamId" style="width:260px">
           <el-option v-for="team in teams" :key="team.id" :label="team.nome" :value="team.id" />
         </el-select>
