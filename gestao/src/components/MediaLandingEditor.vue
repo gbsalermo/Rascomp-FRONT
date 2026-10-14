@@ -120,6 +120,7 @@ function addHero() {
     target: '', imagePath: '', active: true, showButton: true
   })
   selectedHeroId.value = id
+  priorEditedSections=Array.from(new Set([...priorEditedSections,'heroes']))
 }
 async function removeHero() {
   if (!selectedHero.value) return
