@@ -35,6 +35,10 @@ export const adminCompetitionApi = {
     http.put<RegistrationLot>(`/api/v1/competicoes/${id}/lotes/${lotId}`, payload).then((r) => r.data),
   deleteCompetitionLot: (id: number, lotId: number) =>
     http.delete(`/api/v1/competicoes/${id}/lotes/${lotId}`),
+  competitionCategories: (id:number) =>
+    http.get<number[]>(`/api/v1/competicoes/${id}/categorias-habilitadas`).then(r=>r.data),
+  saveCompetitionCategories: (id:number, ids:number[]) =>
+    http.put(`/api/v1/competicoes/${id}/categorias-habilitadas`,ids),
   categories: (modalidade?: string) =>
     http.get<Category[]>(modalidade ? '/api/v1/categorias/por-modalidade' : '/api/v1/categorias', {
       params: modalidade ? { modalidade } : undefined
