@@ -50,7 +50,17 @@ export async function prepareEditorialUpload(
       else await migrate(value)
     }
   }
-  await migrate(draft)
+  // Migrar apenas mídias de seções editadas; as demais continuam estáticas.
+  const changed=new Set(Array.isArray(draft.__editedSections)?draft.__editedSections as string[]:[])
+  const sectionFields:Record<string,string[]>={
+    heroes:['heroes'],about:['about'],team:['board','volunteers','awards'],
+    robots:['robots'],events:['events'],sponsors:['sponsors'],
+    competition:['competition'],footer:['footer']
+  }
+  for(const [section,fields] of Object.entries(sectionFields)){
+    if(!changed.has(section))continue
+    for(const field of fields)await migrate(draft[field])
+  }
   function remap(node:unknown,key=''):unknown {
     if(Array.isArray(node))return node.map(x=>photoIdArrays.has(key)&&typeof x==='number'?aliases.get(x)??x:remap(x))
     if(!node||typeof node!=='object')return node
