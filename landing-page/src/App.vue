@@ -430,6 +430,7 @@ onBeforeUnmount(() => {
         :competition="displayedCompetition"
         :teams="teams"
         :categories="categories"
+        :enabled-category-ids="enabledCategoryIds"
         :registrations="registrations"
         :podiums="podiums"
         :ranking="ranking"
