@@ -12,7 +12,7 @@ const siteUrl = (import.meta.env.VITE_SITE_URL || 'http://localhost:5174').repla
     <header class="gallery-site-header">
       <div class="gallery-site-header-inner">
         <a :href="siteUrl" class="gallery-brand" aria-label="Voltar ao site da IEEE RAS UFRB">
-          <span class="gallery-brand-mark">RAS</span>
+          <img class="gallery-brand-logo" src="/ieee-ras-official.png" alt="Logo oficial IEEE RAS" width="54" height="54" />
           <span>
             <strong>IEEE RAS UFRB</strong>
             <small>Galeria de fotos</small>
