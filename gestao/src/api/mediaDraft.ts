@@ -30,7 +30,7 @@ export async function prepareEditorialUpload(
     if(url.origin==='https://rasufrb.site' && url.pathname.startsWith('/media/assets/'))
       return url.href
     if(url.protocol!=='blob:' && url.origin!==location.origin)
-      throw Error('Imagem externa precisa ser importada para a Biblioteca antes da publicação.')
+      throw Error('Imagem externa não importada: '+url.hostname+url.pathname+'. Importe-a para a Biblioteca antes de salvar o rascunho.')
     const response=await fetch(url.href)
     if(!response.ok)throw Error('Falha ao ler imagem original: HTTP '+response.status)
     const blob=await response.blob()
