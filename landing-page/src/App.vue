@@ -11,6 +11,7 @@ import InstitutionalEvents from './components/InstitutionalEvents.vue'
 import ActiveCompetition from './components/ActiveCompetition.vue'
 import InstitutionalFooter from './components/InstitutionalFooter.vue'
 import PublicNotFound from './components/PublicNotFound.vue'
+import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview} from './content/localMediaPreview'
 
 const loading = ref(true)
 const error = ref('')
@@ -31,6 +32,16 @@ const competitionId = ref<number>()
 const followCategoryId = ref<number>()
 const bracketId = ref<number>()
 let timer: number | undefined
+let stopPreview: (()=>void)|undefined
+function guardPreviewNavigation(event:MouseEvent) {
+  if(!mediaPreviewMode)return
+  const anchor=(event.target as Element|null)?.closest?.('a[href]')
+  if(!anchor)return
+  const href=anchor.getAttribute('href')||''
+  // Em prévia, links externos/ações de inscrição não devem abrir outro sistema.
+  if(!href.startsWith('#')){event.preventDefault();event.stopPropagation()}
+}
+
 const managementUrl = String(import.meta.env.VITE_GESTAO_URL || (import.meta.env.DEV ? 'http://localhost:5173' : '')).trim()
 
 type LandingMode = 'institutional' | 'auto' | 'competitive'
@@ -268,6 +279,7 @@ async function updateBracket(value: number) {
 }
 
 onMounted(async () => {
+  stopPreview=startLocalMediaPreview()
   updateBackToTopVisibility()
   window.addEventListener('scroll', scheduleBackToTopUpdate, { passive: true })
 
@@ -290,6 +302,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  stopPreview?.()
   window.removeEventListener('scroll', scheduleBackToTopUpdate)
   if (backToTopFrame) window.cancelAnimationFrame(backToTopFrame)
   sectionRevealObserver?.disconnect()
@@ -301,7 +314,11 @@ onBeforeUnmount(() => {
 <template>
   <PublicNotFound v-if="isNotFound" />
 
-  <div v-else class="public-app">
+  <div v-else class="public-app" @click.capture="guardPreviewNavigation">
+    <aside v-if="mediaPreviewMode" class="rascomp-preview-banner" role="status">
+      <strong>PRÉVIA LOCAL — NÃO PUBLICADA</strong>
+      <span>{{ localMediaDraft ? 'Rascunho da Gestão aplicado ao site' : 'Aguardando rascunho da Gestão de Mídia…' }}</span>
+    </aside>
     <InstitutionalHeader
       :competition="displayedCompetition"
       :management-url="managementUrl"
@@ -317,15 +334,17 @@ onBeforeUnmount(() => {
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
         :management-url="managementUrl"
+        :media-preview="localMediaDraft"
       />
-      <InstitutionalAbout />
-      <TeamRobotsAwards />
-      <RobotsShowcase />
+      <InstitutionalAbout :media-preview="localMediaDraft" />
+      <TeamRobotsAwards :media-preview="localMediaDraft" />
+      <RobotsShowcase :media-preview="localMediaDraft" />
       <InstitutionalGallery />
       <InstitutionalEvents
         :management-url="managementUrl"
         :registration-open="displayedRegistrationOpen"
         :competition-mode-enabled="competitionModeEnabled"
+        :media-preview="localMediaDraft"
         @registration-unavailable="showRegistrationUnavailable"
       />
 
@@ -361,7 +380,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <InstitutionalFooter />
+    <InstitutionalFooter :media-preview="localMediaDraft" />
 
     <Transition name="registration-notice">
       <aside
@@ -393,3 +412,9 @@ onBeforeUnmount(() => {
     >↑</a>
   </div>
 </template>
+
+<style scoped>
+.rascomp-preview-banner{position:fixed;z-index:9999;top:0;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;padding:9px 17px;background:#2a1427;color:#fff;border:1px solid #b72c5b;border-radius:0 0 12px 12px;box-shadow:0 8px 24px #1c102444;font-size:12px;line-height:1.2;max-width:96vw;flex-wrap:wrap;justify-content:center}
+.rascomp-preview-banner strong{letter-spacing:.06em;font-size:10px;color:#ffd3e3}
+.rascomp-preview-banner span{font-size:11px;color:#f8edf5}
+</style>
