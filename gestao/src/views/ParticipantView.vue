@@ -278,8 +278,10 @@ function completedTakes(registrationId: number) {
   return followTakeGroups(registrationId).filter((item) => item.filled).length
 }
 
-async function loadTeams() {
-  loading.value = true
+async function loadTeams(silent = false) {
+  if (refreshingPortal) return
+  refreshingPortal = true
+  if (!silent) loading.value = true
   try {
     const [teamRows, institutionRows, membershipRows, competitionRows, categoryRows, personalRows] = await Promise.all([
       participantApi.teams(),
@@ -296,15 +298,16 @@ async function loadTeams() {
     categories.value = categoryRows
     personalRegistrations.value = personalRows
     if (!teamId.value || !teams.value.some((item) => item.id === teamId.value)) teamId.value = teams.value[0]?.id
-    await loadTeam()
+    await loadTeam(silent)
   } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar o portal do participante.')
+    if (!silent) ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar o portal do participante.')
   } finally {
-    loading.value = false
+    if (!silent) loading.value = false
+    refreshingPortal = false
   }
 }
 
-async function loadTeam() {
+async function loadTeam(silent = false) {
   competitors.value = []
   robots.value = []
   registrations.value = []
@@ -315,7 +318,7 @@ async function loadTeam() {
   sumoMap.value = {}
   if (!teamId.value) return
 
-  loading.value = true
+  if (!silent) loading.value = true
   try {
     ;[competitors.value, robots.value, registrations.value] = await Promise.all([
       participantApi.competitors(teamId.value),
@@ -354,9 +357,9 @@ async function loadTeam() {
 
     await Promise.all(approvedRegistrations.value.map(loadRegistrationOverview))
   } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da equipe.')
+    if (!silent) ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da equipe.')
   } finally {
-    loading.value = false
+    if (!silent) loading.value = false
   }
 }
 
@@ -1027,18 +1030,21 @@ async function reviewJoinRequest(item: TeamMembershipRequest, approve: boolean) 
 }
 
 let lastExternalRefreshAt = 0
+let refreshingPortal = false
+const RETURN_REFRESH_INTERVAL = 60_000
 
 function refreshPortalWhenReturning() {
   if (document.visibilityState === 'hidden') return
   const now = Date.now()
-  if (now - lastExternalRefreshAt < 800) return
+  if (refreshingPortal || now - lastExternalRefreshAt < RETURN_REFRESH_INTERVAL) return
   lastExternalRefreshAt = now
-  loadTeams()
+  void loadTeams(true)
 }
 
-watch(teamId, loadTeam)
+watch(teamId, () => { if (!refreshingPortal) void loadTeam() })
 onMounted(() => {
-  loadTeams()
+  lastExternalRefreshAt = Date.now()
+  void loadTeams()
   window.addEventListener('focus', refreshPortalWhenReturning)
   document.addEventListener('visibilitychange', refreshPortalWhenReturning)
 })
