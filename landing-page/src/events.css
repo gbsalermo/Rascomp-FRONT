@@ -765,3 +765,22 @@ button.event-secondary-action {
     height: 180px;
   }
 }
+
+/* Maior legibilidade em desktop, mantendo as regras responsivas existentes. */
+@media (min-width: 900px) {
+  .events-accordion { gap: 12px; }
+  .event-accordion-trigger {
+    grid-template-columns: 156px minmax(0, 1fr) auto 24px;
+    min-height: 112px;
+    gap: 18px;
+    padding: 12px;
+  }
+  .event-accordion-trigger > img { width: 156px; height: 88px; }
+  .event-accordion-summary { gap: 7px; }
+  .event-accordion-summary strong { font-size: 1.04rem; line-height: 1.4; }
+  .event-accordion-date { font-size: .75rem; }
+  .event-accordion-summary small { font-size: .8rem; }
+  .events-agenda-row { min-height: 76px; }
+  .events-agenda-copy strong { font-size: .95rem; }
+  .events-agenda-copy small { font-size: .76rem; }
+}
