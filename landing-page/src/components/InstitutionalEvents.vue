@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { preloadImages } from '../utils/imagePreload'
 import {
   LANDING_EVENTS,
   RECENT_LANDING_EVENTS,
@@ -90,6 +91,7 @@ const currentEvents=computed<LandingEvent[]>(()=>{
     }
   })
 })
+watch(currentEvents, items => preloadImages(items.map(item=>item.image), 12), {immediate:true})
 const visibleEvents = computed(() => {
   if (activeFilter.value === 'Todos os eventos') return currentEvents.value
 
