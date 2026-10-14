@@ -847,7 +847,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
     </el-dialog>
 
     <el-dialog class="media-crop-dialog" v-model="cropDialog" title="Enquadramento da imagem" width="min(800px, 95vw)">
-      <p class="media-dialog-intro">Prévia local não destrutiva. A imagem original não é alterada.</p>
+      <p class="media-dialog-intro">Simulação do enquadramento, sem alterar a imagem original. Para salvar o enquadramento de uma seção, utilize o editor correspondente na Landing e salve o rascunho.</p>
       <div v-if="selectedPhoto" class="media-crop-wrap">
         <div class="media-crop-preview" :class="'tone-' + selectedPhoto.tone" :style="{ width: displayWidth + '%', height: (160 * displayHeight / 100) + 'px' }">
           <img v-if="selectedPhoto.src" :src="selectedPhoto.src" :alt="selectedPhoto.name"
@@ -863,7 +863,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
         </div>
       </div>
       <template #footer><el-button @click="zoom=115;positionX=50;positionY=50;displayWidth=100;displayHeight=100">Restaurar</el-button>
-        <el-button type="primary" @click="demoOnly">Aplicar (em breve)</el-button></template>
+        <el-button type="primary" @click="cropDialog=false">Fechar</el-button></template>
     </el-dialog>
   </main>
 </template>
