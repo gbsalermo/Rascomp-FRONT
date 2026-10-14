@@ -1000,6 +1000,11 @@ onMounted(loadBase)
             </div>
           </template>
         </el-table-column>
+        <el-table-column label="Inscrito em" min-width="155">
+          <template #default="{ row }">
+            <span :title="formatDateTime(row.dataCadastro)">{{ formatDateTime(row.dataCadastro) }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="Robôs associados" min-width="260">
           <template #default="{ row }">
             <div v-if="row.robots?.length" class="participant-linked-robots">
