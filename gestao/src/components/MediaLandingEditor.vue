@@ -280,7 +280,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
           </div>
           <div class="editor-hero-preview">
             <img v-if="heroPreviewUrl && !badHeroImageUrls.has(heroPreviewUrl)"
-              :src="heroPreviewUrl" @error="onHeroImageError" alt="Imagem selecionada do Hero" />
+              :src="heroPreviewUrl" :style="frameStyle('hero:'+selectedHero.id)" @error="onHeroImageError" alt="Imagem selecionada do Hero" />
             <span v-else-if="heroPreviewUrl" class="editor-image-unavailable">Imagem original indisponível nesta prévia — você pode escolher outra da Biblioteca.</span>
             <div class="editor-hero-copy">
               <small>{{ selectedHero.eyebrow || 'DESTAQUE EDITORIAL' }}</small>
@@ -291,6 +291,7 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
           </div>
           <div class="editor-actions">
             <el-button @click="openPicker('hero')">{{ selectedHero.photoId || selectedHero.imagePath ? 'Trocar imagem' : 'Escolher imagem' }}</el-button>
+            <el-button :disabled="!heroPreviewUrl" @click="openAdjustment('hero:'+selectedHero.id,selectedHero.photoId,'Hero — '+selectedHero.title,heroPreviewUrl)">Ajustar imagem</el-button>
             <el-button v-if="selectedHero.photoId" @click="selectedHero.photoId=undefined">Restaurar imagem original</el-button>
             <span class="editor-photo-name">{{ photo(selectedHero.photoId)?.name || selectedHero.imagePath || 'Nenhuma imagem selecionada' }}</span>
           </div>
@@ -325,8 +326,9 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
         <div class="editor-heading"><div><h3>Sequência de imagens</h3><p>Os textos da seção Sobre permanecem fixos. Organize a ordem das fotografias.</p></div><el-button type="primary" plain @click="openPicker('about')">+ Adicionar imagem</el-button></div>
         <div v-if="aboutPhotos.length" class="editor-image-grid">
           <article v-for="(id,i) in aboutPhotos" :key="i" class="editor-image-item">
-            <div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :alt="photo(id)?.name"/><span v-else>▧</span></div>
+            <div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :style="frameStyle('about:'+id)" :alt="photo(id)?.name"/><span v-else>▧</span></div>
             <small>{{ photo(id)?.name || 'Foto de exemplo' }}</small>
+            <el-button size="small" :disabled="!photo(id)?.src" @click="openAdjustment('about:'+id,id,'Sobre — foto '+(i+1))">Ajustar imagem</el-button>
             <div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(aboutPhotos,i,-1)">↑</el-button><el-button size="small" :disabled="i===aboutPhotos.length-1" @click="move(aboutPhotos,i,1)">↓</el-button><el-button size="small" type="danger" text @click="aboutPhotos.splice(i,1)">Remover</el-button></div>
           </article>
         </div>
@@ -337,13 +339,16 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
         <h3>Diretoria — cargos fixos</h3><p>Os seis cargos não podem ser alterados. Selecione apenas a fotografia de cada integrante.</p>
         <div class="editor-board-grid">
           <div v-for="(item,i) in board" :key="item.role" class="editor-board-card">
-            <div class="editor-image"><img v-if="photo(item.photoId)?.src" :src="photo(item.photoId)?.src" :alt="item.role"/><span v-else>▧</span></div>
-            <strong>{{ item.role }}</strong><el-button size="small" @click="openPicker('board',i)">{{ item.photoId ? 'Trocar foto' : 'Selecionar foto' }}</el-button>
+            <div class="editor-image"><img v-if="photo(item.photoId)?.src" :src="photo(item.photoId)?.src" :style="frameStyle('board:'+item.role)" :alt="item.role"/><span v-else>▧</span></div>
+            <strong>{{ item.role }}</strong><div class="editor-inline-actions">
+              <el-button size="small" @click="openPicker('board',i)">{{ item.photoId ? 'Trocar foto' : 'Selecionar foto' }}</el-button>
+              <el-button size="small" :disabled="!photo(item.photoId)?.src" @click="openAdjustment('board:'+item.role,item.photoId,item.role)">Ajustar</el-button>
+            </div>
           </div>
         </div>
         <div class="editor-heading editor-spaced"><div><h3>Voluntários</h3><p>Carrossel de fotografias. Máximo de {{ VOLUNTEER_LIMIT }} imagens.</p></div><el-button :disabled="volunteerPhotos.length >= VOLUNTEER_LIMIT" @click="openPicker('volunteer')">+ Adicionar foto ({{ volunteerPhotos.length }}/{{ VOLUNTEER_LIMIT }})</el-button></div>
         <div v-if="volunteerPhotos.length" class="editor-image-grid">
-          <div v-for="(id,i) in volunteerPhotos" :key="i" class="editor-image-item"><div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :alt="photo(id)?.name"/><span v-else>▧</span></div><small>{{ photo(id)?.name }}</small><div class="editor-inline-actions"><el-button size="small" :disabled="i===0" @click="move(volunteerPhotos,i,-1)">↑</el-button><el-button size="small" :disabled="i===volunteerPhotos.length-1" @click="move(volunteerPhotos,i,1)">↓</el-button><el-button text type="danger" size="small" @click="volunteerPhotos.splice(i,1)">Remover</el-button></div></div>
+          <div v-for="(id,i) in volunteerPhotos" :key="i" class="editor-image-item"><div class="editor-image"><img v-if="photo(id)?.src" :src="photo(id)?.src" :style="frameStyle('volunteer:'+id)" :alt="photo(id)?.name"/><span v-else>▧</span></div><small>{{ photo(id)?.name }}</small><div class="editor-inline-actions"><el-button size="small" :disabled="!photo(id)?.src" @click="openAdjustment('volunteer:'+id,id,'Voluntário — '+(i+1))">Ajustar</el-button><el-button size="small" :disabled="i===0" @click="move(volunteerPhotos,i,-1)">↑</el-button><el-button size="small" :disabled="i===volunteerPhotos.length-1" @click="move(volunteerPhotos,i,1)">↓</el-button><el-button text type="danger" size="small" @click="volunteerPhotos.splice(i,1)">Remover</el-button></div></div>
         </div><div v-else class="editor-empty">Nenhuma foto de voluntários escolhida nesta prévia.</div>
         <div class="editor-heading editor-spaced"><div><h3>Conquistas e premiações</h3><p>Gerencie título, ano, detalhes, imagem e ordem de exibição.</p></div><el-button type="primary" plain @click="addAward">+ Adicionar conquista</el-button></div>
         <div v-for="(award,i) in awards" :key="award.id" class="editor-record">
@@ -355,14 +360,16 @@ function applyPreview() { ElMessage.success('Alterações aplicadas na prévia l
           <el-form-item label="Evento / Categoria"><el-input v-model="award.event"/></el-form-item>
           <el-form-item class="span-two" label="Descrição / detalhes"><el-input v-model="award.detail" type="textarea" :rows="2"/></el-form-item></div>
           <el-switch v-model="award.active" active-text="Exibir esta conquista" inactive-text="Oculta na prévia" />
-          <div class="editor-actions"><el-button size="small" @click="openPicker('award',i)">{{ award.photoId ? 'Trocar imagem' : 'Escolher imagem' }}</el-button><span class="editor-photo-name">{{ photo(award.photoId)?.name || 'Sem foto' }}</span></div>
+          <div class="editor-actions"><el-button size="small" @click="openPicker('award',i)">{{ award.photoId ? 'Trocar imagem' : 'Escolher imagem' }}</el-button><el-button size="small" :disabled="!photo(award.photoId)?.src" @click="openAdjustment('award:'+award.id,award.photoId,'Conquista — '+award.title)">Ajustar imagem</el-button><span class="editor-photo-name">{{ photo(award.photoId)?.name || 'Sem foto' }}</span></div>
         </div><div v-if="!awards.length" class="editor-empty">Adicione uma conquista para organizar o conteúdo da Landing.</div>
       </template>
 
       <template v-else-if="section === 'Robôs'">
         <h3>Imagem principal da seção</h3><p>Banner que aparece acima das categorias na Landing.</p>
-        <div class="editor-wide-image"><img v-if="photo(robotBannerId)?.src" :src="photo(robotBannerId)?.src" alt="Banner de robôs"/><span v-else>▧</span></div>
-        <el-button @click="openPicker('robots-banner')">Escolher imagem principal</el-button>
+        <div class="editor-wide-image"><img v-if="photo(robotBannerId)?.src" :src="photo(robotBannerId)?.src" :style="frameStyle('robot-banner')" alt="Banner de robôs"/><span v-else>▧</span></div>
+        <div class="editor-actions"><el-button @click="openPicker('robots-banner')">Escolher imagem principal</el-button>
+          <el-button :disabled="!photo(robotBannerId)?.src" @click="openAdjustment('robot-banner',robotBannerId,'Banner da seção Robôs')">Ajustar imagem</el-button>
+        </div>
         <div class="editor-heading editor-spaced"><div><h3>Fotos por categoria</h3><p>Selecione a categoria e organize as fotos que aparecerão no respectivo subálbum.</p></div></div>
         <div class="editor-category-tabs">
           <button v-for="item in categories" :key="item.key" :class="{active:robotCategory===item.key}" @click="robotCategory=item.key">{{ item.label }} <small>{{ robotPhotos[item.key]?.length || 0 }}</small></button>
