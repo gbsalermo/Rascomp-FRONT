@@ -35,7 +35,13 @@ const original: FooterDraft = {
   ]
 }
 function copy():FooterDraft {return {...original,links:original.links.map(link=>({...link}))}}
-defineExpose({getPreviewData:()=>JSON.parse(JSON.stringify(footer.value)) as FooterDraft})
+defineExpose({
+  getPreviewData:()=>JSON.parse(JSON.stringify(footer.value)) as FooterDraft,
+  setPreviewData:(saved:Partial<FooterDraft>)=>{
+    if(!saved||typeof saved!=='object')return
+    footer.value={...copy(),...saved,links:Array.isArray(saved.links)?saved.links:copy().links}
+  }
+})
 const footer=ref<FooterDraft>(copy())
 const isHttpUrl=(url:string)=>{try {let parsed=new URL(url);return ['https:','http:'].includes(parsed.protocol)}catch{return false}}
 function testPreview() {
