@@ -381,7 +381,7 @@ onBeforeUnmount(() => {
         :media-preview="sectionDraft('heroes')"
       />
       <InstitutionalAbout :media-preview="sectionDraft('about')" />
-      <TeamRobotsAwards :media-preview="sectionDraft('team')" />
+      <TeamRobotsAwards :media-preview="sectionDraft('team')" :sponsors-preview="sectionDraft('sponsors')" />
       <RobotsShowcase :media-preview="sectionDraft('robots')" />
       <InstitutionalGallery />
       <InstitutionalEvents
