@@ -11,6 +11,7 @@ import InstitutionalEvents from './components/InstitutionalEvents.vue'
 import ActiveCompetition from './components/ActiveCompetition.vue'
 import InstitutionalFooter from './components/InstitutionalFooter.vue'
 import PublicNotFound from './components/PublicNotFound.vue'
+import PublicGalleryPage from './components/PublicGalleryPage.vue'
 import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraft} from './content/localMediaPreview'
 
 const publishedMediaDraft=ref<PreviewDraft|null>(null)
@@ -77,7 +78,8 @@ const landingMode: LandingMode =
 const competitionModeEnabled = landingMode !== 'institutional'
 
 const normalizedPath = window.location.pathname.replace(/\/+$/, '') || '/'
-const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html'
+const isGalleryPage = normalizedPath === '/galeria'
+const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html' && !isGalleryPage
 
 const currentCompetition = computed(() => competitions.value.find((item) => item.id === competitionId.value))
 const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
@@ -337,7 +339,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <PublicNotFound v-if="isNotFound" />
+  <PublicGalleryPage v-if="isGalleryPage" />
+  <PublicNotFound v-else-if="isNotFound" />
 
   <div v-else class="public-app" @click.capture="guardPreviewNavigation">
     <aside v-if="mediaPreviewMode" class="rascomp-preview-banner" role="status">
