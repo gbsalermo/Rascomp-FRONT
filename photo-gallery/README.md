@@ -66,3 +66,11 @@ O mosaico de **Todas as fotos** preserva o enquadramento original das miniaturas
 
 ## Privacidade e visualização pública — checkpoint local (13/10)
 A Galeria **não é a Biblioteca interna**: para uma foto aparecer aqui, deve estar explicitamente marcada como publicada e autorizada para exibição pública no catálogo. Os componentes do índice e dos álbuns filtram itens `published === true`; não exibem nome de arquivo, textos de legenda por foto nem metadados internos sobrepostos. O texto alternativo descritivo permanece para acessibilidade. As imagens SVG atuais são **exemplos exclusivamente para testar o layout**, não vieram da Gestão. A sincronização real exige backend e revisão de permissões.
+
+
+## Teste local da Galeria com fotos da Biblioteca (13/10/2026)
+A interface pública agora mostra todas as fotos autorizadas em mosaico responsivo, sem recortar retratos/paisagens e sem exibir nomes internos, com Álbuns como filtro, capa autorizada e lightbox com Esc/←/→.
+
+**Fluxo de teste sem backend CMS:** mantenha `gestao/` em `localhost:5173` (autenticação local) e `photo-gallery/` em `localhost:5175`. Na Gestão, abra **Biblioteca**, envie uma ou várias fotos escolhendo **Públicas** ou **Privadas** independentemente dos álbuns e do uso em Heroes. Clique **Prévia da Galeria**. A nova janela exibe **somente fotos públicas**; fotos privadas não são sequer enviadas a ela. Para testar mudanças de visibilidade, volte à Gestão e clique no botão de prévia novamente. Fotos públicas sem álbum aparecem em **Todas**; fotos em álbuns também aparecem no filtro **Álbuns**, sem duplicação em Todas. O album cover escolhido só pode aparecer publicamente se também for uma das fotos publicadas.
+
+O modo normal de acesso a `localhost:5175` ainda contém imagens SVG **meramente ilustrativas** para revisar layout; ele não representa o catálogo real. O botão da Gestão abre `?rascomp_gallery_preview=1` e substitui as ilustrações pelo conteúdo local autorizado, sem enviar uploads ao servidor. As sessões são temporárias; nada é persistido em API/MySQL/R2. O estado público efetivo deverá ser controlado no backend no checkpoint posterior.
