@@ -356,6 +356,8 @@ function restoreEditorState(saved:Record<string,unknown>) {
   if(['competition','gallery','events'].includes(String(saved.competitionHeroExtraDestination)))competitionHeroExtraDestination.value=saved.competitionHeroExtraDestination as typeof competitionHeroExtraDestination.value
   if(saved.footer && typeof saved.footer==='object')footerEditorRef.value?.setPreviewData(saved.footer as Record<string,unknown>)
   selectedHeroId.value=heroes.value[0]?.id||''
+  // A restauração assíncrona do CMS não pode ser confundida com uma edição do usuário.
+  baselineState=getEditorState()
 }
 // O estado inicial é a Landing institucional original, não o último snapshot total do CMS.
 let baselineState:Record<string,unknown>|null=null
@@ -364,6 +366,8 @@ function markSectionEdited(section:string){
   if(!priorEditedSections.includes(section))priorEditedSections.push(section)
 }
 onMounted(()=>{baselineState=getEditorState()})
+// O estado restaurado passa a ser a referência persistente; edições posteriores
+// continuam registradas explicitamente, sem voltar ao seed estático.
 function setEditedSections(value:unknown){
   priorEditedSections=Array.isArray(value)?value.filter((item):item is string=>typeof item==='string'):[]
 }
