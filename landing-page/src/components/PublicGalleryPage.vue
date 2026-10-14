@@ -95,7 +95,8 @@ onMounted(()=>{
     const ref=(()=>{try{return new URL(document.referrer).origin}catch{return ''}})()
     const origin=allowedPreviewOrigins.includes(ref)?ref:allowedPreviewOrigins[0]!
     window.addEventListener('message',onMessage)
-    sender.postMessage({type:'rascomp:gallery-ready',token},origin)
+    const opener=sender
+    opener?.postMessage({type:'rascomp:gallery-ready',token},origin)
   }else void loadGallery()
   window.addEventListener('keydown',onKey)
 })
