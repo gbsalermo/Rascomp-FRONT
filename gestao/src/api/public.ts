@@ -12,7 +12,7 @@ import { http } from './http'
 export const publicApi = {
   competitions: () => http.get<Competition[]>('/api/v1/public/competicoes').then((r) => r.data),
   competitionCategories: (id:number) =>
-    http.get<number[]>(`/api/v1/competicoes/${id}/categorias-habilitadas`).then(r=>r.data),
+    http.get<number[]>(`/api/v1/public/competicoes/${id}/categorias-habilitadas`).then(r=>r.data),
   categories: (modalidade?: string) =>
     http.get<Category[]>('/api/v1/public/categorias', { params: modalidade ? { modalidade } : undefined }).then((r) => r.data),
   robotPhotos: (robotId: number) =>
