@@ -297,17 +297,27 @@ async function saveEditorialDraft(){
     ElMessage.error(error instanceof Error?error.message:'Não foi possível salvar o rascunho.')
   }finally{cmsBusy.value=false}
 }
-async function publishEditorial(){
-  if(!canEditMedia.value || !cmsDraftSaved.value)return
+async function publishChanges(){
+  if(!canEditMedia.value)return
+  const isLandingPublication=section.value==='landing'
+  if(isLandingPublication && !cmsDraftSaved.value){
+    ElMessage.warning('Salve o rascunho da Landing antes de publicá-lo.')
+    return
+  }
   cmsBusy.value=true
   try{
-    const response=await mediaApi.publish(cmsVersion.value)
+    // Publicar a Galeria NUNCA libera alterações editoriais pendentes na Landing.
+    const response=isLandingPublication
+      ? await mediaApi.publish(cmsVersion.value)
+      : await mediaApi.publishGallery(cmsVersion.value)
     cmsVersion.value=response.version
-    cmsDraftSaved.value=false
+    if(isLandingPublication)cmsDraftSaved.value=false
     confirmPublishOpen.value=false
-    ElMessage.success('Versão publicada: '+response.version+'. A Galeria mostrará somente fotos públicas.')
+    ElMessage.success(isLandingPublication
+      ? 'Landing e Galeria publicadas na versão '+response.version+'.'
+      : 'Galeria publicada! As fotos públicas e os álbuns já podem aparecer em /galeria.')
   }catch(error){
-    ElMessage.error(error instanceof Error?error.message:'Falha ao publicar rascunho.')
+    ElMessage.error(error instanceof Error?error.message:'Não foi possível publicar. Verifique o CMS e atualize os dados.')
   }finally{cmsBusy.value=false}
 }
 
@@ -353,7 +363,7 @@ async function saveGalleryIntro() {
   }
   galleryIntroSlots.value = [...galleryIntroIds.value]
   galleryIntroDialog.value = false
-  ElMessage.success(cmsReady.value?'Destaques salvos no MySQL. Publique as alterações para atualizar visitantes.':'Destaques alterados na prévia local.')
+  ElMessage.success(cmsReady.value?'Destaques salvos no MySQL. Clique em Publicar Galeria para atualizar os visitantes.':'Destaques alterados somente no modo local.')
 }
 function toggleMultiSelection() {
   multiSelectionMode.value = !multiSelectionMode.value
@@ -382,16 +392,16 @@ async function addSelectedToAlbums() {
     photo.albums = [...new Set([...photo.albums, ...toAdd])]
   })
   bulkAlbumDialog.value = false
-  ElMessage.success(selectedIds.value.length+' foto(s) associadas aos álbuns nesta prévia. Nenhum arquivo foi duplicado.')
+  ElMessage.success(selectedIds.value.length+' foto(s) associadas aos álbuns no MySQL. Publique a Galeria para atualizar o site.')
 }
 async function deleteSelectedPhotos() {
   if (!selectedIds.value.length) return
   const count = selectedIds.value.length
   try {
     await ElMessageBox.confirm(
-      'Remover '+count+' foto(s) da Biblioteca desta sessão? Fotos utilizadas em seções da Landing podem ficar sem imagem na prévia. Os arquivos originais e o banco não serão alterados.',
+      'Excluir '+count+' foto(s) do armazenamento R2 e do MySQL? Essa operação não pode ser desfeita. Fotografias já publicadas devem ser despublicadas primeiro.',
       'Excluir fotos selecionadas',
-      { type: 'warning', confirmButtonText: 'Excluir na prévia', cancelButtonText: 'Cancelar', confirmButtonClass: 'media-confirm-danger' }
+      { type: 'warning', confirmButtonText: 'Excluir permanentemente', cancelButtonText: 'Cancelar', confirmButtonClass: 'media-confirm-danger' }
     )
   } catch { return }
   const ids = new Set(selectedIds.value)
@@ -411,7 +421,7 @@ async function deleteSelectedPhotos() {
   })
   galleryIntroSlots.value = galleryIntroSlots.value.map(id => id !== null && ids.has(id) ? null : id)
   selectedIds.value = []
-  ElMessage.success(count+' foto(s) removidas apenas da prévia. Atualize a Galeria pelo botão para refletir a exclusão.')
+  ElMessage.success(count+' foto(s) removidas da Biblioteca. Publique a Galeria para atualizar os visitantes.')
 }
 
 const selectedPhoto = computed(() => photos.value.find(photo => photo.id === selectedIds.value[0]))
@@ -507,7 +517,7 @@ async function saveAlbum() {
     }else createAlbum(name,albumDescriptionDraft.value)
   }
   albumDialog.value=false
-  ElMessage.success(cmsReady.value?'Álbum salvo no MySQL. Publique para atualizar a Galeria.':'Álbum alterado na prévia.')
+  ElMessage.success(cmsReady.value?'Álbum salvo no MySQL. Clique em Publicar Galeria para atualizar o site.':'Álbum alterado somente no modo local.')
 }
 async function removeAlbum(id: number) {
   if(cmsReady.value){
@@ -518,7 +528,7 @@ async function removeAlbum(id: number) {
   albums.value = albums.value.filter(album => album.id !== id)
   if (albumFilter.value === String(id)) albumFilter.value = 'all'
   autoCovers.delete(id)
-  ElMessage.info('Álbum removido da prévia; as fotos foram preservadas.')
+  ElMessage.info('Álbum excluído do MySQL. As fotos foram preservadas. Publique a Galeria para refletir a mudança.')
 }
 function addPhotoForEditor(file: File): number {
   if (!file.type.startsWith('image/')) { ElMessage.warning('Selecione um arquivo de imagem.'); return 0 }
@@ -573,7 +583,7 @@ async function confirmUpload() {
     albumFilter.value='all'
     uploads.value=[]
     uploadDialog.value=false
-    ElMessage.success(cmsReady.value?'Fotografias armazenadas no R2 e registradas no MySQL. Publique para aparecerem na Galeria.':'Fotos inseridas na prévia local.')
+    ElMessage.success(cmsReady.value?'Fotos salvas no R2/MySQL. Clique em Publicar Galeria quando desejar exibi-las no site.':'Fotos adicionadas somente ao modo de desenvolvimento.')
   }catch(error){
     ElMessage.error(error instanceof Error?error.message:'Falha no upload de imagem')
     if(cmsReady.value)await loadCmsWorkspace()
@@ -596,7 +606,7 @@ async function persistVisibility(published:boolean) {
     try{await mediaApi.visibility(target.id,published)}
     catch(error){target.published=!published;ElMessage.error('Não foi possível salvar a visibilidade.');return}
   }
-  ElMessage.info(cmsReady.value?'Visibilidade salva no rascunho. Publique para aplicar na Galeria.':'Visibilidade alterada somente na prévia.')
+  ElMessage.info(cmsReady.value?'Visibilidade registrada no MySQL. Clique em Publicar Galeria para aplicar no site.':'Visibilidade alterada somente no modo local.')
 }
 function openCrop() {
   if (!selectedPhoto.value) return
@@ -604,7 +614,6 @@ function openCrop() {
   displayWidth.value = 100; displayHeight.value = 100
   cropDialog.value = true
 }
-function demoOnly() { ElMessage.info('Editor demonstrativo. A gravação no backend será implementada após sua aprovação visual.') }
 function showAlbum(id: number) { albumFilter.value = String(id); router.push('/midia') }
 onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);window.removeEventListener('message',galleryMessage);uploadedUrls.forEach(url => URL.revokeObjectURL(url))})
 </script>
@@ -615,7 +624,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
       <div>
         <span class="media-kicker">IEEE RAS · ADMINISTRAÇÃO EDITORIAL</span>
         <h1>{{ section === 'library' ? 'Biblioteca de imagens' : section === 'albums' ? 'Álbuns' : 'Conteúdo da Landing' }}</h1>
-        <p v-if="section === 'library'">Todas as imagens em um só lugar. Organize, associe a álbuns e prepare imagens para o site.</p>
+        <p v-if="section === 'library'">Organize as fotografias no R2/MySQL, escolha as públicas e publique a Galeria quando estiver pronta.</p>
         <p v-else-if="section === 'albums'">Organize coleções sem duplicar imagens no armazenamento.</p>
         <p v-else>Gerencie as imagens das seções sem alterar o conteúdo institucional permanente.</p>
       </div>
@@ -628,7 +637,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
         <el-button v-if="section === 'albums'" type="primary" @click="openAlbumDialog()">＋ Novo álbum</el-button>
         <el-button v-if="section === 'landing'" :disabled="!cmsReady" @click="saveEditorialDraft">Salvar rascunho</el-button>
         <el-button v-if="section === 'landing'" type="primary" @click="openSitePreview">Prévia do site ↗</el-button>
-        <el-button v-if="section === 'landing'" type="primary" :disabled="!canEditMedia || !cmsDraftSaved" @click="confirmPublishOpen=true">Publicar alterações</el-button>
+        <el-button type="primary" :disabled="!canEditMedia || (section === 'landing' && !cmsDraftSaved)" @click="confirmPublishOpen=true">{{ section === 'landing' ? 'Publicar alterações' : 'Publicar Galeria' }}</el-button>
       </div>
     </div>
 
@@ -699,14 +708,14 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
               <el-checkbox v-for="album in albums" :key="album.id" :model-value="selectedPhoto.albums.includes(album.id)"
                 @change="changePhotoAlbum(album.id, Boolean($event))">{{ album.name }}</el-checkbox>
             </div>
-            <label>Exibir na Galeria pública (após integração)</label>
+            <label>Incluir na próxima publicação da Galeria</label>
             <el-switch v-model="selectedPhoto.published" active-text="Sim" inactive-text="Não" @change="persistVisibility(Boolean($event))"/>
-            <p class="media-visibility-help">A visibilidade é independente do uso na Landing: uma foto pode aparecer no Hero e permanecer privada na Galeria. Para conferir o resultado, clique em <strong>Prévia da Galeria</strong>; os dados ainda não são publicados.</p>
+            <p class="media-visibility-help">Fotos marcadas como públicas ficam disponíveis após clicar em <strong>Publicar Galeria</strong>. Uma imagem usada na Landing pode continuar privada na Galeria. Use a Prévia para conferir antes de publicar.</p>
             <div class="media-detail-actions"><el-button @click="openCrop">Editar enquadramento</el-button></div>
           </template>
           <div v-else-if="multiSelectionMode && selectedIds.length > 1" class="media-selection-summary">
             <h2>Seleção múltipla</h2><strong>{{ selectedIds.length }} fotografias</strong>
-            <p>Utilize a barra acima para associá-las aos álbuns ou excluí-las da prévia.</p>
+            <p>Utilize a barra acima para associá-las aos álbuns ou excluí-las do armazenamento. As alterações nos visitantes exigem nova publicação.</p>
           </div>
           <div v-else class="media-empty">Selecione uma imagem para visualizar seus detalhes.</div>
         </aside>
@@ -740,12 +749,13 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
     </template>
 
     </template>
-    <el-dialog v-model="confirmPublishOpen" title="Confirmar publicação de mídia" width="min(560px,94vw)">
-      <p class="media-dialog-intro">Isso publica a versão do rascunho salva no MySQL e as fotos marcadas como públicas na Galeria. Os visitantes verão a nova versão; fotos privadas continuarão fora da Galeria.</p>
-      <p class="media-dialog-intro">Versão atual: {{ cmsVersion }}. Caso tenha feito alterações depois de salvar, salve novamente antes de continuar.</p>
+    <el-dialog v-model="confirmPublishOpen" :title="section === 'landing' ? 'Publicar Landing e Galeria' : 'Publicar Galeria'" width="min(560px,94vw)">
+      <p class="media-dialog-intro" v-if="section === 'landing'">Publicar o rascunho editorial salvo no MySQL e atualizar a Galeria. Os visitantes verão a nova versão da Landing; as fotos privadas continuarão fora da Galeria.</p>
+      <p class="media-dialog-intro" v-else>Publicar apenas as fotografias marcadas como públicas, seus álbuns e destaques. Rascunhos pendentes da Landing não serão publicados. Fotos privadas continuam protegidas.</p>
+      <p class="media-dialog-intro">Versão publicada atual: {{ cmsVersion }}.</p>
       <template #footer>
         <el-button @click="confirmPublishOpen=false">Cancelar</el-button>
-        <el-button type="primary" :loading="cmsBusy" @click="publishEditorial">Confirmar publicação</el-button>
+        <el-button type="primary" :loading="cmsBusy" @click="publishChanges">Confirmar publicação</el-button>
       </template>
     </el-dialog>
     <el-dialog v-model="bulkAlbumDialog" class="media-album-dialog" title="Adicionar seleção aos álbuns"
@@ -779,10 +789,10 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
         </section>
       </div>
       <p v-if="galleryEligiblePhotos.length<3" class="media-dialog-intro">Para completar a Intro, marque ao menos três fotografias com imagem como públicas na Biblioteca.</p>
-      <p class="media-dialog-intro">As alterações são temporárias. Abra ou atualize a Prévia da Galeria para conferir.</p>
+      <p class="media-dialog-intro">As escolhas são salvas no CMS. Utilize <strong>Prévia da Galeria</strong> para conferir e <strong>Publicar Galeria</strong> para disponibilizar aos visitantes.</p>
       <template #footer>
         <el-button @click="galleryIntroDialog=false">Cancelar</el-button>
-        <el-button type="primary" :disabled="galleryIntroIds.length!==3" @click="saveGalleryIntro">Aplicar destaques na prévia</el-button>
+        <el-button type="primary" :disabled="!canEditMedia || galleryIntroIds.length!==3" @click="saveGalleryIntro">Salvar destaques</el-button>
       </template>
     </el-dialog>
 
@@ -801,7 +811,7 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
         <strong>Exibição das fotos deste envio</strong>
         <el-radio-group v-model="uploadVisibility" class="media-visibility-radio">
           <el-radio value="private">Privadas — apenas na Biblioteca</el-radio>
-          <el-radio value="public">Públicas — aparecerão na Galeria após a integração</el-radio>
+          <el-radio value="public">Públicas — disponíveis após clicar em Publicar Galeria</el-radio>
         </el-radio-group>
         <div class="media-default-row">
           <div>
@@ -813,9 +823,9 @@ onBeforeUnmount(() => {window.removeEventListener('message',previewMessage);wind
             <el-option label="Públicas" value="public" />
           </el-select>
         </div>
-        <p>Estar em um Hero, evento, equipe ou outra seção <strong>não publica a foto na Galeria</strong>. A escolha deste lote é independente e cada foto poderá ser alterada depois na Biblioteca. Nenhuma imagem é publicada de verdade nesta prévia local.</p>
+        <p>Fotos enviadas são armazenadas no R2 e registradas no MySQL. A opção <strong>Públicas</strong> permite exibi-las na próxima publicação da Galeria; a publicação ocorre pelo botão <strong>Publicar Galeria</strong>. O uso em Heroes ou eventos é independente dessa escolha.</p>
       </div>
-      <template #footer><el-button @click="uploadDialog = false">Cancelar</el-button><el-button type="primary" @click="confirmUpload">Adicionar à prévia</el-button></template>
+      <template #footer><el-button @click="uploadDialog = false">Cancelar</el-button><el-button type="primary" :loading="cmsBusy" :disabled="!canEditMedia || !uploads.length" @click="confirmUpload">Enviar para a Biblioteca</el-button></template>
     </el-dialog>
 
 
