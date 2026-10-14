@@ -694,7 +694,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
     </section>
 
     <MediaImageAdjustment v-model="adjustmentOpen" :label="adjustmentLabel"
-      :src="activeAdjustmentSrc" :adjustment="frameFor(activeAdjustmentKey)"
+      :src="activeAdjustmentSrc" :target-key="activeAdjustmentKey" :adjustment="frameFor(activeAdjustmentKey)"
       @save="saveAdjustment"/>
     <el-dialog class="media-photo-picker-dialog" v-model="pickerOpen" title="Escolher imagem da Biblioteca" width="min(850px, 95vw)" append-to-body>
       <p class="editor-picker-help">Selecione uma das imagens já enviadas à Biblioteca. A imagem original será preservada.</p>
