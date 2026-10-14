@@ -732,18 +732,7 @@ async function onRegistrationCompetitionChange() {
   registrationForm.categoryId=undefined
   if(registrationForm.competitionId){
     try{enabledCategoryIds.value=await publicApi.competitionCategories(registrationForm.competitionId)}
-    catch{
-      // Contingência enquanto a API publicada no Render não expõe essa leitura
-      // ao participante. Nunca contorna a validação de inscrição do backend.
-      enabledCategoryIds.value=categories.value.filter(item=>
-        item.ativo!==false && (
-          item.modalidade==='FOLLOW_LINE' ||
-          item.modalidade==='FUTEBOL' ||
-          (item.modalidade==='SUMO' && ['MINI_500G','SUMO_3KG'].includes(item.sumoPhysicalClass||''))
-        )
-      ).map(item=>item.id)
-      ElMessage.warning('Categorias habilitadas indisponíveis temporariamente. O sistema validará a categoria escolhida ao enviar a inscrição.')
-    }
+    catch{ElMessage.error('Não foi possível carregar as categorias habilitadas desta competição.')}
   }
   refreshRegistrationCategory()
 }
