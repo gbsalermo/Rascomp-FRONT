@@ -706,6 +706,7 @@ async function removeRobot(robot: Robot) {
 
 function canManageRegistration(registration: Registration) {
   if (isTeamLeader.value) return true
+  if (!registration.robotId) return registration.requestedByUserId === auth.user?.id
   const robot = robots.value.find((item) => item.id === registration.robotId)
   return Boolean(robot?.createdByUserId && robot.createdByUserId === auth.user?.id)
 }
@@ -888,7 +889,7 @@ async function onPhotoSelected(robot: Robot, event: Event) {
 async function cancelPendingRegistration(registration: Registration) {
   try {
     await ElMessageBox.confirm(
-      `Cancelar a inscrição de ${registration.robotNome} em ${registration.categoryNome}?`,
+      `Cancelar a inscrição de ${registration.robotNome || 'Futebol'} em ${registration.categoryNome}?`,
       'Cancelar inscrição pendente',
       { type: 'warning', confirmButtonText: 'Cancelar inscrição', cancelButtonText: 'Voltar' }
     )
@@ -927,7 +928,7 @@ async function requestApprovedCancellation(registration: Registration) {
 
   try {
     const result = await ElMessageBox.prompt(
-      `Explique o motivo para solicitar o cancelamento de ${registration.robotNome}. A organização analisará o pedido.`,
+      `Explique o motivo para solicitar o cancelamento de ${registration.robotNome || 'Futebol'}. A organização analisará o pedido.`,
       'Solicitar cancelamento',
       {
         inputType: 'textarea',
