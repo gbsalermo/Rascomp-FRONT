@@ -232,7 +232,7 @@ const availableRegistrationCategories = computed(() => {
   return categories.value.filter((category) => {
     if (!enabledCategoryIds.value.includes(category.id)) return false
     if (category.ativo === false) return false
-    if (category.modalidade === 'FUTEBOL') return !registrations.value.some(r => r.competitionId === registrationForm.competitionId && r.categoryId === category.id && !['CANCELADA','REJEITADA'].includes(r.status))
+    if (category.modalidade === 'FUTEBOL') return !registrations.value.some(r => r.competitionId === registrationForm.competitionId && r.categoryId === category.id && r.requestedByUserId === auth.user?.id && !['CANCELADA','REJEITADA'].includes(r.status))
     if (!registrationForm.robotId || duplicateCategoryIds.has(category.id)) return false
     if (category.modalidade !== 'SUMO') return true
     if (hasUnclassifiedSumo) return false
