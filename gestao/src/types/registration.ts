@@ -134,6 +134,9 @@ export interface ParticipantCompetitionRegistration {
   reviewedByUserNome?: string
   reviewedAt?: string
   reviewReason?: string
+  competitiveLinkSuspended?: boolean
+  competitiveLinkDeadline?: string
+  competitiveLinkSatisfied?: boolean
   ativo?: boolean
   dataCadastro?: string
   robots: ParticipantRobotLink[]
