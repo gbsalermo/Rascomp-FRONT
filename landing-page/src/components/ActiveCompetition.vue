@@ -8,6 +8,7 @@ const props = defineProps<{
   categories: any[]
   registrations: any[]
   enabledCategoryIds: number[]
+  currentRegistrationLot?: { nome?: string; dataInicio?: string; dataFim?: string }
   podiums: any[]
   ranking: any[]
   followAttempts: any[]
@@ -487,6 +488,10 @@ function handleRegistration() {
             <article>
               <span>Período de inscrições</span>
               <strong>{{ formatDate(competition.inicioInscricoes) }} — {{ formatDate(competition.fimInscricoes) }}</strong>
+              <template v-if="currentRegistrationLot?.nome">
+                <span class="competition-current-lot-label">Lote vigente</span>
+                <strong>{{ currentRegistrationLot.nome }}</strong>
+              </template>
             </article>
 
             <article>
