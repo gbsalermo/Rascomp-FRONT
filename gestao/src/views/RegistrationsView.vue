@@ -297,7 +297,7 @@ async function saveManualEntry() {
 
     if (manualSelectedCategory.value?.modalidade === 'SUMO') {
       ElMessage.success(
-        `${registration.robotNome} foi cadastrado e inscrito. Faça a inspeção de Sumô e depois gere uma nova chave.`
+        `${registration.robotNome || "Inscrição de Futebol"} foi cadastrado e inscrito. Faça a inspeção de Sumô e depois gere uma nova chave.`
       )
     } else {
       ElMessage.success(
@@ -594,7 +594,7 @@ async function review(row: Registration, next: RegistrationStatus) {
       }
 
       await ElMessageBox.confirm(
-        approvalMessage(`Deseja aprovar a inscrição do robô ${row.robotNome}, da equipe ${row.teamNome}?`,row.observacao),
+        approvalMessage(`Deseja aprovar a inscrição do robô ${row.robotNome || "Futebol de Robôs"}, da equipe ${row.teamNome}?`,row.observacao),
         'Aprovar inscrição',
         {
           type: 'success',
@@ -605,7 +605,7 @@ async function review(row: Registration, next: RegistrationStatus) {
     } else {
       const result = await ElMessageBox.prompt(
         'Informe o motivo da rejeição. Essa justificativa ficará registrada na inscrição.',
-        `Rejeitar inscrição · ${row.robotNome}`,
+        `Rejeitar inscrição · ${row.robotNome || "Futebol de Robôs"}`,
         {
           inputType: 'textarea',
           inputPlaceholder: 'Motivo da rejeição',
@@ -643,7 +643,7 @@ async function cancelRegistration(row: Registration) {
       approved
         ? 'Cancelar uma inscrição aprovada preserva o histórico. Se já houver atividade competitiva, o status será DESISTENTE.'
         : 'Cancelar esta inscrição pendente? Ela poderá ser reativada apenas se a janela de inscrições permitir.',
-      `Cancelar inscrição · ${row.robotNome}`,
+      `Cancelar inscrição · ${row.robotNome || "Futebol de Robôs"}`,
       {
         type: 'warning',
         confirmButtonText: 'Confirmar cancelamento',
@@ -669,7 +669,7 @@ async function disqualifyRegistration(row: Registration) {
   try {
     const result = await ElMessageBox.prompt(
       'Informe o motivo da desclassificação. A inscrição permanecerá no histórico e a decisão será auditada.',
-      `Desclassificar · ${row.robotNome}`,
+      `Desclassificar · ${row.robotNome || "Futebol de Robôs"}`,
       {
         inputType: 'textarea',
         inputPlaceholder: 'Motivo da desclassificação',
@@ -699,7 +699,7 @@ async function reactivateRegistration(row: Registration) {
   try {
     await ElMessageBox.confirm(
       'A inscrição voltará para PENDENTE e precisará ser analisada novamente. A reativação administrativa exige que a competição esteja com inscrições abertas.',
-      `Reativar inscrição · ${row.robotNome}`,
+      `Reativar inscrição · ${row.robotNome || "Futebol de Robôs"}`,
       {
         type: 'info',
         confirmButtonText: 'Reativar',
@@ -841,7 +841,7 @@ onMounted(loadBase)
         A mudança já vale automaticamente. A organização é avisada e pode vetá-la com justificativa até o início da competição. Se não houver veto, o sistema consolida a alteração ao iniciar a competição.
       </p>
       <el-table :data="compositionChanges" empty-text="Nenhuma alteração pendente">
-        <el-table-column label="Robô" min-width="150" prop="robotNome" />
+        <el-table-column label="Robô / Modalidade" min-width="150"><template #default="{ row }">{{ row.robotNome || "Futebol de Robôs" }}</template></el-table-column>
         <el-table-column label="Competidor" min-width="170" prop="competitorNome" />
         <el-table-column label="Mudança" width="125">
           <template #default="{ row }">
@@ -892,7 +892,7 @@ onMounted(loadBase)
       <el-table :data="pendingCancellationRequests" empty-text="Nenhuma solicitação pendente">
         <el-table-column label="Equipe / Robô" min-width="190">
           <template #default="{ row }">
-            <div class="registration-main-cell"><strong>{{ row.teamNome }}</strong><span>{{ row.robotNome }}</span></div>
+            <div class="registration-main-cell"><strong>{{ row.teamNome }}</strong><span>{{ row.robotNome || 'Futebol de Robôs' }}</span></div>
           </template>
         </el-table-column>
         <el-table-column prop="motivo" label="Motivo" min-width="260" show-overflow-tooltip />
@@ -926,7 +926,7 @@ onMounted(loadBase)
           <template #default="{ row }">
             <div class="registration-main-cell">
               <strong>{{ row.teamNome }}</strong>
-              <span>{{ row.robotNome }}</span>
+              <span>{{ row.robotNome || 'Futebol de Robôs' }}</span>
             </div>
           </template>
         </el-table-column>
@@ -1104,7 +1104,7 @@ onMounted(loadBase)
           <template #default="{ row }">
             <div class="registration-main-cell">
               <strong>{{ row.teamNome }}</strong>
-              <span>{{ row.robotNome }}</span>
+              <span>{{ row.robotNome || 'Futebol de Robôs' }}</span>
             </div>
           </template>
         </el-table-column>
@@ -1392,7 +1392,7 @@ onMounted(loadBase)
         <section class="registration-details-hero">
           <div>
             <small>Robô</small>
-            <strong>{{ selected.robotNome }}</strong>
+            <strong>{{ selected.robotNome || 'Futebol de Robôs' }}</strong>
             <span>{{ selected.categoryNome }}</span>
           </div>
           <StatusBadge :value="selected.status" />
@@ -1404,7 +1404,7 @@ onMounted(loadBase)
             <div><dt>Competição</dt><dd>{{ selected.competitionNome }}</dd></div>
             <div><dt>Equipe</dt><dd>{{ selected.teamNome }}</dd></div>
             <div><dt>Categoria</dt><dd>{{ selected.categoryNome }}</dd></div>
-            <div><dt>Robô</dt><dd>{{ selected.robotNome }}</dd></div>
+            <div><dt>Robô</dt><dd>{{ selected.robotNome || 'Futebol de Robôs' }}</dd></div>
             <div v-if="selected.robotDescricao" class="registration-description-row">
               <dt>Descrição enviada</dt>
               <dd>{{ selected.robotDescricao }}</dd>
