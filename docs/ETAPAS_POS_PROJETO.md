@@ -1,3 +1,32 @@
+## ADIÇÃO À ETAPA ATUAL — REGRAS E AJUDA DO PARTICIPANTE (15/10/2026)
+
+**Decisão aprovada para o ciclo atual de Portal/inscrições:** antecipar a biblioteca oficial de documentos para o Portal do Participante, sem aguardar a implementação completa da Central de Ajuda + Telegram. **Status: requisito documentado; implementação e testes ainda pendentes.** Não confundir com documento já publicado ou funcionalidade disponível.
+
+### Experiência do participante
+- Adicionar **Regras e Ajuda** ao sidebar do Portal, em desktop e mobile, com o padrão visual de navegação existente.
+- Apresentar três tipos iniciais: **Regras da Competição**, **Regras de Conduta** e **Manual do Usuário**; listar apenas documentos publicados e vigentes.
+- Permitir visualizar e baixar os arquivos com título, descrição opcional, data de atualização e indicação de edição/categoria quando pertinente.
+- O **Manual do Usuário** deve permanecer facilmente acessível para qualquer conta PARTICIPANTE autenticada, mesmo sem equipe, inscrição ou competição em foco; documentos gerais não dependem de competição vigente.
+- Documentos de competição podem ser gerais ou vinculados explicitamente a edição/categoria. Evitar mostrar regulamento de edição incorreta.
+
+### Administração DEV-only
+- Criar entrada **Documentos / Regras e Ajuda** na área administrativa DEV (não no editor da Landing), usando autorização **DEV no backend** para criar, enviar, substituir, publicar/despublicar, ordenar e arquivar documentos.
+- Cadastro com tipo, título, descrição, arquivo PDF preferencialmente, escopo (geral / edição / categoria), versão, status de publicação, datas e autoria; armazenar arquivos em storage persistente compatível com cloud/local, nunca no bundle do frontend.
+- Somente documentos explicitamente publicados são disponibilizados para leitura; upload não publica automaticamente. Preservar histórico e auditoria de versões, autor e publicação. Substituições não devem criar links quebrados.
+- GESTAO, MIDIA e PARTICIPANTE **não** podem gerenciar os arquivos; participação não concede acesso ao cadastro. Leitura separada de administração por contrato de API.
+- Tratar uploads com limites de tamanho, validação de extensão/MIME/conteúdo, nomes seguros, autorização e downloads protegidos contra acesso indevido. Não presumir que usar R2 torne o arquivo automaticamente público.
+
+### Testes / critério de saída
+1. DEV envia documento, mantém rascunho, publica, atualiza e despublica; o Portal reflete a mudança sem novo deploy.
+2. PARTICIPANTE visualiza/baixa Manual, Conduta e regulamento publicados; nenhum rascunho aparece.
+3. Testar sem competição ativa, com competição em foco, escopo por edição/categoria, desktop/mobile e erro de arquivo indisponível.
+4. Testar acesso direto à API: PARTICIPANTE, GESTAO e MIDIA não conseguem operações DEV, mesmo sem sidebar.
+5. Garantir persistência dos arquivos e metadados após reinício/deploy, regressão básica e documentação sincronizada.
+
+**Limite de escopo:** biblioteca de documentos agora; tutoriais contextuais avançados, FAQs e Telegram permanecem na Central de Ajuda futura, reaproveitando a mesma biblioteca para não duplicar cadastro.
+
+---
+
 > **Estado oficial — 13/10/2026 | V1-BETA B Cloud implantada:** landing pública [rasufrb.site](https://rasufrb.site), Gestão/Portal [app.rasufrb.site](https://app.rasufrb.site) (Workers Static Assets `rascomp-landing`/`rascomp-app`), API Spring Boot Java 21 no **Render** via [api.rasufrb.site](https://api.rasufrb.site), MySQL **Aiven**, arquivos privados **Cloudflare R2** (`rascomp-storage`), e-mail transacional **Resend** (`mail.rasufrb.site`). Cadastro/verificação e recuperação de senha foram testados ponta a ponta. Galeria/Gestor de Mídia e Futebol de Robôs são próximos desenvolvimentos, **não funcionalidades já finalizadas**. Antes de inscrições reais: backup externo/restauração ensaiada, testes de carga/contingência, autorização de comprovantes e integridade/reconciliação de storage. Ambiente local continua suportado. **Deploy desejado:** branch `main` para produção; validar a troca de branch nos painéis Render/Cloudflare após o merge, pois merge sozinho não altera suas configurações. Trechos históricos abaixo preservam decisões anteriores, não a arquitetura vigente.
 
 ## POLÍTICA DE BACKUPS MYSQL AIVEN — 11/10/2026
