@@ -108,10 +108,13 @@ const institutionalOnly = computed(() =>
   false
 )
 const competitionModeEnabled = computed(() => !institutionalOnly.value)
-const competitionSectionVisible = computed(() =>
-  competitionModeEnabled.value &&
-  ['INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(currentCompetition.value?.status || '')
-)
+const competitionSectionVisible = computed(() => {
+  if (!competitionModeEnabled.value || !currentCompetition.value) return false
+  const mode = sectionDraft('competition')?.competition?.sectionVisibility ?? 'automatic'
+  if (mode === 'visible') return true
+  if (mode === 'hidden') return false
+  return ['INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(currentCompetition.value.status || '')
+})
 const competitionHeroEnabled = computed(() =>
   competitionModeEnabled.value &&
   (localMediaDraft.value?.competition?.heroEnabled ??
