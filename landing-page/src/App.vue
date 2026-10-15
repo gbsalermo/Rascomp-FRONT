@@ -416,6 +416,7 @@ onBeforeUnmount(() => {
         :competition-media="sectionDraft('competition')?.competition"
         :categories="categories"
         :enabled-category-ids="enabledCategoryIds"
+        :current-registration-lot="currentRegistrationLot"
         :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
         :management-url="managementUrl"
