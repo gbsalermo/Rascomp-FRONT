@@ -806,3 +806,17 @@ Este documento passa a ser referência funcional para:
 - futuras telas de Regras do Participante;
 - regressões;
 - ampliação posterior do domínio.
+
+
+---
+
+## Complemento — Biblioteca de Regras e Ajuda (15/10/2026)
+
+A interface **Regras e Ajuda** foi antecipada para o ciclo atual de Portal/inscrições (decisão e critérios oficiais em `docs/ETAPAS_POS_PROJETO.md`). **Ainda pendente de implementação e validação.**
+
+- Sidebar do PARTICIPANTE: **Regras da Competição**, **Regras de Conduta**, **Manual do Usuário**, com visualização e download dos documentos publicados.
+- Somente **DEV** gerencia upload, versão, escopo, publicação/despublicação e arquivamento na administração; permissões verificadas na API, não só no menu.
+- Manual e conduta gerais continuam acessíveis sem competição selecionada; regulamentos vinculados devem respeitar edição e categoria.
+- Fonte oficial continua sendo o documento aprovado pela organização, não as regras internas deste arquivo. Este arquivo documenta o comportamento funcional e ajuda a escrever o manual, mas **não deve ser automaticamente publicado como regulamento**.
+- Storage persistente cloud/local, validação de uploads, auditoria e não exibição de rascunhos.
+- Testes de autorização, versão/publicação, disponibilidade sem competição e responsividade são obrigatórios antes de marcar como concluído.
