@@ -15,6 +15,7 @@ import {
   Medal,
   Picture,
   Collection,
+  Document,
   Tickets,
   Timer,
   Trophy,
@@ -67,7 +68,8 @@ const devSections = [
   {
     label: 'Administração',
     items: [
-      { label: 'Usuários', to: '/usuarios', icon: User }
+      { label: 'Usuários', to: '/usuarios', icon: User },
+      { label: 'Documentos e ajuda', to: '/documentos-ajuda', icon: Document }
     ]
   }
 ]
@@ -75,7 +77,8 @@ const devSections = [
 const participantSections = [
   {
     label: 'Participante',
-    items: [{ label: 'Meu painel', to: '/minha-equipe', icon: DataBoard }]
+    items: [{ label: 'Meu painel', to: '/minha-equipe', icon: DataBoard },
+      { label: 'Regras e Ajuda', to: '/regras-ajuda', icon: Document }]
   }
 ]
 
@@ -128,6 +131,8 @@ const pageTitle = computed(() => {
     '/usuarios': 'Usuários',
     '/configuracoes': 'Configurações',
     '/minha-equipe': 'Meu painel',
+    '/regras-ajuda': 'Regras e Ajuda',
+    '/documentos-ajuda': 'Documentos e ajuda',
     '/midia': 'Biblioteca de mídia',
     '/midia/albuns': 'Álbuns de fotos',
     '/midia/landing': 'Conteúdo da Landing'
