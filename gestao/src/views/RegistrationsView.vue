@@ -477,6 +477,25 @@ async function reviewParticipant(
   }
 }
 
+async function suspendParticipantWithoutLink(row: ParticipantCompetitionRegistration) {
+  try {
+    await ElMessageBox.confirm(
+      'O prazo de 24 horas expirou e ainda não foi identificada inscrição competitiva válida. Confirma a suspensão da participação? A conta do usuário permanecerá ativa.',
+      `Suspender participação · ${row.competitorNome}`,
+      { confirmButtonText: 'Confirmar suspensão', cancelButtonText: 'Cancelar', type: 'warning' }
+    )
+    participantReviewingId.value = row.id
+    await adminApi.suspendParticipantWithoutLink(row.id)
+    ElMessage.success('Participação suspensa; o participante verá o motivo e a orientação de contato.')
+    await load()
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível suspender a participação.')
+  } finally {
+    participantReviewingId.value = undefined
+  }
+}
+
 async function openLeaderTransfer(row: ParticipantCompetitionRegistration) {
   if (!auth.isDev || !competitionId.value) return
   leaderRegistration.value = row
@@ -1076,6 +1095,19 @@ onMounted(loadBase)
             </div>
             <div v-else class="registration-request-cell">
               <StatusBadge :value="row.status" />
+              <template v-if="row.status === 'APROVADA' && !row.competitiveLinkSatisfied">
+                <el-tag v-if="row.competitiveLinkSuspended" type="danger" effect="light">Participação suspensa</el-tag>
+                <template v-else>
+                  <el-tag type="warning" effect="light">Sem vínculo competitivo</el-tag>
+                  <small>Prazo: {{ row.competitiveLinkDeadline ? formatDateTime(row.competitiveLinkDeadline) : 'não disponível' }}</small>
+                  <el-button
+                    v-if="row.competitiveLinkDeadline && Date.now() >= new Date(row.competitiveLinkDeadline).getTime()"
+                    size="small" type="warning" plain
+                    :loading="participantReviewingId === row.id"
+                    @click="suspendParticipantWithoutLink(row)"
+                  >Confirmar suspensão</el-button>
+                </template>
+              </template>
               <span v-if="row.reviewReason">{{ row.reviewReason }}</span>
             </div>
           </template>
