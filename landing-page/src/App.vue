@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api, API_URL } from './api'
 import InstitutionalHeader from './components/InstitutionalHeader.vue'
 import HighlightsHero from './components/HighlightsHero.vue'
@@ -348,6 +348,13 @@ async function updateBracket(value: number) {
   await refreshBracket()
 }
 
+watch(mediaPublicationReady, async (ready) => {
+  if (!ready || isNotFound || isGalleryPage) return
+  await nextTick()
+  setupSectionReveal()
+  updateBackToTopVisibility()
+})
+
 onMounted(async () => {
   stopPreview=startLocalMediaPreview()
   void loadPublishedMedia()
@@ -357,7 +364,7 @@ onMounted(async () => {
   if (isNotFound) return
 
   await nextTick()
-  setupSectionReveal()
+  if (mediaPublicationReady.value || mediaPreviewMode) setupSectionReveal()
 
   if (!competitionModeEnabled.value) {
     loading.value = false
@@ -456,7 +463,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <InstitutionalFooter :media-preview="sectionDraft('footer')" />
+    <InstitutionalFooter v-if="mediaPublicationReady || mediaPreviewMode" :media-preview="sectionDraft('footer')" />
 
     <Transition name="registration-notice">
       <aside
