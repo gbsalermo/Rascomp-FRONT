@@ -23,6 +23,7 @@ export interface Registration {
   robotDescricao?: string
   competitorIds?: number[]
   competitorNomes?: string[]
+  requestedByUserId?: number
   requestedByUserNome?: string
   reviewedByUserNome?: string
   reviewedAt?: string
