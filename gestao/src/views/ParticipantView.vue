@@ -749,7 +749,7 @@ function onRegistrationRobotChange(robotId?: number) {
 
 function openRegistrationDialog() {
   if (!teamId.value) return
-  if (!registrableRobots.value.length && !categories.value.some(c => c.modalidade === 'FUTEBOL')) {
+  if (!registrableRobots.value.length && !categories.value.some(c => c.modalidade === 'FUTEBOL' && enabledCategoryIds.value.includes(c.id))) {
     ElMessage.warning(isTeamLeader.value
       ? 'Cadastre um robô antes de criar uma inscrição.'
       : 'Você só pode iniciar a inscrição de um robô cadastrado por você. O líder pode inscrever qualquer robô da equipe.')
@@ -1222,7 +1222,7 @@ onBeforeUnmount(() => {
             <span class="muted">{{ robotRegistrationUnlockMessage }}</span>
             <el-button
               class="brand-button"
-              :disabled="!registrableRobots.length || !availableRobotRegistrationCompetitions.length"
+              :disabled="!availableRobotRegistrationCompetitions.length || (!registrableRobots.length && !categories.some(c => c.modalidade === 'FUTEBOL' && enabledCategoryIds.includes(c.id)))"
               @click="openRegistrationDialog"
             >
               Inscrever robô
@@ -1575,7 +1575,7 @@ onBeforeUnmount(() => {
       </template>
     </el-dialog>
 
-    <el-dialog v-model="registrationDialog" title="Inscrever robô" width="min(680px, 94vw)">
+    <el-dialog v-model="registrationDialog" title="Inscrição em categoria" width="min(680px, 94vw)">
       <div class="registration-flow-dialog">
         <div class="participant-flow-note">
           <strong>Inscrição do robô</strong>
