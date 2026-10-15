@@ -14,7 +14,7 @@ onMounted(() => {
       </div>
 
       <div class="not-found-content">
-        <img class="not-found-logo" src="/rascomp-logo.webp" alt="RasComp" />
+        <img class="not-found-logo" src="/ieee-ras-official.png" alt="IEEE Robotics & Automation Society — RAS UFRB" />
         <span class="not-found-eyebrow">Erro 404</span>
         <h1 id="not-found-title">Essa rota saiu da pista.</h1>
         <p>
