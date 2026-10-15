@@ -1185,6 +1185,22 @@ onBeforeUnmount(() => {
             </div>
             <div class="personal-registration-meta">
               <StatusBadge :value="item.status" />
+              <el-alert
+                v-if="item.status === 'APROVADA' && item.competitiveLinkSuspended && !item.competitiveLinkSatisfied"
+                type="error"
+                :closable="false"
+                show-icon
+                title="Participação suspensa por falta de vínculo competitivo"
+                description="Sua inscrição individual foi aprovada, mas a participação competitiva foi suspensa porque não identificamos uma associação válida a robô inscrito ou à categoria Futebol dentro do prazo de regularização. Entre em contato com a organização para obter ajuda. Sua conta permanece ativa."
+              />
+              <el-alert
+                v-else-if="item.status === 'APROVADA' && !item.competitiveLinkSatisfied"
+                type="warning"
+                :closable="false"
+                show-icon
+                title="Aprovação com regularização pendente"
+                :description="`Sua inscrição foi aprovada, mas não identificamos associação a robôs inscritos ou categorias nesta competição. Regularize sua associação em até 24 horas após a aprovação (${item.competitiveLinkDeadline ? new Date(item.competitiveLinkDeadline).toLocaleString('pt-BR') : 'prazo a confirmar'}). Após o prazo, a Gestão poderá suspender sua participação. Se já realizou a associação, aguarde a atualização; em caso de dúvida, entre em contato com a organização.`"
+              />
               <small v-if="item.comprovanteDisponivel">Comprovante: {{ item.comprovanteNome || 'enviado' }}</small>
               <small v-if="item.status === 'PENDENTE'">Aguardando aprovação da organização.</small>
               <small v-if="item.status === 'CORRECAO_SOLICITADA' && item.reviewReason">
