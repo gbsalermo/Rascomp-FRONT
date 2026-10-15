@@ -749,7 +749,7 @@ function onRegistrationRobotChange(robotId?: number) {
 
 function openRegistrationDialog() {
   if (!teamId.value) return
-  if (!registrableRobots.value.length && !categories.value.some(c => c.modalidade === 'FUTEBOL' && enabledCategoryIds.value.includes(c.id))) {
+  if (!registrableRobots.value.length && !categories.value.some(c => c.modalidade === 'FUTEBOL' && c.ativo !== false)) {
     ElMessage.warning(isTeamLeader.value
       ? 'Cadastre um robô antes de criar uma inscrição.'
       : 'Você só pode iniciar a inscrição de um robô cadastrado por você. O líder pode inscrever qualquer robô da equipe.')
@@ -1222,7 +1222,7 @@ onBeforeUnmount(() => {
             <span class="muted">{{ robotRegistrationUnlockMessage }}</span>
             <el-button
               class="brand-button"
-              :disabled="!availableRobotRegistrationCompetitions.length || (!registrableRobots.length && !categories.some(c => c.modalidade === 'FUTEBOL' && enabledCategoryIds.includes(c.id)))"
+              :disabled="!availableRobotRegistrationCompetitions.length || (!registrableRobots.length && !categories.some(c => c.modalidade === 'FUTEBOL' && c.ativo !== false))"
               @click="openRegistrationDialog"
             >
               Inscrever robô
