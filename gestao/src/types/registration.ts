@@ -18,8 +18,8 @@ export interface Registration {
   categoryNome: string
   teamId: number
   teamNome: string
-  robotId: number
-  robotNome: string
+  robotId: number | null
+  robotNome: string | null
   robotDescricao?: string
   competitorIds?: number[]
   competitorNomes?: string[]
