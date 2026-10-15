@@ -29,7 +29,7 @@ async function upload(){
  body.append('file',file.value)
  editing.value=true
  try {
-  await http.post('/api/v1/ajuda/admin',body,{headers:{'Content-Type':undefined},timeout:60000})
+  await http.post('/api/v1/ajuda/admin',body,{headers:{'Content-Type':'multipart/form-data'},timeout:60000})
   title.value='';description.value='';competitionId.value='';file.value=null
   const input=document.getElementById('help-file') as HTMLInputElement|null;if(input)input.value=''
   ElMessage.success('Documento salvo como rascunho. Publique para disponibilizar aos participantes.')
