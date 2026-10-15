@@ -642,7 +642,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
         </div>
         <div class="editor-heading editor-spaced">
           <div><h3>Exibição da seção Competição</h3><p>Controle independente do Hero: exiba equipes, categorias e cronograma também durante as inscrições abertas, ou oculte a seção quando preferir. Os dados oficiais continuam vindo do sistema.</p></div>
-          <el-select v-model="competitionSectionVisibility" style="width:220px" aria-label="Exibição da seção Competição">
+          <el-select v-model="competitionSectionVisibility" class="competition-visibility-select" style="width:240px" aria-label="Exibição da seção Competição">
             <el-option label="Automática (comportamento anterior)" value="automatic" />
             <el-option label="Exibir seção" value="visible" />
             <el-option label="Ocultar seção" value="hidden" />
@@ -748,6 +748,12 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
 </template>
 
 <style scoped>
+.competition-visibility-select :deep(.el-select__wrapper){background:#b91c36!important;box-shadow:0 0 0 1px #98142a inset!important;min-height:42px;border-radius:9px}
+.competition-visibility-select :deep(.el-select__selected-item),.competition-visibility-select :deep(.el-select__placeholder),.competition-visibility-select :deep(.el-select__caret){color:#fff!important;font-weight:700}
+.competition-visibility-select :deep(.el-select__wrapper:hover){background:#9f172e!important}
+.competition-visibility-select :deep(.el-input__wrapper){background:#b91c36!important;box-shadow:0 0 0 1px #98142a inset!important}
+.competition-visibility-select :deep(.el-input__inner){color:#fff!important;font-weight:700}
+
 .editor-disabled-hero{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:24px;border:1px dashed #dab8c7;background:#fff5f8;color:#714958;border-radius:10px;font-size:12px;line-height:1.5}
 .editor-disabled-hero strong{font-size:14px}
 .editor-robot-photo{position:relative}
