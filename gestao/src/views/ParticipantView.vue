@@ -1247,15 +1247,15 @@ onBeforeUnmount(() => {
             <header>
               <div class="participation-photo">
                 <img
-                  v-if="principalPhoto(registration.robotId)"
-                  :src="assetUrl(principalPhoto(registration.robotId)?.url)"
+                  v-if="registration.robotId != null && principalPhoto(registration.robotId)"
+                  :src="assetUrl(principalPhoto(registration.robotId!)?.url)"
                   :alt="`Foto de ${registration.robotNome}`"
                 />
-                <span v-else>{{ robotInitials(registration.robotNome) }}</span>
+                <span v-else>{{ robotInitials(registration.robotNome ?? 'Futebol') }}</span>
               </div>
               <div class="participation-title">
                 <span>{{ registration.categoryNome }}</span>
-                <strong>{{ registration.robotNome }}</strong>
+                <strong>{{ registration.robotNome || 'Inscrição de Futebol' }}</strong>
                 <small>{{ registration.competitionNome }}</small>
               </div>
               <StatusBadge :value="registration.status" />
