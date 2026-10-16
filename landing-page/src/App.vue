@@ -423,7 +423,7 @@ onBeforeUnmount(() => {
       @registration-unavailable="showRegistrationUnavailable"
     />
 
-    <main v-if="mediaPreviewMode || (mediaPublicationReady && competitionIdentityReady)" id="top">
+    <main v-if="true" id="top">
       <HighlightsHero
         :competition="displayedCompetition"
         :competition-hero-enabled="competitionHeroEnabled"
@@ -482,7 +482,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <InstitutionalFooter v-if="mediaPreviewMode || (mediaPublicationReady && competitionIdentityReady)" :media-preview="sectionDraft('footer')" />
+    <InstitutionalFooter v-if="true" :media-preview="sectionDraft('footer')" />
 
     <Transition name="registration-notice">
       <aside
