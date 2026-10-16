@@ -40,6 +40,7 @@ const filters: EventFilter[] = [
 const activeFilter = ref<EventFilter>('Todos os eventos')
 const expandedEventId = ref<string>(LANDING_EVENTS[0]?.id || '')
 const fullAgenda = ref(false)
+const expandedRecentId = ref<string>('')
 const today = ref(todayInBahia())
 let dateRefresh: number | undefined
 
@@ -115,6 +116,8 @@ const recentEvents = computed(() => [
     .map((event) => ({
       id: event.id, title: event.title, dateLabel: event.dateLabel,
       summary: event.summary, image: event.image, tone: event.tone,
+      description: event.description,
+      location: event.location,
       category: event.type === 'Competições' ? 'Competição' as const :
         event.type === 'Oficinas' ? 'Oficina' as const : 'Evento' as const
     })),
@@ -419,6 +422,7 @@ function eventActionHref(event: LandingEvent) {
             v-for="event in recentEvents"
             :key="event.id"
             class="event-recent-card"
+            :class="{ expanded: expandedRecentId === event.id }"
           >
             <div class="event-recent-media">
               <img :src="event.image" :alt="event.title" :style="eventFrame(event.id)" />
@@ -431,6 +435,13 @@ function eventActionHref(event: LandingEvent) {
               </div>
               <strong>{{ event.title }}</strong>
               <p>{{ event.summary }}</p>
+              <button type="button" class="event-recent-details-toggle" :aria-expanded="expandedRecentId === event.id" @click="expandedRecentId = expandedRecentId === event.id ? '' : event.id">
+                {{ expandedRecentId === event.id ? 'Ocultar detalhes ↑' : 'Ver detalhes ↓' }}
+              </button>
+              <div v-if="expandedRecentId === event.id" class="event-recent-details">
+                <p>{{ event.description || event.summary || 'Sem descrição adicional cadastrada.' }}</p>
+                <small v-if="event.location">Local: {{ event.location }}</small>
+              </div>
             </div>
           </article>
         </div>
