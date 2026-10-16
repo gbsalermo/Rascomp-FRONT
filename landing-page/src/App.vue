@@ -418,7 +418,6 @@ onBeforeUnmount(() => {
         :enabled-category-ids="enabledCategoryIds"
         :current-registration-lot="currentRegistrationLot"
         :registrations="registrations"
-        :current-registration-lot="currentRegistrationLot"
         :management-url="managementUrl"
         :media-preview="sectionDraft('heroes')"
       />
@@ -440,6 +439,7 @@ onBeforeUnmount(() => {
         :teams="teams"
         :categories="categories"
         :enabled-category-ids="enabledCategoryIds"
+        :current-registration-lot="currentRegistrationLot"
         :registrations="registrations"
         :podiums="podiums"
         :ranking="ranking"
