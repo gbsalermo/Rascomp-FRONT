@@ -32,6 +32,8 @@ export type RecentLandingEvent = {
   category: 'Competição' | 'Oficina' | 'Evento'
   dateLabel: string
   summary: string
+  description?: string
+  location?: string
   image: string
   tone: EventTone
 }
