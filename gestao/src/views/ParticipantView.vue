@@ -66,6 +66,7 @@ const robotEditingId = ref<number>()
 const removingRobotId = ref<number>()
 const registrationDialog = ref(false)
 const creatingRegistration = ref(false)
+const selectedRegistrationCategoryIds = ref<number[]>([])
 const personalRegistrationDialog = ref(false)
 const pixDialog=ref(false)
 const pixPayment=ref<{holderName:string;pixKey:string}|null>(null)
@@ -222,7 +223,20 @@ const robotRegistrationUnlockMessage = computed(() => {
   return 'Inscreva um robô em uma categoria e acompanhe a aprovação dele.'
 })
 
-const footballSelected = computed(() => categories.value.find(item => item.id === registrationForm.categoryId)?.modalidade === 'FUTEBOL')
+const footballSelected = computed(() => selectedRegistrationCategoryIds.value.some(id => categories.value.find(item => item.id === id)?.modalidade === 'FUTEBOL'))
+function onRegistrationCategoriesChange(ids: number[]) {
+  const chosen = categories.value.filter(category => ids.includes(category.id))
+  const football = chosen.find(category => category.modalidade === 'FUTEBOL')
+  if (football) {
+    selectedRegistrationCategoryIds.value = [football.id]
+    return
+  }
+  const sumo = chosen.filter(category => category.modalidade === 'SUMO')
+  const firstSumoClass = sumo[0]?.sumoPhysicalClass
+  selectedRegistrationCategoryIds.value = chosen
+    .filter(category => category.modalidade !== 'SUMO' || category.sumoPhysicalClass === firstSumoClass)
+    .map(category => category.id)
+}
 const availableRegistrationCategories = computed(() => {
   if (!registrationForm.competitionId) return []
 
@@ -743,7 +757,8 @@ function syncRegistrationCompetitors(_robotId?: number) {
 }
 
 function refreshRegistrationCategory() {
-  registrationForm.categoryId = availableRegistrationCategories.value[0]?.id
+  selectedRegistrationCategoryIds.value = []
+  registrationForm.categoryId = undefined
 }
 
 async function onRegistrationCompetitionChange() {
@@ -792,30 +807,47 @@ function openRegistrationDialog() {
 }
 
 async function submitRegistration() {
-  if (!teamId.value
-      || !registrationForm.competitionId
-      || !registrationForm.categoryId
+  if (!teamId.value || !registrationForm.competitionId || !selectedRegistrationCategoryIds.value.length
       || (!footballSelected.value && !registrationForm.robotId)) {
-    return ElMessage.warning('Selecione competição, categoria e, quando exigido, um robô.')
+    return ElMessage.warning('Selecione competição, robô e ao menos uma categoria.')
   }
-  if (!robotRegistrationReceipt.value) {
-    return ElMessage.warning('Envie o comprovante da inscrição do robô.')
+  if (!robotRegistrationReceipt.value) return ElMessage.warning('Envie o comprovante da inscrição.')
+  const selected = [...selectedRegistrationCategoryIds.value]
+  const available = new Set(availableRegistrationCategories.value.map(category => category.id))
+  if (selected.some(id => !available.has(id))) return ElMessage.warning('Atualize as categorias disponíveis antes de continuar.')
+  const selectedSumo = categories.value.filter(category => selected.includes(category.id) && category.modalidade === 'SUMO')
+  if (new Set(selectedSumo.map(category => category.sumoPhysicalClass)).size > 1) {
+    return ElMessage.warning('Selecione apenas categorias de Sumô da mesma classe física.')
   }
-
   creatingRegistration.value = true
+  const completed: string[] = []
+  const failed: string[] = []
   try {
-    await participantApi.createRegistration(teamId.value, {
-      competitionId: registrationForm.competitionId,
-      categoryId: registrationForm.categoryId,
-      robotId: footballSelected.value ? undefined : registrationForm.robotId,
-      robotDescricao: registrationForm.robotDescricao.trim() || undefined,
-      observacao: registrationForm.observacao.trim() || undefined
-    }, robotRegistrationReceipt.value)
-    ElMessage.success('Inscrição enviada. Aguardando aprovação da organização.')
-    registrationDialog.value = false
-    await loadTeam()
-  } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível enviar a inscrição.')
+    for (const categoryId of selected) {
+      const category = categories.value.find(item => item.id === categoryId)
+      try {
+        await participantApi.createRegistration(teamId.value, {
+          competitionId: registrationForm.competitionId,
+          categoryId,
+          robotId: category?.modalidade === 'FUTEBOL' ? undefined : registrationForm.robotId,
+          robotDescricao: registrationForm.robotDescricao.trim() || undefined,
+          observacao: registrationForm.observacao.trim() || undefined
+        }, robotRegistrationReceipt.value)
+        completed.push(category?.nome || String(categoryId))
+      } catch (error: any) {
+        failed.push(`${category?.nome || categoryId}: ${error?.response?.data?.message || 'Falha no envio'}`)
+      }
+    }
+    if (completed.length) {
+      try { await loadTeam() } catch { ElMessage.warning('Atualize a página para consultar as inscrições enviadas.') }
+    }
+    if (failed.length) {
+      selectedRegistrationCategoryIds.value = selected.filter(id => failed.some(message => message.startsWith((categories.value.find(c => c.id === id)?.nome || String(id)) + ':')))
+      ElMessage.error(`${completed.length} inscrição(ões) enviada(s); ${failed.length} falhou(aram). ${failed.join(' | ')}. Você pode tentar novamente apenas as categorias restantes.`)
+    } else {
+      ElMessage.success(`${completed.length} inscrição(ões) enviada(s). Aguardando aprovação da organização.`)
+      registrationDialog.value = false
+    }
   } finally {
     creatingRegistration.value = false
   }
@@ -1619,7 +1651,7 @@ onBeforeUnmount(() => {
       </template>
     </el-dialog>
 
-    <el-dialog v-model="registrationDialog" title="Inscrição em categoria" width="min(680px, 94vw)">
+    <el-dialog v-model="registrationDialog" title="Inscrição em categorias" width="min(680px, 94vw)">
       <div class="registration-flow-dialog">
         <div class="participant-flow-note">
           <strong>Inscrição do robô</strong>
@@ -1645,8 +1677,8 @@ onBeforeUnmount(() => {
             <small class="muted">{{ isTeamLeader ? 'Como líder, você pode inscrever qualquer robô da equipe.' : 'Você pode iniciar a inscrição apenas dos robôs cadastrados por você.' }}</small>
           </label>
 
-          <label class="span-2">Categoria da inscrição
-            <el-select v-model="registrationForm.categoryId" style="width:100%" placeholder="Selecione a categoria">
+          <label class="span-2">Categorias da inscrição
+            <el-select :model-value="selectedRegistrationCategoryIds" multiple collapse-tags collapse-tags-tooltip style="width:100%" placeholder="Selecione uma ou mais categorias" @update:model-value="onRegistrationCategoriesChange">
               <el-option
                 v-for="category in availableRegistrationCategories"
                 :key="category.id"
@@ -1706,9 +1738,9 @@ onBeforeUnmount(() => {
         <el-button
           class="brand-button"
           :loading="creatingRegistration"
-          :disabled="!registrationForm.categoryId || !robotRegistrationReceipt"
+          :disabled="!selectedRegistrationCategoryIds.length || !robotRegistrationReceipt"
           @click="submitRegistration"
-        >{{ footballSelected ? "Enviar inscrição de Futebol" : "Enviar inscrição do robô" }}</el-button>
+        >{{ `Enviar ${selectedRegistrationCategoryIds.length} inscrição(ões)` }}</el-button>
       </template>
     </el-dialog>
 
