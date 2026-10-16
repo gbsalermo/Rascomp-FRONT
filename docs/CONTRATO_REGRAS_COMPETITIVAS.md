@@ -1405,3 +1405,10 @@ Fora deste contrato mínimo:
 - penalidades.
 
 Esses itens pertencem à implementação completa da ETAPA 6.
+
+
+## Checkpoint de implementação antecipada — 16/10/2026
+
+A implementação da dupla eliminação foi **antecipada para antes da competição**, na branch `feat/sumo-double-elimination` (backend e frontend). A eliminação simples continua disponível para preservar compatibilidade e dados históricos. Os valores estruturais são `SINGLE_ELIMINATION` e `DOUBLE_ELIMINATION`, com as seções `WINNERS`, `LOSERS`, `GRAND_FINAL` e `GRAND_FINAL_RESET`.
+
+BYE não representa vitória disputada nem derrota: um avanço só é automático depois de decididas todas as origens da partida. Para corrigir excepcionalmente um resultado, dependentes com rounds ou resultados já registrados impedem a operação, protegendo o histórico. A versão não deve ser incorporada à produção sem homologação funcional completa.
