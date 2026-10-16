@@ -1106,12 +1106,6 @@ onMounted(loadBase)
                 :loading="participantReviewingId === row.id"
                 @click="reviewParticipant(row, 'REJEITADA')"
               >Rejeitar</el-button>
-              <el-button
-                v-if="row.teamLeader && auth.isDev"
-                size="small"
-                plain
-                @click="openLeaderTransfer(row)"
-              >Trocar líder</el-button>
               <small v-if="row.teamLeader" class="leader-rejection-help">
                 Líder atual: a rejeição definitiva só é liberada após correção ou transferência da liderança.
               </small>
@@ -1133,6 +1127,12 @@ onMounted(loadBase)
               </template>
               <span v-if="row.reviewReason">{{ row.reviewReason }}</span>
             </div>
+            <el-button
+              v-if="row.teamLeader && auth.isDev"
+              size="small"
+              plain
+              @click="openLeaderTransfer(row)"
+            >Trocar líder</el-button>
           </template>
         </el-table-column>
       </el-table>
