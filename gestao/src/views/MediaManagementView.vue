@@ -263,14 +263,24 @@ async function loadCmsWorkspace() {
     if(Object.keys(data.editorialDraft||{}).length&&data.editorialDraft?._editorState && landingEditor.value)
       landingEditor.value.restoreEditorState(data.editorialDraft._editorState as Record<string,unknown>)
     // Protege assets privados: thumbnails são obtidas COM JWT, não por URL pública.
-    await Promise.allSettled(data.photos.map(async item=>{
-      const blob=await mediaApi.image(item.id)
-      const url=URL.createObjectURL(blob)
-      uploadedUrls.push(url)
-      const photo=photos.value.find(p=>p.id===item.id && p.persisted)
-      if(photo)photo.src=url
-      else URL.revokeObjectURL(url)
-    }))
+    // Somente o editor de seções segue ativo: limitar leituras integrais
+    // do R2 através do Render para evitar exceder o heap de 512 MB.
+    const pending=[...data.photos]
+    const workers=Array.from({length:Math.min(2,pending.length)},async()=>{
+      while(pending.length){
+        const item=pending.shift()
+        if(!item)return
+        try{
+          const blob=await mediaApi.image(item.id)
+          const url=URL.createObjectURL(blob)
+          uploadedUrls.push(url)
+          const photo=photos.value.find(p=>p.id===item.id&&p.persisted)
+          if(photo)photo.src=url
+          else URL.revokeObjectURL(url)
+        }catch{ /* imagem indisponível não bloqueia o editor */ }
+      }
+    })
+    await Promise.all(workers)
     cmsError.value=''
     void oldPhotos
   }catch(error){
