@@ -6,12 +6,10 @@ import HighlightsHero from './components/HighlightsHero.vue'
 import InstitutionalAbout from './components/InstitutionalAbout.vue'
 import TeamRobotsAwards from './components/TeamRobotsAwards.vue'
 import RobotsShowcase from './components/RobotsShowcase.vue'
-import InstitutionalGallery from './components/InstitutionalGallery.vue'
 import InstitutionalEvents from './components/InstitutionalEvents.vue'
 import ActiveCompetition from './components/ActiveCompetition.vue'
 import InstitutionalFooter from './components/InstitutionalFooter.vue'
 import PublicNotFound from './components/PublicNotFound.vue'
-import PublicGalleryPage from './components/PublicGalleryPage.vue'
 import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraft} from './content/localMediaPreview'
 
 const publishedMediaDraft=ref<PreviewDraft|null>(null)
