@@ -355,8 +355,8 @@ async function updateBracket(value: number) {
   await refreshBracket()
 }
 
-watch(mediaPublicationReady, async (ready) => {
-  if (!ready || isNotFound || isGalleryPage) return
+watch([mediaPublicationReady, competitionIdentityReady], async () => {
+  if (!mediaPublicationReady.value || !competitionIdentityReady.value || isNotFound || isGalleryPage) return
   await nextTick()
   setupSectionReveal()
   updateBackToTopVisibility()
@@ -365,6 +365,9 @@ watch(mediaPublicationReady, async (ready) => {
 onMounted(async () => {
   stopPreview=startLocalMediaPreview()
   void loadPublishedMedia()
+  // A API pode ficar indisponível durante picos de leitura no armazenamento.
+  // Nunca bloquear toda a Landing aguardando a identidade da competição.
+  window.setTimeout(() => { competitionIdentityReady.value = true }, 1800)
   updateBackToTopVisibility()
   window.addEventListener('scroll', scheduleBackToTopUpdate, { passive: true })
 
