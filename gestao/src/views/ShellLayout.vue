@@ -301,7 +301,7 @@ watch(() => competition.selectedId, loadAlerts)
         </button>
         <button type="button" class="dev-workspace-option" :class="{ active: isDevMediaWorkspace }"
           :title="collapsed ? 'Gestão de Mídia' : undefined" :aria-current="isDevMediaWorkspace ? 'page' : undefined"
-          @click="go('/midia')">
+          @click="go('/midia/landing')">
           <el-icon><Picture /></el-icon><span v-if="!collapsed">Gestão de Mídia</span>
         </button>
       </div>
@@ -326,7 +326,7 @@ watch(() => competition.selectedId, loadAlerts)
       <nav class="nav-list" aria-label="Navegação principal">
         <section v-for="section in sections" :key="section.label" class="nav-section">
           <span v-if="!collapsed" class="nav-caption">{{ section.label }}</span>
-          <button v-for="item in section.items" :key="item.to" class="nav-item" :class="{ active: isActive(item.to) }" :title="collapsed ? item.label : undefined" @click="go(item.to)">
+          <button v-for="item in section.items" :key="item.to" class="nav-item" :class="{ active: isActive(item.to), 'nav-item--suspended': item.to === '/midia' || item.to === '/midia/albuns' }" :disabled="item.to === '/midia' || item.to === '/midia/albuns'" :aria-disabled="item.to === '/midia' || item.to === '/midia/albuns'" :title="item.to === '/midia' || item.to === '/midia/albuns' ? 'Temporariamente indisponível — migração da Galeria' : (collapsed ? item.label : undefined)" @click="go(item.to)">
             <el-icon><component :is="item.icon" /></el-icon><span v-if="!collapsed">{{ item.label }}</span>
           </button>
         </section>
