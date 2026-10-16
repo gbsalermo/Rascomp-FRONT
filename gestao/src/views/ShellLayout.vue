@@ -87,8 +87,6 @@ const mediaSections = [
     label: 'Mídia',
     items: [
       { label: 'Painel', to: '/', icon: DataBoard },
-      { label: 'Biblioteca', to: '/midia', icon: Picture },
-      { label: 'Álbuns', to: '/midia/albuns', icon: Collection },
       { label: 'Landing', to: '/midia/landing', icon: Grid }
     ]
   }
@@ -100,8 +98,6 @@ const devMediaSections = [
   {
     label: 'Gestão de Mídia',
     items: [
-      { label: 'Biblioteca', to: '/midia', icon: Picture },
-      { label: 'Álbuns', to: '/midia/albuns', icon: Collection },
       { label: 'Landing', to: '/midia/landing', icon: Grid }
     ]
   }
