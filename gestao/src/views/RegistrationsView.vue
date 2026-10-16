@@ -50,6 +50,28 @@ const leaderTransferForm = reactive({
   motivo: ''
 })
 
+const pixConfigDialog=ref(false)
+const pixSaving=ref(false)
+const pixHolder=ref('')
+const pixKey=ref('')
+async function openPixConfig(){
+ if(!competitionId.value)return ElMessage.warning('Selecione uma competição.')
+ pixHolder.value='';pixKey.value='';pixConfigDialog.value=true
+ try {const {data}=await import('../api/http').then(m=>m.http.get<{holderName:string;pixKey:string}>('/api/v1/pix/admin/'+competitionId.value));pixHolder.value=data.holderName;pixKey.value=data.pixKey}
+ catch(e:any){if(e?.response?.status!==404)ElMessage.error('Não foi possível consultar a chave Pix.')}
+}
+async function savePixConfig(){
+ if(!competitionId.value||!pixHolder.value.trim()||!pixKey.value.trim())return ElMessage.warning('Informe o titular e a chave Pix.')
+ pixSaving.value=true
+ try {const {http}=await import('../api/http');await http.put('/api/v1/pix/admin/'+competitionId.value,{holderName:pixHolder.value.trim(),pixKey:pixKey.value.trim()});pixConfigDialog.value=false;ElMessage.success('Chave Pix atualizada.')}
+ catch(e:any){ElMessage.error(e?.response?.data?.message||'Não foi possível salvar a chave Pix.')}
+ finally{pixSaving.value=false}
+}
+async function removePixConfig(){
+ if(!competitionId.value)return
+ try {await ElMessageBox.confirm('Remover a chave Pix desta competição?','Confirmar remoção');const {http}=await import('../api/http');await http.delete('/api/v1/pix/admin/'+competitionId.value);pixConfigDialog.value=false;ElMessage.success('Chave Pix removida.')}
+ catch(e:any){if(e!=='cancel'&&e!=='close')ElMessage.error('Não foi possível remover a chave Pix.')}
+}
 const manualDialog = ref(false)
 const manualSaving = ref(false)
 const manualParticipantDialog = ref(false)
@@ -804,6 +826,7 @@ onMounted(loadBase)
         <p class="muted">Analise, cancele, reative e acompanhe as inscrições sem perder o histórico competitivo.</p>
       </div>
       <div class="heading-actions">
+        <el-button v-if="auth.isDev" @click="openPixConfig">Configurar Pix</el-button>
         <el-button v-if="auth.isDev" @click="openManualParticipantEntry">Adicionar participante avulso</el-button>
         <el-button v-if="auth.isDev" class="brand-button" @click="openManualEntry">Adicionar robô avulso</el-button>
         <el-button :loading="loading" @click="load">Atualizar</el-button>
@@ -1250,6 +1273,19 @@ onMounted(loadBase)
           :loading="leaderTransferSaving"
           @click="transferLeader"
         >Transferir liderança</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="pixConfigDialog" title="Pix da inscrição de participantes" width="min(540px, 94vw)">
+      <div class="manual-entry-form">
+        <p class="muted">A chave será exibida somente na inscrição pessoal da competição selecionada.</p>
+        <label>Nome do titular<el-input v-model="pixHolder" maxlength="180" placeholder="Nome do recebedor" /></label>
+        <label>Chave Pix<el-input v-model="pixKey" maxlength="255" placeholder="CPF, e-mail, telefone ou chave aleatória" /></label>
+      </div>
+      <template #footer>
+        <el-button type="danger" plain @click="removePixConfig">Remover chave</el-button>
+        <el-button @click="pixConfigDialog=false">Cancelar</el-button>
+        <el-button class="brand-button" :loading="pixSaving" @click="savePixConfig">Salvar Pix</el-button>
       </template>
     </el-dialog>
 
