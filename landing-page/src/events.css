@@ -784,3 +784,10 @@ button.event-secondary-action {
   .events-agenda-copy strong { font-size: .95rem; }
   .events-agenda-copy small { font-size: .76rem; }
 }
+
+/* Detalhes consultáveis também para eventos já encerrados. */
+.event-recent-details-toggle{display:inline-flex;align-items:center;justify-content:center;margin-top:10px;padding:7px 12px;border:1px solid #d8b9e2;border-radius:8px;background:#faf6fd;color:#68218a;font:inherit;font-weight:750;cursor:pointer}
+.event-recent-details-toggle:hover,.event-recent-details-toggle:focus-visible{background:#f1e6f8;outline-offset:3px}
+.event-recent-details{margin-top:10px;padding-top:10px;border-top:1px solid #e8ddec}
+.event-recent-details p{white-space:pre-wrap;display:block;overflow:visible;-webkit-line-clamp:unset;line-clamp:unset}
+.event-recent-details small{display:block;margin-top:6px;color:#6c5b70}
