@@ -173,8 +173,8 @@ const competitionHeroEffective = computed(()=>competitionHeroEnabled.value)
 // Esta opção controla APENAS o Hero; a competição/API e sua seção são independentes.
 // A aplicação da regra na Landing requer CMS persistente, fora deste checkpoint.
 const competitionText = ref('')
-const competitionHeroSubtitle = ref('Participe de mais uma edição da nossa competição!')
-const competitionHeroDescription = ref('Acompanhe a programação e conheça as atividades desta edição.')
+const competitionHeroSubtitle = ref('')
+const competitionHeroDescription = ref('')
 const competitionHeroShowExtra = ref(false)
 const competitionHeroExtraLabel = ref('Veja também')
 const competitionHeroExtraDestination = ref<'competition'|'gallery'|'events'>('competition')
@@ -524,6 +524,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
           <div class="about-actual-preview-heading"><strong>Prévia do quadro real da Landing</strong><span>Proporção de referência equivalente à caixa real do Sobre (590 × 468); em outras telas, o quadro acompanha o layout.</span></div>
           <div class="about-actual-frame">
             <img v-if="photo(aboutPreviewId)?.src" :src="photo(aboutPreviewId)?.src" :style="frameStyle('about:'+aboutPreviewId)" alt="Prévia da fotografia na seção Sobre" />
+            <span v-if="!photo(aboutPreviewId)?.src" class="editor-image-unavailable">Imagem indisponível nesta sessão. Confira a Biblioteca ou recarregue a Gestão de Mídia.</span>
             <div class="about-actual-overlay"></div>
             <span class="about-actual-badge">RAS UFRB</span>
             <p class="about-actual-caption">Conheça as atividades e as pessoas que fazem parte da IEEE RAS UFRB.</p>
@@ -706,8 +707,8 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
           <el-form-item label="Subtítulo adicional (opcional)">
             <el-input v-model="competitionHeroSubtitle" maxlength="130" show-word-limit/>
           </el-form-item>
-          <el-form-item class="span-two" label="Descrição complementar (opcional)">
-            <el-input v-model="competitionHeroDescription" type="textarea" :rows="2" maxlength="280" show-word-limit/>
+          <el-form-item class="span-two" label="Texto principal do Hero competitivo (substitui a descrição longa da API)">
+            <el-input v-model="competitionHeroDescription" type="textarea" :rows="2" maxlength="500" show-word-limit/>
           </el-form-item>
         </div>
         <div class="editor-competition-api-fields">
