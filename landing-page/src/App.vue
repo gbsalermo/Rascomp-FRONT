@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api, API_URL } from './api'
 import InstitutionalHeader from './components/InstitutionalHeader.vue'
 import HighlightsHero from './components/HighlightsHero.vue'
+import InstitutionalGallery from './components/InstitutionalGallery.vue'
 import InstitutionalAbout from './components/InstitutionalAbout.vue'
 import TeamRobotsAwards from './components/TeamRobotsAwards.vue'
 import RobotsShowcase from './components/RobotsShowcase.vue'
@@ -434,7 +435,7 @@ onBeforeUnmount(() => {
       <InstitutionalAbout :media-preview="sectionDraft('about')" />
       <TeamRobotsAwards :media-preview="sectionDraft('team')" :sponsors-preview="sectionDraft('sponsors')" />
       <RobotsShowcase :media-preview="sectionDraft('robots')" />
-      <!-- Galeria temporariamente suspensa durante a migração do acervo. -->
+      <InstitutionalGallery />
       <InstitutionalEvents
         :management-url="managementUrl"
         :registration-open="displayedRegistrationOpen"
