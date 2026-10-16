@@ -226,9 +226,11 @@ onBeforeUnmount(()=>{
 .overline{font-size:11px;color:#a01d50;letter-spacing:.14em;font-weight:850}
 .gallery-count{display:block;margin-top:30px;font-size:12px;color:#87798a}
 .gallery-count b{font-size:17px;color:#3d2442}
-.gallery-collage{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:145px 145px;gap:12px;transform:rotate(-2deg)}
-.gallery-collage img{width:100%;height:100%;object-fit:contain;background:#f0eaf1;border-radius:15px;border:1px solid #e5dbe4}
-.gallery-collage img:first-child{grid-row:span 2}
+.gallery-collage{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:145px 145px;gap:18px;align-items:center;justify-items:center;transform:rotate(-2deg)}
+.gallery-collage img{display:block;width:100%;height:100%;object-fit:contain;background:transparent;border:0;border-radius:0;filter:drop-shadow(0 16px 16px rgba(45,20,52,.22));transition:transform .3s ease}
+.gallery-collage img:nth-child(2){transform:translateY(-9px) rotate(5deg)}
+.gallery-collage img:nth-child(3){transform:translate(5px,8px) rotate(-4deg)}
+.gallery-collage img:first-child{grid-row:span 2;transform:rotate(-3deg)}
 .gallery-topline{display:flex;justify-content:space-between;border-top:1px solid #ece2e9;padding-top:20px;align-items:end}
 .gallery-topline h2{margin:9px 0;font-size:clamp(24px,3vw,43px);letter-spacing:-.05em}
 .gallery-topline>span{font-size:12px;color:#7c707d}
