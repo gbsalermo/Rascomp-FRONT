@@ -76,7 +76,7 @@
 .tone-competition .stage-overlay {
   background:
     radial-gradient(circle at 92% 10%, rgba(255,255,255,.08), transparent 26%),
-    linear-gradient(90deg, rgba(31,16,39,.2) 0%, rgba(31,16,39,.08) 58%, rgba(31,16,39,.18) 100%);
+    linear-gradient(90deg, rgba(17,8,23,.88) 0%, rgba(20,9,27,.64) 48%, rgba(31,16,39,.24) 100%);
 }
 
 .highlights-copy.is-competition {
@@ -90,6 +90,11 @@
 
 .highlights-copy.is-competition p {
   max-width: 690px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 2px 12px rgba(0,0,0,.65);
 }
 
 .hero-competition-categories {
