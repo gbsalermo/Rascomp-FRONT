@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api, API_URL } from './api'
 import InstitutionalHeader from './components/InstitutionalHeader.vue'
 import HighlightsHero from './components/HighlightsHero.vue'
@@ -15,6 +15,8 @@ import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraf
 const publishedMediaDraft=ref<PreviewDraft|null>(null)
 // Evita exibir assets estáticos e trocá-los pela publicação CMS após o primeiro render.
 const mediaPublicationReady=ref(false)
+// Evita montar a Intro institucional e inserir o Hero competitivo momentos depois.
+const competitionIdentityReady=ref(false)
 // O CMS só altera seções explicitamente editadas; snapshots antigos preservam o site original.
 const publishedSections=computed<string[]>(()=>{
   const candidate=publishedMediaDraft.value as (PreviewDraft & {__editedSections?:unknown})|null
@@ -106,10 +108,13 @@ const institutionalOnly = computed(() =>
   false
 )
 const competitionModeEnabled = computed(() => !institutionalOnly.value)
-const competitionSectionVisible = computed(() =>
-  competitionModeEnabled.value &&
-  ['INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(currentCompetition.value?.status || '')
-)
+const competitionSectionVisible = computed(() => {
+  if (!competitionModeEnabled.value || !currentCompetition.value) return false
+  const mode = sectionDraft('competition')?.competition?.sectionVisibility ?? 'automatic'
+  if (mode === 'visible') return true
+  if (mode === 'hidden') return false
+  return ['INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(currentCompetition.value.status || '')
+})
 const competitionHeroEnabled = computed(() =>
   competitionModeEnabled.value &&
   (localMediaDraft.value?.competition?.heroEnabled ??
@@ -223,25 +228,27 @@ async function bootstrap() {
   error.value = ''
 
   try {
-    const [competitionList, teamList, categoryList] = await Promise.all([
-      api.competitions(),
-      api.teams(),
-      api.categories()
-    ])
-
+    // Requisições paralelas, mas a identidade da competição é resolvida primeiro:
+    // os dados de equipes e categorias não devem atrasar o primeiro Hero.
+    const competitionRequest = api.competitions()
+    const teamsRequest = api.teams()
+    const categoriesRequest = api.categories()
+    const competitionList = await competitionRequest
     competitions.value = competitionList
-    teams.value = teamList
-    categories.value = categoryList
-
     const focus = competitionList.find(
       (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
     )
-
     competitionId.value = focus?.id
+    competitionIdentityReady.value = true
+
+    const [teamList, categoryList] = await Promise.all([teamsRequest, categoriesRequest])
+    teams.value = teamList
+    categories.value = categoryList
     await refreshCompetition()
   } catch (exception: any) {
     error.value = exception?.response?.data?.message || 'A API pública do RASCOMP ainda não está disponível.'
   } finally {
+    competitionIdentityReady.value = true
     loading.value = false
   }
 }
@@ -346,18 +353,29 @@ async function updateBracket(value: number) {
   await refreshBracket()
 }
 
+watch([mediaPublicationReady, competitionIdentityReady], async () => {
+  if (!mediaPublicationReady.value || !competitionIdentityReady.value || isNotFound || isGalleryPage) return
+  await nextTick()
+  setupSectionReveal()
+  updateBackToTopVisibility()
+})
+
 onMounted(async () => {
   stopPreview=startLocalMediaPreview()
   void loadPublishedMedia()
+  // A API pode ficar indisponível durante picos de leitura no armazenamento.
+  // Nunca bloquear toda a Landing aguardando a identidade da competição.
+  window.setTimeout(() => { competitionIdentityReady.value = true }, 1800)
   updateBackToTopVisibility()
   window.addEventListener('scroll', scheduleBackToTopUpdate, { passive: true })
 
   if (isNotFound) return
 
   await nextTick()
-  setupSectionReveal()
+  if (mediaPublicationReady.value || mediaPreviewMode) setupSectionReveal()
 
   if (!competitionModeEnabled.value) {
+    competitionIdentityReady.value = true
     loading.value = false
     return
   }
@@ -401,15 +419,15 @@ onBeforeUnmount(() => {
       @registration-unavailable="showRegistrationUnavailable"
     />
 
-    <main v-if="mediaPublicationReady || mediaPreviewMode" id="top">
+    <main v-if="mediaPreviewMode || (mediaPublicationReady && competitionIdentityReady)" id="top">
       <HighlightsHero
         :competition="displayedCompetition"
         :competition-hero-enabled="competitionHeroEnabled"
         :competition-media="sectionDraft('competition')?.competition"
         :categories="categories"
         :enabled-category-ids="enabledCategoryIds"
-        :registrations="registrations"
         :current-registration-lot="currentRegistrationLot"
+        :registrations="registrations"
         :management-url="managementUrl"
         :media-preview="sectionDraft('heroes')"
       />
@@ -428,9 +446,11 @@ onBeforeUnmount(() => {
       <ActiveCompetition
         v-if="competitionSectionVisible"
         :competition="displayedCompetition"
+        :competition-media="sectionDraft('competition')?.competition"
         :teams="teams"
         :categories="categories"
         :enabled-category-ids="enabledCategoryIds"
+        :current-registration-lot="currentRegistrationLot"
         :registrations="registrations"
         :podiums="podiums"
         :ranking="ranking"
@@ -458,7 +478,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <InstitutionalFooter :media-preview="sectionDraft('footer')" />
+    <InstitutionalFooter v-if="mediaPublicationReady || mediaPreviewMode" :media-preview="sectionDraft('footer')" />
 
     <Transition name="registration-notice">
       <aside
