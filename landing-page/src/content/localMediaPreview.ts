@@ -16,7 +16,7 @@ export type PreviewDraft = {
   robots: {banner?:PreviewImage;categories:Record<string,PreviewRobot[]>}
   events: {id:string;title:string;date:string;endDate:string;location:string;description:string;type:string;active:boolean;image?:PreviewImage}[]
   sponsors: {id:number;name:string;url:string;image?:PreviewImage}[]
-  competition: {sectionImage?:PreviewImage;sectionText:string;heroEnabled:boolean;institutionalOnly?:boolean;heroImage?:PreviewImage;subtitle:string;description:string;showExtra:boolean;extraLabel:string;extraDestination:string}
+  competition: {sectionImage?:PreviewImage;sectionText:string;heroPosition?:number;sectionVisibility?:'automatic'|'visible'|'hidden';heroEnabled:boolean;institutionalOnly?:boolean;heroImage?:PreviewImage;subtitle:string;description:string;showExtra:boolean;extraLabel:string;extraDestination:string}
   footer: {email:string;instagram:string;instagramHandle:string;whatsapp:string;whatsappLabel:string;campusDetail:string;contactIntro:string;supportTitle:string;supportMessage:string;links:{id:string;label:string;url:string}[]} | null
 }
 export const localMediaDraft = shallowRef<PreviewDraft|null>(null)
