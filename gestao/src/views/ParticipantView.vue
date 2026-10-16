@@ -67,6 +67,19 @@ const removingRobotId = ref<number>()
 const registrationDialog = ref(false)
 const creatingRegistration = ref(false)
 const personalRegistrationDialog = ref(false)
+const pixDialog=ref(false)
+const pixPayment=ref<{holderName:string;pixKey:string}|null>(null)
+async function openPixDialog(){
+ const id=availablePersonalRegistrationCompetitions.value[0]?.id ?? availableCompetitions.value[0]?.id
+ if(!id)return
+ try {const {data}=await http.get<{holderName:string;pixKey:string}>('/api/v1/participante/pix/'+id);pixPayment.value=data;pixDialog.value=true}
+ catch {ElMessage.warning('Chave Pix ainda não configurada para esta competição.')}
+}
+async function copyPix(){
+ if(!pixPayment.value)return
+ try {await navigator.clipboard.writeText(pixPayment.value.pixKey);ElMessage.success('Chave Pix copiada.')}
+ catch {ElMessage.warning('Não foi possível copiar automaticamente. Selecione a chave para copiar.')}
+}
 const creatingPersonalRegistration = ref(false)
 const personalRegistrationReceipt = ref<File>()
 const robotRegistrationReceipt = ref<File>()
@@ -1173,6 +1186,7 @@ onBeforeUnmount(() => {
             >
               Fazer minha inscrição
             </el-button>
+            <el-button v-if="availableCompetitions.length" @click="openPixDialog">Pagar com Pix</el-button>
           </div>
         </div>
 
@@ -1545,6 +1559,17 @@ onBeforeUnmount(() => {
         <el-button @click="inviteDialog = false">Cancelar</el-button>
         <el-button class="brand-button" :loading="invitingMember" @click="inviteMember">Enviar convite</el-button>
       </template>
+    </el-dialog>
+
+    <el-dialog v-model="pixDialog" title="Pagamento por Pix" width="min(460px, 94vw)">
+      <div v-if="pixPayment" style="display:grid;gap:14px">
+        <div><small>Nome do titular</small><div><strong>{{ pixPayment.holderName }}</strong></div></div>
+        <div><small>Chave Pix</small><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <code style="overflow-wrap:anywhere;flex:1;min-width:0">{{ pixPayment.pixKey }}</code>
+          <el-button class="brand-button" @click="copyPix">Copiar</el-button>
+        </div></div>
+        <small class="muted">Após realizar o pagamento, envie o comprovante na sua inscrição. Copiar a chave não confirma o pagamento.</small>
+      </div>
     </el-dialog>
 
     <el-dialog v-model="personalRegistrationDialog" title="Minha inscrição na competição" width="min(620px, 94vw)">
