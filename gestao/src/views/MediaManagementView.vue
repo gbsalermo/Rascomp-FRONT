@@ -263,14 +263,26 @@ async function loadCmsWorkspace() {
     if(Object.keys(data.editorialDraft||{}).length&&data.editorialDraft?._editorState && landingEditor.value)
       landingEditor.value.restoreEditorState(data.editorialDraft._editorState as Record<string,unknown>)
     // Protege assets privados: thumbnails são obtidas COM JWT, não por URL pública.
-    await Promise.allSettled(data.photos.map(async item=>{
-      const blob=await mediaApi.image(item.id)
-      const url=URL.createObjectURL(blob)
-      uploadedUrls.push(url)
-      const photo=photos.value.find(p=>p.id===item.id && p.persisted)
-      if(photo)photo.src=url
-      else URL.revokeObjectURL(url)
-    }))
+    // Evita disparar dezenas de downloads integrais do R2 simultaneamente.
+    // O backend serve esses arquivos como byte arrays e possui memória limitada.
+    const queue=[...data.photos]
+    const workers=Array.from({length:Math.min(2,queue.length)},async()=>{
+      while(queue.length){
+        const item=queue.shift()
+        if(!item)return
+        try{
+          const blob=await mediaApi.image(item.id)
+          const url=URL.createObjectURL(blob)
+          uploadedUrls.push(url)
+          const photo=photos.value.find(p=>p.id===item.id&&p.persisted)
+          if(photo)photo.src=url
+          else URL.revokeObjectURL(url)
+        }catch{
+          // Arquivo indisponível não impede a edição dos demais itens.
+        }
+      }
+    })
+    await Promise.all(workers)
     cmsError.value=''
     void oldPhotos
   }catch(error){
