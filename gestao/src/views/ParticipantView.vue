@@ -70,8 +70,8 @@ const selectedRegistrationCategoryIds = ref<number[]>([])
 const personalRegistrationDialog = ref(false)
 const pixDialog=ref(false)
 const pixPayment=ref<{holderName:string;pixKey:string}|null>(null)
-async function openPixDialog(){
- const id=availablePersonalRegistrationCompetitions.value[0]?.id ?? availableCompetitions.value[0]?.id
+async function openPixDialog(competitionId?: number){
+ const id=competitionId ?? availablePersonalRegistrationCompetitions.value[0]?.id ?? availableCompetitions.value[0]?.id
  if(!id)return
  try {const {data}=await http.get<{holderName:string;pixKey:string}>('/api/v1/participante/pix/'+id);pixPayment.value=data;pixDialog.value=true}
  catch {ElMessage.warning('Chave Pix ainda não configurada para esta competição.')}
@@ -81,6 +81,30 @@ async function copyPix(){
  try {await navigator.clipboard.writeText(pixPayment.value.pixKey);ElMessage.success('Chave Pix copiada.')}
  catch {ElMessage.warning('Não foi possível copiar automaticamente. Selecione a chave para copiar.')}
 }
+type CurrentLot = { nome?: string; dataInicio?: string; dataFim?: string }
+const currentLots = ref<Record<number, CurrentLot | null>>({})
+async function loadCurrentLot(competitionId?: number) {
+  if (!competitionId) return
+  try {
+    const { data, status } = await http.get<CurrentLot>(`/api/v1/public/competicoes/${competitionId}/lote-atual`)
+    currentLots.value = { ...currentLots.value, [competitionId]: status === 204 ? null : data }
+  } catch {
+    currentLots.value = { ...currentLots.value, [competitionId]: null }
+  }
+}
+const personalLot = computed(() => currentLots.value[personalRegistrationForm.competitionId ?? -1])
+const robotLot = computed(() => currentLots.value[registrationForm.competitionId ?? -1])
+const mainCompetitionId = computed(() => availableCompetitions.value[0]?.id ?? personalRegistrations.value[0]?.competitionId)
+const mainLot = computed(() => currentLots.value[mainCompetitionId.value ?? -1])
+
+
+watch(() => personalRegistrationForm.competitionId, (id) => { void loadCurrentLot(id) })
+watch(() => registrationForm.competitionId, (id) => { void loadCurrentLot(id) })
+watch([personalRegistrationDialog, registrationDialog], ([personalOpen, robotOpen]) => {
+  if (personalOpen) void loadCurrentLot(personalRegistrationForm.competitionId)
+  if (robotOpen) void loadCurrentLot(registrationForm.competitionId)
+})
+
 const creatingPersonalRegistration = ref(false)
 const personalRegistrationReceipt = ref<File>()
 const robotRegistrationReceipt = ref<File>()
@@ -179,6 +203,8 @@ const availableCompetitions = computed(() => {
       && competition.fimInscricoes >= today
   )
 })
+watch(mainCompetitionId, (id) => { void loadCurrentLot(id) }, { immediate: true })
+
 const selectedParticipantBracket = computed(() =>
   participantBracketRegistrationId.value
     ? sumoMap.value[participantBracketRegistrationId.value]
@@ -1210,6 +1236,7 @@ onBeforeUnmount(() => {
           <div>
             <span class="eyebrow">Participante</span>
             <h2>Minha inscrição</h2>
+            <small v-if="mainCompetitionId" class="muted">Lote atual: <strong>{{ mainLot?.nome || 'Sem lote vigente' }}</strong></small>
           </div>
           <div class="participant-section-actions">
             <span class="muted">Sua inscrição individual na competição. Equipe e robôs são tratados separadamente.</span>
@@ -1623,6 +1650,8 @@ onBeforeUnmount(() => {
               />
             </el-select>
           </label>
+          <div v-if="personalLot?.nome" class="span-2 participant-flow-note"><strong>Lote atual: {{ personalLot.nome }}</strong></div>
+          <div class="span-2"><el-button @click="openPixDialog(personalRegistrationForm.competitionId)">Pagar com Pix</el-button></div>
           <label class="span-2">Observação <small class="muted">(opcional)</small>
             <el-input v-model="personalRegistrationForm.observacao" type="textarea" :rows="3" maxlength="500" />
           </label>
@@ -1669,6 +1698,9 @@ onBeforeUnmount(() => {
               />
             </el-select>
           </label>
+
+          <div v-if="robotLot?.nome" class="span-2 participant-flow-note"><strong>Lote atual: {{ robotLot.nome }}</strong></div>
+          <div class="span-2"><el-button @click="openPixDialog(registrationForm.competitionId)">Pagar com Pix</el-button></div>
 
           <label v-if="!footballSelected" class="span-2">Robô
             <el-select v-model="registrationForm.robotId" style="width:100%" @change="onRegistrationRobotChange">
