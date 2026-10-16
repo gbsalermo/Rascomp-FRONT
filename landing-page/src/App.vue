@@ -275,6 +275,7 @@ async function bootstrap() {
 }
 
 async function syncPublishedCompetition() {
+  const previousCompetition=competitions.value.find((item:any)=>item.id===competitionId.value)
   const competitionList = await api.competitions()
   if(JSON.stringify(competitions.value)!==JSON.stringify(competitionList)){
     competitions.value = competitionList
@@ -285,7 +286,11 @@ async function syncPublishedCompetition() {
     (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
   )
 
-  const changed=competitionId.value!==published?.id
+  const previous=previousCompetition
+  // Detectar alterações de status e configuração, mesmo mantendo o ID.
+  // A comparação precisa usar o snapshot anterior à atribuição de competitions.value.
+  const changed=competitionId.value!==published?.id ||
+    JSON.stringify(previous??null)!==JSON.stringify(published??null)
   competitionId.value = published?.id
   if(changed)await refreshCompetition()
 }
