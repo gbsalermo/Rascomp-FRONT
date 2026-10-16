@@ -166,6 +166,7 @@ function restoreMissingOriginalHeroes() {
 const competitionBannerId = ref<number | undefined>()
 const competitionHeroPhotoId = ref<number | undefined>()
 const competitionHeroEnabled = ref(false)
+const competitionHeroPosition = ref(0)
 const institutionalOnly = ref(false)
 const competitionSectionVisibility = ref<'automatic'|'visible'|'hidden'>('automatic')
 const competitionHeroEffective = computed(()=>competitionHeroEnabled.value)
@@ -315,6 +316,7 @@ function createPreviewDraft(){
     competition:{
       sectionImage:previewImage(competitionBannerId.value,'competition-banner'),sectionText:competitionText.value,
       heroEnabled:competitionHeroEnabled.value,
+      heroPosition:competitionHeroPosition.value,
       institutionalOnly:institutionalOnly.value,
       sectionVisibility:competitionSectionVisibility.value,
       heroImage:previewImage(competitionHeroPhotoId.value,'competition-hero'),
@@ -337,7 +339,7 @@ function getEditorState():Record<string,unknown> {
     robotTitles:robotTitles.value,robotTitleLocations:robotTitleLocations.value,
     robotBannerId:robotBannerId.value,imageAdjustments:imageAdjustments.value,
     competitionBannerId:competitionBannerId.value,competitionHeroPhotoId:competitionHeroPhotoId.value,
-    competitionHeroEnabled:competitionHeroEnabled.value,institutionalOnly:institutionalOnly.value,competitionSectionVisibility:competitionSectionVisibility.value,competitionText:competitionText.value,
+    competitionHeroEnabled:competitionHeroEnabled.value,competitionHeroPosition:competitionHeroPosition.value,institutionalOnly:institutionalOnly.value,competitionSectionVisibility:competitionSectionVisibility.value,competitionText:competitionText.value,
     competitionHeroSubtitle:competitionHeroSubtitle.value,competitionHeroDescription:competitionHeroDescription.value,
     competitionHeroShowExtra:competitionHeroShowExtra.value,
     competitionHeroExtraLabel:competitionHeroExtraLabel.value,
@@ -362,6 +364,7 @@ function restoreEditorState(saved:Record<string,unknown>) {
   if(typeof saved.competitionBannerId==='number')competitionBannerId.value=saved.competitionBannerId
   if(typeof saved.competitionHeroPhotoId==='number')competitionHeroPhotoId.value=saved.competitionHeroPhotoId
   if(typeof saved.competitionHeroEnabled==='boolean')competitionHeroEnabled.value=saved.competitionHeroEnabled
+  if(typeof saved.competitionHeroPosition==='number')competitionHeroPosition.value=saved.competitionHeroPosition
   if(typeof saved.institutionalOnly==='boolean')institutionalOnly.value=saved.institutionalOnly
   if(['automatic','visible','hidden'].includes(String(saved.competitionSectionVisibility)))competitionSectionVisibility.value=saved.competitionSectionVisibility as typeof competitionSectionVisibility.value
   if(typeof saved.competitionText==='string')competitionText.value=saved.competitionText
@@ -397,7 +400,7 @@ function getEditedSections():string[]{
     robots:['robotPhotos','robotTitles','robotTitleLocations','robotBannerId'],
     events:['events'],
     sponsors:['sponsors'],
-    competition:['competitionBannerId','competitionHeroPhotoId','competitionHeroEnabled','institutionalOnly','competitionSectionVisibility','competitionText','competitionHeroSubtitle','competitionHeroDescription','competitionHeroShowExtra','competitionHeroExtraLabel','competitionHeroExtraDestination'],
+    competition:['competitionBannerId','competitionHeroPhotoId','competitionHeroEnabled','competitionHeroPosition','institutionalOnly','competitionSectionVisibility','competitionText','competitionHeroSubtitle','competitionHeroDescription','competitionHeroShowExtra','competitionHeroExtraLabel','competitionHeroExtraDestination'],
     footer:['footer']
   }
   const touched=Object.entries(sections).filter(([,fields])=>fields.some(field=>
@@ -447,6 +450,9 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
             <el-button size="small" @click="restoreMissingOriginalHeroes">Recuperar originais removidos</el-button>
             <el-button type="primary" plain @click="addHero">+ Adicionar Hero</el-button>
           </div>
+        </div>
+        <div v-if="competitionHeroEnabled" class="editor-info">
+          Hero competitivo ativo · posição {{ competitionHeroPosition+1 }} no carrossel. Para alterar imagem, texto ou ordem, abra <el-button link type="primary" @click="section='Competição'">Competição</el-button>.
         </div>
         <div class="editor-inventory">
           <button v-for="(item,index) in heroes" :key="item.id" type="button" class="editor-inventory-card" :class="{active:selectedHeroId===item.id}" @click="selectedHeroId=item.id">
@@ -667,6 +673,11 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
           <div><h3>Hero competitivo na Intro</h3><p>Mesma composição visual da Intro, com título, lote e status protegidos e provenientes da API.</p></div>
           <el-switch v-model="competitionHeroEnabled" active-text="Ativo" inactive-text="Oculto" />
         </div>
+        <el-form-item label="Posição do Hero competitivo no carrossel" class="editor-spaced">
+          <el-select v-model="competitionHeroPosition" style="width:280px">
+            <el-option v-for="position in heroes.length+1" :key="position" :label="`Posição ${position}${position===1?' · primeiro destaque':''}`" :value="position-1" />
+          </el-select>
+        </el-form-item>
         <div v-if="competitionHeroEffective" class="editor-hero-preview editor-hero-competition">
           <img v-if="photo(competitionHeroPhotoId)?.src" :src="photo(competitionHeroPhotoId)?.src" :style="frameStyle('competition-hero')" alt="Imagem escolhida para o Hero competitivo"/>
           <div class="editor-hero-copy">
