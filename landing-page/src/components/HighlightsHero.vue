@@ -162,8 +162,8 @@ const slides = computed<HeroSlide[]>(() => {
       secondaryHref:props.competitionMedia?.extraDestination==='gallery' ? '#galeria'
         : props.competitionMedia?.extraDestination==='events' ? '#eventos' : '#competicao-atual',
       tone: 'competition',
-      image:props.competitionMedia?.heroImage?.src,
-      previewFrame:props.competitionMedia?.heroImage?.frame,
+      image:props.competitionMedia?.heroImage?.src || props.competitionMedia?.sectionImage?.src,
+      previewFrame:props.competitionMedia?.heroImage?.src ? props.competitionMedia?.heroImage?.frame : props.competitionMedia?.sectionImage?.frame,
       imageAlt: 'Hero da competição',
       mediaLabel: 'Competição vigente da IEEE RAS UFRB',
       kind: 'competition',
