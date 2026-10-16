@@ -94,6 +94,14 @@ function thirdPlaceMatch() {
 }
 
 function finalMainMatch() {
+  if (currentBracket.value?.bracketFormat === 'DOUBLE_ELIMINATION') {
+    const reset = matches.value.find((item) => item.bracketSection === 'GRAND_FINAL_RESET')
+    if (reset && resultFor(reset.id)) return reset
+    const grand = matches.value.find((item) => item.bracketSection === 'GRAND_FINAL')
+    const grandResult = grand ? resultFor(grand.id) : undefined
+    // Só existe decisão sem reset quando o invicto (slot A) vence.
+    return grand && grandResult?.winnerRegistrationId === grand.registrationAId ? grand : undefined
+  }
   return matches.value
     .filter((item) => item.tipoPartida !== 'TERCEIRO_LUGAR')
     .sort((a, b) => b.rodada - a.rodada || a.ordem - b.ordem)[0]
@@ -116,6 +124,30 @@ function competitiveState(registration: Registration) {
     if ([final.registrationAId, final.registrationBId].includes(registration.id)) {
       return { code: 'VICE', label: 'Vice-campeão', type: 'info' as const }
     }
+  }
+
+  if (currentBracket.value?.bracketFormat === 'DOUBLE_ELIMINATION') {
+    const losersFinal = matches.value
+      .filter((item) => item.bracketSection === 'LOSERS')
+      .sort((a, b) => b.rodada - a.rodada)[0]
+    const losersResult = losersFinal ? resultFor(losersFinal.id) : undefined
+    if (losersFinal && losersResult
+        && [losersFinal.registrationAId, losersFinal.registrationBId].includes(registration.id)
+        && losersResult.winnerRegistrationId !== registration.id) {
+      return { code: 'TERCEIRO', label: '3º lugar', type: 'success' as const }
+    }
+
+    const losses = matches.value.filter((match) => {
+      const result = resultFor(match.id)
+      return result && result.winnerRegistrationId !== registration.id
+        && [match.registrationAId, match.registrationBId].includes(registration.id)
+    }).length
+    if (losses >= 2) {
+      return { code: 'ELIMINADO', label: 'Eliminado', type: 'info' as const }
+    }
+    const latest = latestInspection(registration.id)
+    if (latest?.aprovada) return { code: 'EM_DISPUTA', label: losses === 1 ? 'Chave dos perdedores' : 'Invicto', type: 'success' as const }
+    return { code: 'PREPARACAO', label: 'Preparação', type: 'warning' as const }
   }
 
   const third = thirdPlaceMatch()
