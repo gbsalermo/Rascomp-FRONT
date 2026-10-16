@@ -85,7 +85,7 @@ const currentLots = ref<Record<number, CurrentLot | null>>({})
 async function loadCurrentLot(competitionId?: number) {
   if (!competitionId) return
   try {
-    const { data, status } = await publicApi.get<CurrentLot>(`/competicoes/${competitionId}/lote-atual`)
+    const { data, status } = await http.get<CurrentLot>(`/api/v1/public/competicoes/${competitionId}/lote-atual`)
     currentLots.value = { ...currentLots.value, [competitionId]: status === 204 ? null : data }
   } catch {
     currentLots.value = { ...currentLots.value, [competitionId]: null }
