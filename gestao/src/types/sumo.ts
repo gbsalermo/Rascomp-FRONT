@@ -49,6 +49,7 @@ export interface Bracket {
   status?: string
   ativo?: boolean
   atual?: boolean
+  bracketFormat?: 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION'
   generationReason?: string
   generatedByUserId?: number
   generatedByUserNome?: string
@@ -68,6 +69,10 @@ export interface Match {
   rodada: number
   ordem: number
   tipoPartida?: 'ELIMINATORIA' | 'TERCEIRO_LUGAR'
+  bracketFormat?: 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION'
+  bracketSection?: 'WINNERS' | 'LOSERS' | 'GRAND_FINAL' | 'GRAND_FINAL_RESET'
+  winnerNextMatchId?: number
+  loserNextMatchId?: number
   registrationAId?: number
   registrationAStatus?: string
   robotAId?: number
