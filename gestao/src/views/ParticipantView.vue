@@ -93,6 +93,10 @@ async function loadCurrentLot(competitionId?: number) {
 }
 const personalLot = computed(() => currentLots.value[personalRegistrationForm.competitionId ?? -1])
 const robotLot = computed(() => currentLots.value[registrationForm.competitionId ?? -1])
+const mainCompetitionId = computed(() => availableCompetitions.value[0]?.id)
+const mainLot = computed(() => currentLots.value[mainCompetitionId.value ?? -1])
+watch(mainCompetitionId, (id) => { void loadCurrentLot(id) }, { immediate: true })
+
 watch(() => personalRegistrationForm.competitionId, (id) => { void loadCurrentLot(id) })
 watch(() => registrationForm.competitionId, (id) => { void loadCurrentLot(id) })
 watch([personalRegistrationDialog, registrationDialog], ([personalOpen, robotOpen]) => {
@@ -1196,6 +1200,7 @@ onBeforeUnmount(() => {
           <div>
             <span class="eyebrow">Participante</span>
             <h2>Minha inscrição</h2>
+            <small v-if="mainLot?.nome" class="muted">Lote atual: <strong>{{ mainLot.nome }}</strong></small>
           </div>
           <div class="participant-section-actions">
             <span class="muted">Sua inscrição individual na competição. Equipe e robôs são tratados separadamente.</span>
