@@ -166,13 +166,15 @@ function restoreMissingOriginalHeroes() {
 const competitionBannerId = ref<number | undefined>()
 const competitionHeroPhotoId = ref<number | undefined>()
 const competitionHeroEnabled = ref(false)
+const competitionHeroPosition = ref(0)
 const institutionalOnly = ref(false)
+const competitionSectionVisibility = ref<'automatic'|'visible'|'hidden'>('automatic')
 const competitionHeroEffective = computed(()=>competitionHeroEnabled.value)
 // Esta opção controla APENAS o Hero; a competição/API e sua seção são independentes.
 // A aplicação da regra na Landing requer CMS persistente, fora deste checkpoint.
 const competitionText = ref('')
-const competitionHeroSubtitle = ref('Participe de mais uma edição da nossa competição!')
-const competitionHeroDescription = ref('Acompanhe a programação e conheça as atividades desta edição.')
+const competitionHeroSubtitle = ref('')
+const competitionHeroDescription = ref('')
 const competitionHeroShowExtra = ref(false)
 const competitionHeroExtraLabel = ref('Veja também')
 const competitionHeroExtraDestination = ref<'competition'|'gallery'|'events'>('competition')
@@ -314,7 +316,9 @@ function createPreviewDraft(){
     competition:{
       sectionImage:previewImage(competitionBannerId.value,'competition-banner'),sectionText:competitionText.value,
       heroEnabled:competitionHeroEnabled.value,
+      heroPosition:competitionHeroPosition.value,
       institutionalOnly:institutionalOnly.value,
+      sectionVisibility:competitionSectionVisibility.value,
       heroImage:previewImage(competitionHeroPhotoId.value,'competition-hero'),
       subtitle:competitionHeroSubtitle.value,description:competitionHeroDescription.value,
       showExtra:competitionHeroShowExtra.value,extraLabel:competitionHeroExtraLabel.value,
@@ -335,7 +339,7 @@ function getEditorState():Record<string,unknown> {
     robotTitles:robotTitles.value,robotTitleLocations:robotTitleLocations.value,
     robotBannerId:robotBannerId.value,imageAdjustments:imageAdjustments.value,
     competitionBannerId:competitionBannerId.value,competitionHeroPhotoId:competitionHeroPhotoId.value,
-    competitionHeroEnabled:competitionHeroEnabled.value,institutionalOnly:institutionalOnly.value,competitionText:competitionText.value,
+    competitionHeroEnabled:competitionHeroEnabled.value,competitionHeroPosition:competitionHeroPosition.value,institutionalOnly:institutionalOnly.value,competitionSectionVisibility:competitionSectionVisibility.value,competitionText:competitionText.value,
     competitionHeroSubtitle:competitionHeroSubtitle.value,competitionHeroDescription:competitionHeroDescription.value,
     competitionHeroShowExtra:competitionHeroShowExtra.value,
     competitionHeroExtraLabel:competitionHeroExtraLabel.value,
@@ -360,7 +364,9 @@ function restoreEditorState(saved:Record<string,unknown>) {
   if(typeof saved.competitionBannerId==='number')competitionBannerId.value=saved.competitionBannerId
   if(typeof saved.competitionHeroPhotoId==='number')competitionHeroPhotoId.value=saved.competitionHeroPhotoId
   if(typeof saved.competitionHeroEnabled==='boolean')competitionHeroEnabled.value=saved.competitionHeroEnabled
+  if(typeof saved.competitionHeroPosition==='number')competitionHeroPosition.value=saved.competitionHeroPosition
   if(typeof saved.institutionalOnly==='boolean')institutionalOnly.value=saved.institutionalOnly
+  if(['automatic','visible','hidden'].includes(String(saved.competitionSectionVisibility)))competitionSectionVisibility.value=saved.competitionSectionVisibility as typeof competitionSectionVisibility.value
   if(typeof saved.competitionText==='string')competitionText.value=saved.competitionText
   if(typeof saved.competitionHeroSubtitle==='string')competitionHeroSubtitle.value=saved.competitionHeroSubtitle
   if(typeof saved.competitionHeroDescription==='string')competitionHeroDescription.value=saved.competitionHeroDescription
@@ -394,7 +400,7 @@ function getEditedSections():string[]{
     robots:['robotPhotos','robotTitles','robotTitleLocations','robotBannerId'],
     events:['events'],
     sponsors:['sponsors'],
-    competition:['competitionBannerId','competitionHeroPhotoId','competitionHeroEnabled','institutionalOnly','competitionText','competitionHeroSubtitle','competitionHeroDescription','competitionHeroShowExtra','competitionHeroExtraLabel','competitionHeroExtraDestination'],
+    competition:['competitionBannerId','competitionHeroPhotoId','competitionHeroEnabled','competitionHeroPosition','institutionalOnly','competitionSectionVisibility','competitionText','competitionHeroSubtitle','competitionHeroDescription','competitionHeroShowExtra','competitionHeroExtraLabel','competitionHeroExtraDestination'],
     footer:['footer']
   }
   const touched=Object.entries(sections).filter(([,fields])=>fields.some(field=>
@@ -444,6 +450,9 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
             <el-button size="small" @click="restoreMissingOriginalHeroes">Recuperar originais removidos</el-button>
             <el-button type="primary" plain @click="addHero">+ Adicionar Hero</el-button>
           </div>
+        </div>
+        <div v-if="competitionHeroEnabled" class="editor-info">
+          Hero competitivo ativo · posição {{ competitionHeroPosition+1 }} no carrossel. Para alterar imagem, texto ou ordem, abra <el-button link type="primary" @click="section='Competição'">Competição</el-button>.
         </div>
         <div class="editor-inventory">
           <button v-for="(item,index) in heroes" :key="item.id" type="button" class="editor-inventory-card" :class="{active:selectedHeroId===item.id}" @click="selectedHeroId=item.id">
@@ -515,6 +524,7 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
           <div class="about-actual-preview-heading"><strong>Prévia do quadro real da Landing</strong><span>Proporção de referência equivalente à caixa real do Sobre (590 × 468); em outras telas, o quadro acompanha o layout.</span></div>
           <div class="about-actual-frame">
             <img v-if="photo(aboutPreviewId)?.src" :src="photo(aboutPreviewId)?.src" :style="frameStyle('about:'+aboutPreviewId)" alt="Prévia da fotografia na seção Sobre" />
+            <span v-if="!photo(aboutPreviewId)?.src" class="editor-image-unavailable">Imagem indisponível nesta sessão. Confira a Biblioteca ou recarregue a Gestão de Mídia.</span>
             <div class="about-actual-overlay"></div>
             <span class="about-actual-badge">RAS UFRB</span>
             <p class="about-actual-caption">Conheça as atividades e as pessoas que fazem parte da IEEE RAS UFRB.</p>
@@ -634,8 +644,16 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
           O nome da competição, o estado das inscrições, o lote atual, as categorias e o botão principal vêm da API. A Gestão de Mídia complementa a apresentação, sem modificar os dados oficiais.
         </div>
         <div class="editor-heading editor-spaced">
-          <div><h3>Modo institucional (ocultar competição)</h3><p>Ativado: a Landing fica exclusivamente institucional, mesmo com competição vigente. Desativado: nas inscrições abertas só o Hero pode aparecer se habilitado abaixo; após encerrar inscrições, a seção Competição aparece automaticamente durante a disputa.</p></div>
+          <div><h3>Modo institucional (ocultar competição)</h3><p>Ativado: a Landing fica exclusivamente institucional, mesmo com competição vigente. Desativado: use o controle abaixo para escolher quando exibir a seção Competição, independente do Hero.</p></div>
           <el-switch v-model="institutionalOnly" active-text="Somente institucional" inactive-text="Competição automática" />
+        </div>
+        <div class="editor-heading editor-spaced">
+          <div><h3>Exibição da seção Competição</h3><p>Controle independente do Hero: exiba equipes, categorias e cronograma também durante as inscrições abertas, ou oculte a seção quando preferir. Os dados oficiais continuam vindo do sistema.</p></div>
+          <el-select v-model="competitionSectionVisibility" class="competition-visibility-select" style="width:240px" aria-label="Exibição da seção Competição">
+            <el-option label="Automática (comportamento anterior)" value="automatic" />
+            <el-option label="Exibir seção" value="visible" />
+            <el-option label="Ocultar seção" value="hidden" />
+          </el-select>
         </div>
         <h3>Imagem principal da seção Competição</h3>
         <div class="editor-wide-image">
@@ -656,6 +674,11 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
           <div><h3>Hero competitivo na Intro</h3><p>Mesma composição visual da Intro, com título, lote e status protegidos e provenientes da API.</p></div>
           <el-switch v-model="competitionHeroEnabled" active-text="Ativo" inactive-text="Oculto" />
         </div>
+        <el-form-item label="Posição do Hero competitivo no carrossel" class="editor-spaced">
+          <el-select v-model="competitionHeroPosition" style="width:280px">
+            <el-option v-for="position in heroes.length+1" :key="position" :label="`Posição ${position}${position===1?' · primeiro destaque':''}`" :value="position-1" />
+          </el-select>
+        </el-form-item>
         <div v-if="competitionHeroEffective" class="editor-hero-preview editor-hero-competition">
           <img v-if="photo(competitionHeroPhotoId)?.src" :src="photo(competitionHeroPhotoId)?.src" :style="frameStyle('competition-hero')" alt="Imagem escolhida para o Hero competitivo"/>
           <div class="editor-hero-copy">
@@ -684,8 +707,8 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
           <el-form-item label="Subtítulo adicional (opcional)">
             <el-input v-model="competitionHeroSubtitle" maxlength="130" show-word-limit/>
           </el-form-item>
-          <el-form-item class="span-two" label="Descrição complementar (opcional)">
-            <el-input v-model="competitionHeroDescription" type="textarea" :rows="2" maxlength="280" show-word-limit/>
+          <el-form-item class="span-two" label="Texto principal do Hero competitivo (substitui a descrição longa da API)">
+            <el-input v-model="competitionHeroDescription" type="textarea" :rows="2" maxlength="500" show-word-limit/>
           </el-form-item>
         </div>
         <div class="editor-competition-api-fields">
@@ -737,6 +760,12 @@ defineExpose({createPreviewDraft,getEditorState,restoreEditorState,getEditedSect
 </template>
 
 <style scoped>
+.competition-visibility-select :deep(.el-select__wrapper){background:#b91c36!important;box-shadow:0 0 0 1px #98142a inset!important;min-height:42px;border-radius:9px}
+.competition-visibility-select :deep(.el-select__selected-item),.competition-visibility-select :deep(.el-select__placeholder),.competition-visibility-select :deep(.el-select__caret){color:#fff!important;font-weight:700}
+.competition-visibility-select :deep(.el-select__wrapper:hover){background:#9f172e!important}
+.competition-visibility-select :deep(.el-input__wrapper){background:#b91c36!important;box-shadow:0 0 0 1px #98142a inset!important}
+.competition-visibility-select :deep(.el-input__inner){color:#fff!important;font-weight:700}
+
 .editor-disabled-hero{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:24px;border:1px dashed #dab8c7;background:#fff5f8;color:#714958;border-radius:10px;font-size:12px;line-height:1.5}
 .editor-disabled-hero strong{font-size:14px}
 .editor-robot-photo{position:relative}
