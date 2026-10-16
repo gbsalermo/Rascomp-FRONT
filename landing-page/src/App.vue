@@ -17,6 +17,8 @@ import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraf
 const publishedMediaDraft=ref<PreviewDraft|null>(null)
 // Evita exibir assets estáticos e trocá-los pela publicação CMS após o primeiro render.
 const mediaPublicationReady=ref(false)
+// Evita montar a Intro institucional e inserir o Hero competitivo momentos depois.
+const competitionIdentityReady=ref(false)
 // O CMS só altera seções explicitamente editadas; snapshots antigos preservam o site original.
 const publishedSections=computed<string[]>(()=>{
   const candidate=publishedMediaDraft.value as (PreviewDraft & {__editedSections?:unknown})|null
@@ -228,25 +230,27 @@ async function bootstrap() {
   error.value = ''
 
   try {
-    const [competitionList, teamList, categoryList] = await Promise.all([
-      api.competitions(),
-      api.teams(),
-      api.categories()
-    ])
-
+    // Requisições paralelas, mas a identidade da competição é resolvida primeiro:
+    // os dados de equipes e categorias não devem atrasar o primeiro Hero.
+    const competitionRequest = api.competitions()
+    const teamsRequest = api.teams()
+    const categoriesRequest = api.categories()
+    const competitionList = await competitionRequest
     competitions.value = competitionList
-    teams.value = teamList
-    categories.value = categoryList
-
     const focus = competitionList.find(
       (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
     )
-
     competitionId.value = focus?.id
+    competitionIdentityReady.value = true
+
+    const [teamList, categoryList] = await Promise.all([teamsRequest, categoriesRequest])
+    teams.value = teamList
+    categories.value = categoryList
     await refreshCompetition()
   } catch (exception: any) {
     error.value = exception?.response?.data?.message || 'A API pública do RASCOMP ainda não está disponível.'
   } finally {
+    competitionIdentityReady.value = true
     loading.value = false
   }
 }
@@ -370,6 +374,7 @@ onMounted(async () => {
   if (mediaPublicationReady.value || mediaPreviewMode) setupSectionReveal()
 
   if (!competitionModeEnabled.value) {
+    competitionIdentityReady.value = true
     loading.value = false
     return
   }
@@ -409,7 +414,7 @@ onBeforeUnmount(() => {
       @registration-unavailable="showRegistrationUnavailable"
     />
 
-    <main v-if="mediaPublicationReady || mediaPreviewMode" id="top">
+    <main v-if="mediaPreviewMode || (mediaPublicationReady && competitionIdentityReady)" id="top">
       <HighlightsHero
         :competition="displayedCompetition"
         :competition-hero-enabled="competitionHeroEnabled"
