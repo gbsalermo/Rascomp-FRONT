@@ -16,3 +16,13 @@ Antes de qualquer deploy ou migração, executar e validar o backup consistente 
 
 ## Condição de execução
 Implementar somente após definição dos namespaces público/privado, domínio de mídia, configuração de cache, autorização de acesso temporário e plano de rollback com o backend. Permanecer na branch `feat/futebol-inscricao-sem-robo`; não fazer merge antes da validação conjunta.
+
+## Revisão para encerramento do MVP — Galeria independente
+
+- **Decisão:** aplicação Vue 3 + Vite exclusiva de fotos e vídeos em Cloudflare Pages, proposta `galeria.rasufrb.site`; manter estilo da Galeria atual e botão da Landing como link externo. Público navega sem login; administração reaproveita autenticação RasComp com autorização própria e separada.
+- **Separação:** armazenamento/distribuição R2/CDN; backend Render somente autenticação/autorização e responsabilidades do sistema de competição, não transferência de fotos. Estudar Worker + D1 para metadados da Galeria, uploads seguros e publicação. Custo, políticas e segurança devem ser validados antes da implementação.
+- **Sequência de trabalho:** (0) backup mínimo verificável antes de publicar alterações da competição atual; (1) suspender temporariamente upload/edição da Galeria antiga com bloqueio reversível, sem remover visualização pública ou editor de seções; (2) concluir e testar Futebol sem robô e Regras e Ajuda/manuais na branch atual; (3) publicar apenas com janela e monitoramento; (4) backup completo e restauração isolada antes da nova arquitetura; (5) construir, migrar e testar nova Galeria; (6) redirecionar botão e rota legada, preservar rollback.
+- **Escopo preservado no RasComp:** editor de Hero, Sobre, Eventos, Competição e imagens essenciais da Landing; migrar entrega de suas imagens para acesso direto autorizado/CDN quando pertinente.
+- **Aceite:** não apagar acervo, compatibilidade de links, testes de build, segurança de administração e publicação, nenhuma dependência da Galeria durante operações de competição.
+
+**Status: somente planejamento.** Nenhuma suspensão, migração, configuração DNS ou deploy executado.
