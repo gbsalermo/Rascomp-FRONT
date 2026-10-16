@@ -364,6 +364,9 @@ watch([mediaPublicationReady, competitionIdentityReady], async () => {
 onMounted(async () => {
   stopPreview=startLocalMediaPreview()
   void loadPublishedMedia()
+  // Não deixar a landing inteira branca se a requisição editorial ficar pendente.
+  // O conteúdo institucional estático deve aparecer mesmo sem resposta do CMS.
+  window.setTimeout(() => { mediaPublicationReady.value = true }, 2000)
   // A API pode ficar indisponível durante picos de leitura no armazenamento.
   // Nunca bloquear toda a Landing aguardando a identidade da competição.
   window.setTimeout(() => { competitionIdentityReady.value = true }, 1800)
