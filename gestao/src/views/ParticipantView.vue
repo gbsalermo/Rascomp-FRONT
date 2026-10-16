@@ -192,7 +192,9 @@ const selectedParticipantBracketRegistration = computed(() =>
 
 const availablePersonalRegistrationCompetitions = computed(() => {
   const registeredCompetitionIds = new Set(
-    personalRegistrations.value.map((item) => item.competitionId)
+    personalRegistrations.value
+      .filter((item) => item.status !== 'REJEITADA')
+      .map((item) => item.competitionId)
   )
   return availableCompetitions.value.filter(
     (item) => item.id != null && !registeredCompetitionIds.has(item.id)
