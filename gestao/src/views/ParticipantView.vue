@@ -95,7 +95,7 @@ const personalLot = computed(() => currentLots.value[personalRegistrationForm.co
 const robotLot = computed(() => currentLots.value[registrationForm.competitionId ?? -1])
 const mainCompetitionId = computed(() => availableCompetitions.value[0]?.id ?? personalRegistrations.value[0]?.competitionId)
 const mainLot = computed(() => currentLots.value[mainCompetitionId.value ?? -1])
-watch(mainCompetitionId, (id) => { void loadCurrentLot(id) }, { immediate: true })
+
 
 watch(() => personalRegistrationForm.competitionId, (id) => { void loadCurrentLot(id) })
 watch(() => registrationForm.competitionId, (id) => { void loadCurrentLot(id) })
@@ -202,6 +202,8 @@ const availableCompetitions = computed(() => {
       && competition.fimInscricoes >= today
   )
 })
+watch(mainCompetitionId, (id) => { void loadCurrentLot(id) }, { immediate: true })
+
 const selectedParticipantBracket = computed(() =>
   participantBracketRegistrationId.value
     ? sumoMap.value[participantBracketRegistrationId.value]
