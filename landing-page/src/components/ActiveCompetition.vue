@@ -4,10 +4,12 @@ import { assetUrl } from '../api'
 
 const props = defineProps<{
   competition?: any
+  competitionMedia?: { sectionImage?: {src?:string;frame?:{zoom:number;width:number;height:number;x:number;y:number;fit:'cover'|'contain'}}; sectionText?:string } | null
   teams: any[]
   categories: any[]
   registrations: any[]
   enabledCategoryIds: number[]
+  currentRegistrationLot?: { nome?: string; dataInicio?: string; dataFim?: string }
   podiums: any[]
   ranking: any[]
   followAttempts: any[]
@@ -473,6 +475,7 @@ function handleRegistration() {
           <h2>Sobre o evento</h2>
           <p>
             {{
+              competitionMedia?.sectionText?.trim() ||
               competition.descricao ||
               'Conheça a competição vigente da IEEE RAS UFRB, suas equipes participantes, categorias e atualizações oficiais.'
             }}
@@ -487,6 +490,10 @@ function handleRegistration() {
             <article>
               <span>Período de inscrições</span>
               <strong>{{ formatDate(competition.inicioInscricoes) }} — {{ formatDate(competition.fimInscricoes) }}</strong>
+              <template v-if="currentRegistrationLot?.nome">
+                <span class="competition-current-lot-label">Lote vigente</span>
+                <strong>{{ currentRegistrationLot.nome }}</strong>
+              </template>
             </article>
 
             <article>
@@ -496,7 +503,8 @@ function handleRegistration() {
           </div>
         </div>
 
-        <aside class="competition-event-identity">
+        <aside class="competition-event-identity" :class="{ 'has-editorial-image': !!competitionMedia?.sectionImage?.src }">
+          <img v-if="competitionMedia?.sectionImage?.src" class="competition-editorial-banner" :src="competitionMedia.sectionImage.src" :style="{objectPosition: `${competitionMedia.sectionImage.frame?.x ?? 50}% ${competitionMedia.sectionImage.frame?.y ?? 50}%`, objectFit: competitionMedia.sectionImage.frame?.fit ?? 'cover', transform: `scale(${(competitionMedia.sectionImage.frame?.zoom ?? 100)/100})`}" alt="" />
           <span>{{ competitionStageLabel }}</span>
           <strong>{{ competition.nome }}</strong>
           <small>
