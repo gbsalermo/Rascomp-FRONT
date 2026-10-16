@@ -144,9 +144,7 @@ const slides = computed<HeroSlide[]>(() => {
   if (!props.competitionHeroEnabled) return base
   if (!competitionVisible.value || !props.competition) return base
 
-  return [
-    ...base,
-    {
+  const competitionSlide: HeroSlide = {
       id: 'competition-current',
       eyebrow:
         props.competition.status === 'INSCRICOES_ABERTAS'
@@ -155,10 +153,7 @@ const slides = computed<HeroSlide[]>(() => {
             ? 'Inscrições encerradas'
             : 'Competição em andamento',
       title: props.competition.nome,
-      description: [
-        props.competition.descricao || 'Acompanhe a competição vigente da IEEE RAS UFRB.',
-        ...(props.competitionMedia ? [props.competitionMedia.subtitle,props.competitionMedia.description] : [])
-      ].filter(Boolean).join(' — '),
+      description: props.competitionMedia?.description?.trim() || props.competition.descricao || 'Acompanhe a competição vigente da IEEE RAS UFRB.',
       cta: props.competition.status === 'INSCRICOES_ABERTAS' ? 'Inscrever-se' : 'Área do participante',
       href: props.managementUrl,
       secondary:props.competitionMedia
@@ -175,7 +170,9 @@ const slides = computed<HeroSlide[]>(() => {
       categories: competitionCategories.value.map((item) => item.nome),
       lotLabel: competitionLotLabel.value
     }
-  ]
+  const slides = [...base]
+  slides.splice(Math.max(0, Math.min(props.competitionMedia?.heroPosition ?? 0, slides.length)), 0, competitionSlide)
+  return slides
 })
 
 const quickLinks = computed<QuickLink[]>(() => [
