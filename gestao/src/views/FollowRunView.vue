@@ -420,7 +420,7 @@ onBeforeUnmount(() => {
     <section v-if="registration && config" class="follow-run-hero">
       <div class="follow-run-identity">
         <div class="follow-run-avatar">
-          <RobotPhoto :robot-id="registration.robotId" :robot-name="registration.robotNome" />
+          <RobotPhoto :robot-id="registration.robotId ?? undefined" :robot-name="registration.robotNome ?? undefined" />
         </div>
         <div>
           <span>Robô</span>

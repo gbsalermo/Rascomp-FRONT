@@ -18,11 +18,12 @@ export interface Registration {
   categoryNome: string
   teamId: number
   teamNome: string
-  robotId: number
-  robotNome: string
+  robotId: number | null
+  robotNome: string | null
   robotDescricao?: string
   competitorIds?: number[]
   competitorNomes?: string[]
+  requestedByUserId?: number
   requestedByUserNome?: string
   reviewedByUserNome?: string
   reviewedAt?: string
@@ -133,6 +134,9 @@ export interface ParticipantCompetitionRegistration {
   reviewedByUserNome?: string
   reviewedAt?: string
   reviewReason?: string
+  competitiveLinkSuspended?: boolean
+  competitiveLinkDeadline?: string
+  competitiveLinkSatisfied?: boolean
   ativo?: boolean
   dataCadastro?: string
   robots: ParticipantRobotLink[]

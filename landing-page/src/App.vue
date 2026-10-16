@@ -6,12 +6,10 @@ import HighlightsHero from './components/HighlightsHero.vue'
 import InstitutionalAbout from './components/InstitutionalAbout.vue'
 import TeamRobotsAwards from './components/TeamRobotsAwards.vue'
 import RobotsShowcase from './components/RobotsShowcase.vue'
-import InstitutionalGallery from './components/InstitutionalGallery.vue'
 import InstitutionalEvents from './components/InstitutionalEvents.vue'
 import ActiveCompetition from './components/ActiveCompetition.vue'
 import InstitutionalFooter from './components/InstitutionalFooter.vue'
 import PublicNotFound from './components/PublicNotFound.vue'
-import PublicGalleryPage from './components/PublicGalleryPage.vue'
 import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraft} from './content/localMediaPreview'
 
 const publishedMediaDraft=ref<PreviewDraft|null>(null)
@@ -401,7 +399,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <PublicGalleryPage v-if="isGalleryPage" />
+  <div v-if="isGalleryPage" class="public-gallery-maintenance" style="min-height:100vh;display:grid;place-content:center;gap:1rem;text-align:center;padding:2rem;background:#faf7fb;color:#301b3b">
+    <h1>Galeria em atualização</h1>
+    <p>Estamos preparando uma nova experiência para as fotografias e vídeos da IEEE RAS UFRB.</p>
+    <a href="/" style="color:#a51a48;font-weight:700">Voltar ao site</a>
+  </div>
   <PublicNotFound v-else-if="isNotFound" />
 
   <div v-else class="public-app" @click.capture="guardPreviewNavigation">
@@ -432,7 +434,7 @@ onBeforeUnmount(() => {
       <InstitutionalAbout :media-preview="sectionDraft('about')" />
       <TeamRobotsAwards :media-preview="sectionDraft('team')" :sponsors-preview="sectionDraft('sponsors')" />
       <RobotsShowcase :media-preview="sectionDraft('robots')" />
-      <InstitutionalGallery />
+      <!-- Galeria temporariamente suspensa durante a migração do acervo. -->
       <InstitutionalEvents
         :management-url="managementUrl"
         :registration-open="displayedRegistrationOpen"

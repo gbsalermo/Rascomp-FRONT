@@ -207,8 +207,9 @@ const robotRegistrationUnlockMessage = computed(() => {
   return 'Inscreva um robô em uma categoria e acompanhe a aprovação dele.'
 })
 
+const footballSelected = computed(() => categories.value.find(item => item.id === registrationForm.categoryId)?.modalidade === 'FUTEBOL')
 const availableRegistrationCategories = computed(() => {
-  if (!registrationForm.competitionId || !registrationForm.robotId) return []
+  if (!registrationForm.competitionId) return []
 
   const sameRobotRegistrations = registrations.value.filter((registration) =>
     registration.competitionId === registrationForm.competitionId
@@ -230,7 +231,9 @@ const availableRegistrationCategories = computed(() => {
 
   return categories.value.filter((category) => {
     if (!enabledCategoryIds.value.includes(category.id)) return false
-    if (category.ativo === false || duplicateCategoryIds.has(category.id)) return false
+    if (category.ativo === false) return false
+    if (category.modalidade === 'FUTEBOL') return !registrations.value.some(r => r.competitionId === registrationForm.competitionId && r.categoryId === category.id && r.requestedByUserId === auth.user?.id && !['CANCELADA','REJEITADA'].includes(r.status))
+    if (!registrationForm.robotId || duplicateCategoryIds.has(category.id)) return false
     if (category.modalidade !== 'SUMO') return true
     if (hasUnclassifiedSumo) return false
     return committedSumoClasses.size === 0 || Boolean(category.sumoPhysicalClass && committedSumoClasses.has(category.sumoPhysicalClass))
@@ -703,6 +706,7 @@ async function removeRobot(robot: Robot) {
 
 function canManageRegistration(registration: Registration) {
   if (isTeamLeader.value) return true
+  if (!registration.robotId) return registration.requestedByUserId === auth.user?.id
   const robot = robots.value.find((item) => item.id === registration.robotId)
   return Boolean(robot?.createdByUserId && robot.createdByUserId === auth.user?.id)
 }
@@ -746,7 +750,7 @@ function onRegistrationRobotChange(robotId?: number) {
 
 function openRegistrationDialog() {
   if (!teamId.value) return
-  if (!registrableRobots.value.length) {
+  if (!registrableRobots.value.length && !categories.value.some(c => c.modalidade === 'FUTEBOL' && c.ativo !== false)) {
     ElMessage.warning(isTeamLeader.value
       ? 'Cadastre um robô antes de criar uma inscrição.'
       : 'Você só pode iniciar a inscrição de um robô cadastrado por você. O líder pode inscrever qualquer robô da equipe.')
@@ -776,8 +780,8 @@ async function submitRegistration() {
   if (!teamId.value
       || !registrationForm.competitionId
       || !registrationForm.categoryId
-      || !registrationForm.robotId) {
-    return ElMessage.warning('Selecione competição, categoria e robô.')
+      || (!footballSelected.value && !registrationForm.robotId)) {
+    return ElMessage.warning('Selecione competição, categoria e, quando exigido, um robô.')
   }
   if (!robotRegistrationReceipt.value) {
     return ElMessage.warning('Envie o comprovante da inscrição do robô.')
@@ -788,7 +792,7 @@ async function submitRegistration() {
     await participantApi.createRegistration(teamId.value, {
       competitionId: registrationForm.competitionId,
       categoryId: registrationForm.categoryId,
-      robotId: registrationForm.robotId,
+      robotId: footballSelected.value ? undefined : registrationForm.robotId,
       robotDescricao: registrationForm.robotDescricao.trim() || undefined,
       observacao: registrationForm.observacao.trim() || undefined
     }, robotRegistrationReceipt.value)
@@ -885,7 +889,7 @@ async function onPhotoSelected(robot: Robot, event: Event) {
 async function cancelPendingRegistration(registration: Registration) {
   try {
     await ElMessageBox.confirm(
-      `Cancelar a inscrição de ${registration.robotNome} em ${registration.categoryNome}?`,
+      `Cancelar a inscrição de ${registration.robotNome || 'Futebol'} em ${registration.categoryNome}?`,
       'Cancelar inscrição pendente',
       { type: 'warning', confirmButtonText: 'Cancelar inscrição', cancelButtonText: 'Voltar' }
     )
@@ -924,7 +928,7 @@ async function requestApprovedCancellation(registration: Registration) {
 
   try {
     const result = await ElMessageBox.prompt(
-      `Explique o motivo para solicitar o cancelamento de ${registration.robotNome}. A organização analisará o pedido.`,
+      `Explique o motivo para solicitar o cancelamento de ${registration.robotNome || 'Futebol'}. A organização analisará o pedido.`,
       'Solicitar cancelamento',
       {
         inputType: 'textarea',
@@ -1181,6 +1185,22 @@ onBeforeUnmount(() => {
             </div>
             <div class="personal-registration-meta">
               <StatusBadge :value="item.status" />
+              <el-alert
+                v-if="item.status === 'APROVADA' && item.competitiveLinkSuspended && !item.competitiveLinkSatisfied"
+                type="error"
+                :closable="false"
+                show-icon
+                title="Participação suspensa por falta de vínculo competitivo"
+                description="Sua inscrição individual foi aprovada, mas a participação competitiva foi suspensa porque não identificamos uma associação válida a robô inscrito ou à categoria Futebol dentro do prazo de regularização. Entre em contato com a organização para obter ajuda. Sua conta permanece ativa."
+              />
+              <el-alert
+                v-else-if="item.status === 'APROVADA' && !item.competitiveLinkSatisfied"
+                type="warning"
+                :closable="false"
+                show-icon
+                title="Aprovação com regularização pendente"
+                :description="`Sua inscrição foi aprovada, mas não identificamos associação a robôs inscritos ou categorias nesta competição. Regularize sua associação em até 24 horas após a aprovação (${item.competitiveLinkDeadline ? new Date(item.competitiveLinkDeadline).toLocaleString('pt-BR') : 'prazo a confirmar'}). Após o prazo, a Gestão poderá suspender sua participação. Se já realizou a associação, aguarde a atualização; em caso de dúvida, entre em contato com a organização.`"
+              />
               <small v-if="item.comprovanteDisponivel">Comprovante: {{ item.comprovanteNome || 'enviado' }}</small>
               <small v-if="item.status === 'PENDENTE'">Aguardando aprovação da organização.</small>
               <small v-if="item.status === 'CORRECAO_SOLICITADA' && item.reviewReason">
@@ -1219,7 +1239,7 @@ onBeforeUnmount(() => {
             <span class="muted">{{ robotRegistrationUnlockMessage }}</span>
             <el-button
               class="brand-button"
-              :disabled="!registrableRobots.length || !availableRobotRegistrationCompetitions.length"
+              :disabled="!availableRobotRegistrationCompetitions.length || (!registrableRobots.length && !categories.some(c => c.modalidade === 'FUTEBOL' && c.ativo !== false))"
               @click="openRegistrationDialog"
             >
               Inscrever robô
@@ -1244,15 +1264,15 @@ onBeforeUnmount(() => {
             <header>
               <div class="participation-photo">
                 <img
-                  v-if="principalPhoto(registration.robotId)"
-                  :src="assetUrl(principalPhoto(registration.robotId)?.url)"
+                  v-if="registration.robotId != null && principalPhoto(registration.robotId)"
+                  :src="assetUrl(principalPhoto(registration.robotId!)?.url)"
                   :alt="`Foto de ${registration.robotNome}`"
                 />
-                <span v-else>{{ robotInitials(registration.robotNome) }}</span>
+                <span v-else>{{ robotInitials(registration.robotNome ?? 'Futebol') }}</span>
               </div>
               <div class="participation-title">
                 <span>{{ registration.categoryNome }}</span>
-                <strong>{{ registration.robotNome }}</strong>
+                <strong>{{ registration.robotNome || 'Inscrição de Futebol' }}</strong>
                 <small>{{ registration.competitionNome }}</small>
               </div>
               <StatusBadge :value="registration.status" />
@@ -1572,7 +1592,7 @@ onBeforeUnmount(() => {
       </template>
     </el-dialog>
 
-    <el-dialog v-model="registrationDialog" title="Inscrever robô" width="min(680px, 94vw)">
+    <el-dialog v-model="registrationDialog" title="Inscrição em categoria" width="min(680px, 94vw)">
       <div class="registration-flow-dialog">
         <div class="participant-flow-note">
           <strong>Inscrição do robô</strong>
@@ -1591,14 +1611,14 @@ onBeforeUnmount(() => {
             </el-select>
           </label>
 
-          <label class="span-2">Robô
+          <label v-if="!footballSelected" class="span-2">Robô
             <el-select v-model="registrationForm.robotId" style="width:100%" @change="onRegistrationRobotChange">
               <el-option v-for="robot in registrableRobots" :key="robot.id" :label="robot.nome" :value="robot.id" />
             </el-select>
             <small class="muted">{{ isTeamLeader ? 'Como líder, você pode inscrever qualquer robô da equipe.' : 'Você pode iniciar a inscrição apenas dos robôs cadastrados por você.' }}</small>
           </label>
 
-          <label class="span-2">Categoria compatível
+          <label class="span-2">Categoria da inscrição
             <el-select v-model="registrationForm.categoryId" style="width:100%" placeholder="Selecione a categoria">
               <el-option
                 v-for="category in availableRegistrationCategories"
@@ -1617,7 +1637,7 @@ onBeforeUnmount(() => {
             title="Nenhuma categoria disponível para este robô nesta competição. Verifique inscrições existentes ou reative uma inscrição cancelada quando aplicável."
           />
 
-          <label class="span-2">Descrição do robô nesta inscrição <small class="muted">(opcional)</small>
+          <label v-if="!footballSelected" class="span-2">Descrição do robô nesta inscrição <small class="muted">(opcional)</small>
             <el-input
               v-model="registrationForm.robotDescricao"
               type="textarea"
@@ -1628,7 +1648,7 @@ onBeforeUnmount(() => {
             <small class="muted">O valor atual do cadastro é preenchido automaticamente e ficará registrado junto desta inscrição.</small>
           </label>
 
-          <div class="span-2 participant-flow-note">
+          <div v-if="!footballSelected" class="span-2 participant-flow-note">
             <strong>Composição automática</strong>
             <span>
               A composição competitiva é definida pelos responsáveis do robô e pelo status da inscrição individual de cada pessoa.
@@ -1641,7 +1661,7 @@ onBeforeUnmount(() => {
           </label>
 
           <label class="span-2 registration-receipt-field">
-            Comprovante da inscrição do robô
+            Comprovante da inscrição
             <input
               type="file"
               accept=".pdf,image/jpeg,image/png,image/webp"
@@ -1661,7 +1681,7 @@ onBeforeUnmount(() => {
           :loading="creatingRegistration"
           :disabled="!registrationForm.categoryId || !robotRegistrationReceipt"
           @click="submitRegistration"
-        >Enviar inscrição do robô</el-button>
+        >{{ footballSelected ? "Enviar inscrição de Futebol" : "Enviar inscrição do robô" }}</el-button>
       </template>
     </el-dialog>
 

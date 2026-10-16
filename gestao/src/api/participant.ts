@@ -94,7 +94,7 @@ export const participantApi = {
   createRegistration: (teamId: number, payload: {
     competitionId: number
     categoryId: number
-    robotId: number
+    robotId?: number
     robotDescricao?: string
     competitorIds?: number[]
     observacao?: string

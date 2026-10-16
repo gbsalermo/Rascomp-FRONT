@@ -24,6 +24,7 @@ import UsersView from './views/UsersView.vue'
 import SettingsView from './views/SettingsView.vue'
 import MediaManagementView from './views/MediaManagementView.vue'
 import ParticipantView from './views/ParticipantView.vue'
+import HelpDocumentsView from './views/HelpDocumentsView.vue'
 import NotFoundView from './views/NotFoundView.vue'
 import type { AuthCapability } from './types'
 
@@ -61,12 +62,14 @@ const router = createRouter({
         { path: 'chaves', name: 'brackets-history', component: BracketHistoryView, meta: competitionMeta },
         { path: 'partidas', name: 'matches-admin', component: MatchesView, meta: competitionMeta },
         { path: 'resultados', name: 'results-admin', component: ResultsView, meta: competitionMeta },
-        { path: 'midia', name: 'media-library', component: MediaManagementView, meta: mediaMeta },
-        { path: 'midia/albuns', name: 'media-albums', component: MediaManagementView, meta: mediaMeta },
+        { path: 'midia', redirect: { name: 'media-landing' } },
+        { path: 'midia/albuns', redirect: { name: 'media-landing' } },
         { path: 'midia/landing', name: 'media-landing', component: MediaManagementView, meta: mediaMeta },
         { path: 'usuarios', name: 'users-admin', component: UsersView, meta: usersMeta },
         { path: 'configuracoes', name: 'settings-admin', component: SettingsView, meta: systemMeta },
-        { path: 'minha-equipe', name: 'participant', component: ParticipantView, meta: participantMeta }
+        { path: 'minha-equipe', name: 'participant', component: ParticipantView, meta: participantMeta },
+        { path: 'regras-ajuda', name: 'participant-help', component: HelpDocumentsView, meta: participantMeta },
+        { path: 'documentos-ajuda', name: 'admin-help', component: HelpDocumentsView, meta: systemMeta }
       ]
     },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView, meta: { public: true } }
