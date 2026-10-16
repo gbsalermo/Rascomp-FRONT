@@ -26,3 +26,6 @@ Implementar somente após definição dos namespaces público/privado, domínio 
 - **Aceite:** não apagar acervo, compatibilidade de links, testes de build, segurança de administração e publicação, nenhuma dependência da Galeria durante operações de competição.
 
 **Status: somente planejamento.** Nenhuma suspensão, migração, configuração DNS ou deploy executado.
+
+## Estado da contenção pré-lote
+**Implementado apenas na branch:** rota pública `/galeria` agora apresenta manutenção sem consumir a API de galeria; seção Galeria removida temporariamente da Landing; rotas administrativas `/midia` e `/midia/albuns` redirecionam a `/midia/landing` (edição das seções preservada). Carregamento do acervo limitado a duas imagens simultâneas. **Não implementado:** URLs diretas CDN/R2 para as seções, estratégia de miniaturas e desligamento completo da API legada. **Não publicado em produção; builds precisam ser validados.**
