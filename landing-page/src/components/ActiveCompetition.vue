@@ -469,7 +469,7 @@ function handleRegistration() {
     class="active-competition-section"
   >
     <div class="active-competition-container">
-      <section class="competition-event-intro" :class="{ 'has-editorial-image': !!competitionMedia?.sectionImage?.src }" :style="competitionMedia?.sectionImage?.src ? { '--competition-intro-image': `url(&quot;${competitionMedia.sectionImage.src}&quot;)` } : undefined">
+      <section class="competition-event-intro">
         <div class="competition-event-intro-copy">
           <span class="competition-event-kicker">Competição vigente</span>
           <h2>Sobre o evento</h2>
@@ -503,7 +503,8 @@ function handleRegistration() {
           </div>
         </div>
 
-        <aside class="competition-event-identity">
+        <aside class="competition-event-identity" :class="{ 'has-editorial-image': !!competitionMedia?.sectionImage?.src }">
+          <img v-if="competitionMedia?.sectionImage?.src" class="competition-editorial-banner" :src="competitionMedia.sectionImage.src" :style="{objectPosition: `${competitionMedia.sectionImage.frame?.x ?? 50}% ${competitionMedia.sectionImage.frame?.y ?? 50}%`, objectFit: competitionMedia.sectionImage.frame?.fit ?? 'cover', transform: `scale(${(competitionMedia.sectionImage.frame?.zoom ?? 100)/100})`}" alt="" />
           <span>{{ competitionStageLabel }}</span>
           <strong>{{ competition.nome }}</strong>
           <small>
