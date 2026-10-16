@@ -479,7 +479,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <InstitutionalFooter v-if="mediaPublicationReady || mediaPreviewMode" :media-preview="sectionDraft('footer')" />
+    <InstitutionalFooter v-if="mediaPreviewMode || (mediaPublicationReady && competitionIdentityReady)" :media-preview="sectionDraft('footer')" />
 
     <Transition name="registration-notice">
       <aside
