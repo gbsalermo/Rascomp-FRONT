@@ -16,10 +16,6 @@ const galleryImageModules = import.meta.glob(
   }
 ) as Record<string, string>
 
-const galleryUrl = String(
-  import.meta.env.VITE_GALERIA_URL || '/galeria'
-).trim().replace(/\/$/, '')
-
 const previews = computed<GalleryPreview[]>(() =>
   Object.entries(galleryImageModules)
     .sort(([a], [b]) => a.localeCompare(b, 'pt-BR', { numeric: true }))
@@ -73,21 +69,8 @@ onBeforeUnmount(() => {
           <h2>Galeria</h2>
           <p>Projetos, eventos, competições e momentos que fazem parte da nossa trajetória.</p>
 
-          <a
-            v-if="galleryUrl"
-            class="gallery-primary-cta"
-            :href="galleryUrl"
-          >
-            Ver galeria completa <span aria-hidden="true">→</span>
-          </a>
-
-          <span
-            v-else
-            class="gallery-primary-cta gallery-primary-cta--disabled"
-            aria-disabled="true"
-            title="Destino da galeria ainda não configurado"
-          >
-            Ver galeria completa <span aria-hidden="true">→</span>
+          <span class="gallery-primary-cta gallery-primary-cta--disabled" aria-disabled="true" title="Galeria temporariamente indisponível durante a atualização">
+            Galeria em atualização
           </span>
         </div>
 
