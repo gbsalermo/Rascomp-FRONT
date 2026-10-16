@@ -13,7 +13,18 @@ import InstitutionalFooter from './components/InstitutionalFooter.vue'
 import PublicNotFound from './components/PublicNotFound.vue'
 import {localMediaDraft,mediaPreviewMode,startLocalMediaPreview,type PreviewDraft} from './content/localMediaPreview'
 
-const publishedMediaDraft=ref<PreviewDraft|null>(null)
+// Cache apenas de conteúdo público; a rede continua sendo a fonte de verdade.
+const CACHE_KEY='rascomp-landing-public-v1'
+function readCache():{media?:PreviewDraft;competitions?:any[]}|null {
+  if(mediaPreviewMode)return null
+  try { const raw=localStorage.getItem(CACHE_KEY); return raw?JSON.parse(raw):null } catch { return null }
+}
+const cachedLanding=readCache()
+function saveCache(partial:{media?:PreviewDraft;competitions?:any[]}) {
+  if(mediaPreviewMode)return
+  try { localStorage.setItem(CACHE_KEY,JSON.stringify({...readCache(),...partial})) } catch { /* armazenamento indisponível */ }
+}
+const publishedMediaDraft=ref<PreviewDraft|null>(cachedLanding?.media??null)
 // Evita exibir assets estáticos e trocá-los pela publicação CMS após o primeiro render.
 const mediaPublicationReady=ref(false)
 // Evita montar a Intro institucional e inserir o Hero competitivo momentos depois.
@@ -62,7 +73,11 @@ async function loadPublishedMedia() {
       }
       return value
     }
-    publishedMediaDraft.value=resolve(draft) as PreviewDraft
+    const resolved=resolve(draft) as PreviewDraft
+    if(JSON.stringify(publishedMediaDraft.value)!==JSON.stringify(resolved)){
+      publishedMediaDraft.value=resolved
+      saveCache({media:resolved})
+    }
   }catch{
     // Em indisponibilidade do CMS, preservar a Landing institucional estática.
   }finally{
@@ -71,7 +86,7 @@ async function loadPublishedMedia() {
 }
 const loading = ref(true)
 const error = ref('')
-const competitions = ref<any[]>([])
+const competitions = ref<any[]>(cachedLanding?.competitions??[])
 const teams = ref<any[]>([])
 const categories = ref<any[]>([])
 const registrations = ref<any[]>([])
@@ -85,7 +100,9 @@ const followQueue = ref<any[]>([])
 const brackets = ref<any[]>([])
 const matches = ref<any[]>([])
 const results = ref<any[]>([])
-const competitionId = ref<number>()
+const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
+const initialFocus=competitions.value.find((item:any)=>item.vigente===true && publicCompetitionStatuses.includes(item.status))
+const competitionId = ref<number|undefined>(initialFocus?.id)
 const followCategoryId = ref<number>()
 const bracketId = ref<number>()
 let timer: number | undefined
@@ -128,7 +145,6 @@ const isGalleryPage = normalizedPath === '/galeria'
 const isNotFound = normalizedPath !== '/' && normalizedPath !== '/index.html' && !isGalleryPage
 
 const currentCompetition = computed(() => competitions.value.find((item) => item.id === competitionId.value))
-const publicCompetitionStatuses = ['INSCRICOES_ABERTAS', 'INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO']
 const registrationOpen = computed(() =>
   currentCompetition.value?.status === 'INSCRICOES_ABERTAS'
 )
@@ -178,6 +194,7 @@ function setupSectionReveal() {
 
   sections.forEach((section) => {
     section.classList.add('scroll-reveal-section')
+    if(section.getBoundingClientRect().top < window.innerHeight) section.classList.add('is-visible')
   })
 
   if (reducedMotion) {
@@ -235,7 +252,10 @@ async function bootstrap() {
     const teamsRequest = api.teams()
     const categoriesRequest = api.categories()
     const competitionList = await competitionRequest
-    competitions.value = competitionList
+    if(JSON.stringify(competitions.value)!==JSON.stringify(competitionList)){
+      competitions.value = competitionList
+      saveCache({competitions:competitionList})
+    }
     const focus = competitionList.find(
       (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
     )
@@ -256,14 +276,18 @@ async function bootstrap() {
 
 async function syncPublishedCompetition() {
   const competitionList = await api.competitions()
-  competitions.value = competitionList
+  if(JSON.stringify(competitions.value)!==JSON.stringify(competitionList)){
+    competitions.value = competitionList
+    saveCache({competitions:competitionList})
+  }
 
   const published = competitionList.find(
     (item: any) => item.vigente === true && publicCompetitionStatuses.includes(item.status)
   )
 
+  const changed=competitionId.value!==published?.id
   competitionId.value = published?.id
-  await refreshCompetition()
+  if(changed)await refreshCompetition()
 }
 
 async function refreshCompetition() {
@@ -364,19 +388,13 @@ watch([mediaPublicationReady, competitionIdentityReady], async () => {
 onMounted(async () => {
   stopPreview=startLocalMediaPreview()
   void loadPublishedMedia()
-  // Não deixar a landing inteira branca se a requisição editorial ficar pendente.
-  // O conteúdo institucional estático deve aparecer mesmo sem resposta do CMS.
-  window.setTimeout(() => { mediaPublicationReady.value = true }, 2000)
-  // A API pode ficar indisponível durante picos de leitura no armazenamento.
-  // Nunca bloquear toda a Landing aguardando a identidade da competição.
-  window.setTimeout(() => { competitionIdentityReady.value = true }, 1800)
   updateBackToTopVisibility()
   window.addEventListener('scroll', scheduleBackToTopUpdate, { passive: true })
 
   if (isNotFound) return
 
   await nextTick()
-  if (mediaPublicationReady.value || mediaPreviewMode) setupSectionReveal()
+  setupSectionReveal()
 
   if (!competitionModeEnabled.value) {
     competitionIdentityReady.value = true
@@ -423,7 +441,7 @@ onBeforeUnmount(() => {
       @registration-unavailable="showRegistrationUnavailable"
     />
 
-    <main v-if="true" id="top">
+    <main id="top">
       <HighlightsHero
         :competition="displayedCompetition"
         :competition-hero-enabled="competitionHeroEnabled"
@@ -482,7 +500,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <InstitutionalFooter v-if="true" :media-preview="sectionDraft('footer')" />
+    <InstitutionalFooter :media-preview="sectionDraft('footer')" />
 
     <Transition name="registration-notice">
       <aside
