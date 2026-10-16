@@ -436,6 +436,7 @@ onBeforeUnmount(() => {
       <ActiveCompetition
         v-if="competitionSectionVisible"
         :competition="displayedCompetition"
+        :competition-media="sectionDraft('competition')?.competition"
         :teams="teams"
         :categories="categories"
         :enabled-category-ids="enabledCategoryIds"
