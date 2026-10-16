@@ -4,6 +4,7 @@ import { assetUrl } from '../api'
 
 const props = defineProps<{
   competition?: any
+  competitionMedia?: { sectionImage?: {src?:string;frame?:{zoom:number;width:number;height:number;x:number;y:number;fit:'cover'|'contain'}}; sectionText?:string } | null
   teams: any[]
   categories: any[]
   registrations: any[]
@@ -468,12 +469,13 @@ function handleRegistration() {
     class="active-competition-section"
   >
     <div class="active-competition-container">
-      <section class="competition-event-intro">
+      <section class="competition-event-intro" :class="{ 'has-editorial-image': !!competitionMedia?.sectionImage?.src }" :style="competitionMedia?.sectionImage?.src ? { '--competition-intro-image': `url(&quot;${competitionMedia.sectionImage.src}&quot;)` } : undefined">
         <div class="competition-event-intro-copy">
           <span class="competition-event-kicker">Competição vigente</span>
           <h2>Sobre o evento</h2>
           <p>
             {{
+              competitionMedia?.sectionText?.trim() ||
               competition.descricao ||
               'Conheça a competição vigente da IEEE RAS UFRB, suas equipes participantes, categorias e atualizações oficiais.'
             }}
