@@ -23,6 +23,7 @@ const inspections = ref<SumoInspection[]>([])
 const competitionId = ref<number>()
 const categoryId = ref<number>()
 const bracketId = ref<number>()
+const bracketFormat = ref<'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION'>('DOUBLE_ELIMINATION')
 const inspectionDialog = ref(false)
 const judgeDialog = ref(false)
 const inspectionUnit = ref<'g' | 'kg'>('g')
@@ -267,7 +268,7 @@ async function generate() {
 
   try {
     await ElMessageBox.confirm(message, existingCurrent ? 'Regenerar chave' : 'Gerar chave')
-    const created = await adminApi.generateBracket(competitionId.value, categoryId.value)
+    const created = await adminApi.generateBracket(competitionId.value, categoryId.value, bracketFormat.value)
     ElMessage.success(existingCurrent
       ? 'Nova chave criada. A versão anterior foi preservada no histórico.'
       : 'Chaveamento criado pelo backend.')
@@ -398,6 +399,10 @@ onMounted(initialize)
       <div class="heading-actions">
         <el-button @click="judgeDialog = true">Cadastrar juiz</el-button>
         <el-button :disabled="!canInspect" title="Disponível somente com a competição em andamento" @click="openInspection()">Nova inspeção</el-button>
+        <el-select v-model="bracketFormat" aria-label="Formato do chaveamento" style="width:212px">
+          <el-option label="Dupla eliminação" value="DOUBLE_ELIMINATION" />
+          <el-option label="Eliminação simples" value="SINGLE_ELIMINATION" />
+        </el-select>
         <el-button
           class="brand-button"
           :disabled="!canGenerate"
@@ -521,6 +526,7 @@ onMounted(initialize)
       <div>
         <span class="eyebrow">{{ historicalSelected ? 'Consulta histórica · somente leitura' : 'Chave vigente' }}</span>
         <h2>{{ currentBracket.nome }}</h2>
+        <p class="muted">{{ currentBracket.bracketFormat === 'DOUBLE_ELIMINATION' ? 'Dupla eliminação · Winners + Losers · Final Geral' : 'Eliminação simples' }}</p>
         <p v-if="historicalSelected" class="muted">
           Esta geração foi substituída por uma chave mais recente e permanece preservada para consulta.
         </p>
