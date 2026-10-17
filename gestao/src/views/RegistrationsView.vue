@@ -23,6 +23,7 @@ const auth = useAuthStore()
 const competition = useCompetitionStore()
 
 const loading = ref(false)
+// Falhas parciais permanecem visiveis mesmo quando outras listas carregam.
 const reviewingId = ref<number>()
 const registrationActionId = ref<number>()
 const cancellationReviewingId = ref<number>()
@@ -398,39 +399,68 @@ async function loadBase() {
   }
 }
 
+// Evita requisicoes duplicadas para a mesma competicao durante o carregamento.
+let pendingLoad: Promise<void> | undefined
+let pendingLoadCompetitionId: number | undefined
+let loadVersion = 0
+const loadErrors = ref<string[]>([])
+
 async function load() {
-  if (!competitionId.value) {
+  const id = competitionId.value
+  if (!id) {
+    ++loadVersion
     rows.value = []
     participantRows.value = []
     compositionChanges.value = []
     cancellationRequests.value = []
+    loadErrors.value = []
     return
   }
+  if (pendingLoad && pendingLoadCompetitionId === id) return pendingLoad
 
+  const version = ++loadVersion
   loading.value = true
-  try {
-    const [registrationRows, participantRegistrationRows, compositionRows, cancellationRows] = await Promise.all([
-      adminApi.registrations({ competitionId: competitionId.value }),
-      adminApi.participantRegistrations(competitionId.value),
-      adminApi.compositionChanges(competitionId.value),
-      adminApi.cancellationRequests({
-        competitionId: competitionId.value
-      })
+  pendingLoadCompetitionId = id
+  const task = (async () => {
+    // Uma falha isolada nao deve descartar os resultados das outras secoes.
+    const results = await Promise.allSettled([
+      adminApi.registrations({ competitionId: id }),
+      adminApi.participantRegistrations(id),
+      adminApi.compositionChanges(id),
+      adminApi.cancellationRequests({ competitionId: id })
     ])
-    rows.value = registrationRows
-    participantRows.value = participantRegistrationRows
-    compositionChanges.value = compositionRows
-    cancellationRequests.value = cancellationRows
+    if (competitionId.value !== id || version !== loadVersion) return
 
-    if (selected.value) {
-      selected.value = rows.value.find((item) => item.id === selected.value?.id)
-      if (!selected.value) detailsOpen.value = false
+    const labels = ['robos', 'participantes', 'ajustes de composicao', 'cancelamentos']
+    loadErrors.value = results.flatMap((result, index) =>
+      result.status === 'rejected' ? [labels[index]!] : []
+    )
+    const registrations = results[0]
+    const participants = results[1]
+    const composition = results[2]
+    const cancellations = results[3]
+    if (registrations.status === 'fulfilled') {
+      rows.value = registrations.value
+      if (selected.value) {
+        selected.value = rows.value.find((item) => item.id === selected.value?.id)
+        if (!selected.value) detailsOpen.value = false
+      }
     }
-  } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar as inscrições.')
-  } finally {
-    loading.value = false
-  }
+    if (participants.status === 'fulfilled') participantRows.value = participants.value
+    if (composition.status === 'fulfilled') compositionChanges.value = composition.value
+    if (cancellations.status === 'fulfilled') cancellationRequests.value = cancellations.value
+    if (loadErrors.value.length) {
+      ElMessage.warning('Alguns dados nao puderam ser atualizados. Tente novamente.')
+    }
+  })().finally(() => {
+    if (version === loadVersion) loading.value = false
+    if (pendingLoad === task) {
+      pendingLoad = undefined
+      pendingLoadCompetitionId = undefined
+    }
+  })
+  pendingLoad = task
+  return task
 }
 
 async function openDetails(row: Registration) {
@@ -875,6 +905,7 @@ onMounted(loadBase)
 </script>
 
 <template>
+  <div v-if="loadErrors.length" class="registration-load-warning" role="alert">Alguns dados não foram atualizados: {{ loadErrors.join(', ') }}. Use Atualizar para tentar novamente.</div>
   <div class="page-stack registrations-page">
     <div class="page-heading registrations-heading">
       <div>
@@ -1749,4 +1780,8 @@ onMounted(loadBase)
 
 <style scoped>
 .registration-observation-compact{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;white-space:normal;overflow-wrap:anywhere;cursor:help;line-height:1.4}
+</style>
+
+<style scoped>
+.registration-load-warning { padding: 10px 14px; margin: 8px 0; border-radius: 10px; background: #fff7ed; color: #8a4b16; font-size: 12px; }
 </style>
