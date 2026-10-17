@@ -200,6 +200,21 @@ const filtered = computed(() => {
   })
 })
 
+const participantStatus = ref('')
+const participantSearch = ref('')
+const participantStatusOptions: ParticipantCompetitionRegistrationStatus[] = [
+  'PENDENTE', 'APROVADA', 'REJEITADA', 'CORRECAO_SOLICITADA'
+]
+const filteredParticipants = computed(() => {
+  const query = participantSearch.value.trim().toLocaleLowerCase('pt-BR')
+  return participantRows.value.filter((item) => {
+    if (participantStatus.value && item.status !== participantStatus.value) return false
+    if (!query) return true
+    return [item.competitorNome, item.teamNome]
+      .filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(query)
+  })
+})
+
 const counts = computed(() => ({
   total: rows.value.length,
   pendente: rows.value.filter((item) => item.status === 'PENDENTE').length,
@@ -1072,7 +1087,17 @@ onMounted(loadBase)
         </el-tag>
       </div>
 
-      <el-table :data="participantRows" empty-text="Nenhuma inscrição pessoal nesta competição">
+      <div class="registration-filters">
+        <div class="registration-filter-main">
+          <el-input v-model="participantSearch" clearable placeholder="Buscar participante ou equipe" />
+          <el-select v-model="participantStatus" placeholder="Status do participante" clearable>
+            <el-option label="Todos" value="" />
+            <el-option v-for="item in participantStatusOptions" :key="item" :label="item.replaceAll('_', ' ')" :value="item" />
+          </el-select>
+        </div>
+        <span class="registration-result-count">{{ filteredParticipants.length }} resultado(s)</span>
+      </div>
+      <el-table :data="filteredParticipants" empty-text="Nenhuma inscrição pessoal neste filtro">
         <el-table-column label="Competidor / Equipe" min-width="190">
           <template #default="{ row }">
             <div class="registration-main-cell">
