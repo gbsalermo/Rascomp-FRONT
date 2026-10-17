@@ -178,6 +178,35 @@ const isTeamLeader = computed(() =>
 )
 const approvedRegistrations = computed(() => registrations.value.filter((item) => item.status === 'APROVADA'))
 const pendingRegistrations = computed(() => registrations.value.filter((item) => item.status === 'PENDENTE'))
+
+// Atualizacoes pontuais preservam as fotos, responsaveis e resumos das
+// demais inscricoes: uma acao nao precisa refazer todas essas consultas.
+function upsertRobot(updated: Robot) {
+  const exists = robots.value.some((robot) => robot.id === updated.id)
+  robots.value = exists
+    ? robots.value.map((robot) => robot.id === updated.id ? updated : robot)
+    : [...robots.value, updated]
+  if (!exists) {
+    photoMap.value = { ...photoMap.value, [updated.id]: [] }
+    responsibleMap.value = { ...responsibleMap.value, [updated.id]: [] }
+  }
+  registrations.value = registrations.value.map((registration) =>
+    registration.robotId === updated.id
+      ? { ...registration, robotNome: updated.nome }
+      : registration
+  )
+}
+
+function upsertTeam(updated: Team) {
+  teams.value = teams.value.map((team) => team.id === updated.id ? updated : team)
+}
+
+async function refreshTeamRegistrations() {
+  const id = teamId.value
+  if (!id) return
+  const updated = await participantApi.registrations(id)
+  if (teamId.value === id) registrations.value = updated
+}
 const pendingInvites = computed(() =>
   myMemberships.value.filter((item) => item.requestType === 'CONVITE' && item.status === 'PENDENTE')
 )
@@ -614,9 +643,9 @@ async function uploadTeamLogo(event: Event) {
 
   uploadingTeamLogo.value = true
   try {
-    await participantApi.uploadTeamLogo(activeTeam.value.id, file)
+    const updated = await participantApi.uploadTeamLogo(activeTeam.value.id, file)
+    upsertTeam(updated)
     ElMessage.success('Logo pública da equipe atualizada.')
-    await loadTeams()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar a logo da equipe.')
   } finally {
@@ -643,9 +672,9 @@ async function removeTeamLogo() {
 
   uploadingTeamLogo.value = true
   try {
-    await participantApi.deleteTeamLogo(activeTeam.value.id)
+    const updated = await participantApi.deleteTeamLogo(activeTeam.value.id)
+    upsertTeam(updated)
     ElMessage.success('Logo da equipe removida.')
-    await loadTeams()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível remover a logo da equipe.')
   } finally {
@@ -722,10 +751,12 @@ async function saveRobot() {
     }
 
     if (robotEditingId.value) {
-      await participantApi.updateRobot(robotEditingId.value, payload)
+      const updated = await participantApi.updateRobot(robotEditingId.value, payload)
+      upsertRobot(updated)
       ElMessage.success('Nome e descrição do robô atualizados.')
     } else {
-      await participantApi.createRobot(teamId.value, payload)
+      const created = await participantApi.createRobot(teamId.value, payload)
+      upsertRobot(created)
       ElMessage.success('Robô cadastrado na sua equipe.')
     }
 
@@ -733,7 +764,6 @@ async function saveRobot() {
     robotEditingId.value = undefined
     robotForm.nome = ''
     robotForm.descricao = ''
-    await loadTeam()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar o robô.')
   } finally {
@@ -761,8 +791,8 @@ async function removeRobot(robot: Robot) {
   removingRobotId.value = robot.id
   try {
     await participantApi.deleteRobot(robot.id)
+    robots.value = robots.value.filter((item) => item.id !== robot.id)
     ElMessage.success('Cadastro do robô removido do Portal.')
-    await loadTeam()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível remover o robô.')
   } finally {
@@ -876,7 +906,7 @@ async function submitRegistration() {
       }
     }
     if (completed.length) {
-      try { await loadTeam() } catch { ElMessage.warning('Atualize a página para consultar as inscrições enviadas.') }
+      try { await refreshTeamRegistrations() } catch { ElMessage.warning('Atualize a página para consultar as inscrições enviadas.') }
     }
     if (failed.length) {
       selectedRegistrationCategoryIds.value = selected.filter(id => failed.some(message => message.startsWith((categories.value.find(c => c.id === id)?.nome || String(id)) + ':')))
@@ -995,7 +1025,7 @@ async function cancelPendingRegistration(registration: Registration) {
     registrationActionId.value = registration.id
     await participantApi.cancelRegistration(registration.id)
     ElMessage.success('Inscrição cancelada.')
-    await loadTeam()
+    await refreshTeamRegistrations()
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível cancelar a inscrição.')
@@ -1007,11 +1037,11 @@ async function cancelPendingRegistration(registration: Registration) {
 async function reactivateRegistration(registration: Registration) {
   registrationActionId.value = registration.id
   try {
-    await participantApi.reactivateRegistration(registration.id)
+    const updated = await participantApi.reactivateRegistration(registration.id)
+    registrations.value = registrations.value.map((item) => item.id === updated.id ? updated : item)
     ElMessage.success(registration.status === 'REJEITADA'
       ? 'Robô reinscrito e devolvido para análise.'
       : 'Inscrição reativada e devolvida para análise.')
-    await loadTeam()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível reativar a inscrição.')
   } finally {
@@ -1110,7 +1140,9 @@ async function respondInvite(item: TeamMembershipRequest, accept: boolean) {
     else await participantApi.rejectTeamInvite(item.id)
 
     ElMessage.success(accept ? 'Convite aceito. Você agora faz parte da equipe.' : 'Convite recusado.')
-    await loadTeams()
+    // A entrada em equipe muda varias relacoes; manter a sincronizacao
+    // completa, mas sem bloquear o portal com uma mascara global.
+    await loadTeams(true)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível processar o convite.')
   } finally {
@@ -1126,7 +1158,7 @@ async function reviewJoinRequest(item: TeamMembershipRequest, approve: boolean) 
     else await participantApi.rejectTeamJoin(item.id)
 
     ElMessage.success(approve ? 'Participante adicionado à equipe.' : 'Solicitação recusada.')
-    await loadTeam()
+    await loadTeam(true)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a solicitação.')
   } finally {
