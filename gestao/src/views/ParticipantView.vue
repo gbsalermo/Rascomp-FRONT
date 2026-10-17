@@ -1292,13 +1292,30 @@ onBeforeUnmount(() => {
 
     <article v-if="!teams.length && !loading" class="participant-empty-onboarding">
       <span class="eyebrow">Primeiro acesso</span>
-      <h2>Organize sua equipe quando precisar</h2>
-      <p>Você pode fazer sua inscrição pessoal sem equipe. Para participar com robôs, crie sua equipe ou encontre uma existente quando necessário.</p>
+      <h2>Sua equipe pode ser organizada depois</h2>
+      <p>Sua inscrição pessoal é independente da equipe. Você pode concluí-la agora. A organização da equipe e a associação dos robôs podem ser feitas depois, conforme a modalidade.</p>
       <div class="participant-onboarding-actions">
         <el-button class="brand-button" @click="teamDialog = true">Criar minha equipe</el-button>
         <el-button @click="openJoinDialog">Encontrar equipe</el-button>
       </div>
     </article>
+
+    <section v-if="!activeTeam && !loading" class="participant-section robot-registration-section">
+      <div class="participant-section-heading">
+        <div>
+          <span class="eyebrow">Próxima etapa</span>
+          <h2>Inscrição dos robôs</h2>
+          <p class="muted">O cadastro de um robô não equivale à inscrição dele na competição. Você poderá inscrever robôs nas categorias disponíveis após organizar os vínculos necessários.</p>
+        </div>
+      </div>
+      <el-alert
+        type="info"
+        :closable="false"
+        show-icon
+        title="Equipe em organização"
+        description="A inscrição pessoal já pode ser feita. O cadastro e a inscrição dos robôs ainda dependem de uma equipe no sistema atual; estamos adaptando esse fluxo para permitir a organização posterior."
+      />
+    </section>
 
     <template v-else-if="activeTeam">
       <section class="participant-summary-grid">
