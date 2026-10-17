@@ -130,7 +130,6 @@ async function correctResult(match: Match) {
     })
     ElMessage.success('Resultado corrigido e propagação atualizada com auditoria.')
     if (previewBracket.value) await selectPreview(previewBracket.value)
-    await load()
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível corrigir o resultado.')
@@ -166,9 +165,8 @@ async function generateFromBrackets() {
         : 'Nova chave gerada.'
     )
     generationDialog.value = false
-    await load()
-    const createdRow = rows.value.find((item) => item.id === created.id)
-    if (createdRow) await selectPreview(createdRow)
+    previewBracketId.value = created.id
+    await load(true)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível gerar a nova chave.')
   } finally {
@@ -210,10 +208,10 @@ function scopedRoute(path: '/partidas' | '/resultados', item: BracketHistoryRow)
   }
 }
 
-async function load() {
-  loading.value = true
+async function load(background = false) {
+  if (!background) loading.value = true
   try {
-    await competition.load()
+    if (!background) await competition.load()
     if (!competition.selectedId) {
       rows.value = []
       return
@@ -221,7 +219,7 @@ async function load() {
 
     const [brackets, categories] = await Promise.all([
       adminApi.brackets(competition.selectedId),
-      adminApi.categories('SUMO')
+      background ? Promise.resolve(sumoCategories.value) : adminApi.categories('SUMO')
     ])
     sumoCategories.value = categories.filter((item) => item.ativo !== false)
     rows.value = await Promise.all(
@@ -243,7 +241,7 @@ async function load() {
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar o histórico de chaves.')
   } finally {
-    loading.value = false
+    if (!background) loading.value = false
   }
 }
 
