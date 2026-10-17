@@ -400,19 +400,29 @@ function openArena(activity: AgendaActivity) {
   })
 }
 
-async function loadAgenda() {
-  if (!competitionId.value) {
+let agendaRequestVersion = 0
+async function loadAgenda(blocking = false) {
+  const id = competitionId.value
+  const version = ++agendaRequestVersion
+  if (!id) {
     activities.value = []
     return
   }
-  loading.value = true
-  activities.value = []
+  // Acoes alteram so a agenda; preservamos os cards durante a consulta.
+  // Troca de competicao usa carregamento bloqueante para evitar dados cruzados.
+  if (blocking) {
+    loading.value = true
+    activities.value = []
+  }
   try {
-    activities.value = await adminApi.agenda(competitionId.value)
+    const updated = await adminApi.agenda(id)
+    if (competitionId.value === id && version === agendaRequestVersion) {
+      activities.value = updated
+    }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar a agenda competitiva.')
   } finally {
-    loading.value = false
+    if (blocking && version === agendaRequestVersion) loading.value = false
   }
 }
 
@@ -438,7 +448,7 @@ async function initialize() {
       competition.select(competitionId.value)
     }
 
-    await loadAgenda()
+    await loadAgenda(true)
   } finally {
     loading.value = false
   }
@@ -449,7 +459,7 @@ watch(() => competition.selectedId, async (value) => {
   competitionId.value = value
   categoryFilter.value = undefined
   trackFilter.value = ''
-  await loadAgenda()
+  await loadAgenda(true)
 })
 
 watch(competitionId, async (value) => {
@@ -457,7 +467,7 @@ watch(competitionId, async (value) => {
   if (auth.isDev && competition.selectedId !== value) competition.select(value)
   categoryFilter.value = undefined
   trackFilter.value = ''
-  await loadAgenda()
+  await loadAgenda(true)
 })
 
 onMounted(initialize)
