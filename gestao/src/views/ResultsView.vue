@@ -126,6 +126,14 @@ function openExtraTake(item: CompetitionCategoryResult) {
   extraDialog.value = true
 }
 
+// Acoes de resolucao do Follow so alteram o quadro de vencedores da categoria.
+async function refreshCategoryResults() {
+  const id = competition.selectedId
+  if (!id || scopedBracket.value) return
+  const updated = await adminApi.competitionResults(id)
+  if (competition.selectedId === id) categoryResults.value = updated
+}
+
 async function saveExtraTake() {
   const item = extraTarget.value
   if (!item || !competition.selectedId || !item.extraTakeNumber) return
@@ -148,7 +156,7 @@ async function saveExtraTake() {
     })
     ElMessage.success(`Tomada Extra ${item.extraTakeNumber} criada e adicionada à Agenda.`)
     extraDialog.value = false
-    await load(true)
+    await refreshCategoryResults()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a Tomada Extra.')
   } finally {
@@ -235,7 +243,7 @@ async function saveManualDecision() {
     })
     ElMessage.success('Resultado do Follow definido e auditado.')
     manualDialog.value = false
-    await load(true)
+    await refreshCategoryResults()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a decisão da organização.')
   } finally {
@@ -243,10 +251,10 @@ async function saveManualDecision() {
   }
 }
 
-async function load(background = false) {
-  if (!background) loading.value = true
+async function load() {
+  loading.value = true
   try {
-    if (!background) await competition.load()
+    await competition.load()
 
     const requestedCompetition = queryNumber(route.query.competitionId)
     if (requestedCompetition && competition.competitions.some((item) => item.id === requestedCompetition)) {
@@ -316,7 +324,7 @@ async function load(background = false) {
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os resultados.')
   } finally {
-    if (!background) loading.value = false
+    loading.value = false
   }
 }
 
