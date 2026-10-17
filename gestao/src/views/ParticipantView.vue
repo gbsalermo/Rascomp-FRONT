@@ -405,6 +405,23 @@ async function loadTeams(silent = false) {
   }
 }
 
+// Compartilha uma mesma consulta de chave/ranking entre os robos da mesma
+// competicao durante cada carregamento. O cache e descartado no proximo refresh.
+type OverviewRequestCache = {
+  brackets: Map<number, ReturnType<typeof publicApi.brackets>>
+  matches: Map<number, ReturnType<typeof publicApi.matches>>
+  results: Map<number, ReturnType<typeof publicApi.results>>
+  rankings: Map<string, ReturnType<typeof publicApi.rankingFollow>>
+}
+
+function cachedRequest<K, V>(cache: Map<K, Promise<V>>, key: K, fetcher: () => Promise<V>): Promise<V> {
+  const existing = cache.get(key)
+  if (existing) return existing
+  const pending = fetcher()
+  cache.set(key, pending)
+  return pending
+}
+
 async function loadTeam(silent = false) {
   if (!silent) {
     competitors.value = []
@@ -455,7 +472,15 @@ async function loadTeam(silent = false) {
         .map(([registrationId]) => registrationId)
     )
 
-    await Promise.all(approvedRegistrations.value.map(loadRegistrationOverview))
+    const requestCache: OverviewRequestCache = {
+      brackets: new Map(),
+      matches: new Map(),
+      results: new Map(),
+      rankings: new Map()
+    }
+    await Promise.all(approvedRegistrations.value.map((registration) =>
+      loadRegistrationOverview(registration, requestCache)
+    ))
   } catch (error: any) {
     if (!silent) ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da equipe.')
   } finally {
@@ -463,12 +488,16 @@ async function loadTeam(silent = false) {
   }
 }
 
-async function loadRegistrationOverview(registration: Registration) {
+async function loadRegistrationOverview(registration: Registration, cache: OverviewRequestCache) {
   if (registration.categoryNome.toLocaleLowerCase('pt-BR').includes('seguidor') || registration.categoryNome.toLocaleLowerCase('pt-BR').includes('follow')) {
     const [attempts, config, ranking] = await Promise.all([
       participantApi.followAttempts(registration.id).catch(() => []),
       participantApi.followConfig(registration.id).catch(() => undefined),
-      publicApi.rankingFollow(registration.competitionId, registration.categoryId).catch(() => [])
+      cachedRequest(
+        cache.rankings,
+        `${registration.competitionId}:${registration.categoryId}`,
+        () => publicApi.rankingFollow(registration.competitionId, registration.categoryId).catch(() => [])
+      )
     ])
     followMap.value = {
       ...followMap.value,
@@ -481,7 +510,11 @@ async function loadRegistrationOverview(registration: Registration) {
     return
   }
 
-  const brackets = await publicApi.brackets(registration.competitionId).catch(() => [])
+  const brackets = await cachedRequest(
+    cache.brackets,
+    registration.competitionId,
+    () => publicApi.brackets(registration.competitionId).catch(() => [])
+  )
   const bracket = brackets.find((item) => item.categoryId === registration.categoryId)
   if (!bracket) {
     sumoMap.value = { ...sumoMap.value, [registration.id]: { wins: 0, losses: 0 } }
@@ -489,8 +522,8 @@ async function loadRegistrationOverview(registration: Registration) {
   }
 
   const [matches, results] = await Promise.all([
-    publicApi.matches(bracket.id).catch(() => []),
-    publicApi.results(bracket.id).catch(() => [])
+    cachedRequest(cache.matches, bracket.id, () => publicApi.matches(bracket.id).catch(() => [])),
+    cachedRequest(cache.results, bracket.id, () => publicApi.results(bracket.id).catch(() => []))
   ])
   const ownMatches = matches.filter((match) =>
     match.registrationAId === registration.id || match.registrationBId === registration.id
