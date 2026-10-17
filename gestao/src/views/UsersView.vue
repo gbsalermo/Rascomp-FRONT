@@ -65,6 +65,18 @@ const usersByRole = ref<Record<UserRole, UserAccount[]>>({
   PARTICIPANTE: []
 })
 
+// A API devolve o estado atualizado: nao e necessario consultar as quatro listas
+// de usuarios apos editar dados, criar uma conta ou alterar uma permissao.
+function upsertUser(updated: UserAccount) {
+  const roles: UserRole[] = ['PARTICIPANTE', 'GESTAO', 'MIDIA', 'DEV']
+  const next = { ...usersByRole.value }
+  for (const role of roles) {
+    next[role] = next[role].filter((user) => user.id !== updated.id)
+  }
+  next[updated.role] = [updated, ...next[updated.role]]
+  usersByRole.value = next
+}
+
 const participants = computed(() => usersByRole.value.PARTICIPANTE)
 const internalUsers = computed(() => [
   ...usersByRole.value.DEV,
@@ -157,7 +169,7 @@ async function saveRole() {
     if (updated.role !== 'PARTICIPANTE') internalFilter.value = updated.role
     ElMessage.success(`Permissão alterada para ${roleLabel(updated.role)}.`)
     resetRoleDialog()
-    await load()
+    upsertUser(updated)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível alterar a permissão do usuário.')
   } finally {
@@ -209,7 +221,7 @@ async function saveData() {
 
     if (currentUser) await auth.hydrate(true)
     ElMessage.success('Dados cadastrais atualizados.')
-    await load()
+    upsertUser(updated)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar os dados cadastrais.')
   } finally {
@@ -232,7 +244,7 @@ async function createInternalUser() {
 
   creating.value = true
   try {
-    await adminApi.createInternalUser(
+    const created = await adminApi.createInternalUser(
       {
         nome: newInternalUser.nome.trim(),
         email: newInternalUser.email.trim(),
@@ -245,7 +257,7 @@ async function createInternalUser() {
     createDialogOpen.value = false
     ElMessage.success(`Conta ${roleLabel(newInternalUser.role)} criada. O convite de primeiro acesso foi enviado ao titular.`)
     resetInternalUserForm()
-    await load()
+    upsertUser(created)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a conta interna.')
   } finally {
