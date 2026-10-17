@@ -77,9 +77,13 @@ export const participantApi = {
       headers: { 'Content-Type': 'multipart/form-data' }
     }).then((r) => r.data)
   },
-  correctPersonalRegistration: (id: number, receipt: File) => {
+  correctPersonalRegistration: (
+    id: number,
+    payload: { observacao: string; comprovante?: File }
+  ) => {
     const form = new FormData()
-    form.append('comprovante', receipt)
+    form.append('observacao', payload.observacao)
+    if (payload.comprovante) form.append('comprovante', payload.comprovante)
     return http.post<ParticipantCompetitionRegistration>(
       `/api/v1/participante/inscricoes-pessoais/${id}/correcao`,
       form,
