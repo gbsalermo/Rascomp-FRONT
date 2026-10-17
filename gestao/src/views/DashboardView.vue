@@ -12,6 +12,7 @@ const competition = useCompetitionStore()
 
 const loading = ref(true)
 const error = ref('')
+let dashboardRequestVersion = 0
 const categories = ref<Category[]>([])
 const registrations = ref<Registration[]>([])
 const brackets = ref<Bracket[]>([])
@@ -113,6 +114,7 @@ async function loadDashboard(forceCompetition = false) {
     return
   }
 
+  const requestVersion = ++dashboardRequestVersion
   loading.value = true
   error.value = ''
 
@@ -126,24 +128,38 @@ async function loadDashboard(forceCompetition = false) {
       return
     }
 
-    const [allCategories, competitionRegistrations, competitionBrackets, competitionAgenda, competitionResults] = await Promise.all([
+    const results = await Promise.allSettled([
       adminApi.categories(),
       adminApi.registrations({ competitionId }),
       adminApi.brackets(competitionId),
       adminApi.agenda(competitionId),
       adminApi.competitionResults(competitionId)
     ])
+    if (requestVersion !== dashboardRequestVersion || competition.selectedId !== competitionId) return
 
-    categories.value = allCategories
-    registrations.value = competitionRegistrations
-    brackets.value = competitionBrackets
-    agenda.value = competitionAgenda
-    categoryResults.value = competitionResults
+    const [categoryResult, registrationResult, bracketResult, agendaResult, resultResult] = results
+    if (categoryResult.status === 'fulfilled') categories.value = categoryResult.value
+    if (registrationResult.status === 'fulfilled') registrations.value = registrationResult.value
+    if (bracketResult.status === 'fulfilled') brackets.value = bracketResult.value
+    if (agendaResult.status === 'fulfilled') agenda.value = agendaResult.value
+    if (resultResult.status === 'fulfilled') categoryResults.value = resultResult.value
+
+    const failed = results.flatMap((result, index) =>
+      result.status === 'rejected'
+        ? [['categorias', 'inscrições', 'chaves', 'agenda', 'resultados'][index]!]
+        : []
+    )
+    if (failed.length) {
+      error.value = `Não foi possível atualizar: ${failed.join(', ')}. Os demais dados continuam disponíveis.`
+      ElMessage.warning(error.value)
+    }
   } catch (err: any) {
-    error.value = err?.response?.data?.message || 'Não foi possível carregar o painel.'
-    ElMessage.error(error.value)
+    if (requestVersion === dashboardRequestVersion) {
+      error.value = err?.response?.data?.message || 'Não foi possível carregar o painel.'
+      ElMessage.error(error.value)
+    }
   } finally {
-    loading.value = false
+    if (requestVersion === dashboardRequestVersion) loading.value = false
   }
 }
 
@@ -178,7 +194,7 @@ watch(
     </article>
   </div>
 
-  <div v-else class="page-stack dashboard-page dashboard-v2" v-loading="loading">
+  <div v-else class="page-stack dashboard-page dashboard-v2">
     <div class="page-heading dashboard-heading">
       <div>
         <span class="eyebrow">Central da competição</span>
@@ -186,7 +202,7 @@ watch(
         <p class="muted">Veja o que exige atenção agora e acesse diretamente as áreas da edição em foco.</p>
       </div>
       <div class="heading-actions">
-        <el-button @click="loadDashboard(true)">Atualizar painel</el-button>
+        <el-button :loading="loading" @click="loadDashboard(true)">Atualizar painel</el-button>
       </div>
     </div>
 
