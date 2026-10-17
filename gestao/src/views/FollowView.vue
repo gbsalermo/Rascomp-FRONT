@@ -173,16 +173,17 @@ async function saveSchedule() {
     } as FollowTakeSchedule
 
     if (editingSchedule.value) {
-      await adminApi.updateFollowSchedule(editingSchedule.value.id, payload)
+      const updated = await adminApi.updateFollowSchedule(editingSchedule.value.id, payload)
+      schedules.value = schedules.value.map((item) => item.id === updated.id ? updated : item)
       ElMessage.success('Chamada da tomada atualizada.')
     } else {
       const { id: _id, ...createPayload } = payload
-      await adminApi.createFollowSchedule(createPayload)
+      const created = await adminApi.createFollowSchedule(createPayload)
+      schedules.value = [...schedules.value, created]
       ElMessage.success('Chamada geral da tomada criada.')
     }
 
     scheduleDialog.value = false
-    await loadContext()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar a chamada.')
   } finally {

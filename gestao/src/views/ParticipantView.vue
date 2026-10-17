@@ -178,6 +178,43 @@ const isTeamLeader = computed(() =>
 )
 const approvedRegistrations = computed(() => registrations.value.filter((item) => item.status === 'APROVADA'))
 const pendingRegistrations = computed(() => registrations.value.filter((item) => item.status === 'PENDENTE'))
+
+// Atualizacoes pontuais preservam as fotos, responsaveis e resumos das
+// demais inscricoes: uma acao nao precisa refazer todas essas consultas.
+function upsertRobot(updated: Robot) {
+  const exists = robots.value.some((robot) => robot.id === updated.id)
+  robots.value = exists
+    ? robots.value.map((robot) => robot.id === updated.id ? updated : robot)
+    : [...robots.value, updated]
+  if (!exists) {
+    photoMap.value = { ...photoMap.value, [updated.id]: [] }
+    responsibleMap.value = { ...responsibleMap.value, [updated.id]: [] }
+  }
+  registrations.value = registrations.value.map((registration) =>
+    registration.robotId === updated.id
+      ? { ...registration, robotNome: updated.nome }
+      : registration
+  )
+}
+
+const teamLogoRevision = ref<Record<number, number>>({})
+function upsertTeam(updated: Team) {
+  teams.value = teams.value.map((team) => team.id === updated.id ? updated : team)
+  teamLogoRevision.value = { ...teamLogoRevision.value, [updated.id]: Date.now() }
+}
+function teamLogoSrc(team: Team) {
+  if (!team.logoUrl) return '/rascomp-logo.webp'
+  const url = assetUrl(team.logoUrl)
+  const revision = teamLogoRevision.value[team.id]
+  return revision ? `${url}${url.includes('?') ? '&' : '?'}revision=${revision}` : url
+}
+
+async function refreshTeamRegistrations() {
+  const id = teamId.value
+  if (!id) return
+  const updated = await participantApi.registrations(id)
+  if (teamId.value === id) registrations.value = updated
+}
 const pendingInvites = computed(() =>
   myMemberships.value.filter((item) => item.requestType === 'CONVITE' && item.status === 'PENDENTE')
 )
@@ -376,6 +413,23 @@ async function loadTeams(silent = false) {
   }
 }
 
+// Compartilha uma mesma consulta de chave/ranking entre os robos da mesma
+// competicao durante cada carregamento. O cache e descartado no proximo refresh.
+type OverviewRequestCache = {
+  brackets: Map<number, ReturnType<typeof publicApi.brackets>>
+  matches: Map<number, ReturnType<typeof publicApi.matches>>
+  results: Map<number, ReturnType<typeof publicApi.results>>
+  rankings: Map<string, ReturnType<typeof publicApi.rankingFollow>>
+}
+
+function cachedRequest<K, V>(cache: Map<K, Promise<V>>, key: K, fetcher: () => Promise<V>): Promise<V> {
+  const existing = cache.get(key)
+  if (existing) return existing
+  const pending = fetcher()
+  cache.set(key, pending)
+  return pending
+}
+
 async function loadTeam(silent = false) {
   if (!silent) {
     competitors.value = []
@@ -426,7 +480,15 @@ async function loadTeam(silent = false) {
         .map(([registrationId]) => registrationId)
     )
 
-    await Promise.all(approvedRegistrations.value.map(loadRegistrationOverview))
+    const requestCache: OverviewRequestCache = {
+      brackets: new Map(),
+      matches: new Map(),
+      results: new Map(),
+      rankings: new Map()
+    }
+    await Promise.all(approvedRegistrations.value.map((registration) =>
+      loadRegistrationOverview(registration, requestCache)
+    ))
   } catch (error: any) {
     if (!silent) ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os dados da equipe.')
   } finally {
@@ -434,12 +496,16 @@ async function loadTeam(silent = false) {
   }
 }
 
-async function loadRegistrationOverview(registration: Registration) {
+async function loadRegistrationOverview(registration: Registration, cache: OverviewRequestCache) {
   if (registration.categoryNome.toLocaleLowerCase('pt-BR').includes('seguidor') || registration.categoryNome.toLocaleLowerCase('pt-BR').includes('follow')) {
     const [attempts, config, ranking] = await Promise.all([
       participantApi.followAttempts(registration.id).catch(() => []),
       participantApi.followConfig(registration.id).catch(() => undefined),
-      publicApi.rankingFollow(registration.competitionId, registration.categoryId).catch(() => [])
+      cachedRequest(
+        cache.rankings,
+        `${registration.competitionId}:${registration.categoryId}`,
+        () => publicApi.rankingFollow(registration.competitionId, registration.categoryId).catch(() => [])
+      )
     ])
     followMap.value = {
       ...followMap.value,
@@ -452,7 +518,11 @@ async function loadRegistrationOverview(registration: Registration) {
     return
   }
 
-  const brackets = await publicApi.brackets(registration.competitionId).catch(() => [])
+  const brackets = await cachedRequest(
+    cache.brackets,
+    registration.competitionId,
+    () => publicApi.brackets(registration.competitionId).catch(() => [])
+  )
   const bracket = brackets.find((item) => item.categoryId === registration.categoryId)
   if (!bracket) {
     sumoMap.value = { ...sumoMap.value, [registration.id]: { wins: 0, losses: 0 } }
@@ -460,8 +530,8 @@ async function loadRegistrationOverview(registration: Registration) {
   }
 
   const [matches, results] = await Promise.all([
-    publicApi.matches(bracket.id).catch(() => []),
-    publicApi.results(bracket.id).catch(() => [])
+    cachedRequest(cache.matches, bracket.id, () => publicApi.matches(bracket.id).catch(() => [])),
+    cachedRequest(cache.results, bracket.id, () => publicApi.results(bracket.id).catch(() => []))
   ])
   const ownMatches = matches.filter((match) =>
     match.registrationAId === registration.id || match.registrationBId === registration.id
@@ -614,9 +684,9 @@ async function uploadTeamLogo(event: Event) {
 
   uploadingTeamLogo.value = true
   try {
-    await participantApi.uploadTeamLogo(activeTeam.value.id, file)
+    const updated = await participantApi.uploadTeamLogo(activeTeam.value.id, file)
+    upsertTeam(updated)
     ElMessage.success('Logo pública da equipe atualizada.')
-    await loadTeams()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar a logo da equipe.')
   } finally {
@@ -643,9 +713,9 @@ async function removeTeamLogo() {
 
   uploadingTeamLogo.value = true
   try {
-    await participantApi.deleteTeamLogo(activeTeam.value.id)
+    const updated = await participantApi.deleteTeamLogo(activeTeam.value.id)
+    upsertTeam(updated)
     ElMessage.success('Logo da equipe removida.')
-    await loadTeams()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível remover a logo da equipe.')
   } finally {
@@ -722,10 +792,18 @@ async function saveRobot() {
     }
 
     if (robotEditingId.value) {
-      await participantApi.updateRobot(robotEditingId.value, payload)
+      const updated = await participantApi.updateRobot(robotEditingId.value, payload)
+      upsertRobot(updated)
       ElMessage.success('Nome e descrição do robô atualizados.')
     } else {
-      await participantApi.createRobot(teamId.value, payload)
+      const created = await participantApi.createRobot(teamId.value, payload)
+      upsertRobot(created)
+      // O backend associa automaticamente o criador ao novo robo.
+      // Consultar apenas seus responsaveis preserva essa regra na interface.
+      responsibleMap.value = {
+        ...responsibleMap.value,
+        [created.id]: await participantApi.robotResponsibles(created.id).catch(() => [])
+      }
       ElMessage.success('Robô cadastrado na sua equipe.')
     }
 
@@ -733,7 +811,6 @@ async function saveRobot() {
     robotEditingId.value = undefined
     robotForm.nome = ''
     robotForm.descricao = ''
-    await loadTeam()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar o robô.')
   } finally {
@@ -761,8 +838,8 @@ async function removeRobot(robot: Robot) {
   removingRobotId.value = robot.id
   try {
     await participantApi.deleteRobot(robot.id)
+    robots.value = robots.value.filter((item) => item.id !== robot.id)
     ElMessage.success('Cadastro do robô removido do Portal.')
-    await loadTeam()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível remover o robô.')
   } finally {
@@ -876,7 +953,7 @@ async function submitRegistration() {
       }
     }
     if (completed.length) {
-      try { await loadTeam() } catch { ElMessage.warning('Atualize a página para consultar as inscrições enviadas.') }
+      try { await refreshTeamRegistrations() } catch { ElMessage.warning('Atualize a página para consultar as inscrições enviadas.') }
     }
     if (failed.length) {
       selectedRegistrationCategoryIds.value = selected.filter(id => failed.some(message => message.startsWith((categories.value.find(c => c.id === id)?.nome || String(id)) + ':')))
@@ -995,7 +1072,7 @@ async function cancelPendingRegistration(registration: Registration) {
     registrationActionId.value = registration.id
     await participantApi.cancelRegistration(registration.id)
     ElMessage.success('Inscrição cancelada.')
-    await loadTeam()
+    await refreshTeamRegistrations()
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível cancelar a inscrição.')
@@ -1007,11 +1084,11 @@ async function cancelPendingRegistration(registration: Registration) {
 async function reactivateRegistration(registration: Registration) {
   registrationActionId.value = registration.id
   try {
-    await participantApi.reactivateRegistration(registration.id)
+    const updated = await participantApi.reactivateRegistration(registration.id)
+    registrations.value = registrations.value.map((item) => item.id === updated.id ? updated : item)
     ElMessage.success(registration.status === 'REJEITADA'
       ? 'Robô reinscrito e devolvido para análise.'
       : 'Inscrição reativada e devolvida para análise.')
-    await loadTeam()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível reativar a inscrição.')
   } finally {
@@ -1110,7 +1187,9 @@ async function respondInvite(item: TeamMembershipRequest, accept: boolean) {
     else await participantApi.rejectTeamInvite(item.id)
 
     ElMessage.success(accept ? 'Convite aceito. Você agora faz parte da equipe.' : 'Convite recusado.')
-    await loadTeams()
+    // A entrada em equipe muda varias relacoes; manter a sincronizacao
+    // completa, mas sem bloquear o portal com uma mascara global.
+    await loadTeams(true)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível processar o convite.')
   } finally {
@@ -1126,7 +1205,7 @@ async function reviewJoinRequest(item: TeamMembershipRequest, approve: boolean) 
     else await participantApi.rejectTeamJoin(item.id)
 
     ElMessage.success(approve ? 'Participante adicionado à equipe.' : 'Solicitação recusada.')
-    await loadTeam()
+    await loadTeam(true)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a solicitação.')
   } finally {
@@ -1135,20 +1214,67 @@ async function reviewJoinRequest(item: TeamMembershipRequest, approve: boolean) 
 }
 
 let lastExternalRefreshAt = 0
+let lastFullRefreshAt = 0
 let refreshingPortal = false
 const RETURN_REFRESH_INTERVAL = 60_000
+const FULL_REFRESH_INTERVAL = 5 * 60_000
+
+// Ao retornar para a aba, atualizar o que pode ter mudado em outro usuario
+// sem consultar as fotos e todos os resumos competitivos novamente.
+async function refreshPortalSummary() {
+  if (refreshingPortal) return
+  refreshingPortal = true
+  try {
+    const [teamRows, memberships, personalRows, competitionRows] = await Promise.all([
+      participantApi.teams(),
+      participantApi.myTeamMemberships(),
+      participantApi.personalRegistrations(),
+      publicApi.competitions()
+    ])
+    const previousTeam = teamId.value
+    teams.value = teamRows
+    myMemberships.value = memberships
+    personalRegistrations.value = personalRows
+    competitions.value = competitionRows
+    const selected = previousTeam && teamRows.some((team) => team.id === previousTeam)
+      ? previousTeam : teamRows[0]?.id
+    if (teamId.value !== selected) {
+      teamId.value = selected
+      await loadTeam(true)
+      return
+    }
+    if (!selected) return
+    const [registrationRows, requests] = await Promise.all([
+      participantApi.registrations(selected),
+      isTeamLeader.value ? participantApi.teamMemberships(selected) : Promise.resolve([])
+    ])
+    if (teamId.value !== selected) return
+    registrations.value = registrationRows
+    teamMemberships.value = requests
+  } catch {
+    // Uma falha de atualizacao silenciosa nao deve apagar dados ja exibidos.
+  } finally {
+    refreshingPortal = false
+  }
+}
 
 function refreshPortalWhenReturning() {
   if (document.visibilityState === 'hidden') return
   const now = Date.now()
   if (refreshingPortal || now - lastExternalRefreshAt < RETURN_REFRESH_INTERVAL) return
   lastExternalRefreshAt = now
-  void loadTeams(true)
+  if (now - lastFullRefreshAt >= FULL_REFRESH_INTERVAL) {
+    lastFullRefreshAt = now
+    void loadTeams(true)
+  } else {
+    void refreshPortalSummary()
+  }
 }
 
 watch(teamId, () => { if (!refreshingPortal) void loadTeam() })
 onMounted(() => {
   lastExternalRefreshAt = Date.now()
+  lastFullRefreshAt = Date.now()
   void loadTeams()
   window.addEventListener('focus', refreshPortalWhenReturning)
   document.addEventListener('visibilitychange', refreshPortalWhenReturning)
@@ -1165,7 +1291,7 @@ onBeforeUnmount(() => {
       <div class="participant-heading-identity">
         <div v-if="activeTeam" class="participant-team-logo">
           <img
-            :src="activeTeam.logoUrl ? assetUrl(activeTeam.logoUrl) : '/rascomp-logo.webp'"
+            :src="teamLogoSrc(activeTeam)"
             :alt="`Logo da equipe ${activeTeam.nome}`"
             :class="{ generic: !activeTeam.logoUrl }"
           />

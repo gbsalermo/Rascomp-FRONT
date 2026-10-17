@@ -297,6 +297,20 @@ async function load() {
   }
 }
 
+// Apos uma decisao basta atualizar a partida e os rounds da arena.
+// Configuracao, categorias e lista de juizes permanecem inalteradas.
+async function refreshMatchState() {
+  const id = matchId.value
+  const [detail, updatedRounds] = await Promise.all([
+    adminApi.match(id),
+    adminApi.rounds(id)
+  ])
+  if (matchId.value !== id) return
+  match.value = detail
+  rounds.value = [...updatedRounds].sort((a, b) => a.numeroRound - b.numeroRound)
+  await loadJudgeDecision()
+}
+
 async function saveRound() {
   if (!match.value || !form.choice || !canSave.value) return
   let status: RoundSumoStatus
@@ -332,7 +346,7 @@ async function saveRound() {
           : 'Round registrado. Placar e progressão atualizados pelo backend.'
     )
     resetForm()
-    await load()
+    await refreshMatchState()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar o round.')
   } finally {
@@ -346,7 +360,7 @@ async function resolveAdministrative() {
   try {
     const result = await adminApi.resolveUnavailableMatch(match.value.id)
     ElMessage.success(`${result.winnerRobotNome || 'O adversário'} avançou por resolução administrativa.`)
-    await load()
+    await refreshMatchState()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível resolver administrativamente a partida.')
   } finally {
@@ -370,7 +384,7 @@ async function saveJudgeDecision() {
       justificativa: decisionForm.justificativa.trim()
     })
     ElMessage.success('Decisão do juiz registrada e partida encerrada pelo backend.')
-    await load()
+    await refreshMatchState()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a decisão do juiz.')
   } finally {
