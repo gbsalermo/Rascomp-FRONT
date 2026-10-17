@@ -422,7 +422,7 @@ async function loadAgenda(blocking = false) {
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar a agenda competitiva.')
   } finally {
-    if (blocking && version === agendaRequestVersion) loading.value = false
+    if (version === agendaRequestVersion && loading.value) loading.value = false
   }
 }
 
