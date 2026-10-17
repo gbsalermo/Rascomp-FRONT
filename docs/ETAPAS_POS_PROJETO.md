@@ -2907,3 +2907,25 @@ Operação planejada: avaliar healthchecks externos a cada ~10 min entre 06h e 0
 **Até a V2.0:** manter a **prévia institucional da Galeria na Landing**, sem link no cabeçalho e sem acesso à Galeria completa; manter ocultas as entradas Biblioteca/Álbuns da Gestão. Preservar o editor das seções (Heroes, Sobre, Eventos etc.) e os arquivos operacionais de robôs, comprovantes e logos. Não apagar dados, objetos R2 nem tabelas legadas da Galeria. Contenção de memória já aplicada permanece, e a estabilidade do Render/inscrições continua prioridade operacional da V1.
 
 **V2.0 planejada, não iniciada:** frontend Vue/Vite em Cloudflare Pages, R2/CDN para fotos/vídeos, autenticação administrativa reaproveitada do RasComp, metadados/álbuns em camada própria conforme validação de arquitetura. Nenhum deploy, agendamento automático ou migração de acervo decorre desta decisão documental.
+
+
+---
+
+## Antecipação pré-competição — Dupla eliminação (16/10/2026)
+
+A decisão histórica de implementar apenas após a estabilização da Beta foi **superada**: esta camada deve ser validada **antes da competição e antes da produção local**.
+
+**Branch isolada nos dois repositórios:** `feat/sumo-double-elimination`. Não realizar merge ou deploy sem validação da organização.
+
+Implementação em validação técnica:
+
+- escolha explícita de eliminação simples ou dupla na Gestão de Sumô;
+- um único Bracket com seções Winners, Losers, Grand Final e Reset condicional;
+- progressão de vencedores e perdedores por origem/destino, com BYEs sem derrota fictícia;
+- duas derrotas para eliminar e Final da Winners sem atribuição de título;
+- Final Geral e reset quando a Losers vence a primeira final;
+- pódio a partir da final decisiva e do perdedor da final da Losers;
+- interface de chaves separadas na Gestão e nas visualizações que usam TournamentBracket;
+- correção excepcional DEV limitada a dependentes sem resultado/round em andamento.
+
+Gate antes da validação manual: executar build do backend, Flyway V47 no banco de homologação, testes de progressão/geração, build do frontend e smoke de partidas reais no ambiente de testes. Até concluir esse gate, o código na branch não deve ser considerado homologado.

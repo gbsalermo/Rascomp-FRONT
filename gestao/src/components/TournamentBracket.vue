@@ -11,6 +11,29 @@ const props = defineProps<{
   returnTo?: 'sumo' | 'chaves'
 }>()
 
+const isDouble = computed(() =>
+  props.matches.some((match) => match.bracketFormat === 'DOUBLE_ELIMINATION'
+    || (match.bracketSection && match.bracketSection !== 'WINNERS'))
+)
+const doubleSections = computed(() => [
+  { key: 'WINNERS', label: 'Chave principal · Winners', hint: 'Quem perde pela primeira vez passa para a chave dos perdedores.' },
+  { key: 'LOSERS', label: 'Chave dos perdedores · Losers', hint: 'A segunda derrota elimina o robô da disputa.' },
+  { key: 'GRAND_FINAL', label: 'Final Geral', hint: 'O invicto enfrenta quem venceu a chave dos perdedores.' },
+  { key: 'GRAND_FINAL_RESET', label: 'Final de reset · se necessária', hint: 'Só é disputada se o representante da Losers vencer a primeira Final Geral.' }
+].map((section) => {
+  const sectionMatches = props.matches.filter((match) => (match.bracketSection || 'WINNERS') === section.key)
+  const rounds = [...new Set(sectionMatches.map((match) => match.rodada))]
+    .sort((a, b) => a - b)
+    .map((number, index) => ({
+      number,
+      label: section.key === 'GRAND_FINAL' || section.key === 'GRAND_FINAL_RESET'
+        ? section.label
+        : `Rodada ${index + 1}`,
+      matches: sectionMatches.filter((match) => match.rodada === number).sort((a, b) => a.ordem - b.ordem)
+    }))
+  return { ...section, rounds }
+}).filter((section) => section.rounds.length > 0))
+
 const eliminationMatches = computed(() =>
   props.matches.filter((item) => item.tipoPartida !== 'TERCEIRO_LUGAR')
 )
@@ -103,6 +126,51 @@ function arenaRoute(match: Match) {
   <section class="tournament-shell">
     <div v-if="!matches.length" class="bracket-empty">
       Nenhuma partida — gere ou selecione um chaveamento.
+    </div>
+
+    <div v-else-if="isDouble" class="double-bracket-scroll">
+      <section v-for="section in doubleSections" :key="section.key" class="double-section">
+        <header class="double-section-heading">
+          <h3>{{ section.label }}</h3>
+          <p>{{ section.hint }}</p>
+        </header>
+        <div class="double-rounds">
+          <div v-for="round in section.rounds" :key="round.number" class="double-round">
+            <h4>{{ round.label }}</h4>
+            <article v-for="match in round.matches" :key="match.id" class="bracket-match double-match"
+              :class="{ 'has-result': Boolean(resultFor(match.id)), 'is-final': section.key.includes('FINAL') }">
+              <header class="match-head">
+                <span>Partida {{ match.ordem }}</span>
+                <StatusBadge :value="match.status" />
+              </header>
+              <div class="competitor-row" :class="{ winner: isWinner(match, match.registrationAId) }">
+                <span class="seed-dot">A</span>
+                <strong>{{ match.robotANome || 'Aguardando classificação' }}</strong>
+                <b v-if="scoreFor(match, 'A') !== undefined">{{ scoreFor(match, 'A') }}</b>
+              </div>
+              <div class="competitor-row" :class="{ winner: isWinner(match, match.registrationBId) }">
+                <span class="seed-dot">B</span>
+                <strong>{{ match.robotBNome || 'Aguardando classificação' }}</strong>
+                <b v-if="scoreFor(match, 'B') !== undefined">{{ scoreFor(match, 'B') }}</b>
+              </div>
+              <div v-if="match.dataHora || match.pista" class="match-schedule">
+                <span v-if="match.dataHora">{{ new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(match.dataHora)) }}</span>
+                <span v-if="match.pista">{{ match.pista }}</span>
+              </div>
+              <footer class="match-foot">
+                <span v-if="resultFor(match.id)" class="winner-note">{{ resultFor(match.id)?.winnerRobotNome }} venceu</span>
+                <span v-else-if="isByeAdvance(match)" class="bye-note">Avanço automático · BYE</span>
+                <span v-else-if="section.key === 'GRAND_FINAL_RESET' && !match.registrationAId" class="read-only-note">Apenas se houver reset</span>
+                <router-link v-if="canOpen(match)" :to="arenaRoute(match)" class="battle-action">
+                  {{ canRegister(match) ? 'Abrir partida' : 'Ver partida' }}
+                </router-link>
+                <span v-else-if="participantMode" class="read-only-note">Acompanhamento</span>
+                <span v-else-if="readOnly" class="read-only-note">Somente leitura</span>
+              </footer>
+            </article>
+          </div>
+        </div>
+      </section>
     </div>
 
     <div v-else class="bracket-scroll">
@@ -233,6 +301,20 @@ function arenaRoute(match: Match) {
 </template>
 
 <style scoped>
+
+.double-bracket-scroll { padding:22px; display:grid; gap:26px; }
+.double-section { border:1px solid #eadfe5; border-radius:14px; padding:18px; background:#fff; }
+.double-section-heading { margin-bottom:18px; }
+.double-section-heading h3 { margin:0 0 5px; font-size:16px; color:#8f1238; }
+.double-section-heading p { margin:0; font-size:12px; color:#776b72; }
+.double-rounds { display:flex; gap:18px; overflow-x:auto; padding:6px 3px 14px; align-items:flex-start; }
+.double-round { flex:0 0 255px; min-width:0; display:grid; gap:12px; }
+.double-round h4 { margin:0; padding-bottom:8px; border-bottom:2px solid #d7a9b9; font-size:12px; font-weight:800; color:#7b304a; }
+.double-match { min-height:139px; }
+.double-match::before, .double-match::after { display:none; }
+.double-section:has(.double-match.is-final) { background:#fff9fb; }
+@media (max-width: 760px) { .double-bracket-scroll{padding:12px;gap:16px;} .double-section{padding:12px;} .double-round{flex-basis:235px;} }
+
 .tournament-shell {
   border: 1px solid #eadfe5;
   border-radius: 18px;
