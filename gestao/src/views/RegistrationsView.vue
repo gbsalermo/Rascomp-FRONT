@@ -457,7 +457,7 @@ async function reviewParticipant(
         }
       )
     } else {
-      if (next === 'REJEITADA' && row.teamLeader) {
+      if (next === 'REJEITADA' && row.teamLeader && row.teamHasOtherActiveCompetitors !== false) {
         ElMessage.warning(
           'Este participante é o líder da equipe. Solicite correção ou, como DEV, transfira a liderança antes de rejeitar definitivamente.'
         )
@@ -1102,12 +1102,12 @@ onMounted(loadBase)
                 size="small"
                 type="danger"
                 plain
-                :disabled="row.teamLeader"
+                :disabled="row.teamLeader && row.teamHasOtherActiveCompetitors !== false"
                 :loading="participantReviewingId === row.id"
                 @click="reviewParticipant(row, 'REJEITADA')"
               >Rejeitar</el-button>
-              <small v-if="row.teamLeader" class="leader-rejection-help">
-                Líder atual: a rejeição definitiva só é liberada após correção ou transferência da liderança.
+              <small v-if="row.teamLeader && row.teamHasOtherActiveCompetitors !== false" class="leader-rejection-help">
+                Líder com outros integrantes ativos: transfira a liderança antes da rejeição definitiva.
               </small>
             </div>
             <div v-else class="registration-request-cell">
