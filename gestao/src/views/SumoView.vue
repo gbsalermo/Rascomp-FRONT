@@ -304,9 +304,10 @@ async function generate() {
     ElMessage.success(existingCurrent
       ? 'Nova chave criada. A versão anterior foi preservada no histórico.'
       : 'Chaveamento criado pelo backend.')
-    await loadCompetition(created.id)
+    // Uma nova chave modifica apenas a lista de chaveamentos.
+    // O watch(bracketId) consulta as partidas e resultados da nova chave.
+    brackets.value = await adminApi.brackets(competitionId.value)
     bracketId.value = created.id
-    await loadBracket()
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível gerar a chave.')
@@ -384,10 +385,10 @@ async function saveJudge() {
     return ElMessage.warning('Informe o nome do juiz.')
   }
   try {
-    await adminApi.createJudge({ competitionId: competitionId.value, nome: judgeForm.nome.trim() })
+    const created = await adminApi.createJudge({ competitionId: competitionId.value, nome: judgeForm.nome.trim() })
     judgeForm.nome = ''
     judgeDialog.value = false
-    judges.value = await adminApi.judges(competitionId.value)
+    judges.value = [...judges.value, created]
     ElMessage.success('Juiz cadastrado para a competição.')
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível cadastrar o juiz.')
