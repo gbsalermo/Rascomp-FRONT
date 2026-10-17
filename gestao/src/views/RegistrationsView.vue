@@ -41,6 +41,42 @@ const registrationContext = ref<RegistrationCompetitorContext[]>([])
 const registrationContextLoading = ref(false)
 const compositionChanges = ref<RegistrationCompetitorChange[]>([])
 const compositionReviewingId = ref<number>()
+
+type RefreshSection = 'registrations' | 'participants' | 'composition' | 'cancellations'
+
+// As acoes atualizam so o recurso afetado. load() completo e reservado para
+// primeira entrada, troca de competicao e clique explicito em Atualizar.
+function upsertById<T extends { id: number }>(items: T[], updated: T): T[] {
+  const found = items.some((item) => item.id === updated.id)
+  return found
+    ? items.map((item) => item.id === updated.id ? updated : item)
+    : [updated, ...items]
+}
+
+async function refreshSections(sections: RefreshSection[]) {
+  const id = competitionId.value
+  if (!id) return
+  await Promise.all(sections.map(async (section) => {
+    if (section === 'registrations') {
+      const data = await adminApi.registrations({ competitionId: id })
+      if (competitionId.value !== id) return
+      rows.value = data
+      if (selected.value) {
+        selected.value = data.find((item) => item.id === selected.value?.id)
+        if (!selected.value) detailsOpen.value = false
+      }
+    } else if (section === 'participants') {
+      const data = await adminApi.participantRegistrations(id)
+      if (competitionId.value === id) participantRows.value = data
+    } else if (section === 'composition') {
+      const data = await adminApi.compositionChanges(id)
+      if (competitionId.value === id) compositionChanges.value = data
+    } else {
+      const data = await adminApi.cancellationRequests({ competitionId: id })
+      if (competitionId.value === id) cancellationRequests.value = data
+    }
+  }))
+}
 const leaderDialog = ref(false)
 const leaderTransferSaving = ref(false)
 const leaderRegistration = ref<ParticipantCompetitionRegistration>()
@@ -272,7 +308,7 @@ async function saveManualParticipantEntry() {
 
   manualParticipantSaving.value = true
   try {
-    await adminApi.manualParticipantEntry({
+    const created = await adminApi.manualParticipantEntry({
       competitionId: competitionId.value,
       participantUserId: manualParticipantForm.participantUserId,
       teamId,
@@ -280,7 +316,8 @@ async function saveManualParticipantEntry() {
     })
     manualParticipantDialog.value = false
     ElMessage.success('Participante incluído manualmente na competição com auditoria DEV.')
-    await load()
+    participantRows.value = upsertById(participantRows.value, created)
+    await refreshSections(['registrations', 'composition'])
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível incluir o participante manualmente.')
   } finally {
@@ -315,7 +352,7 @@ async function saveManualEntry() {
 
     manualDialog.value = false
     status.value = 'APROVADA'
-    await load()
+    rows.value = upsertById(rows.value, registration)
 
     if (manualSelectedCategory.value?.modalidade === 'SUMO') {
       ElMessage.success(
@@ -482,7 +519,8 @@ async function reviewParticipant(
     }
 
     participantReviewingId.value = row.id
-    await adminApi.reviewParticipantRegistration(row.id, next, motivo)
+    const updated = await adminApi.reviewParticipantRegistration(row.id, next, motivo)
+    participantRows.value = upsertById(participantRows.value, updated)
     ElMessage.success(
       approving
         ? 'Participante aprovado.'
@@ -490,7 +528,7 @@ async function reviewParticipant(
           ? 'Correção solicitada ao participante.'
           : 'Inscrição individual rejeitada.'
     )
-    await load()
+    await refreshSections(['registrations', 'composition'])
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a inscrição individual.')
@@ -507,9 +545,10 @@ async function suspendParticipantWithoutLink(row: ParticipantCompetitionRegistra
       { confirmButtonText: 'Confirmar suspensão', cancelButtonText: 'Cancelar', type: 'warning' }
     )
     participantReviewingId.value = row.id
-    await adminApi.suspendParticipantWithoutLink(row.id)
+    const updated = await adminApi.suspendParticipantWithoutLink(row.id)
+    participantRows.value = upsertById(participantRows.value, updated)
     ElMessage.success('Participação suspensa; o participante verá o motivo e a orientação de contato.')
-    await load()
+    await refreshSections(['registrations'])
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível suspender a participação.')
@@ -554,7 +593,7 @@ async function transferLeader() {
     })
     ElMessage.success('Liderança transferida e auditada. A rejeição do líder anterior agora pode ser analisada.')
     leaderDialog.value = false
-    await load()
+    await refreshSections(['participants', 'registrations', 'composition'])
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível transferir a liderança.')
   } finally {
@@ -596,8 +635,13 @@ async function reviewCompositionChange(change: RegistrationCompetitorChange, kee
       keep ? 'MANTIDA' : 'VETADA',
       motivo
     )
+    // A resposta 2xx confirma a decisao e ela deixa de ser pendente:
+    // nao recarregamos quatro colecoes para retirar uma unica linha.
+    compositionChanges.value = compositionChanges.value.filter((item) => item.id !== change.id)
     ElMessage.success(keep ? 'Alteração mantida.' : 'Alteração vetada nesta competição.')
-    await load()
+    // Um veto pode afetar a composicao da inscricao; so nesse caso
+    // atualizamos a lista competitiva para refletir o estado oficial.
+    if (!keep) await refreshSections(['registrations'])
     if (selected.value?.id === change.registrationId) {
       await openDetails(selected.value)
     }
@@ -659,14 +703,14 @@ async function review(row: Registration, next: RegistrationStatus) {
     }
 
     reviewingId.value = row.id
-    await adminApi.updateRegistration(row.id, {
+    const updated = await adminApi.updateRegistration(row.id, {
       ...row,
       status: next,
       reviewReason
     })
+    rows.value = upsertById(rows.value, updated)
     ElMessage.success(approving ? 'Inscrição aprovada.' : 'Inscrição rejeitada com justificativa registrada.')
     detailsOpen.value = false
-    await load()
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar a inscrição.')
@@ -695,7 +739,7 @@ async function cancelRegistration(row: Registration) {
     registrationActionId.value = row.id
     await adminApi.cancelRegistration(row.id)
     ElMessage.success('Inscrição cancelada conforme as regras da competição.')
-    await load()
+    await refreshSections(['registrations'])
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível cancelar a inscrição.')
@@ -722,10 +766,10 @@ async function disqualifyRegistration(row: Registration) {
     )
 
     registrationActionId.value = row.id
-    await adminApi.disqualifyRegistration(row.id, result.value.trim())
+    const updated = await adminApi.disqualifyRegistration(row.id, result.value.trim())
+    rows.value = upsertById(rows.value, updated)
     ElMessage.success('Inscrição desclassificada e decisão registrada no histórico.')
     detailsOpen.value = false
-    await load()
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível desclassificar a inscrição.')
@@ -749,9 +793,9 @@ async function reactivateRegistration(row: Registration) {
     )
 
     registrationActionId.value = row.id
-    await adminApi.reactivateRegistration(row.id)
+    const updated = await adminApi.reactivateRegistration(row.id)
+    rows.value = upsertById(rows.value, updated)
     ElMessage.success('Inscrição reativada e devolvida para análise.')
-    await load()
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível reativar a inscrição.')
@@ -789,14 +833,12 @@ async function decideCancellation(request: RegistrationCancellationRequest, appr
     }
 
     cancellationReviewingId.value = request.id
-    if (approve) {
-      await adminApi.approveCancellationRequest(request.id)
-      ElMessage.success('Cancelamento aprovado.')
-    } else {
-      await adminApi.rejectCancellationRequest(request.id, resposta)
-      ElMessage.success('Solicitação de cancelamento rejeitada.')
-    }
-    await load()
+    const updated = approve
+      ? await adminApi.approveCancellationRequest(request.id)
+      : await adminApi.rejectCancellationRequest(request.id, resposta)
+    cancellationRequests.value = upsertById(cancellationRequests.value, updated)
+    ElMessage.success(approve ? 'Cancelamento aprovado.' : 'Solicitação de cancelamento rejeitada.')
+    if (approve) await refreshSections(['registrations'])
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível analisar a solicitação de cancelamento.')
