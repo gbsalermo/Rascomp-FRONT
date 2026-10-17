@@ -212,6 +212,21 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     else localStorage.removeItem(COMPETITION_KEY)
   }
 
+  // Sincroniza a edicao retornada pela API sem refazer a lista de competicoes.
+  function upsert(updated: Competition) {
+    const found = competitions.value.some((item) => item.id === updated.id)
+    competitions.value = found
+      ? competitions.value.map((item) => {
+          if (item.id === updated.id) return updated
+          return updated.vigente ? { ...item, vigente: false } : item
+        })
+      : [updated, ...competitions.value.map((item) =>
+          updated.vigente ? { ...item, vigente: false } : item
+        )]
+    if (auth.isManagement) select(competitions.value.find((item) => item.vigente)?.id)
+    else if (!selectedId.value) select(priorityCompetition(competitions.value)?.id)
+  }
+
   async function defineCurrent(id: number) {
     if (!auth.isDev) return
     const updated = await adminApi.setCurrentCompetition(id)
@@ -256,6 +271,7 @@ export const useCompetitionStore = defineStore('competition-context', () => {
     selectedId,
     selectedCompetition,
     select,
+    upsert,
     defineCurrent,
     clearCurrent,
     load
