@@ -338,9 +338,9 @@ async function disqualifyRegistration(row: Registration) {
       }
     )
 
-    await adminApi.disqualifyRegistration(row.id, value.trim())
+    const updated = await adminApi.disqualifyRegistration(row.id, value.trim())
+    registrations.value = registrations.value.map((item) => item.id === updated.id ? updated : item)
     ElMessage.success('Inscrição desclassificada e decisão registrada no histórico.')
-    await loadCompetition(bracketId.value)
   } catch (error: any) {
     if (error === 'cancel' || error === 'close') return
     ElMessage.error(error?.response?.data?.message || 'Não foi possível desclassificar a inscrição.')
@@ -362,7 +362,7 @@ async function saveInspection() {
   }
 
   try {
-    await adminApi.inspectSumo({
+    const created = await adminApi.inspectSumo({
       registrationId: inspection.registrationId,
       aprovada: inspection.aprovada,
       pesoMedido: inspection.pesoMedido && inspection.pesoMedido > 0
@@ -370,10 +370,10 @@ async function saveInspection() {
         : undefined,
       observacao: inspection.observacao || undefined
     })
+    inspections.value = [...inspections.value, created]
     ElMessage.success(inspection.aprovada ? 'Inspeção registrada como APTO.' : 'Inspeção registrada como INAPTO.')
     inspectionDialog.value = false
     resetInspection()
-    await loadCompetition(bracketId.value)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a inspeção.')
   }
