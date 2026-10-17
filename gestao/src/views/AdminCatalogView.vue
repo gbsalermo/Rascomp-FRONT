@@ -21,6 +21,17 @@ const teams = ref<Team[]>([])
 const robots = ref<Robot[]>([])
 const categories = ref<Category[]>([])
 const registrations = ref<Registration[]>([])
+const selectedCategory = ref<Category>()
+const registrationsDrawerOpen = ref(false)
+const registrationSearch = ref('')
+const registrationStatus = ref('')
+const categoryEntries = computed(() => registrations.value.filter(item => item.categoryId === selectedCategory.value?.id && (!registrationStatus.value || item.status === registrationStatus.value) && [item.robotNome, item.teamNome, ...(item.competitorNomes || [])].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(registrationSearch.value.trim().toLocaleLowerCase('pt-BR'))))
+function openCategoryEntries(category: Category) {
+  selectedCategory.value = category
+  registrationSearch.value = ''
+  registrationStatus.value = ''
+  registrationsDrawerOpen.value = true
+}
 
 const photoDrawerOpen = ref(false)
 const photosLoading = ref(false)
@@ -376,6 +387,9 @@ onMounted(load)
         <el-table-column label="Situação" width="110">
           <template #default="{ row }">{{ row.ativo === false ? 'Inativa' : 'Ativa' }}</template>
         </el-table-column>
+        <el-table-column label="Ações" width="145" align="right">
+          <template #default="{ row }"><el-button size="small" plain @click="openCategoryEntries(row)">Ver inscritos</el-button></template>
+        </el-table-column>
       </el-table>
     </article>
 
@@ -386,6 +400,28 @@ onMounted(load)
         nas inscrições da competição selecionada.
       </p>
     </div>
+
+    <el-drawer v-model="registrationsDrawerOpen" :title="`Inscritos · ${selectedCategory?.nome || 'Modalidade'}`" size="min(960px, 96vw)">
+      <div class="category-entries-filters">
+        <el-input v-model="registrationSearch" clearable placeholder="Buscar robô, equipe ou competidor" />
+        <el-select v-model="registrationStatus" placeholder="Todas as situações" style="width: 190px">
+          <el-option label="Todas" value="" />
+          <el-option label="Pendentes" value="PENDENTE" />
+          <el-option label="Aprovadas" value="APROVADA" />
+          <el-option label="Rejeitadas" value="REJEITADA" />
+          <el-option label="Canceladas" value="CANCELADA" />
+          <el-option label="Desistentes" value="DESISTENTE" />
+          <el-option label="Desclassificadas" value="DESCLASSIFICADA" />
+        </el-select>
+      </div>
+      <p class="muted">{{ categoryEntries.length }} inscrição(ões) encontrada(s) na competição em foco.</p>
+      <el-table :data="categoryEntries" empty-text="Nenhuma inscrição encontrada" style="width: 100%">
+        <el-table-column v-if="selectedCategory?.modalidade !== 'FUTEBOL'" label="Robô" min-width="150"><template #default="{ row }">{{ row.robotNome || 'Sem robô' }}</template></el-table-column>
+        <el-table-column label="Equipe" prop="teamNome" min-width="150" />
+        <el-table-column label="Competidores" min-width="230"><template #default="{ row }">{{ row.competitorNomes?.length ? row.competitorNomes.join(', ') : 'Não informados' }}</template></el-table-column>
+        <el-table-column label="Situação" prop="status" width="145" />
+      </el-table>
+    </el-drawer>
 
     <el-drawer v-model="photoDrawerOpen" :title="`Fotos · ${selectedRobot?.nome || 'Robô'}`" size="min(720px, 96vw)">
       <div v-loading="photosLoading">
@@ -405,6 +441,8 @@ onMounted(load)
 </template>
 
 <style scoped>
+.category-entries-filters { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+.category-entries-filters .el-input { flex:1; min-width:200px; }
 .admin-robot-photo-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .admin-robot-photo-card { overflow:hidden; border:1px solid #e7dce2; border-radius:14px; background:#fff; }
 .admin-robot-photo-card img { width:100%; height:190px; object-fit:cover; display:block; background:#f5f1f3; }
