@@ -1206,20 +1206,67 @@ async function reviewJoinRequest(item: TeamMembershipRequest, approve: boolean) 
 }
 
 let lastExternalRefreshAt = 0
+let lastFullRefreshAt = 0
 let refreshingPortal = false
 const RETURN_REFRESH_INTERVAL = 60_000
+const FULL_REFRESH_INTERVAL = 5 * 60_000
+
+// Ao retornar para a aba, atualizar o que pode ter mudado em outro usuario
+// sem consultar as fotos e todos os resumos competitivos novamente.
+async function refreshPortalSummary() {
+  if (refreshingPortal) return
+  refreshingPortal = true
+  try {
+    const [teamRows, memberships, personalRows, competitionRows] = await Promise.all([
+      participantApi.teams(),
+      participantApi.myTeamMemberships(),
+      participantApi.personalRegistrations(),
+      publicApi.competitions()
+    ])
+    const previousTeam = teamId.value
+    teams.value = teamRows
+    myMemberships.value = memberships
+    personalRegistrations.value = personalRows
+    competitions.value = competitionRows
+    const selected = previousTeam && teamRows.some((team) => team.id === previousTeam)
+      ? previousTeam : teamRows[0]?.id
+    if (teamId.value !== selected) {
+      teamId.value = selected
+      await loadTeam(true)
+      return
+    }
+    if (!selected) return
+    const [registrationRows, requests] = await Promise.all([
+      participantApi.registrations(selected),
+      isTeamLeader.value ? participantApi.teamMemberships(selected) : Promise.resolve([])
+    ])
+    if (teamId.value !== selected) return
+    registrations.value = registrationRows
+    teamMemberships.value = requests
+  } catch {
+    // Uma falha de atualizacao silenciosa nao deve apagar dados ja exibidos.
+  } finally {
+    refreshingPortal = false
+  }
+}
 
 function refreshPortalWhenReturning() {
   if (document.visibilityState === 'hidden') return
   const now = Date.now()
   if (refreshingPortal || now - lastExternalRefreshAt < RETURN_REFRESH_INTERVAL) return
   lastExternalRefreshAt = now
-  void loadTeams(true)
+  if (now - lastFullRefreshAt >= FULL_REFRESH_INTERVAL) {
+    lastFullRefreshAt = now
+    void loadTeams(true)
+  } else {
+    void refreshPortalSummary()
+  }
 }
 
 watch(teamId, () => { if (!refreshingPortal) void loadTeam() })
 onMounted(() => {
   lastExternalRefreshAt = Date.now()
+  lastFullRefreshAt = Date.now()
   void loadTeams()
   window.addEventListener('focus', refreshPortalWhenReturning)
   document.addEventListener('visibilitychange', refreshPortalWhenReturning)
