@@ -148,7 +148,7 @@ async function saveExtraTake() {
     })
     ElMessage.success(`Tomada Extra ${item.extraTakeNumber} criada e adicionada à Agenda.`)
     extraDialog.value = false
-    await load()
+    await load(true)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível criar a Tomada Extra.')
   } finally {
@@ -235,7 +235,7 @@ async function saveManualDecision() {
     })
     ElMessage.success('Resultado do Follow definido e auditado.')
     manualDialog.value = false
-    await load()
+    await load(true)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível registrar a decisão da organização.')
   } finally {
@@ -243,10 +243,10 @@ async function saveManualDecision() {
   }
 }
 
-async function load() {
-  loading.value = true
+async function load(background = false) {
+  if (!background) loading.value = true
   try {
-    await competition.load()
+    if (!background) await competition.load()
 
     const requestedCompetition = queryNumber(route.query.competitionId)
     if (requestedCompetition && competition.competitions.some((item) => item.id === requestedCompetition)) {
@@ -316,7 +316,7 @@ async function load() {
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os resultados.')
   } finally {
-    loading.value = false
+    if (!background) loading.value = false
   }
 }
 
