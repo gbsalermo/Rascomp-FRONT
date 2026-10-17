@@ -1260,11 +1260,24 @@ onBeforeUnmount(() => {
               />
               <small v-if="item.comprovanteDisponivel">Comprovante: {{ item.comprovanteNome || 'enviado' }}</small>
               <small v-if="item.status === 'PENDENTE'">Aguardando aprovação da organização.</small>
-              <small v-if="item.status === 'CORRECAO_SOLICITADA' && item.reviewReason">
-                Correção solicitada: {{ item.reviewReason }}
-              </small>
-              <small v-if="item.status === 'REJEITADA' && item.reviewReason">{{ item.reviewReason }}</small>
-              <label v-if="item.status === 'CORRECAO_SOLICITADA'" class="robot-photo-upload">
+              <el-alert
+                v-if="item.status === 'CORRECAO_SOLICITADA'"
+                class="personal-correction-alert"
+                type="warning"
+                :closable="false"
+                show-icon
+                title="Correção solicitada pela organização"
+                :description="item.reviewReason?.trim() || 'A organização não informou o motivo da correção. Entre em contato com a organização antes de reenviar o comprovante.'"
+              />
+              <el-alert
+                v-if="item.status === 'REJEITADA' && item.reviewReason"
+                type="error"
+                :closable="false"
+                show-icon
+                title="Motivo da rejeição"
+                :description="item.reviewReason"
+              />
+              <label v-if="item.status === 'CORRECAO_SOLICITADA' && item.reviewReason?.trim()" class="robot-photo-upload">
                 Reenviar comprovante
                 <input
                   type="file"
@@ -1915,6 +1928,8 @@ onBeforeUnmount(() => {
 .personal-registration-card strong { color:#30242a; }
 .personal-registration-card small { color:#81737a; }
 .personal-registration-meta,.personal-registration-robots { display:grid; gap:6px; }
+.personal-correction-alert :deep(.el-alert__description) { white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; line-height:1.5; }
+.personal-correction-alert :deep(.el-alert__title) { font-size:13px; font-weight:700; }
 .personal-registration-robots { padding-top:10px; border-top:1px solid #eee3e8; }
 .personal-registration-robots b { color:#5f4b55; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
 .personal-registration-robots span { color:#75656d; font-size:11px; }
