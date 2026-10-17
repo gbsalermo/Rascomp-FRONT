@@ -15,11 +15,11 @@ const description=ref('')
 const file=ref<File|null>(null)
 const competitionId=ref('')
 const types:Record<string,string>={MANUAL:'Manual do Usuário',CONDUTA:'Regras de Conduta',COMPETICAO:'Regras da Competição'}
-async function refresh(){
- loading.value=true
+async function refresh(background=false){
+ if(!background)loading.value=true
  try {const {data}=await http.get<DocumentItem[]>(auth.isDev?'/api/v1/ajuda/admin':'/api/v1/ajuda');docs.value=data}
  catch {ElMessage.error('Não foi possível carregar os documentos.')}
- finally {loading.value=false}
+ finally {if(!background)loading.value=false}
 }
 async function upload(){
  if(!file.value||!title.value.trim()){ElMessage.warning('Informe um título e selecione um PDF.');return}
@@ -33,14 +33,14 @@ async function upload(){
   title.value='';description.value='';competitionId.value='';file.value=null
   const input=document.getElementById('help-file') as HTMLInputElement|null;if(input)input.value=''
   ElMessage.success('Documento salvo como rascunho. Publique para disponibilizar aos participantes.')
-  await refresh()
+  await refresh(true)
  }catch {ElMessage.error('Não foi possível enviar o PDF.')}finally{editing.value=false}
 }
 async function publication(doc:DocumentItem) {
  try{
   await ElMessageBox.confirm(doc.published?'Retirar este documento do Portal?':'Publicar este documento para participantes?','Confirmar publicação')
   await http.patch('/api/v1/ajuda/admin/'+doc.id+'/publication',{published:!doc.published})
-  await refresh()
+  doc.published=!doc.published
  }catch(e:any){if(e!=='cancel'&&e!=='close')ElMessage.error('Falha ao alterar publicação.')}
 }
 async function openDocument(doc:DocumentItem){
