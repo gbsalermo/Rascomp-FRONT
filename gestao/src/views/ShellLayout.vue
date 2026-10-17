@@ -407,7 +407,7 @@ watch(() => competition.selectedId, loadAlerts)
 
       <section class="page-content">
         <router-view v-slot="{ Component }">
-          <transition name="admin-page-slide" mode="out-in"><component :is="Component" /></transition>
+          <component :is="Component" :key="route.fullPath" />
         </router-view>
       </section>
     </main>
