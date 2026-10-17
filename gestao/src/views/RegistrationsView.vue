@@ -404,6 +404,7 @@ let pendingLoad: Promise<void> | undefined
 let pendingLoadCompetitionId: number | undefined
 let loadVersion = 0
 const loadErrors = ref<string[]>([])
+// Evita bloquear listas ja exibidas durante uma atualizacao em segundo plano.
 
 async function load() {
   const id = competitionId.value
@@ -897,6 +898,11 @@ watch(
   (id) => {
     if (!id || competitionId.value === id) return
     competitionId.value = id
+    rows.value = []
+    participantRows.value = []
+    compositionChanges.value = []
+    cancellationRequests.value = []
+    loadErrors.value = []
     load()
   }
 )
@@ -959,7 +965,7 @@ onMounted(loadBase)
       title="Competição em andamento: entrada manual continua disponível apenas como operação excepcional DEV, com justificativa e auditoria."
     />
 
-    <article v-if="compositionChanges.length" class="table-card registrations-table-card composition-review-card" v-loading="loading">
+    <article v-if="compositionChanges.length" class="table-card registrations-table-card composition-review-card" v-loading="loading && !rows.length && !participantRows.length">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Composição competitiva</span>
@@ -1011,7 +1017,7 @@ onMounted(loadBase)
       </el-table>
     </article>
 
-    <article v-if="pendingCancellationRequests.length" class="table-card registrations-table-card" v-loading="loading">
+    <article v-if="pendingCancellationRequests.length" class="table-card registrations-table-card" v-loading="loading && !rows.length && !participantRows.length">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Cancelamentos</span>
@@ -1042,7 +1048,7 @@ onMounted(loadBase)
       </el-table>
     </article>
 
-    <article v-if="cancellationHistory.length" class="table-card registrations-table-card" v-loading="loading">
+    <article v-if="cancellationHistory.length" class="table-card registrations-table-card" v-loading="loading && !rows.length && !participantRows.length">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Auditoria</span>
@@ -1107,7 +1113,7 @@ onMounted(loadBase)
       </button>
     </div>
 
-    <article class="table-card registrations-table-card participant-approval-card" v-loading="loading">
+    <article class="table-card registrations-table-card participant-approval-card" v-loading="loading && !rows.length && !participantRows.length">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Pagamento e habilitação pessoal</span>
@@ -1251,7 +1257,7 @@ onMounted(loadBase)
       <span class="registration-result-count">{{ filtered.length }} resultado(s)</span>
     </article>
 
-    <article class="table-card registrations-table-card" v-loading="loading">
+    <article class="table-card registrations-table-card" v-loading="loading && !rows.length && !participantRows.length">
       <el-table :data="filtered" empty-text="Nenhuma inscrição neste filtro" @row-dblclick="openDetails">
         <el-table-column label="Equipe / Robô" min-width="210">
           <template #default="{ row }">
