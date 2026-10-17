@@ -100,6 +100,17 @@ const mainLot = computed(() => currentLots.value[mainCompetitionId.value ?? -1])
 
 const creatingPersonalRegistration = ref(false)
 const personalRegistrationReceipt = ref<File>()
+const correctionRegistration = ref<ParticipantCompetitionRegistration>()
+const correctionObservation = ref('')
+const correctionReceipt = ref<File>()
+const submittingCorrection = ref(false)
+const correctionHasChanges = computed(() => {
+  const registration = correctionRegistration.value
+  return Boolean(registration) && (
+    Boolean(correctionReceipt.value) ||
+    correctionObservation.value.trim() !== (registration?.observacao || '').trim()
+  )
+})
 const robotRegistrationReceipt = ref<File>()
 const responsibleDialog = ref(false)
 const responsibleSaving = ref(false)
@@ -924,21 +935,36 @@ async function submitPersonalRegistration() {
   }
 }
 
-async function correctPersonalRegistration(
-  registration: ParticipantCompetitionRegistration,
-  event: Event
-) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  input.value = ''
-  if (!file) return
+function openPersonalCorrection(registration: ParticipantCompetitionRegistration) {
+  correctionRegistration.value = registration
+  correctionObservation.value = registration.observacao || ''
+  correctionReceipt.value = undefined
+}
 
+function onCorrectionReceiptSelected(event: Event) {
+  correctionReceipt.value = (event.target as HTMLInputElement).files?.[0]
+}
+
+async function submitPersonalCorrection() {
+  const registration = correctionRegistration.value
+  if (!registration) return
+  if (!correctionHasChanges.value) {
+    return ElMessage.warning('Altere a observação ou selecione um comprovante diferente.')
+  }
+
+  submittingCorrection.value = true
   try {
-    await participantApi.correctPersonalRegistration(registration.id, file)
-    ElMessage.success('Correção reenviada. Sua inscrição voltou para PENDENTE.')
+    await participantApi.correctPersonalRegistration(registration.id, {
+      observacao: correctionObservation.value.trim(),
+      comprovante: correctionReceipt.value
+    })
+    ElMessage.success('Correção enviada. Sua inscrição voltou para análise.')
+    correctionRegistration.value = undefined
     personalRegistrations.value = await participantApi.personalRegistrations()
   } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível reenviar a correção.')
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível enviar a correção.')
+  } finally {
+    submittingCorrection.value = false
   }
 }
 
@@ -1277,14 +1303,12 @@ onBeforeUnmount(() => {
                 title="Motivo da rejeição"
                 :description="item.reviewReason"
               />
-              <label v-if="item.status === 'CORRECAO_SOLICITADA' && item.reviewReason?.trim()" class="robot-photo-upload">
-                Reenviar comprovante
-                <input
-                  type="file"
-                  accept=".pdf,image/jpeg,image/png,image/webp"
-                  @change="correctPersonalRegistration(item, $event)"
-                />
-              </label>
+              <el-button
+                v-if="item.status === 'CORRECAO_SOLICITADA'"
+                class="personal-correction-button"
+                plain
+                @click="openPersonalCorrection(item)"
+              >Corrigir minha inscrição</el-button>
             </div>
             <div v-if="item.robots?.length" class="personal-registration-robots">
               <b>Robôs associados a você</b>
@@ -1711,6 +1735,59 @@ onBeforeUnmount(() => {
       </template>
     </el-dialog>
 
+    <el-dialog
+      :model-value="Boolean(correctionRegistration)"
+      title="Corrigir minha inscrição"
+      width="min(620px, 94vw)"
+      :close-on-click-modal="!submittingCorrection"
+      :close-on-press-escape="!submittingCorrection"
+      @update:model-value="(open: boolean) => { if (!open && !submittingCorrection) correctionRegistration = undefined }"
+    >
+      <div v-if="correctionRegistration" class="registration-flow-dialog">
+        <el-alert
+          class="personal-correction-alert"
+          type="warning"
+          :closable="false"
+          show-icon
+          title="Motivo informado pela organização"
+          :description="correctionRegistration.reviewReason?.trim() || 'Motivo não informado. Se tiver dúvidas, contate a organização.'"
+        />
+        <p class="muted">Altere a observação, substitua o comprovante ou faça as duas correções conforme solicitado.</p>
+        <label class="personal-correction-field">
+          Observação da inscrição <small class="muted">(opcional)</small>
+          <el-input
+            v-model="correctionObservation"
+            type="textarea"
+            :rows="4"
+            maxlength="500"
+            show-word-limit
+            placeholder="Observação para a organização"
+          />
+        </label>
+        <label class="personal-correction-field">
+          Substituir comprovante <small class="muted">(somente se necessário)</small>
+          <input
+            type="file"
+            accept=".pdf,image/jpeg,image/png,image/webp"
+            @change="onCorrectionReceiptSelected"
+          />
+          <small class="muted">
+            {{ correctionReceipt?.name || `Comprovante atual mantido: ${correctionRegistration.comprovanteNome || 'já enviado'}` }}
+          </small>
+          <small class="muted">PDF, JPG, PNG ou WEBP · até 10 MB.</small>
+        </label>
+      </div>
+      <template #footer>
+        <el-button :disabled="submittingCorrection" @click="correctionRegistration = undefined">Cancelar</el-button>
+        <el-button
+          class="brand-button"
+          :loading="submittingCorrection"
+          :disabled="!correctionHasChanges"
+          @click="submitPersonalCorrection"
+        >Enviar correção para análise</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="registrationDialog" title="Inscrição em categorias" width="min(680px, 94vw)">
       <div class="registration-flow-dialog">
         <div class="participant-flow-note">
@@ -1930,6 +2007,9 @@ onBeforeUnmount(() => {
 .personal-registration-meta,.personal-registration-robots { display:grid; gap:6px; }
 .personal-correction-alert :deep(.el-alert__description) { white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; line-height:1.5; }
 .personal-correction-alert :deep(.el-alert__title) { font-size:13px; font-weight:700; }
+.personal-correction-button { width:100%; }
+.personal-correction-field { display:grid; gap:8px; font-size:13px; color:#4e3c45; font-weight:700; }
+.personal-correction-field input[type="file"] { width:100%; max-width:100%; padding:10px; border:1px dashed #cbaeb9; border-radius:10px; background:#fff; font-weight:400; }
 .personal-registration-robots { padding-top:10px; border-top:1px solid #eee3e8; }
 .personal-registration-robots b { color:#5f4b55; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
 .personal-registration-robots span { color:#75656d; font-size:11px; }
