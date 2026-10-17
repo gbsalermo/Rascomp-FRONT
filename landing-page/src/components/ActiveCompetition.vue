@@ -31,6 +31,10 @@ const emit = defineEmits<{
 }>()
 
 const showAllTeams = ref(false)
+const expandedCategoryId = ref<number | null>(null)
+const expandedTeamId = ref<string | null>(null)
+const publicEntriesForCategory = (id: number) => approvedRegistrations.value.filter(item => Number(item.categoryId) === Number(id))
+const publicEntriesForTeam = (team: any) => approvedRegistrations.value.filter(item => String(item.teamId ?? item.equipeId ?? '') === String(team.id ?? ''))
 const showFullRanking = ref(false)
 const showAllRankingRows = ref(false)
 const showFullBracket = ref(false)
@@ -557,6 +561,12 @@ function handleRegistration() {
                 </span>
               </div>
 
+              <button type="button" class="competition-public-detail-button" :aria-expanded="expandedTeamId === String(team.id)" @click="expandedTeamId = expandedTeamId === String(team.id) ? null : String(team.id)">
+                {{ expandedTeamId === String(team.id) ? 'Ocultar robôs' : 'Ver robôs' }}
+              </button>
+              <div v-if="expandedTeamId === String(team.id)" class="competition-public-detail-list">
+                <div v-for="entry in publicEntriesForTeam(team)" :key="entry.id"><strong>{{ entry.robotNome || 'Futebol de Robôs' }}</strong><small>{{ categoryName(entry.categoryId) }}</small></div>
+              </div>
               <div class="competition-team-copy">
                 <strong>{{ team.nome }}</strong>
                 <small>{{ team.institutionSigla || team.institutionNome || 'Instituição não informada' }}</small>
@@ -629,6 +639,11 @@ function handleRegistration() {
                 <small>{{ category.activity }}</small>
               </div>
 
+              <button type="button" class="competition-public-detail-button" :aria-expanded="expandedCategoryId === category.id" @click="expandedCategoryId = expandedCategoryId === category.id ? null : category.id">{{ expandedCategoryId === category.id ? 'Ocultar inscritos' : 'Ver inscritos' }}</button>
+              <div v-if="expandedCategoryId === category.id" class="competition-public-detail-list">
+                <div v-for="entry in publicEntriesForCategory(category.id)" :key="entry.id"><strong>{{ category.modalidade === 'FUTEBOL' ? (entry.teamNome || 'Equipe') : (entry.robotNome || 'Robô') }}</strong><small>{{ category.modalidade === 'FUTEBOL' ? 'Equipe participante' : (entry.teamNome || 'Equipe não informada') }}</small></div>
+                <small v-if="!publicEntriesForCategory(category.id).length">Nenhuma inscrição aprovada nesta categoria.</small>
+              </div>
               <em :class="{ live: category.state === 'Ao vivo' }">
                 {{ category.state }}
               </em>
@@ -1075,3 +1090,11 @@ function handleRegistration() {
     </div>
   </section>
 </template>
+
+<style scoped>
+.competition-public-detail-button{border:1px solid #e7d8ed;border-radius:20px;background:#f4ebf6;color:#683479;font-weight:700;padding:7px 12px;cursor:pointer;font-size:12px;max-width:max-content}
+.competition-public-detail-list{display:grid;gap:8px;padding:10px;border-radius:12px;background:#faf7fc;min-width:0;width:100%;grid-column:1/-1}
+.competition-public-detail-list>div{display:flex;flex-wrap:wrap;gap:5px 12px;justify-content:space-between;border-bottom:1px solid #eee4f0;padding:6px 0}
+.competition-public-detail-list strong{font-size:12px;overflow-wrap:anywhere}
+.competition-public-detail-list small{font-size:11px;color:#706679}
+</style>
