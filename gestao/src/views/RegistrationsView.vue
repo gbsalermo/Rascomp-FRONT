@@ -23,6 +23,7 @@ const auth = useAuthStore()
 const competition = useCompetitionStore()
 
 const loading = ref(false)
+// Falhas parciais permanecem visiveis mesmo quando outras listas carregam.
 const reviewingId = ref<number>()
 const registrationActionId = ref<number>()
 const cancellationReviewingId = ref<number>()
@@ -398,39 +399,69 @@ async function loadBase() {
   }
 }
 
+// Evita requisicoes duplicadas para a mesma competicao durante o carregamento.
+let pendingLoad: Promise<void> | undefined
+let pendingLoadCompetitionId: number | undefined
+let loadVersion = 0
+const loadErrors = ref<string[]>([])
+// Evita bloquear listas ja exibidas durante uma atualizacao em segundo plano.
+
 async function load() {
-  if (!competitionId.value) {
+  const id = competitionId.value
+  if (!id) {
+    ++loadVersion
     rows.value = []
     participantRows.value = []
     compositionChanges.value = []
     cancellationRequests.value = []
+    loadErrors.value = []
     return
   }
+  if (pendingLoad && pendingLoadCompetitionId === id) return pendingLoad
 
+  const version = ++loadVersion
   loading.value = true
-  try {
-    const [registrationRows, participantRegistrationRows, compositionRows, cancellationRows] = await Promise.all([
-      adminApi.registrations({ competitionId: competitionId.value }),
-      adminApi.participantRegistrations(competitionId.value),
-      adminApi.compositionChanges(competitionId.value),
-      adminApi.cancellationRequests({
-        competitionId: competitionId.value
-      })
+  pendingLoadCompetitionId = id
+  const task = (async () => {
+    // Uma falha isolada nao deve descartar os resultados das outras secoes.
+    const results = await Promise.allSettled([
+      adminApi.registrations({ competitionId: id }),
+      adminApi.participantRegistrations(id),
+      adminApi.compositionChanges(id),
+      adminApi.cancellationRequests({ competitionId: id })
     ])
-    rows.value = registrationRows
-    participantRows.value = participantRegistrationRows
-    compositionChanges.value = compositionRows
-    cancellationRequests.value = cancellationRows
+    if (competitionId.value !== id || version !== loadVersion) return
 
-    if (selected.value) {
-      selected.value = rows.value.find((item) => item.id === selected.value?.id)
-      if (!selected.value) detailsOpen.value = false
+    const labels = ['robos', 'participantes', 'ajustes de composicao', 'cancelamentos']
+    loadErrors.value = results.flatMap((result, index) =>
+      result.status === 'rejected' ? [labels[index]!] : []
+    )
+    const registrations = results[0]
+    const participants = results[1]
+    const composition = results[2]
+    const cancellations = results[3]
+    if (registrations.status === 'fulfilled') {
+      rows.value = registrations.value
+      if (selected.value) {
+        selected.value = rows.value.find((item) => item.id === selected.value?.id)
+        if (!selected.value) detailsOpen.value = false
+      }
     }
-  } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || 'Não foi possível atualizar as inscrições.')
-  } finally {
-    loading.value = false
-  }
+    if (participants.status === 'fulfilled') participantRows.value = participants.value
+    if (composition.status === 'fulfilled') compositionChanges.value = composition.value
+    if (cancellations.status === 'fulfilled') cancellationRequests.value = cancellations.value
+    if (loadErrors.value.length) {
+      ElMessage.warning('Alguns dados nao puderam ser atualizados. Tente novamente.')
+    }
+  })().finally(() => {
+    if (version === loadVersion) loading.value = false
+    if (pendingLoad === task) {
+      pendingLoad = undefined
+      pendingLoadCompetitionId = undefined
+    }
+  })
+  pendingLoad = task
+  return task
 }
 
 async function openDetails(row: Registration) {
@@ -867,6 +898,11 @@ watch(
   (id) => {
     if (!id || competitionId.value === id) return
     competitionId.value = id
+    rows.value = []
+    participantRows.value = []
+    compositionChanges.value = []
+    cancellationRequests.value = []
+    loadErrors.value = []
     load()
   }
 )
@@ -875,6 +911,7 @@ onMounted(loadBase)
 </script>
 
 <template>
+  <div v-if="loadErrors.length" class="registration-load-warning" role="alert">Alguns dados não foram atualizados: {{ loadErrors.join(', ') }}. Use Atualizar para tentar novamente.</div>
   <div class="page-stack registrations-page">
     <div class="page-heading registrations-heading">
       <div>
@@ -928,7 +965,7 @@ onMounted(loadBase)
       title="Competição em andamento: entrada manual continua disponível apenas como operação excepcional DEV, com justificativa e auditoria."
     />
 
-    <article v-if="compositionChanges.length" class="table-card registrations-table-card composition-review-card" v-loading="loading">
+    <article v-if="compositionChanges.length" class="table-card registrations-table-card composition-review-card" v-loading="loading && !rows.length && !participantRows.length">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Composição competitiva</span>
@@ -980,7 +1017,7 @@ onMounted(loadBase)
       </el-table>
     </article>
 
-    <article v-if="pendingCancellationRequests.length" class="table-card registrations-table-card" v-loading="loading">
+    <article v-if="pendingCancellationRequests.length" class="table-card registrations-table-card" v-loading="loading && !rows.length && !participantRows.length">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Cancelamentos</span>
@@ -1011,7 +1048,7 @@ onMounted(loadBase)
       </el-table>
     </article>
 
-    <article v-if="cancellationHistory.length" class="table-card registrations-table-card" v-loading="loading">
+    <article v-if="cancellationHistory.length" class="table-card registrations-table-card" v-loading="loading && !rows.length && !participantRows.length">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Auditoria</span>
@@ -1076,7 +1113,7 @@ onMounted(loadBase)
       </button>
     </div>
 
-    <article class="table-card registrations-table-card participant-approval-card" v-loading="loading">
+    <article class="table-card registrations-table-card participant-approval-card" v-loading="loading && !rows.length && !participantRows.length">
       <div class="card-heading">
         <div>
           <span class="eyebrow">Pagamento e habilitação pessoal</span>
@@ -1220,7 +1257,7 @@ onMounted(loadBase)
       <span class="registration-result-count">{{ filtered.length }} resultado(s)</span>
     </article>
 
-    <article class="table-card registrations-table-card" v-loading="loading">
+    <article class="table-card registrations-table-card" v-loading="loading && !rows.length && !participantRows.length">
       <el-table :data="filtered" empty-text="Nenhuma inscrição neste filtro" @row-dblclick="openDetails">
         <el-table-column label="Equipe / Robô" min-width="210">
           <template #default="{ row }">
@@ -1749,4 +1786,8 @@ onMounted(loadBase)
 
 <style scoped>
 .registration-observation-compact{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;white-space:normal;overflow-wrap:anywhere;cursor:help;line-height:1.4}
+</style>
+
+<style scoped>
+.registration-load-warning { padding: 10px 14px; margin: 8px 0; border-radius: 10px; background: #fff7ed; color: #8a4b16; font-size: 12px; }
 </style>
