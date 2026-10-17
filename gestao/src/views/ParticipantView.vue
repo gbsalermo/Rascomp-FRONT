@@ -1213,24 +1213,6 @@ onBeforeUnmount(() => {
       </article>
     </section>
 
-    <article v-if="!teams.length && !loading" class="participant-empty-onboarding">
-      <span class="eyebrow">Primeiro acesso</span>
-      <h2>Comece pela sua equipe</h2>
-      <p>Crie uma equipe para se tornar responsável ou procure uma equipe existente.</p>
-      <div class="participant-onboarding-actions">
-        <el-button class="brand-button" @click="teamDialog = true">Criar minha equipe</el-button>
-        <el-button @click="openJoinDialog">Encontrar equipe</el-button>
-      </div>
-    </article>
-
-    <template v-else-if="activeTeam">
-      <section class="participant-summary-grid">
-        <article><span>Competidores</span><strong>{{ competitors.length }}</strong><small>na equipe</small></article>
-        <article><span>Robôs</span><strong>{{ robots.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'vinculados a mim' }}</small></article>
-        <article><span>Inscrições aprovadas</span><strong>{{ approvedRegistrations.length }}</strong><small>{{ isTeamLeader ? 'dos robôs da equipe' : 'dos meus robôs' }}</small></article>
-        <article class="attention"><span>Pendentes</span><strong>{{ pendingRegistrations.length }}</strong><small>{{ isTeamLeader ? 'inscrições de robôs da equipe' : 'inscrições dos meus robôs' }}</small></article>
-      </section>
-
       <section class="participant-section">
         <div class="participant-section-heading">
           <div>
@@ -1305,6 +1287,25 @@ onBeforeUnmount(() => {
           <strong>Você ainda não fez sua inscrição.</strong>
           <span>Esta é somente a sua entrada individual na competição. Seu vínculo com a equipe e com os robôs continua existindo independentemente desta aprovação.</span>
         </div>
+      </section>
+
+
+    <article v-if="!teams.length && !loading" class="participant-empty-onboarding">
+      <span class="eyebrow">Primeiro acesso</span>
+      <h2>Organize sua equipe quando precisar</h2>
+      <p>Você pode fazer sua inscrição pessoal sem equipe. Para participar com robôs, crie sua equipe ou encontre uma existente quando necessário.</p>
+      <div class="participant-onboarding-actions">
+        <el-button class="brand-button" @click="teamDialog = true">Criar minha equipe</el-button>
+        <el-button @click="openJoinDialog">Encontrar equipe</el-button>
+      </div>
+    </article>
+
+    <template v-else-if="activeTeam">
+      <section class="participant-summary-grid">
+        <article><span>Competidores</span><strong>{{ competitors.length }}</strong><small>na equipe</small></article>
+        <article><span>Robôs</span><strong>{{ robots.length }}</strong><small>{{ isTeamLeader ? 'da equipe' : 'vinculados a mim' }}</small></article>
+        <article><span>Inscrições aprovadas</span><strong>{{ approvedRegistrations.length }}</strong><small>{{ isTeamLeader ? 'dos robôs da equipe' : 'dos meus robôs' }}</small></article>
+        <article class="attention"><span>Pendentes</span><strong>{{ pendingRegistrations.length }}</strong><small>{{ isTeamLeader ? 'inscrições de robôs da equipe' : 'inscrições dos meus robôs' }}</small></article>
       </section>
 
       <section class="participant-section robot-registration-section">
