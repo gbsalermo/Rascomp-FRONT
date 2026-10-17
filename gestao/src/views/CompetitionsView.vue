@@ -286,13 +286,14 @@ async function saveLot() {
   lotSaving.value = true
   try {
     if (editingLotId.value) {
-      await adminApi.updateCompetitionLot(active.id, editingLotId.value, { ...lotForm })
+      const updated = await adminApi.updateCompetitionLot(active.id, editingLotId.value, { ...lotForm })
+      registrationLots.value = registrationLots.value.map((item) => item.id === updated.id ? updated : item)
       ElMessage.success('Lote atualizado.')
     } else {
-      await adminApi.createCompetitionLot(active.id, { ...lotForm })
+      const created = await adminApi.createCompetitionLot(active.id, { ...lotForm })
+      registrationLots.value = [...registrationLots.value, created]
       ElMessage.success('Lote criado.')
     }
-    registrationLots.value = await adminApi.competitionLots(active.id)
     resetLotForm()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar o lote.')
@@ -321,7 +322,7 @@ async function removeLot(lot: RegistrationLot) {
 
   try {
     await adminApi.deleteCompetitionLot(active.id, lot.id)
-    registrationLots.value = await adminApi.competitionLots(active.id)
+    registrationLots.value = registrationLots.value.filter((item) => item.id !== lot.id)
     if (editingLotId.value === lot.id) resetLotForm()
     ElMessage.success('Lote removido.')
   } catch (error: any) {
@@ -387,18 +388,18 @@ async function save() {
 
   try {
     if (editingId.value) {
-      await adminApi.updateCompetition(editingId.value, { ...form })
-      await adminApi.saveCompetitionCategories(editingId.value,enabledCategories.value)
+      const updated = await adminApi.updateCompetition(editingId.value, { ...form })
+      await adminApi.saveCompetitionCategories(editingId.value, enabledCategories.value)
+      competition.upsert(updated)
       ElMessage.success('Competição e categorias atualizadas.')
     } else {
       const created = await adminApi.createCompetition({ ...form })
-      if(created.id)await adminApi.saveCompetitionCategories(created.id,enabledCategories.value)
+      if (created.id) await adminApi.saveCompetitionCategories(created.id, enabledCategories.value)
+      competition.upsert(created)
       ElMessage.success('Nova edição criada. Defina-a como vigente quando estiver pronta para a operação.')
     }
 
     dialog.value = false
-    await competition.load(true)
-    await loadFocus()
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível salvar.')
   }
@@ -430,10 +431,10 @@ async function advanceCompetitionStatus() {
   }
 
   try {
-    await adminApi.updateCompetitionStatus(active.id, target)
+    const updated = await adminApi.updateCompetitionStatus(active.id, target)
+    competition.upsert(updated)
     ElMessage.success(`Competição atualizada para: ${statusLabels[target]}.`)
-    await competition.load(true)
-    await loadFocus()
+    // Status operacionais afetam outras paginas; elas consultam novamente ao navegar.
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível avançar o status da competição.')
   }
@@ -455,8 +456,10 @@ async function saveRegistrationWindow() {
     })
     ElMessage.success(result.tipo === 'REABERTURA' ? 'Inscrições reabertas.' : 'Inscrições prorrogadas.')
     windowDialog.value = false
+    // A reabertura pode alterar o status da competicao; consulte o contexto
+    // oficial e somente o historico alterado, sem refazer os indicadores.
     await competition.load(true)
-    await loadFocus()
+    windowHistory.value = await adminApi.competitionRegistrationWindowHistory(active.id)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível alterar a janela de inscrições.')
   } finally {
