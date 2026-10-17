@@ -22,6 +22,7 @@ const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
+const initializing = ref(true)
 const saving = ref(false)
 const queueLoading = ref(false)
 const competitionId = ref<number>()
@@ -451,6 +452,7 @@ async function initialize() {
     await loadAgenda(true)
   } finally {
     loading.value = false
+    initializing.value = false
   }
 }
 
@@ -459,11 +461,11 @@ watch(() => competition.selectedId, async (value) => {
   competitionId.value = value
   categoryFilter.value = undefined
   trackFilter.value = ''
-  await loadAgenda(true)
+  // A mudanca de competitionId ja dispara o watch abaixo.
 })
 
 watch(competitionId, async (value) => {
-  if (!value) return
+  if (!value || initializing.value) return
   if (auth.isDev && competition.selectedId !== value) competition.select(value)
   categoryFilter.value = undefined
   trackFilter.value = ''
