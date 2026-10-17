@@ -1727,16 +1727,21 @@ onBeforeUnmount(() => {
             <small class="muted">{{ isTeamLeader ? 'Como líder, você pode inscrever qualquer robô da equipe.' : 'Você pode iniciar a inscrição apenas dos robôs cadastrados por você.' }}</small>
           </label>
 
-          <label class="span-2">Categorias da inscrição
-            <el-select :model-value="selectedRegistrationCategoryIds" multiple collapse-tags collapse-tags-tooltip style="width:100%" placeholder="Selecione uma ou mais categorias" @update:model-value="onRegistrationCategoriesChange">
-              <el-option
-                v-for="category in availableRegistrationCategories"
-                :key="category.id"
-                :label="categoryOptionLabel(category)"
-                :value="category.id"
-              />
-            </el-select>
-          </label>
+          <div class="span-2 registration-category-picker">
+            <strong>Categorias da inscrição</strong>
+            <p class="muted">Selecione as categorias em que deseja inscrever o robô.</p>
+            <div v-if="availableRegistrationCategories.length" class="registration-category-options">
+              <div v-for="category in availableRegistrationCategories" :key="category.id" class="registration-category-option">
+                <span>{{ categoryOptionLabel(category) }}</span>
+                <el-button
+                  size="small"
+                  :type="selectedRegistrationCategoryIds.includes(category.id) ? 'primary' : 'default'"
+                  :plain="!selectedRegistrationCategoryIds.includes(category.id)"
+                  @click="onRegistrationCategoriesChange(selectedRegistrationCategoryIds.includes(category.id) ? selectedRegistrationCategoryIds.filter(id => id !== category.id) : [...selectedRegistrationCategoryIds, category.id])"
+                >{{ selectedRegistrationCategoryIds.includes(category.id) ? 'Selecionado' : 'Selecionar' }}</el-button>
+              </div>
+            </div>
+          </div>
 
           <el-alert
             v-if="registrationForm.robotId && !availableRegistrationCategories.length"
