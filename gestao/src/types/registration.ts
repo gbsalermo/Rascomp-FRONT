@@ -124,6 +124,7 @@ export interface ParticipantCompetitionRegistration {
   teamId: number
   teamNome: string
   teamLeader?: boolean
+  teamHasOtherActiveCompetitors?: boolean
   status: ParticipantCompetitionRegistrationStatus
   observacao?: string
   comprovanteDisponivel?: boolean
