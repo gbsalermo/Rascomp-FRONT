@@ -98,13 +98,6 @@ const mainCompetitionId = computed(() => availableCompetitions.value[0]?.id ?? p
 const mainLot = computed(() => currentLots.value[mainCompetitionId.value ?? -1])
 
 
-watch(() => personalRegistrationForm.competitionId, (id) => { void loadCurrentLot(id) })
-watch(() => registrationForm.competitionId, (id) => { void loadCurrentLot(id) })
-watch([personalRegistrationDialog, registrationDialog], ([personalOpen, robotOpen]) => {
-  if (personalOpen) void loadCurrentLot(personalRegistrationForm.competitionId)
-  if (robotOpen) void loadCurrentLot(registrationForm.competitionId)
-})
-
 const creatingPersonalRegistration = ref(false)
 const personalRegistrationReceipt = ref<File>()
 const robotRegistrationReceipt = ref<File>()
@@ -153,6 +146,13 @@ const personalRegistrationForm = reactive({
   competitionId: undefined as number | undefined,
   observacao: ''
 })
+watch(() => personalRegistrationForm.competitionId, (id) => { void loadCurrentLot(id) })
+watch(() => registrationForm.competitionId, (id) => { void loadCurrentLot(id) })
+watch([personalRegistrationDialog, registrationDialog], ([personalOpen, robotOpen]) => {
+  if (personalOpen) void loadCurrentLot(personalRegistrationForm.competitionId)
+  if (robotOpen) void loadCurrentLot(registrationForm.competitionId)
+})
+
 const inviteForm = reactive({ email: '', mensagem: '' })
 const photoMap = ref<Record<number, RobotImage[]>>({})
 const responsibleMap = ref<Record<number, RobotResponsible[]>>({})
