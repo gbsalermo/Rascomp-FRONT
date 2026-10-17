@@ -197,8 +197,16 @@ function upsertRobot(updated: Robot) {
   )
 }
 
+const teamLogoRevision = ref<Record<number, number>>({})
 function upsertTeam(updated: Team) {
   teams.value = teams.value.map((team) => team.id === updated.id ? updated : team)
+  teamLogoRevision.value = { ...teamLogoRevision.value, [updated.id]: Date.now() }
+}
+function teamLogoSrc(team: Team) {
+  if (!team.logoUrl) return '/rascomp-logo.webp'
+  const url = assetUrl(team.logoUrl)
+  const revision = teamLogoRevision.value[team.id]
+  return revision ? `${url}${url.includes('?') ? '&' : '?'}revision=${revision}` : url
 }
 
 async function refreshTeamRegistrations() {
@@ -1283,7 +1291,7 @@ onBeforeUnmount(() => {
       <div class="participant-heading-identity">
         <div v-if="activeTeam" class="participant-team-logo">
           <img
-            :src="activeTeam.logoUrl ? assetUrl(activeTeam.logoUrl) : '/rascomp-logo.webp'"
+            :src="teamLogoSrc(activeTeam)"
             :alt="`Logo da equipe ${activeTeam.nome}`"
             :class="{ generic: !activeTeam.logoUrl }"
           />
