@@ -790,6 +790,12 @@ async function saveRobot() {
     } else {
       const created = await participantApi.createRobot(teamId.value, payload)
       upsertRobot(created)
+      // O backend associa automaticamente o criador ao novo robo.
+      // Consultar apenas seus responsaveis preserva essa regra na interface.
+      responsibleMap.value = {
+        ...responsibleMap.value,
+        [created.id]: await participantApi.robotResponsibles(created.id).catch(() => [])
+      }
       ElMessage.success('Robô cadastrado na sua equipe.')
     }
 
