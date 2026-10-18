@@ -2,6 +2,22 @@
 
 Registro técnico incremental de incidentes observados no uso real. Separar **sintoma observado**, **hipótese técnica**, **alteração realizada** e **validação**, sem atribuir causas não demonstradas.
 
+## 2026-10-14 a 2026-10-17 — Galeria, consumo de recursos e redefinição do MVP
+
+**Sintomas relatados em produção:** após disponibilização da Galeria, foram percebidos problemas de desempenho e pressão de memória no serviço Render Free, incluindo episódio de indisponibilidade associado ao esgotamento de memória. O usuário observou diferença relevante de desempenho com e sem a Galeria; ainda não há medições instrumentadas comparáveis registradas neste histórico.
+
+**Contexto técnico:** Render Free com memória limitada; o plano de mídia documenta que servir imagens integralmente pelo backend pode gerar carga desnecessária, e recomenda entrega direta por R2/CDN, miniaturas sob demanda e redução de preloads. Esses são fatores de risco documentados, não prova isolada da causa do incidente.
+
+**Decisões e medidas registradas:** priorizar a estabilidade da competição; retirar a Galeria independente do escopo do MVP V1 e adiá-la para V2.0; preservar a prévia institucional na Landing; ocultar acessos à Galeria completa e à gestão de álbuns; planejar arquitetura separada para a Galeria, com distribuição de mídia por R2/CDN e sem transferência pesada pelo backend de inscrições. Não adicionar novas funcionalidades ao MVP antes da competição; focar correções e operação.
+
+**Referências:** `docs/PLANO_MIGRACAO_MIDIA_R2_CDN.md` (decisão de 15/10/2026) e `docs/ETAPAS_POS_PROJETO.md`.
+
+**Resultado/limitações:** o usuário relatou melhora de desempenho ao operar sem a Galeria, mas não há valores de memória, latência, throughput ou concorrência registrados. A implementação da Galeria V2.0 permanece futura. Não afirmar que a migração de arquitetura foi executada.
+
+**Lição aprendida:** em infraestrutura limitada, funcionalidades de mídia podem competir com os recursos do fluxo crítico de inscrições; separar conteúdo pesado e limitar escopo protege a disponibilidade do MVP.
+
+---
+
 ## 2026-10-18 — Gestão / Inscrições: tabela inacessível no mobile
 
 **Ambiente:** interface web da Gestão, tela Inscrições, navegador mobile (captura fornecida pelo usuário).
