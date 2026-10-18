@@ -994,7 +994,7 @@ onMounted(loadBase)
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="Ações" width="220" fixed="right">
+        <el-table-column label="Ações" width="220">
           <template #default="{ row }">
             <div class="registration-actions">
               <el-button
@@ -1037,7 +1037,7 @@ onMounted(loadBase)
             <div class="registration-request-cell"><strong>{{ row.requestedByUserNome }}</strong><span>{{ formatDateTime(row.dataCadastro) }}</span></div>
           </template>
         </el-table-column>
-        <el-table-column label="Ações" width="235" fixed="right">
+        <el-table-column label="Ações" width="235">
           <template #default="{ row }">
             <div class="registration-actions">
               <el-button size="small" type="success" plain :loading="cancellationReviewingId === row.id" @click="decideCancellation(row, true)">Aprovar</el-button>
@@ -1185,7 +1185,7 @@ onMounted(loadBase)
         <el-table-column label="Status" width="135">
           <template #default="{ row }"><StatusBadge :value="row.status" /></template>
         </el-table-column>
-        <el-table-column label="Ações" min-width="330" fixed="right">
+        <el-table-column label="Ações" min-width="330">
           <template #default="{ row }">
             <div v-if="row.status === 'PENDENTE'" class="registration-actions participant-review-actions">
               <el-button
@@ -1300,7 +1300,7 @@ onMounted(loadBase)
         <el-table-column label="Status" width="145">
           <template #default="{ row }"><StatusBadge :value="row.status" /></template>
         </el-table-column>
-        <el-table-column label="Ações" width="420" fixed="right">
+        <el-table-column label="Ações" width="420">
           <template #default="{ row }">
             <div class="registration-actions">
               <el-button size="small" @click="openDetails(row)">Detalhes</el-button>
@@ -1736,6 +1736,14 @@ onMounted(loadBase)
 </template>
 
 <style scoped>
+/* Keep the Element Plus table scrollable within its card on narrow screens.
+   Fixed-right action columns can overlay the entire mobile viewport. */
+.registrations-page,
+.registrations-page .registrations-table-card { min-width: 0; max-width: 100%; }
+.registrations-page .registrations-table-card { overflow: hidden; }
+.registrations-page :deep(.el-table) { width: 100%; max-width: 100%; }
+.registrations-page :deep(.el-table__body-wrapper),
+.registrations-page :deep(.el-scrollbar__wrap) { overscroll-behavior-x: contain; }
 .registration-context-filter { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 16px; border:1px solid #e5d9df; border-radius:14px; background:#fff; }
 .registration-context-filter > div:first-child { display:grid; gap:3px; }
 .registration-context-filter .el-select { width:min(440px,100%); }
