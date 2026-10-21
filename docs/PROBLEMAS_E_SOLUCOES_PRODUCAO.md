@@ -25,7 +25,7 @@ Este histórico reúne **incidentes, sintomas, limitações da arquitetura e cor
 | P15 | Aprovação administrativa cria alteração de responsáveis como se fosse usuário | inconsistência de autoria/auditoria relatada | pendente de verificação |
 | P16 | Rolagem horizontal da Gestão / Inscrições no mobile | remoção de colunas fixas e contenção CSS | commitado; validação visual pendente |
 | P17 | Operação local como contingência e backup consistente | Docker/Tunnel, Aiven/R2, segredos e rollback | planejamento/ensaio pendentes |
-| P18 | Primeiro carregamento do Dashboard / Inscrições falha e exige F5 | timeout de 15 s, concorrência de chamadas e ausência de recuperação automática; relato 21/10 | diagnóstico de código; causa em produção ainda não comprovada |
+| P18 | Primeiro carregamento do Dashboard / Inscrições falha e exige F5 | relato 21/10; verificar o fluxo inicial **após** as correções de 17/10 | aberto; causa raiz e requisição falhada não identificadas |
 
 ### P02 — Publicação da mídia e divergência entre CMS e Landing
 
@@ -71,24 +71,26 @@ Este histórico reúne **incidentes, sintomas, limitações da arquitetura e cor
 
 **Estado:** estratégia definida em linhas gerais; não confundir com failover ou restore comprovados.
 
-### P18 — 21/10/2026 — Primeira entrada exige atualizar o dashboard/inscrições
+### P18 — 21/10/2026 — Pri### P18 — 21/10/2026 — Primeira entrada exige atualizar dashboard/inscrições
 
-**Observado (relato de uso real):** ao acessar pela primeira vez, o dashboard ou a Gestão / Inscrições informa que não foi possível carregar os dados; uma atualização manual (F5) geralmente recupera o carregamento. Diferente das quedas anteriores, a aplicação permanece navegável.
+**Relato:** na primeira entrada, o dashboard ou a Gestão / Inscrições às vezes informa que não conseguiu carregar os dados; atualizar o navegador novamente funciona. A página continua operacional, sem a queda generalizada dos incidentes anteriores. Ainda não há captura do Network ou logs do exato momento da falha.
 
-**Fatos conferidos no código da `main` em 21/10:**
-- `gestao/src/api/http.ts`: Axios configurado com `timeout: 15000` e sem retry automático de GET. Falhas 401 em endpoints protegidos invalidam a sessão; não adicionar retry para 401.
-- `DashboardView.vue`: carrega competição e depois cinco consultas usando `Promise.all`. A rejeição de uma invalida o ciclo, mesmo que as outras tenham retornado; não há tentativa automática.
-- `RegistrationsView.vue`: quatro consultas via `Promise.allSettled`; preserva resultados bem-sucedidos, mas a tela deixa as listas que falharam aguardando recarga manual.
-- `ShellLayout.vue`: `onMounted` também carrega competição e alertas, em paralelo à página. `store.ts` não deduplica `competition.load()` em andamento. Uma mudança de `selectedId` dispara outros watchers e pode produzir rodadas duplicadas.
-- Perfil `application-cloud.properties` tem pool máximo de 4 conexões por padrão e conexão com banco remoto, o que justifica medir concorrência sem aumentar o tráfego indiscriminadamente.
+**Histórico que deve ser considerado antes de investigar:**
+- **16–17/10:** retirada da Galeria independente e redução de pressão do backend como medida de contenção para o MVP. Não ressuscitar a hipótese da Galeria como causa atual sem evidência.
+- **17/10 — `ba819a8`:** hotfix do Render isolou o health do banco, reduziu heap e pool Hikari. O estado atual é `management.health.db.enabled=false`; portanto resposta `UP` não atesta conexão com Aiven. Este estado atual prevalece sobre trechos do roadmap de 12/10 que registravam `management.health.db.enabled=true`.
+- **17/10 — `394bc2f`:** timeouts de conexão Hikari com Aiven restaurados para 30 s / validação 5 s; não propor novamente alterar isso sem motivo medido.
+- **17/10 — `57dc00f`:** atualização pontual substituiu recargas completas após operações administrativas e no Portal; a política **autoriza** carga completa na entrada e ao trocar de competição, não indiscriminadamente após cada ação.
+- **17/10 — `105119b`:** Gestão / Inscrições já usa `Promise.allSettled`, preserva seções bem-sucedidas e deduplica `load()` por competição enquanto pendente. Não recomendar implementar novamente essas mesmas proteções.
+- **17/10 — `ba48c10`:** a consulta de inscrições de participantes foi otimizada com buscas em lote e houve confirmação de melhora perceptível após o deploy. Não tratar N+1 anterior como causa persistente já confirmada.
+- **Disponibilidade:** histórico registra Worker `rascomp-automation` e discussão posterior sobre manter ativo 24 h. A cadência efetivamente publicada no Worker não foi verificada pelo repositório atual; não afirmar que o Render está dormindo ou acordado com base somente nos documentos antigos.
 
-**Hipóteses a verificar, não conclusões:** cold start do Render Free (o serviço pode dormir após 15 minutos sem tráfego, e a inicialização pode demorar cerca de um minuto), consultas lentas via Aiven, e sobreposição de requisições na montagem inicial. Separar erros HTTP 502/503/504, timeout Axios, 401 e falhas de rede pela aba Network/Logs; não atribuir automaticamente tudo ao cold start.
+**Observações de código que permanecem para checagem, não diagnóstico causal:** `gestao/src/api/http.ts` usa timeout Axios de 15 s; `DashboardView.vue` usa `Promise.all` com cinco leituras e falha em bloco se uma rejeitar; `RegistrationsView.vue` possui proteção parcial e mensagem para atualização manual; `ShellLayout.vue` e a página podem iniciar consultas de contexto da competição em paralelo, e a store não compartilha explicitamente uma promise em voo. São características do código, não prova de que tenham causado o incidente relatado.
 
-**Tratamento recomendado (ainda não executado neste registro):** impedir consultas duplicadas da competição, desacoplar os cinco painéis do dashboard para preservar resultados parciais, programar repetição limitada e gradual **somente** de GETs que falharam por motivos transitórios, e oferecer estado de carregamento/recuperação sem exigir F5. Não repetir POST/PUT/PATCH/DELETE, não mascarar 401 e não disparar diversas chamadas simultâneas enquanto a API desperta. Validar com cold start real, primeira entrada pós-login, navegação entre abas, 401 real, perda temporária de conexão e usuários simultâneos.
+**Próxima investigação antes de qualquer correção:** coletar o endpoint, status HTTP/código Axios, duração e momento da primeira falha (logo após login, primeira navegação, tempo ocioso), correlacionar com logs Render e Aiven e confirmar cron real do Worker, sem dados pessoais/tokens. Comparar com a segunda tentativa e com as requisições disparadas pelo shell. Só então escolher alteração mínima, respeitando MVP congelado, correções já aplicadas, teste e validação antes de produção.
 
-**Situação:** diagnóstico técnico confirmado no frontend, mas sem logs de uma requisição falhada ou medição de duração não se determina a causa raiz da primeira falha. Nenhuma modificação funcional ou de infraestrutura efetuada neste registro.
+**Situação:** em investigação, nenhuma alteração funcional implementada por este registro.
 
-### Indicadores a levantar próximo da competição
+ próximo da competição
 
 Memória e reinícios Render; duração de login/dashboard/inscrições (p50/p95); quantidade de consultas SQL por endpoint; conexões/pool; tempo de carregamento mobile; tamanho de imagens e transferência via API/CDN; concorrência real; taxas de erro; antes/depois das otimizações. Registrar capturas com data, ambiente, commit e método de medição, sem expor dados pessoais.
 
