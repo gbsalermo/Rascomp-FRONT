@@ -25,6 +25,7 @@ Este histórico reúne **incidentes, sintomas, limitações da arquitetura e cor
 | P15 | Aprovação administrativa cria alteração de responsáveis como se fosse usuário | inconsistência de autoria/auditoria relatada | pendente de verificação |
 | P16 | Rolagem horizontal da Gestão / Inscrições no mobile | remoção de colunas fixas e contenção CSS | commitado; validação visual pendente |
 | P17 | Operação local como contingência e backup consistente | Docker/Tunnel, Aiven/R2, segredos e rollback | planejamento/ensaio pendentes |
+| P18 | Primeiro carregamento do Dashboard / Inscrições falha e exige F5 | timeout de 15 s, concorrência de chamadas e ausência de recuperação automática; relato 21/10 | diagnóstico de código; causa em produção ainda não comprovada |
 
 ### P02 — Publicação da mídia e divergência entre CMS e Landing
 
@@ -69,6 +70,23 @@ Este histórico reúne **incidentes, sintomas, limitações da arquitetura e cor
 **Limitação identificada:** depender exclusivamente da instância Render Free não atende à necessidade de continuidade durante a competição. Foi discutido rodar backend local em Docker e expor API por Tunnel, sem dois serviços escrevendo simultaneamente no mesmo banco. Antes da execução, guardar segredos e variáveis de ambiente em local seguro; planejar backup consistente de Aiven, R2 e restauração isolada.
 
 **Estado:** estratégia definida em linhas gerais; não confundir com failover ou restore comprovados.
+
+### P18 — 21/10/2026 — Primeira entrada exige atualizar o dashboard/inscrições
+
+**Observado (relato de uso real):** ao acessar pela primeira vez, o dashboard ou a Gestão / Inscrições informa que não foi possível carregar os dados; uma atualização manual (F5) geralmente recupera o carregamento. Diferente das quedas anteriores, a aplicação permanece navegável.
+
+**Fatos conferidos no código da `main` em 21/10:**
+- `gestao/src/api/http.ts`: Axios configurado com `timeout: 15000` e sem retry automático de GET. Falhas 401 em endpoints protegidos invalidam a sessão; não adicionar retry para 401.
+- `DashboardView.vue`: carrega competição e depois cinco consultas usando `Promise.all`. A rejeição de uma invalida o ciclo, mesmo que as outras tenham retornado; não há tentativa automática.
+- `RegistrationsView.vue`: quatro consultas via `Promise.allSettled`; preserva resultados bem-sucedidos, mas a tela deixa as listas que falharam aguardando recarga manual.
+- `ShellLayout.vue`: `onMounted` também carrega competição e alertas, em paralelo à página. `store.ts` não deduplica `competition.load()` em andamento. Uma mudança de `selectedId` dispara outros watchers e pode produzir rodadas duplicadas.
+- Perfil `application-cloud.properties` tem pool máximo de 4 conexões por padrão e conexão com banco remoto, o que justifica medir concorrência sem aumentar o tráfego indiscriminadamente.
+
+**Hipóteses a verificar, não conclusões:** cold start do Render Free (o serviço pode dormir após 15 minutos sem tráfego, e a inicialização pode demorar cerca de um minuto), consultas lentas via Aiven, e sobreposição de requisições na montagem inicial. Separar erros HTTP 502/503/504, timeout Axios, 401 e falhas de rede pela aba Network/Logs; não atribuir automaticamente tudo ao cold start.
+
+**Tratamento recomendado (ainda não executado neste registro):** impedir consultas duplicadas da competição, desacoplar os cinco painéis do dashboard para preservar resultados parciais, programar repetição limitada e gradual **somente** de GETs que falharam por motivos transitórios, e oferecer estado de carregamento/recuperação sem exigir F5. Não repetir POST/PUT/PATCH/DELETE, não mascarar 401 e não disparar diversas chamadas simultâneas enquanto a API desperta. Validar com cold start real, primeira entrada pós-login, navegação entre abas, 401 real, perda temporária de conexão e usuários simultâneos.
+
+**Situação:** diagnóstico técnico confirmado no frontend, mas sem logs de uma requisição falhada ou medição de duração não se determina a causa raiz da primeira falha. Nenhuma modificação funcional ou de infraestrutura efetuada neste registro.
 
 ### Indicadores a levantar próximo da competição
 
