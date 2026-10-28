@@ -423,36 +423,32 @@ async function load() {
   loading.value = true
   pendingLoadCompetitionId = id
   const task = (async () => {
-    // Uma falha isolada nao deve descartar os resultados das outras secoes.
-    const results = await Promise.allSettled([
-      adminApi.registrations({ competitionId: id }),
-      adminApi.participantRegistrations(id),
-      adminApi.compositionChanges(id),
-      adminApi.cancellationRequests({ competitionId: id })
-    ])
-    if (competitionId.value !== id || version !== loadVersion) return
-
-    const labels = ['robos', 'participantes', 'ajustes de composicao', 'cancelamentos']
-    loadErrors.value = results.flatMap((result, index) =>
-      result.status === 'rejected' ? [labels[index]!] : []
-    )
-    const registrations = results[0]
-    const participants = results[1]
-    const composition = results[2]
-    const cancellations = results[3]
-    if (registrations.status === 'fulfilled') {
-      rows.value = registrations.value
-      if (selected.value) {
-        selected.value = rows.value.find((item) => item.id === selected.value?.id)
-        if (!selected.value) detailsOpen.value = false
+    // Cada secao publica os dados assim que sua requisicao termina.
+    // A consulta pesada de participantes nao bloqueia aprovacoes de robos.
+    const sections = [
+      { label: 'robos', request: adminApi.registrations({ competitionId: id }), apply: (data: Registration[]) => {
+        rows.value = data
+        if (selected.value) {
+          selected.value = data.find((item) => item.id === selected.value?.id)
+          if (!selected.value) detailsOpen.value = false
+        }
+      } },
+      { label: 'participantes', request: adminApi.participantRegistrations(id), apply: (data: ParticipantCompetitionRegistration[]) => { participantRows.value = data } },
+      { label: 'ajustes de composicao', request: adminApi.compositionChanges(id), apply: (data: RegistrationCompetitorChange[]) => { compositionChanges.value = data } },
+      { label: 'cancelamentos', request: adminApi.cancellationRequests({ competitionId: id }), apply: (data: RegistrationCancellationRequest[]) => { cancellationRequests.value = data } }
+    ]
+    await Promise.all(sections.map(async (section) => {
+      try {
+        // Tipos de resposta diferentes sao tratados pelo callback de cada secao.
+        const data = await section.request
+        if (competitionId.value !== id || version !== loadVersion) return
+        ;(section.apply as (value: any) => void)(data)
+      } catch {
+        if (competitionId.value !== id || version !== loadVersion) return
+        loadErrors.value = [...loadErrors.value, section.label]
+        ElMessage.warning(`Não foi possível atualizar ${section.label}. As outras listas continuam disponíveis.`)
       }
-    }
-    if (participants.status === 'fulfilled') participantRows.value = participants.value
-    if (composition.status === 'fulfilled') compositionChanges.value = composition.value
-    if (cancellations.status === 'fulfilled') cancellationRequests.value = cancellations.value
-    if (loadErrors.value.length) {
-      ElMessage.warning('Alguns dados nao puderam ser atualizados. Tente novamente.')
-    }
+    }))
   })().finally(() => {
     if (version === loadVersion) loading.value = false
     if (pendingLoad === task) {
