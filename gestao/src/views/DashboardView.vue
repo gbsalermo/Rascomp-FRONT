@@ -126,19 +126,32 @@ async function loadDashboard(forceCompetition = false) {
       return
     }
 
-    const [allCategories, competitionRegistrations, competitionBrackets, competitionAgenda, competitionResults] = await Promise.all([
+    // Uma falha isolada nao pode zerar os indicadores das demais secoes.
+    const results = await Promise.allSettled([
       adminApi.categories(),
       adminApi.registrations({ competitionId }),
       adminApi.brackets(competitionId),
       adminApi.agenda(competitionId),
       adminApi.competitionResults(competitionId)
     ])
+    // Ignora respostas de uma competicao que deixou de estar em foco.
+    if (competition.selectedId !== competitionId) return
 
-    categories.value = allCategories
-    registrations.value = competitionRegistrations
-    brackets.value = competitionBrackets
-    agenda.value = competitionAgenda
-    categoryResults.value = competitionResults
+    const [categoryResult, registrationResult, bracketResult, agendaResult, competitionResult] = results
+    if (categoryResult.status === 'fulfilled') categories.value = categoryResult.value
+    if (registrationResult.status === 'fulfilled') registrations.value = registrationResult.value
+    if (bracketResult.status === 'fulfilled') brackets.value = bracketResult.value
+    if (agendaResult.status === 'fulfilled') agenda.value = agendaResult.value
+    if (competitionResult.status === 'fulfilled') categoryResults.value = competitionResult.value
+
+    const failed = results.flatMap((result, index) =>
+      result.status === 'rejected'
+        ? [['categorias', 'inscrições', 'chaves', 'agenda', 'resultados'][index]!]
+        : []
+    )
+    if (failed.length) {
+      error.value = `Não foi possível atualizar: ${failed.join(', ')}. Os demais dados continuam disponíveis.`
+    }
   } catch (err: any) {
     error.value = err?.response?.data?.message || 'Não foi possível carregar o painel.'
     ElMessage.error(error.value)
