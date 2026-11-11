@@ -423,34 +423,47 @@ async function load() {
   loading.value = true
   pendingLoadCompetitionId = id
   const task = (async () => {
-    // Uma falha isolada nao deve descartar os resultados das outras secoes.
-    const results = await Promise.allSettled([
-      adminApi.registrations({ competitionId: id }),
-      adminApi.participantRegistrations(id),
-      adminApi.compositionChanges(id),
-      adminApi.cancellationRequests({ competitionId: id })
-    ])
-    if (competitionId.value !== id || version !== loadVersion) return
-
-    const labels = ['robos', 'participantes', 'ajustes de composicao', 'cancelamentos']
-    loadErrors.value = results.flatMap((result, index) =>
-      result.status === 'rejected' ? [labels[index]!] : []
-    )
-    const registrations = results[0]
-    const participants = results[1]
-    const composition = results[2]
-    const cancellations = results[3]
-    if (registrations.status === 'fulfilled') {
-      rows.value = registrations.value
-      if (selected.value) {
-        selected.value = rows.value.find((item) => item.id === selected.value?.id)
-        if (!selected.value) detailsOpen.value = false
+    // Render Free: evita quatro consultas potencialmente pesadas em paralelo.
+    // Cada secao aparece assim que sua requisicao termina; falhas nao descartam as demais.
+    loadErrors.value = []
+    const isCurrent = () => competitionId.value === id && version === loadVersion
+    const fetchSection = async (label: string, fetch: () => Promise<void>) => {
+      try {
+        await fetch()
+      } catch {
+        if (isCurrent()) loadErrors.value = [...loadErrors.value, label]
       }
     }
-    if (participants.status === 'fulfilled') participantRows.value = participants.value
-    if (composition.status === 'fulfilled') compositionChanges.value = composition.value
-    if (cancellations.status === 'fulfilled') cancellationRequests.value = cancellations.value
-    if (loadErrors.value.length) {
+
+    // Prioriza as pendencias operacionais, depois os cadastros completos.
+    await fetchSection('ajustes de composicao', async () => {
+      const data = await adminApi.compositionChanges(id)
+      if (isCurrent()) compositionChanges.value = data
+    })
+    if (!isCurrent()) return
+
+    await fetchSection('participantes', async () => {
+      const data = await adminApi.participantRegistrations(id)
+      if (isCurrent()) participantRows.value = data
+    })
+    if (!isCurrent()) return
+
+    await fetchSection('robos', async () => {
+      const data = await adminApi.registrations({ competitionId: id })
+      if (!isCurrent()) return
+      rows.value = data
+      if (selected.value) {
+        selected.value = data.find((item) => item.id === selected.value?.id)
+        if (!selected.value) detailsOpen.value = false
+      }
+    })
+    if (!isCurrent()) return
+
+    await fetchSection('cancelamentos', async () => {
+      const data = await adminApi.cancellationRequests({ competitionId: id })
+      if (isCurrent()) cancellationRequests.value = data
+    })
+    if (isCurrent() && loadErrors.value.length) {
       ElMessage.warning('Alguns dados nao puderam ser atualizados. Tente novamente.')
     }
   })().finally(() => {
