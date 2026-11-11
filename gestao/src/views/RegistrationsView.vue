@@ -448,14 +448,16 @@ async function load() {
     if (!isCurrent()) return
 
     await fetchSection('participantes', async () => {
-      const data = await adminApi.participantRegistrations(id)
-      if (isCurrent()) participantRows.value = data
+      const selectedStatus = participantStatus.value
+      const data = await adminApi.participantRegistrations(id, selectedStatus)
+      if (isCurrent() && participantStatus.value === selectedStatus) participantRows.value = data
     })
     if (!isCurrent()) return
 
     await fetchSection('robos', async () => {
-      const data = await adminApi.registrations({ competitionId: id })
-      if (!isCurrent()) return
+      const selectedStatus = status.value
+      const data = await adminApi.registrations({ competitionId: id, status: selectedStatus })
+      if (!isCurrent() || status.value !== selectedStatus) return
       rows.value = data
       if (selected.value) {
         selected.value = data.find((item) => item.id === selected.value?.id)
