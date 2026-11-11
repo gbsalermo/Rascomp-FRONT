@@ -43,9 +43,9 @@ export const adminRegistrationApi = {
   ).then((r) => r.data),
   teamLeadershipHistory: (teamId: number) =>
     http.get<TeamLeadershipHistory[]>(`/api/v1/equipes/${teamId}/lideranca/historico`).then((r) => r.data),
-  participantRegistrations: (competitionId: number) =>
+  participantRegistrations: (competitionId: number, status?: ParticipantCompetitionRegistrationStatus | '') =>
     http.get<ParticipantCompetitionRegistration[]>('/api/v1/inscricoes-participantes/por-competicao', {
-      params: { competitionId }
+      params: { competitionId, ...(status ? { status } : {}) }
     }).then((r) => r.data),
   reviewParticipantRegistration: (
     id: number,
@@ -73,7 +73,7 @@ export const adminRegistrationApi = {
   registrations: (params?: { competitionId?: number; status?: string }) => {
     if (params?.competitionId) {
       return http.get<Registration[]>('/api/v1/inscricoes/por-competicao', {
-        params: { competitionId: params.competitionId }
+        params: { competitionId: params.competitionId, ...(params.status ? { status: params.status } : {}) }
       }).then((r) => r.data)
     }
     if (params?.status) {

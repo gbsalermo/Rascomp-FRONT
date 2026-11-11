@@ -57,18 +57,20 @@ function upsertById<T extends { id: number }>(items: T[], updated: T): T[] {
 async function refreshSections(sections: RefreshSection[]) {
   const id = competitionId.value
   if (!id) return
+  const robotFilter = status.value
+  const participantFilter = participantStatus.value
   await Promise.all(sections.map(async (section) => {
     if (section === 'registrations') {
-      const data = await adminApi.registrations({ competitionId: id })
-      if (competitionId.value !== id) return
+      const data = await adminApi.registrations({ competitionId: id, status: status.value })
+      if (competitionId.value !== id || status.value !== robotFilter) return
       rows.value = data
       if (selected.value) {
         selected.value = data.find((item) => item.id === selected.value?.id)
         if (!selected.value) detailsOpen.value = false
       }
     } else if (section === 'participants') {
-      const data = await adminApi.participantRegistrations(id)
-      if (competitionId.value === id) participantRows.value = data
+      const data = await adminApi.participantRegistrations(id, participantStatus.value)
+      if (competitionId.value === id && participantStatus.value === participantFilter) participantRows.value = data
     } else if (section === 'composition') {
       const data = await adminApi.compositionChanges(id)
       if (competitionId.value === id) compositionChanges.value = data
@@ -201,7 +203,7 @@ const filtered = computed(() => {
   })
 })
 
-const participantStatus = ref('')
+const participantStatus = ref<string>('PENDENTE')
 const participantSearch = ref('')
 const participantStatusOptions: ParticipantCompetitionRegistrationStatus[] = [
   'PENDENTE', 'APROVADA', 'REJEITADA', 'CORRECAO_SOLICITADA'
@@ -402,6 +404,7 @@ async function loadBase() {
 // Evita requisicoes duplicadas para a mesma competicao durante o carregamento.
 let pendingLoad: Promise<void> | undefined
 let pendingLoadCompetitionId: number | undefined
+let pendingLoadFilters = ''
 let loadVersion = 0
 const loadErrors = ref<string[]>([])
 // Evita bloquear listas ja exibidas durante uma atualizacao em segundo plano.
@@ -417,11 +420,13 @@ async function load() {
     loadErrors.value = []
     return
   }
-  if (pendingLoad && pendingLoadCompetitionId === id) return pendingLoad
+  const filters = `${status.value}|${participantStatus.value}`
+  if (pendingLoad && pendingLoadCompetitionId === id && pendingLoadFilters === filters) return pendingLoad
 
   const version = ++loadVersion
   loading.value = true
   pendingLoadCompetitionId = id
+  pendingLoadFilters = filters
   const task = (async () => {
     // Render Free: evita quatro consultas potencialmente pesadas em paralelo.
     // Cada secao aparece assim que sua requisicao termina; falhas nao descartam as demais.
@@ -767,7 +772,9 @@ async function review(row: Registration, next: RegistrationStatus) {
       status: next,
       reviewReason
     })
-    rows.value = upsertById(rows.value, updated)
+    rows.value = status.value && updated.status !== status.value
+      ? rows.value.filter((item) => item.id !== updated.id)
+      : upsertById(rows.value, updated)
     ElMessage.success(approving ? 'Inscrição aprovada.' : 'Inscrição rejeitada com justificativa registrada.')
     detailsOpen.value = false
   } catch (error: any) {
@@ -905,6 +912,32 @@ async function decideCancellation(request: RegistrationCancellationRequest, appr
     cancellationReviewingId.value = undefined
   }
 }
+
+// Cada filtro aciona sua propria consulta; nao carrega outros status antecipadamente.
+watch(status, async () => {
+  const id = competitionId.value
+  if (!id) return
+  rows.value = []
+  const selectedStatus = status.value
+  try {
+    const data = await adminApi.registrations({ competitionId: id, status: selectedStatus })
+    if (competitionId.value === id && status.value === selectedStatus) rows.value = data
+  } catch {
+    ElMessage.warning('Nao foi possivel consultar as inscricoes deste status.')
+  }
+})
+watch(participantStatus, async () => {
+  const id = competitionId.value
+  if (!id) return
+  participantRows.value = []
+  const selectedStatus = participantStatus.value
+  try {
+    const data = await adminApi.participantRegistrations(id, selectedStatus)
+    if (competitionId.value === id && participantStatus.value === selectedStatus) participantRows.value = data
+  } catch {
+    ElMessage.warning('Nao foi possivel consultar participantes deste status.')
+  }
+})
 
 watch(
   () => competition.selectedId,
