@@ -586,7 +586,9 @@ async function reviewParticipant(
 
     participantReviewingId.value = row.id
     const updated = await adminApi.reviewParticipantRegistration(row.id, next, motivo)
-    participantRows.value = upsertById(participantRows.value, updated)
+    participantRows.value = participantStatus.value && updated.status !== participantStatus.value
+      ? participantRows.value.filter((item) => item.id !== updated.id)
+      : upsertById(participantRows.value, updated)
     ElMessage.success(
       approving
         ? 'Participante aprovado.'
