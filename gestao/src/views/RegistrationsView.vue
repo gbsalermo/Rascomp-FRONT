@@ -203,7 +203,7 @@ const filtered = computed(() => {
   })
 })
 
-const participantStatus = ref<string>('PENDENTE')
+const participantStatus = ref<ParticipantCompetitionRegistrationStatus | ''>('PENDENTE')
 const participantSearch = ref('')
 const participantStatusOptions: ParticipantCompetitionRegistrationStatus[] = [
   'PENDENTE', 'APROVADA', 'REJEITADA', 'CORRECAO_SOLICITADA'
