@@ -55,6 +55,8 @@ export const adminRegistrationApi = {
     `/api/v1/inscricoes-participantes/${id}/revisao`,
     { status, motivo }
   ).then((r) => r.data),
+  reactivateParticipantRegistration: (id: number) =>
+    http.patch<ParticipantCompetitionRegistration>(`/api/v1/inscricoes-participantes/${id}/reativar`).then((r) => r.data),
   suspendParticipantWithoutLink: (id: number) =>
     http.patch<ParticipantCompetitionRegistration>(`/api/v1/inscricoes-participantes/${id}/suspender-sem-vinculo`).then((r) => r.data),
   participantRegistrationReceipt: (id: number) =>
