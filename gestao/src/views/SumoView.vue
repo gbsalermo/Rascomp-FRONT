@@ -39,7 +39,13 @@ const currentCompetition = computed(() => competition.competitions.find((item) =
 const currentCategory = computed(() => categories.value.find((item) => item.id === categoryId.value))
 const currentBracket = computed(() => brackets.value.find((item) => item.id === bracketId.value))
 const historicalSelected = computed(() => currentBracket.value?.atual === false)
-const canGenerate = computed(() => currentCompetition.value?.status === 'INSCRICOES_ENCERRADAS')
+const canGenerate = computed(() => {
+  const status = currentCompetition.value?.status
+  if (status === 'INSCRICOES_ENCERRADAS') return true
+  if (status !== 'EM_ANDAMENTO') return false
+  // Durante a disputa, apenas a primeira geracao e permitida por este fluxo.
+  return !filteredBrackets.value.some((item) => item.atual !== false)
+})
 const canInspect = computed(() => currentCompetition.value?.status === 'EM_ANDAMENTO')
 const filteredBrackets = computed(() =>
   brackets.value
@@ -290,7 +296,7 @@ async function loadBracket() {
 async function generate() {
   if (!competitionId.value || !categoryId.value) return
   if (!canGenerate.value) {
-    return ElMessage.warning('Chaves só podem ser geradas ou regeneradas quando as inscrições estiverem encerradas.')
+    return ElMessage.warning('A primeira chave pode ser gerada com a competição em andamento; para regenerar uma chave vigente, utilize o fluxo excepcional em Chaves.')
   }
 
   const existingCurrent = filteredBrackets.value.find((item) => item.atual !== false)
@@ -439,7 +445,7 @@ onMounted(initialize)
         <el-button
           class="brand-button"
           :disabled="!canGenerate"
-          :title="canGenerate ? 'Gerar ou regenerar chave' : 'Disponível somente com inscrições encerradas'"
+          :title="canGenerate ? 'Gerar chave' : 'Para regenerar uma chave vigente durante a competição, utilize Chaves; geração comum requer inscrições encerradas'"
           @click="generate"
         >Gerar nova chave</el-button>
       </div>
@@ -471,7 +477,7 @@ onMounted(initialize)
       </el-select>
       <el-button @click="loadCompetition(bracketId)">Atualizar</el-button>
       <span v-if="currentCompetition && !canGenerate" class="generation-hint">
-        Geração disponível somente em INSCRIÇÕES ENCERRADAS.
+        Geração indisponível neste estado. Durante a competição, a regeneração de uma chave vigente exige o fluxo excepcional em Chaves.
       </span>
     </article>
 
