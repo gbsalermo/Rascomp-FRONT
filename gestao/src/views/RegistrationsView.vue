@@ -605,6 +605,27 @@ async function reviewParticipant(
   }
 }
 
+async function reactivateParticipant(row: ParticipantCompetitionRegistration) {
+  try {
+    await ElMessageBox.confirm(
+      'A inscrição individual voltará para PENDENTE, preservando o comprovante e o histórico. Deseja continuar?',
+      'Reativar participante',
+      { confirmButtonText: 'Reativar', cancelButtonText: 'Cancelar', type: 'warning' }
+    )
+    participantReviewingId.value = row.id
+    const updated = await adminApi.reactivateParticipantRegistration(row.id)
+    participantRows.value = participantStatus.value && updated.status !== participantStatus.value
+      ? participantRows.value.filter((item) => item.id !== updated.id)
+      : upsertById(participantRows.value, updated)
+    ElMessage.success('Inscrição individual reativada e devolvida para pendentes.')
+  } catch (error: any) {
+    if (error === 'cancel' || error === 'close') return
+    ElMessage.error(error?.response?.data?.message || 'Não foi possível reativar a inscrição.')
+  } finally {
+    participantReviewingId.value = undefined
+  }
+}
+
 async function suspendParticipantWithoutLink(row: ParticipantCompetitionRegistration) {
   try {
     await ElMessageBox.confirm(
@@ -1265,6 +1286,14 @@ onMounted(loadBase)
               </small>
             </div>
             <div v-else class="registration-request-cell">
+              <el-button
+                v-if="row.status === 'REJEITADA'"
+                size="small"
+                type="warning"
+                plain
+                :loading="participantReviewingId === row.id"
+                @click="reactivateParticipant(row)"
+              >Reativar inscrição</el-button>
               <StatusBadge :value="row.status" />
               <template v-if="row.status === 'APROVADA' && !row.competitiveLinkSatisfied">
                 <el-tag v-if="row.competitiveLinkSuspended" type="danger" effect="light">Participação suspensa</el-tag>
