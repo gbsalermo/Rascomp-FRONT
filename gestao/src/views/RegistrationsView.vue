@@ -18,6 +18,7 @@ import type {
   Team
 } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
+import { exportListExcel, exportListPdf, type ListColumn } from '../utils/listExport'
 
 const auth = useAuthStore()
 const competition = useCompetitionStore()
@@ -979,6 +980,28 @@ watch(
 )
 
 onMounted(loadBase)
+const participantExportColumns: ListColumn[] = [
+  { label: 'Participante', value: row => row.competitorNome },
+  { label: 'Equipe', value: row => row.teamNome },
+  { label: 'Líder', value: row => row.teamLeader ? 'Sim' : 'Não' },
+  { label: 'Situação', value: row => row.status }
+]
+const registrationExportColumns: ListColumn[] = [
+  { label: 'Modalidade', value: row => row.categoryNome },
+  { label: 'Robô', value: row => row.robotNome || 'Sem robô' },
+  { label: 'Equipe', value: row => row.teamNome },
+  { label: 'Competidores', value: row => row.competitorNomes },
+  { label: 'Situação', value: row => row.status }
+]
+function exportRegistrations(kind: 'participants' | 'robots', format: 'excel' | 'pdf') {
+  const title = kind === 'participants' ? 'Inscrições de participantes' : 'Inscrições de robôs'
+  const columns = kind === 'participants' ? participantExportColumns : registrationExportColumns
+  const data = kind === 'participants' ? filteredParticipants.value : filtered.value
+  const context = activeCompetition.value?.nome || 'Competição'
+  if (format === 'excel') exportListExcel(title, columns, data)
+  else if (!exportListPdf(title, context, columns, data)) ElMessage.warning('Permita pop-ups para imprimir a lista em PDF.')
+}
+
 </script>
 
 <template>
