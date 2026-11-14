@@ -6,6 +6,7 @@ import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
 import type { Competitor, Registration, Team } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
+import { exportListExcel, exportListPdf, type ListColumn } from '../utils/listExport'
 
 type Scope = 'COMPETITION' | 'ALL'
 
@@ -157,6 +158,21 @@ watch(() => competition.selectedId, () => {
 watch(scope, load)
 watch(() => route.query.teamId, applyTeamFromRoute)
 onMounted(load)
+const exportColumns: ListColumn[] = [
+  { label: 'Nome', value: row => row.nome },
+  { label: 'Equipe', value: row => row.teamNome },
+  { label: 'Instituição', value: row => row.institutionNome || row.institutionSigla },
+  { label: 'E-mail', value: row => row.email },
+  { label: 'Telefone', value: row => row.telefone },
+  { label: 'Líder', value: row => row.teamLeader ? 'Sim' : 'Não' }
+]
+function exportCompetitors(format: 'excel' | 'pdf') {
+  const title = 'Lista de competidores'
+  const context = effectiveScope.value === 'ALL' ? 'Todos os cadastros' : competition.selectedCompetition?.nome || 'Competição'
+  if (format === 'excel') exportListExcel(title, exportColumns, visibleCompetitors.value)
+  else if (!exportListPdf(title, context, exportColumns, visibleCompetitors.value)) ElMessage.warning('Permita pop-ups para imprimir a lista em PDF.')
+}
+
 </script>
 
 <template>
@@ -178,6 +194,8 @@ onMounted(load)
             { label: 'Todos cadastrados', value: 'ALL' }
           ]"
         />
+        <el-button @click="exportCompetitors('excel')">Excel (CSV)</el-button>
+        <el-button @click="exportCompetitors('pdf')">PDF</el-button>
         <el-button @click="load">Atualizar</el-button>
       </div>
     </div>

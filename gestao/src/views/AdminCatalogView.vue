@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi, assetUrl } from '../api'
+import { exportListExcel, exportListPdf, type ListColumn } from '../utils/listExport'
 import { useAuthStore, useCompetitionStore } from '../store'
 import type { Category, Registration, Robot, RobotImage, Team } from '../types'
 
@@ -253,6 +254,28 @@ watch(() => competition.selectedId, () => {
 })
 watch(scope, load)
 onMounted(load)
+const robotExportColumns: ListColumn[] = [
+  { label: 'Robô', value: row => row.nome },
+  { label: 'Equipe', value: row => row.teamNome },
+  { label: 'Descrição', value: row => row.descricao },
+  { label: 'Situação', value: row => row.ativo === false ? 'Inativo' : 'Ativo' }
+]
+const categoryExportColumns: ListColumn[] = [
+  { label: 'Modalidade', value: row => row.categoryNome },
+  { label: 'Robô', value: row => row.robotNome || 'Sem robô' },
+  { label: 'Equipe', value: row => row.teamNome },
+  { label: 'Competidores', value: row => row.competitorNomes },
+  { label: 'Situação', value: row => row.status }
+]
+function exportCatalog(format: 'excel' | 'pdf', categoryOnly = false) {
+  const title = categoryOnly ? 'Inscritos - ' + (selectedCategory.value?.nome || 'Modalidade') : 'Lista de robôs'
+  const columns = categoryOnly ? categoryExportColumns : robotExportColumns
+  const data = categoryOnly ? categoryEntries.value : visibleRobots.value
+  const context = competition.selectedCompetition?.nome || 'Competição'
+  if (format === 'excel') exportListExcel(title, columns, data)
+  else if (!exportListPdf(title, context, columns, data)) ElMessage.warning('Permita pop-ups para imprimir a lista em PDF.')
+}
+
 </script>
 
 <template>
@@ -272,6 +295,10 @@ onMounted(load)
             { label: 'Todos cadastrados', value: 'ALL' }
           ]"
         />
+        <template v-if="mode === 'robots'">
+          <el-button @click="exportCatalog('excel')">Excel (CSV)</el-button>
+          <el-button @click="exportCatalog('pdf')">PDF</el-button>
+        </template>
         <el-button @click="load">Atualizar</el-button>
       </div>
     </div>
@@ -413,6 +440,10 @@ onMounted(load)
           <el-option label="Desistentes" value="DESISTENTE" />
           <el-option label="Desclassificadas" value="DESCLASSIFICADA" />
         </el-select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <el-button @click="exportCatalog('excel', true)">Excel (CSV)</el-button>
+        <el-button @click="exportCatalog('pdf', true)">PDF</el-button>
       </div>
       <p class="muted">{{ categoryEntries.length }} inscrição(ões) encontrada(s) na competição em foco.</p>
       <el-table :data="categoryEntries" empty-text="Nenhuma inscrição encontrada" style="width: 100%">
