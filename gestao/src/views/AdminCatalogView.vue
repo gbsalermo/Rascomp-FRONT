@@ -254,6 +254,24 @@ watch(() => competition.selectedId, () => {
 })
 watch(scope, load)
 onMounted(load)
+const teamExportColumns: ListColumn[] = [
+  { label: 'Equipe', value: row => row.nome },
+  { label: 'Instituição', value: row => row.institutionNome },
+  { label: 'Responsável', value: row => row.responsibleUserNome || 'Não definido' },
+  { label: 'E-mail do responsável', value: row => row.responsibleUserEmail },
+  { label: 'Robôs inscritos', value: row => [...new Set(registrations.value.filter(reg =>
+    reg.teamId === row.id && reg.robotNome &&
+    !['REJEITADA', 'CANCELADA', 'DESISTENTE', 'DESCLASSIFICADA'].includes(reg.status)
+  ).map(reg => reg.robotNome))].join(', ') || 'Nenhum' },
+  { label: 'Inscrições na edição', value: row => registrations.value.filter(reg => reg.teamId === row.id).length },
+  { label: 'Situação', value: row => row.ativo === false ? 'Inativa' : 'Ativa' }
+]
+function exportTeams(format: 'excel' | 'pdf') {
+  const title = 'Lista de equipes'
+  const context = effectiveScope.value === 'ALL' ? 'Todos os cadastros (inscrições da edição selecionada)' : competition.selectedCompetition?.nome || 'Competição'
+  if (format === 'excel') exportListExcel(title, teamExportColumns, visibleTeams.value)
+  else if (!exportListPdf(title, context, teamExportColumns, visibleTeams.value)) ElMessage.warning('Permita pop-ups para imprimir a lista em PDF.')
+}
 const robotExportColumns: ListColumn[] = [
   { label: 'Robô', value: row => row.nome },
   { label: 'Equipe', value: row => row.teamNome },
@@ -295,6 +313,10 @@ function exportCatalog(format: 'excel' | 'pdf', categoryOnly = false) {
             { label: 'Todos cadastrados', value: 'ALL' }
           ]"
         />
+        <template v-if="mode === 'teams'">
+          <el-button @click="exportTeams('excel')">Excel (CSV)</el-button>
+          <el-button @click="exportTeams('pdf')">PDF</el-button>
+        </template>
         <template v-if="mode === 'robots'">
           <el-button @click="exportCatalog('excel')">Excel (CSV)</el-button>
           <el-button @click="exportCatalog('pdf')">PDF</el-button>
