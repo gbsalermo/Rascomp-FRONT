@@ -39,7 +39,7 @@ const currentCompetition = computed(() => competition.competitions.find((item) =
 const currentCategory = computed(() => categories.value.find((item) => item.id === categoryId.value))
 const currentBracket = computed(() => brackets.value.find((item) => item.id === bracketId.value))
 const historicalSelected = computed(() => currentBracket.value?.atual === false)
-const canGenerate = computed(() => currentCompetition.value?.status === 'INSCRICOES_ENCERRADAS')
+const canGenerate = computed(() => ['INSCRICOES_ENCERRADAS', 'EM_ANDAMENTO'].includes(currentCompetition.value?.status ?? ''))
 const canInspect = computed(() => currentCompetition.value?.status === 'EM_ANDAMENTO')
 const filteredBrackets = computed(() =>
   brackets.value
@@ -439,7 +439,7 @@ onMounted(initialize)
         <el-button
           class="brand-button"
           :disabled="!canGenerate"
-          :title="canGenerate ? 'Gerar ou regenerar chave' : 'Disponível somente com inscrições encerradas'"
+          :title="canGenerate ? 'Gerar ou regenerar chave' : 'Disponível com inscrições encerradas ou competição em andamento, se não houver disputa iniciada'"
           @click="generate"
         >Gerar nova chave</el-button>
       </div>
