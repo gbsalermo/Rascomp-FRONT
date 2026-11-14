@@ -4,7 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { adminApi } from '../api'
 import { useAuthStore, useCompetitionStore } from '../store'
-import type { Competitor, Registration, Team } from '../types'
+import type { Competitor, ParticipantCompetitionRegistration, Registration, Team } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 import { exportListExcel, exportListPdf, type ListColumn } from '../utils/listExport'
 
@@ -23,6 +23,7 @@ const scope = ref<Scope>('COMPETITION')
 const competitors = ref<Competitor[]>([])
 const teams = ref<Team[]>([])
 const registrations = ref<Registration[]>([])
+const participantRegistrations = ref<ParticipantCompetitionRegistration[]>([])
 const detailsOpen = ref(false)
 const selectedCompetitor = ref<Competitor>()
 
@@ -74,6 +75,7 @@ async function load() {
   competitors.value = []
   teams.value = []
   registrations.value = []
+  participantRegistrations.value = []
   try {
     await competition.load()
 
@@ -87,17 +89,32 @@ async function load() {
       teams.value = teamRows
       registrations.value = registrationRows
     } else if (competition.selectedId) {
-      const [catalog, registrationRows] = await Promise.all([
+      const [catalog, registrationRows, personalRows] = await Promise.all([
         adminApi.competitionAdminCatalog(competition.selectedId),
-        adminApi.registrations({ competitionId: competition.selectedId })
+        adminApi.registrations({ competitionId: competition.selectedId }),
+        adminApi.participantRegistrations(competition.selectedId)
       ])
-      competitors.value = catalog.competitors
+      participantRegistrations.value = personalRows
+      const byId = new Map<number, Competitor>(catalog.competitors.map(item => [item.id, item]))
+      for (const personal of personalRows) {
+        if (!byId.has(personal.competitorId)) {
+          byId.set(personal.competitorId, {
+            id: personal.competitorId,
+            nome: personal.competitorNome,
+            teamId: personal.teamId,
+            teamNome: personal.teamNome,
+            teamLeader: personal.teamLeader
+          })
+        }
+      }
+      competitors.value = [...byId.values()].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
       teams.value = catalog.teams
       registrations.value = registrationRows
     } else {
       competitors.value = []
       teams.value = []
       registrations.value = []
+      participantRegistrations.value = []
     }
 
     applyTeamFromRoute()
@@ -164,7 +181,8 @@ const exportColumns: ListColumn[] = [
   { label: 'Instituição', value: row => row.institutionNome || row.institutionSigla },
   { label: 'E-mail', value: row => row.email },
   { label: 'Telefone', value: row => row.telefone },
-  { label: 'Líder', value: row => row.teamLeader ? 'Sim' : 'Não' }
+  { label: 'Líder', value: row => row.teamLeader ? 'Sim' : 'Não' },
+  { label: 'Inscrição pessoal', value: row => participantRegistrations.value.find(p => p.competitorId === row.id)?.status || 'Sem inscrição pessoal' }
 ]
 const competitorRobotsColumns: ListColumn[] = [
   { label: 'Competidor', value: row => row.nome },
@@ -201,6 +219,7 @@ function exportCompetitorsWithRobots(format: 'excel' | 'pdf') {
 const competitorRobotsColumns: ListColumn[] = [
   { label: 'Competidor', value: row => row.nome },
   { label: 'Equipe', value: row => row.teamNome },
+  { label: 'Inscrição pessoal', value: row => participantRegistrations.value.find(p => p.competitorId === row.id)?.status || 'Sem inscrição pessoal' },
   { label: 'Robôs inscritos', value: row => {
     const linked = registrations.value.filter(reg =>
       reg.competitorIds?.includes(row.id) &&
