@@ -166,6 +166,38 @@ const exportColumns: ListColumn[] = [
   { label: 'Telefone', value: row => row.telefone },
   { label: 'Líder', value: row => row.teamLeader ? 'Sim' : 'Não' }
 ]
+const competitorRobotsColumns: ListColumn[] = [
+  { label: 'Competidor', value: row => row.nome },
+  { label: 'Equipe', value: row => row.teamNome },
+  { label: 'Robôs inscritos (modalidade)', value: row => row.robos }
+]
+
+function exportCompetitorsWithRobots(format: 'excel' | 'pdf') {
+  const title = 'Competidores e robôs inscritos'
+  const context = effectiveScope.value === 'ALL'
+    ? 'Todos os cadastros'
+    : competition.selectedCompetition?.nome || 'Competição'
+  const rows = visibleCompetitors.value.map(competitor => {
+    const robots = new Set(
+      registrations.value
+        .filter(registration => registration.competitorIds?.includes(competitor.id))
+        .map(registration => {
+          const name = registration.robotNome?.trim()
+          if (!name) return ''
+          return registration.categoryNome
+            ? `${name} (${registration.categoryNome})`
+            : name
+        })
+        .filter(Boolean)
+    )
+    return { ...competitor, robos: [...robots].join(', ') || '—' }
+  })
+  if (format === 'excel') exportListExcel(title, competitorRobotsColumns, rows)
+  else if (!exportListPdf(title, context, competitorRobotsColumns, rows)) {
+    ElMessage.warning('Permita pop-ups para imprimir a lista em PDF.')
+  }
+}
+
 function exportCompetitors(format: 'excel' | 'pdf') {
   const title = 'Lista de competidores'
   const context = effectiveScope.value === 'ALL' ? 'Todos os cadastros' : competition.selectedCompetition?.nome || 'Competição'
@@ -196,6 +228,8 @@ function exportCompetitors(format: 'excel' | 'pdf') {
         />
         <el-button @click="exportCompetitors('excel')">Excel (CSV)</el-button>
         <el-button @click="exportCompetitors('pdf')">PDF</el-button>
+        <el-button @click="exportCompetitorsWithRobots('excel')">Competidores + Robôs (Excel)</el-button>
+        <el-button @click="exportCompetitorsWithRobots('pdf')">Competidores + Robôs (PDF)</el-button>
         <el-button @click="load">Atualizar</el-button>
       </div>
     </div>
