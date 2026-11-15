@@ -303,8 +303,7 @@ async function load() {
         })
       )
       followHistory.value = followGroups
-        .filter((group): group is PromiseFulfilledResult<Array<FollowAttempt & { categoryNome?: string }>> => group.status === 'fulfilled')
-        .flatMap((group) => group.value)
+        .flatMap((group) => group.status === 'fulfilled' ? group.value : [])
         .sort((a, b) => new Date(b.dataCadastro || 0).getTime() - new Date(a.dataCadastro || 0).getTime())
     } else {
       followHistory.value = []
@@ -337,8 +336,7 @@ async function load() {
       })
     )
     rows.value = groups
-      .filter((group): group is PromiseFulfilledResult<ResultRow[]> => group.status === 'fulfilled')
-      .flatMap((group) => group.value)
+      .flatMap((group) => group.status === 'fulfilled' ? group.value : [])
       .sort((a, b) => b.matchId - a.matchId)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os resultados.')
