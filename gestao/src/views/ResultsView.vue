@@ -270,7 +270,17 @@ async function load() {
       return
     }
 
-    const brackets = await adminApi.brackets(competition.selectedId)
+    // Pódios e chaves são consultas independentes.
+    const id = competition.selectedId
+    const [bracketsResult, categoryResult] = await Promise.allSettled([
+      adminApi.brackets(id),
+      adminApi.competitionResults(id)
+    ])
+    if (competition.selectedId !== id) return
+    const brackets = bracketsResult.status === 'fulfilled' ? bracketsResult.value : []
+    if (bracketsResult.status === 'rejected') {
+      ElMessage.warning('Não foi possível carregar as chaves; os pódios continuam disponíveis.')
+    }
     const requestedBracket = queryNumber(route.query.bracketId)
     scopedBracket.value = requestedBracket ? brackets.find((item) => item.id === requestedBracket) : undefined
     const sourceBrackets = scopedBracket.value
@@ -279,29 +289,35 @@ async function load() {
 
     categoryResults.value = scopedBracket.value
       ? []
-      : await adminApi.competitionResults(competition.selectedId)
+      : categoryResult.status === 'fulfilled' ? categoryResult.value : []
+    if (categoryResult.status === 'rejected') {
+      ElMessage.warning('Os pódios não responderam; você ainda pode consultar as partidas.')
+    }
 
     if (!scopedBracket.value) {
       const followCategories = categoryResults.value.filter((item) => item.modalidade === 'FOLLOW_LINE')
-      const followGroups = await Promise.all(
+      const followGroups = await Promise.allSettled(
         followCategories.map(async (item) => {
-          const attempts = await adminApi.followAttempts(competition.selectedId!, item.categoryId)
+          const attempts = await adminApi.followAttempts(id, item.categoryId)
           return attempts.map((attempt) => ({ ...attempt, categoryNome: item.categoryNome }))
         })
       )
       followHistory.value = followGroups
-        .flat()
+        .filter((group): group is PromiseFulfilledResult<Array<FollowAttempt & { categoryNome?: string }>> => group.status === 'fulfilled')
+        .flatMap((group) => group.value)
         .sort((a, b) => new Date(b.dataCadastro || 0).getTime() - new Date(a.dataCadastro || 0).getTime())
     } else {
       followHistory.value = []
     }
 
-    const groups = await Promise.all(
+    const groups = await Promise.allSettled(
       sourceBrackets.map(async (bracket) => {
-        const [matches, results] = await Promise.all([
+        const [matchesResponse, resultsResponse] = await Promise.allSettled([
           adminApi.matches(bracket.id),
           adminApi.results(bracket.id)
         ])
+        const matches = matchesResponse.status === 'fulfilled' ? matchesResponse.value : []
+        const results = resultsResponse.status === 'fulfilled' ? resultsResponse.value : []
         return results.map((result) => {
           const match = matches.find((item) => item.id === result.matchId)
           return {
@@ -320,7 +336,10 @@ async function load() {
         })
       })
     )
-    rows.value = groups.flat().sort((a, b) => b.matchId - a.matchId)
+    rows.value = groups
+      .filter((group): group is PromiseFulfilledResult<ResultRow[]> => group.status === 'fulfilled')
+      .flatMap((group) => group.value)
+      .sort((a, b) => b.matchId - a.matchId)
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || 'Não foi possível carregar os resultados.')
   } finally {
