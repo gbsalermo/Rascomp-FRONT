@@ -1,0 +1,29 @@
+name: Gestao frontend build
+
+on:
+  pull_request:
+    paths:
+      - 'gestao/**'
+      - '.github/workflows/gestao-build.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'gestao/**'
+      - '.github/workflows/gestao-build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gestao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: gestao/package-lock.json
+      - run: npm ci
+      - run: npm run build:cloud
