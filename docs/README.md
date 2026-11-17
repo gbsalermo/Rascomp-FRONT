@@ -1,3 +1,7 @@
+> **Novo ciclo pós-competição (17/11/2026):** consultar [ROADMAP_POS_COMPETICAO_2026.md](ROADMAP_POS_COMPETICAO_2026.md) para o planejamento **V1.1 → V2.0** e a proposta de produção **exclusivamente por tags de release**. O `ETAPAS_POS_PROJETO.md` e os checkpoints antigos permanecem como histórico e referência das decisões anteriores. **Roadmap novo em modelagem, não é autorização para deploy nem alteração da infraestrutura.**
+
+---
+
 ## ESTADO OFICIAL — RASCOMP MVP V1 EM OPERAÇÃO (OUTUBRO/2026)
 
 **O responsável confirmou que o RasComp V1 já está no ar e sendo usado para a competição.** A versão V1 está com seu escopo funcional fechado: Landing institucional, autenticação e recuperação de acesso, gestão de competições, participantes/equipes/robôs, inscrição individual e competitiva (inclusive Futebol sem cadastro prévio de robô), comprovantes e revisão administrativa, Regras e Ajuda, operação existente de Sumô e Follow Line. A operação de partidas de Futebol não foi declarada concluída.
